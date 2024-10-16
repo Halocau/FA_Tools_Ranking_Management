@@ -3,7 +3,6 @@ package backend.backend.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-
 @Entity
 @Data
 @Table(name = "students")
@@ -22,6 +21,5 @@ public class Student {
 
     @Column(name = "last_name", length = 45)
     private String lastName;
-
 
 }
