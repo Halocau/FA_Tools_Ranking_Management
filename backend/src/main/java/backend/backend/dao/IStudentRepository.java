@@ -1,6 +1,7 @@
 package backend.backend.dao;
 
-import FA_tools.studentCrudAPI.model.Student;
+
+import backend.backend.model.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
