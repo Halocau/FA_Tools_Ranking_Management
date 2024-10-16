@@ -13,10 +13,12 @@ import java.util.List;
 @RequestMapping("/api/students")
 public class StudentController {
     private IStudentService iStudentService;
+
     @Autowired
     public StudentController(IStudentService iStudentService) {
         this.iStudentService = iStudentService;
     }
+
     @GetMapping
     public List<Student> getAllStudents() {
         return iStudentService.getALlStudent();
@@ -35,24 +37,26 @@ public class StudentController {
     @GetMapping("/{id}")
     public ResponseEntity<Student> getStudentById(@PathVariable int id) {
         Student student = iStudentService.getStudentById(id);
-        if(student == null) {
+        if (student == null) {
             return ResponseEntity.notFound().build();
-        }else{
+        } else {
             return ResponseEntity.ok(student);
         }
     }
+
     @PostMapping
     public ResponseEntity<Student> createStudent(@RequestBody Student student) {
         student.setId(0);
-        student =  iStudentService.addStudent(student);
+        student = iStudentService.addStudent(student);
         return ResponseEntity.status(HttpStatus.CREATED).body(student);
     }
+
     @PutMapping("/{id}")
-    public ResponseEntity<Student> updateStudent(@RequestBody Student student,@PathVariable int id) {
+    public ResponseEntity<Student> updateStudent(@RequestBody Student student, @PathVariable int id) {
         Student exits = iStudentService.getStudentById(id);
-        if(exits == null) {
+        if (exits == null) {
             return ResponseEntity.notFound().build();
-        }else {
+        } else {
             exits.setEmail(student.getEmail());
             exits.setFirstName(student.getFirstName());
             exits.setLastName(student.getLastName());
@@ -60,14 +64,15 @@ public class StudentController {
             return ResponseEntity.ok(exits);
         }
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudent(@PathVariable int id) {
         Student student = iStudentService.getStudentById(id);
-        if(student == null) {
+        if (student == null) {
             return ResponseEntity.notFound().build();
-        }else{
+        } else {
             iStudentService.deleteStudentById(id);
             return ResponseEntity.ok().build();
         }
-   }
+    }
 }
