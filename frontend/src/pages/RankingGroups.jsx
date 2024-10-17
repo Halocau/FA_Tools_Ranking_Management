@@ -53,7 +53,7 @@ const RankingGroups = () => {
       <Table striped bordered hover>
         <thead>
           <tr>
-            <th>ID</th>
+            <th>Index</th>
             <th>Group Name</th>
             <th>No. of Employees</th>
             <th>Current Ranking Decision</th>
