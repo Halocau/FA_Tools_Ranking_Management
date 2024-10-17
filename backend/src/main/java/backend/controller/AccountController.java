@@ -3,7 +3,11 @@ package backend.controller;
 import backend.exception.AccountException;
 import backend.model.Account;
 import backend.service.IAccountService;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +25,7 @@ public class AccountController {
     }
 
     @GetMapping("/user-and-pass")
-    //http://localhost:8080/api/ranking-group/user-and-pass?username=quatbt&password=11111
+    // http://localhost:8080/api/ranking-group/user-and-pass?username=quatbt&password=11111
     public ResponseEntity<Account> getAccountByUsernameAndPassword(
             @RequestParam String username,
             @RequestParam String password) {
@@ -29,8 +33,12 @@ public class AccountController {
         if (account != null) {
             return ResponseEntity.ok(account);
         } else {
-            throw new AccountException("Fail Login !!!");
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Trả về 401 nếu không hợp lệ
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
+    }
+
+    @GetMapping("/all")
+    public List<Account> getAllAccount() {
+        return iAccountService.getAllAccounts();
     }
 }
