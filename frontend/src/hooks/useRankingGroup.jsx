@@ -12,7 +12,7 @@ const useRankingGroup = () => {
     const fetchAllRankingGroups = async () => {
         setLoading(true);
         try {
-            const response = await http.get('/ranking-group/get');
+            const response = await http.get('/ranking-group');
             setData(response.data);
         } catch (err) {
             setError(err);

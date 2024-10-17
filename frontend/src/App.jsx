@@ -40,7 +40,7 @@ import Header from './layouts/Header.jsx';
 import RankingGroups from './pages/RankingGroups';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-
+import TestComponent from './components/TestComponent.jsx';
 function LayoutWithSidebar({ children }) {
   return (
     <div className="app-layout">
@@ -68,6 +68,7 @@ function App() {
             </LayoutWithSidebar>
           }
         />
+        <Route path="/test" element={<TestComponent />} />
       </Routes>
     </BrowserRouter>
   );
