@@ -6,18 +6,22 @@ export default function TestComponent() {
 
     const { data, error, loading, fetchAllRankingGroups } = useRankingGroup();
 
+    // Trigger fetching data once when the component mounts
+    useEffect(() => {
+        fetchAllRankingGroups();
+    }, []); // Empty array ensures this only runs once on mount
+
     if (loading) {
-        return <div>Loading...</div>
+        return <div>Loading...</div>;
     }
 
     if (error) {
-        return <div>Error: {error.message}</div>
+        return <div>Error: {error.message}</div>;
     }
 
-    useEffect(() => {
-        fetchAllRankingGroups();
-    }, [data, error, loading]);
-    console.log(data);
+    // Log data after it has been fetched and updated
+    console.log("Fetched Data:", data);
+
     return (
         <div>
             <h1>Hello World</h1>
