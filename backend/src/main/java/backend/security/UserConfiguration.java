@@ -1,4 +1,4 @@
-//package backend.backend.security;
+//package backend.security;
 //
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.context.annotation.Bean;
