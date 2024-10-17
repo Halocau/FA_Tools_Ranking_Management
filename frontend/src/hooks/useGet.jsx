@@ -1,16 +1,16 @@
-// src/hooks/useFetchData.js
 import { useState, useEffect } from 'react';
-import apiClient from '../api/apiClient';
+import http from './apiClient'; // Adjust the import path as necessary
 
-const useFetchData = (endpoint, options = {}) => {
+const useGet = (url) => {
     const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await apiClient.get(endpoint, options);
+                setLoading(true);
+                const response = await http.get(url);
                 setData(response.data);
             } catch (err) {
                 setError(err);
@@ -20,9 +20,9 @@ const useFetchData = (endpoint, options = {}) => {
         };
 
         fetchData();
-    }, [endpoint, options]);
+    }, [url]);
 
-    return { data, loading, error };
+    return { data, error, loading };
 };
 
-export default useFetchData;
+export default useGet;
