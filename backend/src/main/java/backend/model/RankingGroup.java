@@ -1,4 +1,4 @@
-package backend.backend.model;
+package backend.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,8 +10,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
+
 @Entity
 @Table(name = "Ranking_Group")
 public class RankingGroup {
@@ -28,7 +27,7 @@ public class RankingGroup {
     private int numEmployees;
 
     @Column(name = "current_ranking_decision", length = 100)
-    private String currentRankingDecision;
+    private String current_ranking_decision;
 
     @Column(name = "created_by")
     private int createdBy;
@@ -40,4 +39,8 @@ public class RankingGroup {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public RankingGroup() {
+    }
+
 }
