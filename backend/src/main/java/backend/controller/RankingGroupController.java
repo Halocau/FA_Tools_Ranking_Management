@@ -26,7 +26,7 @@ public class RankingGroupController {
     public RankingGroup findRankingGroupById(@PathVariable int id) {
         return iRankingGroupService.findRankingGroupById(id);
     }
-    @PostMapping
+    @PostMapping("/add")
     public ResponseEntity<RankingGroup> addRankingGroup(@RequestBody RankingGroup rankingGroup) {
         rankingGroup.setGroupId(0);
         RankingGroup result = iRankingGroupService.addRankingGroup(rankingGroup);
