@@ -34,7 +34,7 @@ const LoginForm = () => {
                         <img src={Logo} alt="" />
                     </div>
                     <div className="login-center">
-                        <h2>Welcome back!</h2>
+                        <h2>RANKING MANAGEMENT</h2>
                         <p>Please enter your details</p>
                         <form>
                             <input type="username" placeholder="UserName" onChange={(e) => setUsername(e.target.value)} value={username} />
