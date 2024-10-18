@@ -1,67 +1,66 @@
 // src/Signup.js
 import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
+import Image from "../../assets/image/image.png";
+import Logo from "../../assets/image/logo.png";
+import GoogleSvg from "../../assets/image/icons8-google.svg";
+import { FaEye } from "react-icons/fa6";
+import { FaEyeSlash } from "react-icons/fa6";
+import { Link } from "react-router-dom";
 
 const SignupForm = () => {
-    const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [password2, setPassword2] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Thêm trạng thái cho Confirm Password
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Add signup logic here
-        console.log("Signing up with:", { username, email, password });
-    };
+  return (
+    <div className="login-main">
+      <div className="login-left">
+        <img src={Image} alt="" />
+      </div>
+      <div className="login-right">
+        <div className="login-right-container">
+          <div className="login-logo">
+            <img src={Logo} alt="" />
+          </div>
+          <div className="login-center">
+            <h2>Welcome back!</h2>
+            <p>Please enter your details</p>
+            <form>
+              <input type="username" placeholder="Username" />
+              <div className="pass-input-div">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                />
+                {showPassword ? (
+                  <FaEyeSlash onClick={() => setShowPassword(!showPassword)} />
+                ) : (
+                  <FaEye onClick={() => setShowPassword(!showPassword)} />
+                )}
+              </div>
+              <div className="pass-input-div">
+                <input
+                  type={showConfirmPassword ? "text" : "password"} // Sử dụng trạng thái riêng cho Confirm Password
+                  placeholder="Confirm Password"
+                />
+                {showConfirmPassword ? (
+                  <FaEyeSlash onClick={() => setShowConfirmPassword(!showConfirmPassword)} />
+                ) : (
+                  <FaEye onClick={() => setShowConfirmPassword(!showConfirmPassword)} />
+                )}
+              </div>
+              <div className="login-center-buttons">
+                <Link to={`/`}>
+                  <button type="button">Sign up</button>
+                </Link>
+              </div>
+            </form>
+          </div>
 
-    return (
-        <Container>
-      <Row className="justify-content-md-center mt-5">
-        <Col md={6}>
-          <Form onSubmit={handleSubmit}>
-            <h3 className="text-center mb-4">Register</h3>
-
-            <Form.Group className="mb-3" controlId="formBasicUsername">
-              <Form.Label>Username</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formConfirmBasicPassword">
-              <Form.Label>Confirm Password</Form.Label>
-              <Form.Control
-                type="password"
-                placeholder="Enter confirm password"
-                value={password2}
-                onChange={(e) => setPassword2(e.target.value)}
-              />
-            </Form.Group>
-
-            <Button variant="primary" type="submit" className="w-100">
-              Register
-            </Button>
-
-            <p className="text-center mt-3">
-              Already have an account? <a href="/login">Login here</a>
-            </p>
-          </Form>
-        </Col>
-      </Row>
-    </Container>
-    );
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default SignupForm;
