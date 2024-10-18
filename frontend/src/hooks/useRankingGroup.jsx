@@ -35,10 +35,10 @@ const useRankingGroup = () => {
     };
 
     // HTTP POST request to add a ranking group
-    const addRankingGroup = async (id, newGroup) => {
+    const addRankingGroup = async (newGroup) => {
         setLoading(true);
         try {
-            const response = await http.post(`/ranking-group/add/${id}`, newGroup);
+            const response = await http.post(`/ranking-group/add`, newGroup);
             setData(response.data);
         } catch (err) {
             setError(err);
@@ -65,7 +65,6 @@ const useRankingGroup = () => {
         setLoading(true);
         try {
             await http.delete(`/ranking-group/delete/${id}`);
-            setData(null); // Optionally, you can clear the data after deleting
         } catch (err) {
             setError(err);
         } finally {

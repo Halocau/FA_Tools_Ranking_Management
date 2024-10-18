@@ -8,7 +8,7 @@ const RankingGroups = () => {
   const [newGroupName, setNewGroupName] = useState('');
 
   // Destructure data and fetch function from custom hook
-  const { data: groups, error, loading, fetchAllRankingGroups } = useRankingGroup();
+  const { data: groups, error, loading, fetchAllRankingGroups, deleteRankingGroup, addRankingGroup } = useRankingGroup();
 
   // Fetch all ranking groups on component mount
   useEffect(() => {
@@ -22,17 +22,28 @@ const RankingGroups = () => {
     setNewGroupName('');
   };
 
-  // Handler for saving the new group (currently only adds a group locally)
-  const handleSaveGroup = () => {
-    if (newGroupName.trim()) {
+  // Handler for adding a new ranking group
+  const handleAddGroup = async () => {
+    try {
       const newGroup = {
-        id: groups.length + 1, // Auto-incrementing ID (consider refactoring to handle server-side ID if needed)
-        name: newGroupName,
-        employees: 0,
-        decision: 'Pending', // Placeholder decision
+        groupName: newGroupName,
+        createdBy: 1
       };
-      setGroups([...groups, newGroup]); // Add new group locally
+      console.log("New group:", newGroup);
+      await addRankingGroup(newGroup); // This assumes addRankingGroup is async
       handleCloseModal(); // Close the modal
+      fetchAllRankingGroups(); // Fetch all ranking groups again
+    } catch (error) {
+      console.error("Failed to add group:", error); // Handle any errors
+    }
+  };
+
+  const handleDeleteGroup = async (id) => {
+    try {
+      await deleteRankingGroup(id); // This assumes deleteRankingGroup is async
+      fetchAllRankingGroups(); // Fetch all ranking groups again
+    } catch (error) {
+      console.error("Failed to delete group:", error); // Handle any errors
     }
   };
 
@@ -70,11 +81,10 @@ const RankingGroups = () => {
                 <td>{group.currentRankingDecision == null ? 'N/A' : group.currentRankingDecision}</td>
                 <td>
                   <Button variant="primary" size="sm">Edit</Button>{' '}
-                  <Button variant="warning" size="sm">Bulk Upload</Button>{' '}
                   <Button
                     variant="danger"
                     size="sm"
-                    disabled={group.employees > 0}
+                    onClick={() => handleDeleteGroup(group.groupId)}
                   >
                     Delete
                   </Button>
@@ -116,7 +126,7 @@ const RankingGroups = () => {
           <Button variant="secondary" onClick={handleCloseModal}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSaveGroup}>
+          <Button variant="primary" onClick={handleAddGroup}>
             Save
           </Button>
         </Modal.Footer>
