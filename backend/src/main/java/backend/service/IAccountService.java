@@ -13,4 +13,5 @@ public interface IAccountService {
     public Account createAccount(Account account);
     public Account updateAccount(Account account);
     public void deleteAccount(int id);
+    public String findUsernameById(int id);
 }

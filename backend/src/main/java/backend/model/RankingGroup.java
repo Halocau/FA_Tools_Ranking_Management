@@ -40,7 +40,6 @@ public class RankingGroup {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public RankingGroup() {
-    }
-
+    @Transient
+    private String username;
 }

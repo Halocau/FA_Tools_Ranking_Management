@@ -21,7 +21,7 @@ public class AccountController {
     }
 
     @GetMapping("/user-and-pass")
-    //http://localhost:8080/api/ranking-group/user-and-pass?username=quatbt&password=11111
+    //http://localhost:8080/api/account/user-and-pass?username=quatbt&password=11111
     public ResponseEntity<Account> getAccountByUsernameAndPassword(
             @RequestParam String username,
             @RequestParam String password) {

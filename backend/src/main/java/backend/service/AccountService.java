@@ -21,7 +21,7 @@ public class AccountService implements IAccountService {
 
     @Override
     public Account findAccountById(int id) {
-        return iAccount.findById(id).get();
+        return iAccount.findById(id).orElse(null);
     }
 
     @Override
@@ -52,5 +52,10 @@ public class AccountService implements IAccountService {
     @Override
     public void deleteAccount(int id) {
         iAccount.deleteById(id);
+    }
+
+    @Override
+    public String findUsernameById(int id) {
+        return iAccount.findUsernameById(id);
     }
 }
