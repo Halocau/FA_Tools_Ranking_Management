@@ -1,0 +1,44 @@
+package backend.controller;
+
+import backend.exception.AccountException;
+import backend.model.Account;
+import backend.service.IAccountService;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("api/account")
+public class AccountController {
+    private IAccountService iAccountService;
+
+    @Autowired
+    public AccountController(IAccountService iAccountService) {
+        this.iAccountService = iAccountService;
+    }
+
+    @GetMapping("/user-and-pass")
+    // http://localhost:8080/api/ranking-group/user-and-pass?username=quatbt&password=11111
+    public ResponseEntity<Account> getAccountByUsernameAndPassword(
+            @RequestParam String username,
+            @RequestParam String password) {
+        Account account = iAccountService.findAccountByUsernameAndPassword(username, password);
+        if (account != null) {
+            return ResponseEntity.ok(account);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+    }
+
+    @GetMapping("/all")
+    public List<Account> getAllAccount() {
+        return iAccountService.getAllAccounts();
+    }
+}

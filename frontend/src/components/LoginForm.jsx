@@ -1,25 +1,15 @@
 // src/Login.js
 import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
-import useLogin from '../../hooks/useLogin';
-import { useNavigate } from 'react-router-dom';
-import '../../assets/css/LoginForm.css';
+import '../assets/css/LoginForm.css';
 const LoginForm = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [errorLogin, setErrorLogin] = useState(null);
 
-    const navigate = useNavigate();
-    const { data, loading, error, login } = useLogin();
-
-    const handleLogin = async (e) => {
-        try {
-            e.preventDefault();
-            await login(username, password);
-            navigate('/ranking-groups');
-        } catch (err) {
-            setErrorLogin(err);
-        }
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // Add login logic here
+        console.log("Logging in with:", { email, password });
     };
 
     return (
@@ -53,7 +43,7 @@ const LoginForm = () => {
                             <Form.Check type="checkbox" label="Remember me" />
                         </Form.Group>
 
-                        <Button variant="primary" type="submit" className="w-100" onClick={handleLogin}>
+                        <Button variant="primary" type="submit" className="w-100">
                             Submit
                         </Button>
 

@@ -10,6 +10,7 @@ import {
     ExpandMore,
     ExpandLess
 } from '@mui/icons-material';
+import './Sidebar.css';  // Optionally, for additional styles
 
 const Sidebar = () => {
     const [openLogWork, setOpenLogWork] = useState(false);
@@ -19,15 +20,13 @@ const Sidebar = () => {
     };
 
     return (
-        <div className="sidebar d-flex flex-column bg-light" style={{ height: '100vh' }}>
+        <div className="sidebar d-flex flex-column bg-light">
             <Nav defaultActiveKey="/home" className="flex-column">
-                <Nav.Link href="#ranking-management">
-                    <Work className="me-2" /> Ranking Management
-                </Nav.Link>
+
                 {/* Log Work with expandable submenu */}
                 <Nav.Link onClick={toggleLogWork}>
                     <Work className="me-2" />
-                    Log Work {openLogWork ? <ExpandLess /> : <ExpandMore />}
+                    Ranking Management {openLogWork ? <ExpandLess /> : <ExpandMore />}
                 </Nav.Link>
                 {openLogWork && (
                     <div className="submenu ms-4">
@@ -42,9 +41,11 @@ const Sidebar = () => {
                 <Nav.Link href="#settings">
                     <Settings className="me-2" /> Settings
                 </Nav.Link>
+                
             </Nav>
         </div>
     );
 };
 
 export default Sidebar;
+
