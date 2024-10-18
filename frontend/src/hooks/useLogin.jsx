@@ -1,11 +1,14 @@
-// src/hooks/useLogin.js
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook
 import http from '../api/apiClient';
+import { useAuth } from '../contexts/AuthContext'; // Import useAuth from AuthContext
 
 const useLogin = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const navigate = useNavigate(); // Initialize the useNavigate hook
+    const { login: saveUserData } = useAuth(); // Get login function from AuthContext
 
     const login = async (username, password) => {
         setLoading(true);
@@ -16,7 +19,10 @@ const useLogin = () => {
                     password,
                 },
             });
-            setData(response.data); // Store the response data
+            setData(response.data); // Store the response data in the component state
+            saveUserData(response.data); // Save user data in the AuthContext
+            // Navigate to /ranking-groups after successful login
+            navigate('/ranking-groups');
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed');
         } finally {

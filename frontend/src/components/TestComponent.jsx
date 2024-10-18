@@ -6,7 +6,7 @@ export default function TestComponent() {
     const { data: loginData, error: loginError, loading: loginLoading, login } = useLogin();
 
     useEffect(() => {
-        login("quatbt", "111");
+        login("quatbt", "1111");
     }, []);
 
     // Log data after it has been fetched and updated
