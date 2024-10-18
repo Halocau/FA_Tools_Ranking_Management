@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import '../../assets/css/LoginForm.css';
+import React, { useState } from "react";
+import "../../assets/css/LoginForm.css";
 import Image from "../../assets/image/image.png";
 import Logo from "../../assets/image/logo.png";
-import GoogleSvg from "../../assets/image/icons8-google.svg";
 import { FaEye } from "react-icons/fa6";
 import { FaEyeSlash } from "react-icons/fa6";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState(""); // State lưu email
@@ -56,48 +55,67 @@ const ForgotPassword = () => {
                 />
               )}
               {!codeSent && ( // Hiện liên kết gửi mã chỉ khi chưa gửi mã
-                <button type="button" className="forgot-pass-link" onClick={handleSendCode}>
+                <button
+                  type="button"
+                  className="forgot-pass-link"
+                  onClick={handleSendCode}
+                >
                   Send Code
                 </button>
               )}
-              {codeSent && resendMessage && ( // Hiển thị thông báo gửi mã thành công
-                <p>{resendMessage}</p>
-              )}
-              {codeSent && !showNewPasswordInput && ( // Hiển thị trường nhập mã khi mã đã được gửi
-                <div className="pass-input-div">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Code"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)} // Cập nhật giá trị mã
-                  />
-                  {showPassword ? (
-                    <FaEyeSlash onClick={() => setShowPassword(!showPassword)} />
-                  ) : (
-                    <FaEye onClick={() => setShowPassword(!showPassword)} />
-                  )}
-                </div>
-              )}
-              {codeSent && !showNewPasswordInput && ( // Nút resend code
-                <div className="login-center-options">
-                  <Link to="#" onClick={handleResendCode} className="resend-code-link">
-                    Resend Code
-                  </Link>
-                </div>
-              )}
-              {codeSent && !showNewPasswordInput && ( // Hiển thị nút lưu mã
-                <div className="login-center-buttons">
-                  <button type="button" onClick={handleSaveCode}>
-                    Save Code
-                  </button>
-                </div>
-              )}
+              {codeSent &&
+                resendMessage && ( // Hiển thị thông báo gửi mã thành công
+                  <p>{resendMessage}</p>
+                )}
+              {codeSent &&
+                !showNewPasswordInput && ( // Hiển thị trường nhập mã khi mã đã được gửi
+                  <div className="pass-input-div">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Code"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)} // Cập nhật giá trị mã
+                    />
+                    {showPassword ? (
+                      <FaEyeSlash
+                        onClick={() => setShowPassword(!showPassword)}
+                      />
+                    ) : (
+                      <FaEye onClick={() => setShowPassword(!showPassword)} />
+                    )}
+                  </div>
+                )}
+              {codeSent &&
+                !showNewPasswordInput && ( // Nút resend code
+                  <div className="login-center-options">
+                    <Link
+                      to="#"
+                      onClick={handleResendCode}
+                      className="resend-code-link"
+                    >
+                      Resend Code
+                    </Link>
+                  </div>
+                )}
+              {codeSent &&
+                !showNewPasswordInput && ( // Hiển thị nút lưu mã
+                  <div className="login-center-buttons">
+                    <button type="button" onClick={handleSaveCode}>
+                      Save Code
+                    </button>
+                  </div>
+                )}
               {showNewPasswordInput && ( // Hiển thị trường nhập mật khẩu mới
                 <>
                   <div className="pass-input-div">
-                    <input type={showPassword ? "text" : "password"} placeholder="New Password" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="New Password"
+                    />
                     {showPassword ? (
-                      <FaEyeSlash onClick={() => setShowPassword(!showPassword)} />
+                      <FaEyeSlash
+                        onClick={() => setShowPassword(!showPassword)}
+                      />
                     ) : (
                       <FaEye onClick={() => setShowPassword(!showPassword)} />
                     )}

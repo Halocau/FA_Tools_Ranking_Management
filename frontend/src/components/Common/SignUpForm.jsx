@@ -1,9 +1,6 @@
-// src/Signup.js
-import React, { useState } from 'react';
-import { Form, Button, Container, Row, Col } from 'react-bootstrap';
+import React, { useState } from "react";
 import Image from "../../assets/image/image.png";
 import Logo from "../../assets/image/logo.png";
-import GoogleSvg from "../../assets/image/icons8-google.svg";
 import { FaEye } from "react-icons/fa6";
 import { FaEyeSlash } from "react-icons/fa6";
 import { Link } from "react-router-dom";
@@ -44,9 +41,13 @@ const SignupForm = () => {
                   placeholder="Confirm Password"
                 />
                 {showConfirmPassword ? (
-                  <FaEyeSlash onClick={() => setShowConfirmPassword(!showConfirmPassword)} />
+                  <FaEyeSlash
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  />
                 ) : (
-                  <FaEye onClick={() => setShowConfirmPassword(!showConfirmPassword)} />
+                  <FaEye
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  />
                 )}
               </div>
               <div className="login-center-buttons">
@@ -56,7 +57,6 @@ const SignupForm = () => {
               </div>
             </form>
           </div>
-
         </div>
       </div>
     </div>

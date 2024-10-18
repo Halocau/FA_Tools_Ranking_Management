@@ -1,15 +1,12 @@
-import './App.css';
-import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import HomePage from './pages/HomePage';
-import ForgetPasswordPage from './pages/ForgetPasswordPage';
+import "./App.css";
+import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+import ForgetPasswordPage from "./pages/ForgetPasswordPage";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import HomeNavbar from './layouts/HomeNavbar';
 function App() {
-
   return (
     <BrowserRouter>
       <Routes>
@@ -18,7 +15,7 @@ function App() {
         <Route path="/forgetpassword" element={<ForgetPasswordPage />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;
