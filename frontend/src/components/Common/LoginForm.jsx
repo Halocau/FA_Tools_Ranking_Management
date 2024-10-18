@@ -1,70 +1,64 @@
 // src/Login.js
 import React, { useState } from 'react';
-import { Form, Button, Container, Row, Col } from 'react-bootstrap';
-import useLogin from '../../hooks/useLogin';
-import { useNavigate } from 'react-router-dom';
 import '../../assets/css/LoginForm.css';
+import Image from "../../assets/image/image.png";
+import Logo from "../../assets/image/logo.png";
+import GoogleSvg from "../../assets/image/icons8-google.svg";
+import { FaEye } from "react-icons/fa6";
+import { FaEyeSlash } from "react-icons/fa6";
+import { Link } from 'react-router-dom';
+
 const LoginForm = () => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [errorLogin, setErrorLogin] = useState(null);
+    const [ showPassword, setShowPassword ] = useState(false);
 
-    const navigate = useNavigate();
-    const { data, loading, error, login } = useLogin();
-
-    const handleLogin = async (e) => {
-        try {
-            e.preventDefault();
-            await login(username, password);
-            navigate('/ranking-groups');
-        } catch (err) {
-            setErrorLogin(err);
-        }
-    };
 
     return (
-        <>
-            <Row className="justify-content-md-center mt-5">
-                <Col md={6}>
-                    <Form onSubmit={handleSubmit}>
-                        <h3 className="text-center mb-4">Login</h3>
-
-                        <Form.Group className="mb-3" controlId="formBasicEmail">
-                            <Form.Label>Username</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Enter username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                            />
-                        </Form.Group>
-
-                        <Form.Group className="mb-3" controlId="formBasicPassword">
-                            <Form.Label>Password</Form.Label>
-                            <Form.Control
-                                type="password"
-                                placeholder="Enter password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </Form.Group>
-
-                        <Form.Group className="mb-3" controlId="formBasicCheckbox">
-                            <Form.Check type="checkbox" label="Remember me" />
-                        </Form.Group>
-
-                        <Button variant="primary" type="submit" className="w-100" onClick={handleLogin}>
-                            Submit
-                        </Button>
-
-                        <p className="forgot-password text-right mt-3">
-                            Don't have an account? <a href="/register">Sign Up</a>
-                        </p>
-                    </Form>
-                </Col>
-            </Row>
-        </>
+      <div className="login-main">
+        <div className="login-left">
+          <img src={Image} alt="" />
+        </div>
+        <div className="login-right">
+          <div className="login-right-container">
+            <div className="login-logo">
+              <img src={Logo} alt="" />
+            </div>
+            <div className="login-center">
+              <h2>Welcome back!</h2>
+              <p>Please enter your details</p>
+              <form>
+                <input type="username" placeholder="UserName" />
+                <div className="pass-input-div">
+                  <input type={showPassword ? "text" : "password"} placeholder="Password" />
+                  {showPassword ? <FaEyeSlash onClick={() => {setShowPassword(!showPassword)}} /> : <FaEye onClick={() => {setShowPassword(!showPassword)}} />}
+                  
+                </div>
+  
+                <div className="login-center-options">
+                  <div className="remember-div">
+                    <input type="checkbox" id="remember-checkbox" />
+                    <label htmlFor="remember-checkbox">
+                      Remember for 30 days
+                    </label>
+                  </div>
+                  <a href="#" className="forgot-pass-link">
+                  <Link to={`/forgetpassword`}>Forget password</Link>
+                  </a>
+                </div>
+                <div className="login-center-buttons">
+                  <button type="button">Log In</button>
+                  <button type="button">
+                    <img src={GoogleSvg} alt="" />
+                    Log In with Google
+                  </button>
+                </div>
+              </form>
+            </div>
+          <p className="login-bottom-p">
+            Don't have an account? <Link to={`/register`}>Sign up</Link>
+          </p>
+          </div>
+        </div>
+      </div>
     );
-};
-
+  };
 export default LoginForm;
