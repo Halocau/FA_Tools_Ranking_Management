@@ -8,7 +8,7 @@ import { FaEye } from "react-icons/fa6";
 import { FaEyeSlash } from "react-icons/fa6";
 import { Link } from 'react-router-dom';
 import useLogin from '../../hooks/useLogin';
-const LoginForm = () => {
+const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
 
     const [username, setUsername] = useState('');
@@ -72,4 +72,4 @@ const LoginForm = () => {
         </div>
     );
 };
-export default LoginForm;
+export default LoginPage;
