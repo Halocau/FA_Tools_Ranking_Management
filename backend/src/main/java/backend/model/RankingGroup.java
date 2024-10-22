@@ -47,7 +47,9 @@ public class RankingGroup {
     @JsonManagedReference
     private List<RankingDecision> rankingDecisions;
 
+    @Transient
+    private String username;
+
     public RankingGroup() {
     }
-
 }

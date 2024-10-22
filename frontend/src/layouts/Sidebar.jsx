@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Nav } from "react-bootstrap";
-import { useNavigate } from "react-router";
 import {
   Home,
   Settings,
@@ -11,12 +10,11 @@ import {
   ExpandMore,
   ExpandLess,
 } from "@mui/icons-material";
-import "../assets/css/Sidebar.css"; // Optionally, for additional styles
+import "../assets/css/Sidebar.css";
 
 const Sidebar = () => {
   const [openLogWork, setOpenLogWork] = useState(false);
 
-  const navigate = useNavigate();
   const toggleLogWork = () => {
     setOpenLogWork(!openLogWork);
   };
@@ -31,23 +29,8 @@ const Sidebar = () => {
         </Nav.Link>
         {openLogWork && (
           <div className="submenu ms-4">
-            <div
-              style={{
-                cursor: "pointer",
-                color: "black",
-                fontWeight: "bold",
-                marginBottom: "10px",
-              }}
-              onClick={() => navigate("/ranking-groups")}
-            >
-              Ranking Group List
-            </div>
-            <div
-              style={{ cursor: "pointer", color: "black" }}
-              onClick={() => navigate("/ranking-decision")}
-            >
-              Ranking Decision List
-            </div>
+            <Nav.Link href="#log-task">Log Task</Nav.Link>
+            <Nav.Link href="#log-hours">Log Hours</Nav.Link>
           </div>
         )}
 

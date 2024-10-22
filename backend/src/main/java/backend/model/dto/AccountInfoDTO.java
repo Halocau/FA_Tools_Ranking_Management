@@ -1,4 +1,4 @@
-package backend.dto;
+package backend.model.dto;
 
 import java.sql.Date;
 

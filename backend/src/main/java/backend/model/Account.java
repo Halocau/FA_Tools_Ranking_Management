@@ -23,7 +23,7 @@ public class Account {
     @Column(name = "password_hash", length = 255, nullable = false)
     private String password;
 
-    @Column(name = "email", length = 100, nullable = false)
+    @Column(name = "email", length = 100, nullable = true)
     private String email;
 
     @Column(name = "role", length = 50)
@@ -57,7 +57,6 @@ public class Account {
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
 
     @UpdateTimestamp
     @Column(name = "updated_at")
