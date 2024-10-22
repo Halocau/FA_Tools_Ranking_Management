@@ -12,12 +12,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/ranking-group")
-public class RankingGroupDTOController {
+public class RankingGroupController {
 
     private final IRankingGroupDTOService iRankingGroupDTOService;
 
     @Autowired
-    public RankingGroupDTOController(IRankingGroupDTOService iRankingGroupDTOService) {
+    public RankingGroupController(IRankingGroupDTOService iRankingGroupDTOService) {
         this.iRankingGroupDTOService = iRankingGroupDTOService;
     }
 
