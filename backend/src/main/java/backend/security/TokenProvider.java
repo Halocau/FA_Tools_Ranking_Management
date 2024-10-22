@@ -30,18 +30,6 @@ public class TokenProvider {
         }
     }
 
-    // // Generate a secure secret key for signing JWT tokens
-    // public static String generateSecretKey() throws NoSuchAlgorithmException {
-    // // Use KeyGenerator to generate a secret key for HMAC (HS512 algorithm)
-    // KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA512");
-    // keyGen.init(512); // 512-bit key for HS512 algorithm
-
-    // SecretKey secretKey = keyGen.generateKey();
-
-    // // Return the key encoded in Base64
-    // return Base64.getEncoder().encodeToString(secretKey.getEncoded());
-    // }
-
     public String generateToken(Account account) {
 
         Map<String, Object> claims = new HashMap<>();
