@@ -1,17 +1,17 @@
 package backend.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import backend.entity.RankingDecision;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
-import java.util.List;
+
 
 @Data
-
 @Entity
 @Table(name = "Ranking_Group")
 public class RankingGroup {
@@ -27,8 +27,8 @@ public class RankingGroup {
     @Column(name = "num_employees")
     private int numEmployees;
 
-    @Column(name = "current_ranking_decision", length = 100)
-    private String current_ranking_decision;
+    @Column(name = "current_ranking_decision")
+    private int current_ranking_decision;
 
     @Column(name = "created_by")
     private int createdBy;
@@ -41,14 +41,11 @@ public class RankingGroup {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // One-to-Many relationship with RankingDecision, delete child records when
-    // parent is deleted
-    @OneToMany(mappedBy = "rankingGroup", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @JsonManagedReference
-    private List<RankingDecision> rankingDecisions;
-
     @Transient
     private String username;
+
+    @Transient
+    private String decisionName;
 
     public RankingGroup() {
     }
