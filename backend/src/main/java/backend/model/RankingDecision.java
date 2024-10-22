@@ -29,10 +29,10 @@ public class RankingDecision {
     private LocalDateTime finalized_at;
 
     @Column(name = "finalized_by")
-    private int finalized_by;
+    private Integer finalized_by;
 
     @Column(name = "created_by")
-    private int createdBy;
+    private Integer createdBy;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
