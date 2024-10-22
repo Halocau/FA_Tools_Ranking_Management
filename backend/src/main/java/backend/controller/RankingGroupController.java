@@ -2,6 +2,7 @@ package backend.controller;
 
 import backend.dao.IAccount;
 import backend.exception.AccountException;
+import backend.exception.RankingGruopException;
 import backend.model.Account;
 import backend.model.RankingGroup;
 import backend.service.AccountService;
@@ -13,16 +14,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/ranking-group")
 public class RankingGroupController {
     private IRankingGroupService iRankingGroupService;
+    private IAccountService iAccountService;
 
     @Autowired
-    public RankingGroupController(IRankingGroupService iRankingGroupService) {
+    public RankingGroupController(IRankingGroupService iRankingGroupService, IAccountService iAccountService) {
         this.iRankingGroupService = iRankingGroupService;
+        this.iAccountService = iAccountService;
     }
 
     @GetMapping
@@ -31,11 +36,17 @@ public class RankingGroupController {
     }
 
     @GetMapping("/get/{id}")
-    public RankingGroup findRankingGroupById(@PathVariable int id) {
-        return iRankingGroupService.findRankingGroupById(id);
+    public ResponseEntity<RankingGroup> findRankingGroupById(@PathVariable int id) {
+        RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(id);
+        if (rankingGroup == null) {
+            throw new RankingGruopException("Ranking group not found");
+        } else {
+            return ResponseEntity.ok(rankingGroup);
+        }
     }
 
-    @PostMapping("/add")
+
+        @PostMapping("/add")
     public ResponseEntity<RankingGroup> addRankingGroup(@RequestBody RankingGroup rankingGroup) {
         rankingGroup.setGroupId(0);
         RankingGroup result = iRankingGroupService.addRankingGroup(rankingGroup);

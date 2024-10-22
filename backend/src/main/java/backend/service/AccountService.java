@@ -28,7 +28,7 @@ public class AccountService implements IAccountService {
 
     @Override
     public Account findAccountById(int id) {
-        return iAccount.findById(id).get();
+        return iAccount.findById(id).orElse(null);
     }
 
     @Override
@@ -67,5 +67,10 @@ public class AccountService implements IAccountService {
             return jwtUtil.generateToken(username); // Generate token upon successful
         }
         return null; // Return null if authentication fails
+    }
+
+    @Override
+    public String findUsernameById(int id) {
+        return iAccount.findUsernameById(id);
     }
 }
