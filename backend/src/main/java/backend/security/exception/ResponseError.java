@@ -1,4 +1,4 @@
-package backend.model;
+package backend.security.exception;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

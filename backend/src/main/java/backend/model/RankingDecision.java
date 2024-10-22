@@ -1,34 +1,35 @@
 package backend.model;
 
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
-
 
 @Data
 @Entity
-@Table(name = "Ranking_Group")
-public class RankingGroup {
-
+@Table(name = "Ranking_Decision")
+public class RankingDecision {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "decision_id")
+    private int decisionId;
+
     @Column(name = "group_id")
     private int groupId;
 
-    @Column(name = "group_name", length = 100, nullable = false)
-    private String groupName;
+    @Column(name = "decision_name")
+    private String decisionName;
 
-    @Column(name = "num_employees")
-    private int numEmployees;
+    @Column(name = "status")
+    private String status;
 
-    @Column(name = "current_ranking_decision")
-    private int current_ranking_decision;
+    @Column(name = "finalized_at")
+    private LocalDateTime finalized_at;
+
+    @Column(name = "finalized_by")
+    private int finalized_by;
 
     @Column(name = "created_by")
     private int createdBy;
@@ -40,13 +41,4 @@ public class RankingGroup {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Transient
-    private String username;
-
-    @Transient
-    private String decisionName;
-
-    public RankingGroup() {
-    }
 }
