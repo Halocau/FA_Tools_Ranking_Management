@@ -6,12 +6,12 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 import java.util.List;
 
 @Service
-public class RankingGroupService implements IRankingGroupService{
+public class RankingGroupService implements IRankingGroupService {
     private IRankingGroupRepository iRankingGroupRepository;
+
     @Autowired
     public RankingGroupService(IRankingGroupRepository iRankingGroupRepository) {
         this.iRankingGroupRepository = iRankingGroupRepository;

@@ -1,8 +1,5 @@
 package backend.service;
 
-import backend.dto.AccountInfoDTO;
-
-import backend.Interface.IAccountService;
 import backend.dao.IAccount;
 import backend.model.Account;
 import backend.util.JwtUtil;

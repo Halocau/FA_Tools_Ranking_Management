@@ -7,6 +7,7 @@ import backend.model.RankingGroup;
 import backend.service.AccountService;
 import backend.service.IAccountService;
 import backend.service.IRankingGroupService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,6 @@ public class RankingGroupController {
     public RankingGroupController(IRankingGroupService iRankingGroupService) {
         this.iRankingGroupService = iRankingGroupService;
     }
-
 
     @GetMapping
     public List<RankingGroup> getAllRankingGroups() {
@@ -48,7 +48,8 @@ public class RankingGroupController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<RankingGroup> updateRankingGroup(@RequestBody RankingGroup rankingGroup, @PathVariable int id) {
+    public ResponseEntity<RankingGroup> updateRankingGroup(@RequestBody RankingGroup rankingGroup,
+            @PathVariable int id) {
         RankingGroup exits = iRankingGroupService.findRankingGroupById(id);
         if (exits != null) {
             exits.setGroupName(rankingGroup.getGroupName());
@@ -76,6 +77,5 @@ public class RankingGroupController {
         }
 
     }
-
 
 }
