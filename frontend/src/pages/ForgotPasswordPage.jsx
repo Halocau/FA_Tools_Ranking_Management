@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import '../../assets/css/LoginForm.css';
-import Image from "../../assets/image/image.png";
-import Logo from "../../assets/image/logo.png";
-import GoogleSvg from "../../assets/image/icons8-google.svg";
+import '../assets/css/LoginPage.css';
+import Image from "../assets/image/image.png";
+import Logo from "../assets/image/logo.png";
+import GoogleSvg from "../assets/image/icons8-google.svg";
 import { FaEye } from "react-icons/fa6";
 import { FaEyeSlash } from "react-icons/fa6";
 import { Link } from 'react-router-dom';
 
-const ForgotPassword = () => {
+const ForgotPasswordPage = () => {
   const [email, setEmail] = useState(""); // State lưu email
   const [showPassword, setShowPassword] = useState(false);
   const [codeSent, setCodeSent] = useState(false); // Kiểm tra mã đã được gửi
@@ -117,4 +117,4 @@ const ForgotPassword = () => {
   );
 };
 
-export default ForgotPassword;
+export default ForgotPasswordPage;

@@ -11,17 +11,17 @@ const useLogin = () => {
     const { login: saveUserData } = useAuth(); // Get login function from AuthContext
 
     const login = async (username, password) => {
+        if (!username || !password) {
+            setError('Username and password are required');
+            return;
+        }
         setLoading(true);
         try {
             const response = await http.get('/account/user-and-pass', {
-                params: {
-                    username,
-                    password,
-                },
+                params: { username, password },
             });
-            setData(response.data); // Store the response data in the component state
-            saveUserData(response.data); // Save user data in the AuthContext
-            // Navigate to /ranking-groups after successful login
+            setData(response.data);
+            saveUserData(response.data);
             navigate('/ranking-groups');
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed');
@@ -29,7 +29,6 @@ const useLogin = () => {
             setLoading(false);
         }
     };
-
     return {
         data,
         loading,
