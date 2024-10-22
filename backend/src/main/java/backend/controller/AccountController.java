@@ -34,11 +34,9 @@ public class AccountController {
     private TokenProvider tokenProvider;
 
     @GetMapping("/user-and-pass")
-<<<<<<< HEAD
-    // http://localhost:8080/api/ranking-group/user-and-pass?username=quatbt&password=11111
-=======
-    //http://localhost:8080/api/account/user-and-pass?username=quatbt&password=11111
->>>>>>> quatbt
+
+    // http://localhost:8080/api/account/user-and-pass?username=quatbt&password=11111
+
     public ResponseEntity<Account> getAccountByUsernameAndPassword(
             @RequestParam String username,
             @RequestParam String password) {
@@ -93,9 +91,13 @@ public class AccountController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Account> register(@RequestBody Account account) {
+    public ResponseEntity<?> register(@RequestBody Account account) {
+        if (iAccountService.findAccountByUsername(account.getUsername()) != null) {
+            return ResponseEntity.status(400).body("Username already exists");
+        }
         Account savedAccount = iAccountService.createAccount(account);
-        return ResponseEntity.ok(savedAccount);
+        savedAccount.setPassword(null);
+        return ResponseEntity.status(201).body(savedAccount);
     }
 
     @GetMapping("/generate-and-validate")
