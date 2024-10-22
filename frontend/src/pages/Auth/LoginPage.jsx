@@ -15,7 +15,7 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const { data, error, loading, login } = useLogin();
 
-    const handleLogin = async (e) => {
+    const handleLogin = async () => {
         try {
             await login(username, password);
         } catch (err) {

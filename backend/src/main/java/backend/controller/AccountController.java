@@ -63,7 +63,7 @@ public class AccountController {
         if (account != null) {
 
             // Generate JWT token
-            String token = tokenProvider.generateToken(account);
+            // String token = tokenProvider.generateToken(account);
 
             // // Update the token and expiration in the database
             // account.setToken(token);
@@ -84,7 +84,7 @@ public class AccountController {
             // token,
             // account.getTokenExpiration());
 
-            return ResponseEntity.ok(token);
+            return ResponseEntity.ok("Login successful");
         } else {
             return ResponseEntity.status(401).body(null); // Unauthorized
         }

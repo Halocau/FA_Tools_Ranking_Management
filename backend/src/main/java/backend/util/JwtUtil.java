@@ -22,17 +22,4 @@ public class JwtUtil {
                 .compact();
     }
 
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
-        return claims.getSubject();
-    }
 }
