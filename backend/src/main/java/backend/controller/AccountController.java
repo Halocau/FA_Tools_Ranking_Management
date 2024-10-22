@@ -1,7 +1,8 @@
 package backend.controller;
 
-import backend.exception.AccountException;
+
 import backend.model.Account;
+import backend.security.exception.AccountException;
 import backend.service.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
