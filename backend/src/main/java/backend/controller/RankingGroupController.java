@@ -1,5 +1,6 @@
 package backend.controller;
 
+import backend.model.RankingDecision;
 import backend.model.dto.RankingGroupDTO;
 import backend.security.exception.RankingGroupException;
 import backend.service.IRankingDecisionService;
@@ -61,7 +62,7 @@ public class RankingGroupController {
         exists.setGroupId(rankingGroup.getGroupId());
         exists.setGroupName(rankingGroup.getGroupName());
         exists.setNumEmployees(rankingGroup.getNumEmployees());
-        exists.setCurrrentRankingDecision(rankingGroup.getCurrrentRankingDecision());
+        exists.setCurrentRankingDecision(rankingGroup.getCurrentRankingDecision());
         iRankingGroupDTOService.updateRankingGroup(exists);
         return ResponseEntity.ok(exists);
     }
@@ -72,8 +73,14 @@ public class RankingGroupController {
         if (exists == null) {
             throw new RankingGroupException("Ranking group not found for deletion");
         }
-        iRankingDecisionService.updateRankingDecisionGroupIdToNull(id);
-        iRankingGroupDTOService.deleteRankingGroup(exists);
+        RankingDecision checkNullGroupId = iRankingDecisionService.findByGroupId(id);
+        if (checkNullGroupId != null) {
+            iRankingDecisionService.updateRankingDecisionGroupIdToNull(id);
+            iRankingGroupDTOService.deleteRankingGroup(exists);
+        } else {
+            iRankingGroupDTOService.deleteRankingGroup(exists);
+        }
+
         return ResponseEntity.ok().build();
     }
 }
