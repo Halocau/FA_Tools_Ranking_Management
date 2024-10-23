@@ -5,10 +5,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Sidebar from './layouts/Sidebar.jsx';
 import Header from './layouts/Header.jsx';
-import HomePage from './pages/HomePage';
+import RankingGroups from './pages/RankingGroups';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-import RankingGroups from './pages/RankingGroups';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import TestComponent from './components/TestComponent.jsx';
 import { AuthProvider } from './contexts/AuthContext.jsx';
@@ -29,7 +28,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<LoginPage />} />
           <Route path="/sigup" element={<SignupPage />} />
           <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
           <Route
