@@ -1,6 +1,8 @@
+// src/hooks/useFetchData.js
 import { useState, useEffect } from 'react';
+import apiClient from '../api/apiClient';
 
-const useFetch = (url) => {
+const useFetchData = (endpoint, options = {}) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -8,12 +10,8 @@ const useFetch = (url) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const result = await response.json();
-                setData(result);
+                const response = await apiClient.get(endpoint, options);
+                setData(response.data);
             } catch (err) {
                 setError(err);
             } finally {
@@ -22,9 +20,9 @@ const useFetch = (url) => {
         };
 
         fetchData();
-    }, [url]);
+    }, [endpoint, options]);
 
     return { data, loading, error };
 };
 
-export default useFetch;
+export default useFetchData;
