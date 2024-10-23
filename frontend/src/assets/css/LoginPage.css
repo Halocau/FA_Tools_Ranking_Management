@@ -74,7 +74,7 @@ body {
 }
 
 .login-center h2 {
-  font-size: 1.5rem;
+  font-size: 2.5rem;
 }
 
 .login-center {
@@ -83,7 +83,7 @@ body {
 
 .login-center p {
   font-weight: 400;
-  font-size: 1rem;
+  font-size: 2rem;
   margin-bottom: 40px;
 }
 
@@ -136,7 +136,7 @@ form button[type='button'] {
 }
 
 .remember-div label {
-  font-size: 1rem;
+  font-size: 1.3rem;
   font-weight: 500;
   cursor: pointer;
   margin-top: 2px;
@@ -144,7 +144,7 @@ form button[type='button'] {
 
 .forgot-pass-link {
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 1.3rem;
 }
 
 .forgot-pass-link:hover {
@@ -187,7 +187,7 @@ form button[type='button'] {
 
 .login-bottom-p {
   text-align: center;
-  font-size: 1rem;
+  font-size: 1.5rem;
   padding-bottom: 40px;
 }
 

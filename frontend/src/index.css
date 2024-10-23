@@ -90,7 +90,11 @@ body {
   text-align: center;
 }
 
-
+.login-center p {
+  font-weight: 400;
+  font-size: 2rem;
+  margin-bottom: 40px;
+}
 
 form input[type='email'],
 form input[type='password'],
@@ -140,8 +144,17 @@ form button[type='button'] {
   column-gap: 5px;
 }
 
+.remember-div label {
+  font-size: 1.3rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 2px;
+}
 
-
+.forgot-pass-link {
+  text-decoration: none;
+  font-size: 1.3rem;
+}
 
 .forgot-pass-link:hover {
   text-decoration: underline;
@@ -181,6 +194,11 @@ form button[type='button'] {
   background-color: #c4c4c457;
 }
 
+.login-bottom-p {
+  text-align: center;
+  font-size: 1.5rem;
+  padding-bottom: 40px;
+}
 
 .login-bottom-p a {
   text-decoration: none;
