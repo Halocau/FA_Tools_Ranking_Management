@@ -20,7 +20,7 @@ function App() {
           <Route path="/homepage" element={<HomePage />} />
           <Route path="/register" element={<SignupPage />} />
           <Route path="/forgetpassword" element={<ForgetPasswordPage />} />
-          <Route path="/ranking_group" element={
+          <Route path="/ranking-groups" element={
             <>
               <Row><Header /></Row>
               <Row>

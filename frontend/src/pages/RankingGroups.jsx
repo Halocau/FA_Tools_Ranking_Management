@@ -78,7 +78,7 @@ const RankingGroups = () => {
                 <td>{index + 1}</td>
                 <td>{group.groupName}</td>
                 <td>{group.numEmployees < 1 ? 'N/A' : group.numEmployees}</td>
-                <td>{group.currentRankingDecision == null ? 'N/A' : group.currentRankingDecision}</td>
+                <td>{group.currrentRankingDecision == null ? 'N/A' : group.currrentRankingDecision}</td>
                 <td>
                   <Button variant="primary" size="sm">Edit</Button>{' '}
                   <Button

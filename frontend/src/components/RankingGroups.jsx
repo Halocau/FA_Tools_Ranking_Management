@@ -21,7 +21,7 @@ const RankingGroupTable = ({ groups }) => {
             <td>{group.id}</td>
             <td>{group.name}</td>
             <td>{group.employees}</td>
-            <td>{group.decision}</td>
+            <td>{group.currrentRankingDecision}</td>
             <td>
               <Link to={`/edit-group/${group.id}`}>
                 <Button variant="primary" size="sm" className="me-2">
