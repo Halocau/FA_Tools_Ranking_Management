@@ -19,5 +19,5 @@ public class RankingGroupDTO {
     private int numEmployees;
 
     @Transient
-    private String currrentRankingDecision;//decisionName
+    private String currentRankingDecision;//decisionName
 }
