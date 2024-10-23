@@ -71,11 +71,6 @@ const ForgotPasswordPage = () => {
                     value={code}
                     onChange={(e) => setCode(e.target.value)} // Cập nhật giá trị mã
                   />
-                  {showPassword ? (
-                    <FaEyeSlash onClick={() => setShowPassword(!showPassword)} />
-                  ) : (
-                    <FaEye onClick={() => setShowPassword(!showPassword)} />
-                  )}
                 </div>
               )}
               {codeSent && !showNewPasswordInput && ( // Nút resend code
@@ -96,11 +91,6 @@ const ForgotPasswordPage = () => {
                 <>
                   <div className="pass-input-div">
                     <input type={showPassword ? "text" : "password"} placeholder="New Password" />
-                    {showPassword ? (
-                      <FaEyeSlash onClick={() => setShowPassword(!showPassword)} />
-                    ) : (
-                      <FaEye onClick={() => setShowPassword(!showPassword)} />
-                    )}
                   </div>
                   <div className="login-center-buttons">
                     <Link to={`/`}>

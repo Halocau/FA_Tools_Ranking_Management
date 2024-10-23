@@ -42,7 +42,6 @@ const LoginPage = () => {
                             <div className="pass-input-div">
                                 <input type={showPassword ? "text" : "password"} placeholder="Password" onChange={(e) => setPassword(e.target.value)} value={password} />
                                 {showPassword ? <FaEyeSlash onClick={() => { setShowPassword(!showPassword) }} /> : <FaEye onClick={() => { setShowPassword(!showPassword) }} />}
-
                             </div>
                             {error && <p className="error" style={{ color: 'red', fontSize: '12px' }}>Invalid username or password</p>}
                             <div className="login-center-options">
@@ -53,7 +52,7 @@ const LoginPage = () => {
                                     </label>
                                 </div>
                                 <a href="#" className="forgot-pass-link">
-                                    <Link to={`/forgetpassword`}>Forget password</Link>
+                                    <Link to={`/forgotpassword`}>Forgot password</Link>
                                 </a>
                             </div>
                             <div className="login-center-buttons">
@@ -66,7 +65,7 @@ const LoginPage = () => {
                         </form>
                     </div>
                     <p className="login-bottom-p">
-                        Don't have an account? <Link to={`/register`}>Sign up</Link>
+                        Don't have an account? <Link to={`/sigup`}>Sign up</Link>
                     </p>
                 </div>
             </div>

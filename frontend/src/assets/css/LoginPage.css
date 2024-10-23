@@ -89,8 +89,10 @@ body{
 
 form input[type='username'],
 form input[type='password'],
-form input[type='text']
+form input[type='text'],
+form input[type='email']
  {
+  font-size: 15px;
   width: 100%;
   padding: 16px;
   margin-bottom: 16px;
