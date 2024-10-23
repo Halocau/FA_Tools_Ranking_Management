@@ -1,157 +1,44 @@
-import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form } from "react-bootstrap";
-import useRankingGroup from "../hooks/useRankingGroup";
-import axios from "axios";
+// src/components/RankingGroupTable.jsx
+import React from 'react';
+import { Button, Table } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
-const RankingGroups = () => {
-  // State for modal controls and new group name
-  const [showModal, setShowModal] = useState(false);
-  const [newGroupName, setNewGroupName] = useState("");
-
-  // Destructure data and fetch function from custom hook
-  const {
-    data: groups,
-    error,
-    loading,
-    fetchAllRankingGroups,
-    deleteRankingGroup,
-    addRankingGroup,
-  } = useRankingGroup();
-
-  // Fetch all ranking groups on component mount
-  useEffect(() => {
-    fetchAllRankingGroups();
-  }, []); // Empty dependency array to run only once when the component mounts
-
-  // Handlers for opening and closing the modal
-  const handleOpenModal = () => setShowModal(true);
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setNewGroupName("");
-  };
-
-  // Handler for adding a new ranking group
-  const handleAddGroup = async () => {
-    try {
-      const newGroup = {
-        groupName: newGroupName,
-        createdBy: 1,
-      };
-      console.log("New group:", newGroup);
-      await addRankingGroup(newGroup); // This assumes addRankingGroup is async
-      handleCloseModal(); // Close the modal
-      fetchAllRankingGroups(); // Fetch all ranking groups again
-    } catch (error) {
-      console.error("Failed to add group:", error); // Handle any errors
-    }
-  };
-
-  const handleDeleteGroup = async (id) => {
-   const confirmDelete = window.confirm(
-     "Are you sure you want to delete this group?"
-   );
-   if (confirmDelete) {
-     try {
-       await axios.delete(`/ranking-group/delete/${id}`);
-       setData(groups.filter((dt1) => dt1.id !== id));
-     } catch (error) {
-       console.error("Error deleting employee:", error);
-     }
-   }
-  };
-
-  // Handle loading state
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  // Handle error state
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
-
+const RankingGroupTable = ({ groups }) => {
   return (
-    <div>
-      <h2>Ranking Group List</h2>
-
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Group Name</th>
-            <th>No. of Employees</th>
-            <th>Current Ranking Decision</th>
-            <th>Action</th>
+    <Table striped bordered hover responsive>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Group Name</th>
+          <th>No. of Employees</th>
+          <th>Current Ranking Decision</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {groups.map((group) => (
+          <tr key={group.id}>
+            <td>{group.id}</td>
+            <td>{group.name}</td>
+            <td>{group.employees}</td>
+            <td>{group.currrentRankingDecision}</td>
+            <td>
+              <Link to={`/edit-group/${group.id}`}>
+                <Button variant="primary" size="sm" className="me-2">
+                  Edit
+                </Button>
+              </Link>
+              {group.employees === 0 && (
+                <Button variant="danger" size="sm">
+                  Delete
+                </Button>
+              )}
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {groups && groups.length > 0 ? (
-            groups.map((group, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>{group.groupName}</td>
-                <td>{group.numEmployees < 1 ? "N/A" : group.numEmployees}</td>
-                <td>
-                  {group.currentRankingDecision == null
-                    ? "N/A"
-                    : group.currentRankingDecision}
-                </td>
-                <td>
-                  <Button variant="primary" size="sm">
-                    Edit
-                  </Button>{" "}
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => deleteRankingGroup(group.groupId)}
-                  >
-                    Delete
-                  </Button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="5">No groups available</td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
-
-      {/* Button to open modal */}
-      <Button variant="success" onClick={handleOpenModal}>
-        Add New Group
-      </Button>
-
-      {/* Modal for adding a new group */}
-      <Modal show={showModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Add New Group</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group controlId="formGroupName">
-              <Form.Label>Group Name</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter group name"
-                value={newGroupName}
-                onChange={(e) => setNewGroupName(e.target.value)}
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleAddGroup}>
-            Save
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
+        ))}
+      </tbody>
+    </Table>
   );
 };
 
-export default RankingGroups;
+export default RankingGroupTable;

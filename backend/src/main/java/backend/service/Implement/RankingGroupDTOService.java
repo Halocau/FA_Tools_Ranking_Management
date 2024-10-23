@@ -45,7 +45,7 @@ public class RankingGroupDTOService implements IRankingGroupDTOService {
             Optional<RankingDecision> optionalRankingDecision = Optional.ofNullable(iRankingDecisionRepository.findByGroupId(group.getGroupId()));
             if (optionalRankingDecision.isPresent()) {
                 RankingDecision decision = optionalRankingDecision.get();
-                group.setCurrrentRankingDecision(decision.getDecisionName()); // Thiết lập decisionName
+                group.setCurrentRankingDecision(decision.getDecisionName()); // Thiết lập decisionName
             }
         }
 
@@ -61,9 +61,10 @@ public class RankingGroupDTOService implements IRankingGroupDTOService {
         // Lấy quyết định xếp hạng dựa trên groupId, nếu có, thiết lập decisionName
         RankingDecision decision = iRankingDecisionRepository.findByGroupId(group.getGroupId());
         if (decision != null) {
-            group.setCurrrentRankingDecision(decision.getDecisionName());
+            group.setCurrentRankingDecision(decision.getDecisionName());
         } else {
-            throw new ResourceNotFoundException("RankingDecision not found for groupId: " + group.getGroupId());
+            iRankingGroupDTORepository.findById(id).get();
+//            throw new ResourceNotFoundException("RankingDecision not found for groupId: " + group.getGroupId());
         }
         return group;
     }
@@ -77,7 +78,7 @@ public class RankingGroupDTOService implements IRankingGroupDTOService {
         Optional<RankingDecision> optionalRankingDecision = Optional.ofNullable(iRankingDecisionRepository.findByGroupId(createdGroup.getGroupId()));
         if (optionalRankingDecision.isPresent()) {
             RankingDecision decision = optionalRankingDecision.get();
-            createdGroup.setCurrrentRankingDecision(decision.getDecisionName()); // Thiết lập decisionName
+            createdGroup.setCurrentRankingDecision(decision.getDecisionName()); // Thiết lập decisionName
         }
 
         return createdGroup; // Trả về nhóm xếp hạng đã tạo
