@@ -2,6 +2,7 @@ package backend.controller;
 
 import backend.model.dto.RankingGroupDTO;
 import backend.security.exception.RankingGroupException;
+import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupDTOService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,11 +15,13 @@ import java.util.List;
 @RequestMapping("api/ranking-group")
 public class RankingGroupController {
 
-    private final IRankingGroupDTOService iRankingGroupDTOService;
+    private IRankingGroupDTOService iRankingGroupDTOService;
+    private IRankingDecisionService iRankingDecisionService;
 
     @Autowired
-    public RankingGroupController(IRankingGroupDTOService iRankingGroupDTOService) {
+    public RankingGroupController(IRankingGroupDTOService iRankingGroupDTOService, IRankingDecisionService iRankingDecisionService) {
         this.iRankingGroupDTOService = iRankingGroupDTOService;
+        this.iRankingDecisionService = iRankingDecisionService;
     }
 
     @GetMapping
@@ -69,7 +72,7 @@ public class RankingGroupController {
         if (exists == null) {
             throw new RankingGroupException("Ranking group not found for deletion");
         }
-
+        iRankingDecisionService.updateRankingDecisionGroupIdToNull(id);
         iRankingGroupDTOService.deleteRankingGroup(exists);
         return ResponseEntity.ok().build();
     }

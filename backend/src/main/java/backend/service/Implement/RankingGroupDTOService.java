@@ -93,6 +93,7 @@ public class RankingGroupDTOService implements IRankingGroupDTOService {
     @Override
     @Transactional
     public void deleteRankingGroup(RankingGroupDTO rankingGroupDTO) {
+
         iRankingGroupDTORepository.delete(rankingGroupDTO);
     }
 }

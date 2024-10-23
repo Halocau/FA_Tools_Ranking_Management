@@ -83,7 +83,6 @@ public class RankingGroupService implements IRankingGroupService {
         return group;
     }
 
-
     @Override
     @Transactional
     public RankingGroup addRankingGroup(RankingGroup rankingGroup) {
