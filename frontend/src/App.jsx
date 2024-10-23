@@ -11,6 +11,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Col, Row } from "react-bootstrap";
+import HomeNavbar from "./layouts/HomeNavbar";
 function App() {
   return (
     <AuthProvider>
@@ -24,11 +25,10 @@ function App() {
             path="/ranking_group"
             element={
               <>
-                <Row>
-                  <Header />
-                </Row>
+                <Header />
                 <Row>
                   <Col md={2}>
+                    <Header />
                     <Sidebar />
                   </Col>
 

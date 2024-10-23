@@ -1,14 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { Table, Button, Modal, Form } from 'react-bootstrap';
-import useRankingGroup from '../hooks/useRankingGroup';
+import React, { useEffect, useState } from "react";
+import { Table, Button, Modal, Form } from "react-bootstrap";
+import useRankingGroup from "../hooks/useRankingGroup";
+import axios from "axios";
 
 const RankingGroups = () => {
   // State for modal controls and new group name
   const [showModal, setShowModal] = useState(false);
-  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupName, setNewGroupName] = useState("");
 
   // Destructure data and fetch function from custom hook
-  const { data: groups, error, loading, fetchAllRankingGroups, deleteRankingGroup, addRankingGroup } = useRankingGroup();
+  const {
+    data: groups,
+    error,
+    loading,
+    fetchAllRankingGroups,
+    deleteRankingGroup,
+    addRankingGroup,
+  } = useRankingGroup();
 
   // Fetch all ranking groups on component mount
   useEffect(() => {
@@ -19,7 +27,7 @@ const RankingGroups = () => {
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => {
     setShowModal(false);
-    setNewGroupName('');
+    setNewGroupName("");
   };
 
   // Handler for adding a new ranking group
@@ -27,7 +35,7 @@ const RankingGroups = () => {
     try {
       const newGroup = {
         groupName: newGroupName,
-        createdBy: 1
+        createdBy: 1,
       };
       console.log("New group:", newGroup);
       await addRankingGroup(newGroup); // This assumes addRankingGroup is async
@@ -39,12 +47,17 @@ const RankingGroups = () => {
   };
 
   const handleDeleteGroup = async (id) => {
-    try {
-      await deleteRankingGroup(id); // This assumes deleteRankingGroup is async
-      fetchAllRankingGroups(); // Fetch all ranking groups again
-    } catch (error) {
-      console.error("Failed to delete group:", error); // Handle any errors
-    }
+   const confirmDelete = window.confirm(
+     "Are you sure you want to delete this group?"
+   );
+   if (confirmDelete) {
+     try {
+       await axios.delete(`/ranking-group/delete/${id}`);
+       setData(groups.filter((dt1) => dt1.id !== id));
+     } catch (error) {
+       console.error("Error deleting employee:", error);
+     }
+   }
   };
 
   // Handle loading state
@@ -64,7 +77,7 @@ const RankingGroups = () => {
       <Table striped bordered hover>
         <thead>
           <tr>
-            <th>Index</th>
+            <th>No</th>
             <th>Group Name</th>
             <th>No. of Employees</th>
             <th>Current Ranking Decision</th>
@@ -77,14 +90,20 @@ const RankingGroups = () => {
               <tr key={index}>
                 <td>{index + 1}</td>
                 <td>{group.groupName}</td>
-                <td>{group.numEmployees < 1 ? 'N/A' : group.numEmployees}</td>
-                <td>{group.currentRankingDecision == null ? 'N/A' : group.currentRankingDecision}</td>
+                <td>{group.numEmployees < 1 ? "N/A" : group.numEmployees}</td>
                 <td>
-                  <Button variant="primary" size="sm">Edit</Button>{' '}
+                  {group.currentRankingDecision == null
+                    ? "N/A"
+                    : group.currentRankingDecision}
+                </td>
+                <td>
+                  <Button variant="primary" size="sm">
+                    Edit
+                  </Button>{" "}
                   <Button
                     variant="danger"
                     size="sm"
-                    onClick={() => handleDeleteGroup(group.groupId)}
+                    onClick={() => deleteRankingGroup(group.groupId)}
                   >
                     Delete
                   </Button>
