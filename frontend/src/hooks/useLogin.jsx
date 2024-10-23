@@ -8,7 +8,8 @@ const useLogin = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate(); // Initialize the useNavigate hook
-    const { login: saveUserData } = useAuth(); // Get login function from AuthContext
+
+    const { saveUserInfo } = useAuth();
 
     const login = async (username, password) => {
         if (!username || !password) {
@@ -20,8 +21,14 @@ const useLogin = () => {
             const response = await http.get('/account/user-and-pass', {
                 params: { username, password },
             });
+<<<<<<< HEAD
             setData(response.data);
             saveUserData(response.data);
+=======
+            setData(response.data); // Store the response data in the component state
+            // saveUserInfo(response.data); // Save user data in the AuthContext
+            // Navigate to /ranking-groups after successful login
+>>>>>>> HoangMN
             navigate('/ranking-groups');
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed');

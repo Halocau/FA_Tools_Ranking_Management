@@ -1,7 +1,7 @@
 // src/layouts/Header.jsx
-import React from 'react';
-import './Header.css';
-import { FaUserCircle } from 'react-icons/fa';
+import React from "react";
+import "../assets/css/Header.css";
+import { FaUserCircle } from "react-icons/fa";
 
 const Header = () => {
   return (
