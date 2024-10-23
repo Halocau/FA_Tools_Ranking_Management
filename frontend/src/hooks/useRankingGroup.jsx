@@ -62,18 +62,13 @@ const useRankingGroup = () => {
     };
 
     // HTTP DELETE request to delete a ranking group by ID
-    const deleteRankingGroup = async (id) => {
-       const confirmDelete = window.confirm(
-     "Are you sure you want to delete this group?"
-   );
-   if (confirmDelete) {
+    const deleteRankingGroup = async (id) => {          
      try {
        await http.delete(`/ranking-group/delete/${id}`);
        setData(groups.filter((dt1) => dt1.id !== id));
      } catch (error) {
        console.error("Error deleting employee:", error);
-     }
-   }
+     }   
     };
 
     // Return the data and functions to be used in components
