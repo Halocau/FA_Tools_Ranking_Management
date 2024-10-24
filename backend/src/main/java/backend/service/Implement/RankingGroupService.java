@@ -3,6 +3,7 @@ package backend.service.Implement;
 import backend.dao.IAccount;
 import backend.dao.IRankingDecisionRepository;
 import backend.dao.IRankingGroupRepository;
+import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.Account;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
@@ -33,6 +34,18 @@ public class RankingGroupService implements IRankingGroupService {
 //    public List<RankingGroup> getAllRankingGroups() {
 //        return iRankingGroupRepository.findAll();
 //    }
+    // Covert data RankingGroup -> RankingGroupResponse
+    public RankingGroupResponse convertToDTO(RankingGroup rankingGroup,String decisionName) {
+        RankingGroupResponse response = new RankingGroupResponse();
+        response.setGroupId(rankingGroup.getGroupId());
+        response.setGroupName(rankingGroup.getGroupName());
+        response.setNumEmployees(rankingGroup.getNumEmployees());
+        response.setCurrentRankingDecision(decisionName);
+        return response;
+    }
+
+
+
     @Override
     public List<RankingGroup> getAllRankingGroups() {
         List<RankingGroup> rankingGroups = iRankingGroupRepository.findAll();
@@ -75,7 +88,7 @@ public class RankingGroupService implements IRankingGroupService {
         // Lấy quyết định xếp hạng dựa trên groupId, nếu có, thiết lập decisionName
         RankingDecision decision = iRankingDecisionRepository.findByGroupId(group.getGroupId());
         if (decision != null) {
-            group.setDecisionName(decision.getDecisionName());
+          group.setDecisionName(decision.getDecisionName());
         } else {
             throw new ResourceNotFoundException("RankingDecision not found for groupId: " + group.getGroupId());
         }
@@ -115,5 +128,22 @@ public class RankingGroupService implements IRankingGroupService {
     public void deleteRankingGroup(RankingGroup rankingGroup) {
 
         iRankingGroupRepository.delete(rankingGroup);
+    }
+
+    @Override
+    public RankingGroupResponse findRankingGroupByResponseId(int id) {
+        // Lấy nhóm xếp hạng hoặc ném ngoại lệ nếu không tìm thấy
+        RankingGroup group = iRankingGroupRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("RankingGroup not found with id: " + id));
+        // Lấy quyết định xếp hạng dựa trên groupId, nếu có, thiết lập decisionName
+        RankingDecision decision = iRankingDecisionRepository.findByGroupId(group.getGroupId());
+        if (decision != null) {
+            group.setDecisionName(decision.getDecisionName());
+        } else {
+            group.setDecisionName("No decision available"); // Thiết lập giá trị mặc định nếu không tìm thấy
+        }
+
+        // Chuyển đổi từ entity RankingGroup sang DTO RankingGroupResponse
+        return convertToDTO(group, group.getDecisionName());
     }
 }

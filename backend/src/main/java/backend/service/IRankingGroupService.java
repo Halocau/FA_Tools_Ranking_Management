@@ -1,5 +1,6 @@
 package backend.service;
 
+import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingGroup;
 
 import java.util.List;
@@ -14,4 +15,5 @@ public interface IRankingGroupService {
     public RankingGroup updateRankingGroup(RankingGroup rankingGroup);
 
     public void deleteRankingGroup(RankingGroup rankingGroup);
+    public RankingGroupResponse findRankingGroupByResponseId(int id);
 }

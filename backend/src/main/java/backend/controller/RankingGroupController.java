@@ -2,6 +2,7 @@ package backend.controller;
 
 
 import backend.config.exception.RankingGroupException;
+import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
 import backend.service.IRankingDecisionService;
@@ -32,14 +33,24 @@ public class RankingGroupController {
     }
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<RankingGroup> findRankingGroupById(@PathVariable int id) {
-        RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(id);
+    public ResponseEntity<RankingGroupResponse> findRankingGroupById(@PathVariable int id) {
+        RankingGroupResponse rankingGroup = iRankingGroupService.findRankingGroupByResponseId(id);
         if (rankingGroup == null) {
             // Tự động đi vào CatchException (RankingGroupException handler)
             throw new RankingGroupException("Ranking group not found");
         }
         return ResponseEntity.ok(rankingGroup);
     }
+
+//    @GetMapping("/get/{id}")
+//    public ResponseEntity<RankingGroup> findRankingGroupById(@PathVariable int id) {
+//        RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(id);
+//        if (rankingGroup == null) {
+//            // Tự động đi vào CatchException (RankingGroupException handler)
+//            throw new RankingGroupException("Ranking group not found");
+//        }
+//        return ResponseEntity.ok(rankingGroup);
+//    }
 
     @PostMapping("/add")
     public ResponseEntity<RankingGroup> addRankingGroup(@RequestBody RankingGroup rankingGroup) {
