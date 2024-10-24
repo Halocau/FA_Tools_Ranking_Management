@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -27,30 +28,39 @@ public class RankingGroupController {
         this.iRankingDecisionService = iRankingDecisionService;
     }
 
+    // Covert data RankingGroup -> RankingGroupResponse
+    public RankingGroupResponse convertToDTO(RankingGroup group, String decisionName) {
+        RankingGroupResponse dto = new RankingGroupResponse();
+        dto.setGroupId(group.getGroupId());
+        dto.setGroupName(group.getGroupName());
+        dto.setNumEmployees(group.getNumEmployees());
+        dto.setCurrentRankingDecision(decisionName);  // Gán giá trị quyết định xếp hạng
+        return dto;
+    }
+
     @GetMapping
-    public List<RankingGroup> getAllRankingGroups() {
-        return iRankingGroupService.getAllRankingGroups();
+    public List<RankingGroupResponse> getAllRankingGroups() {
+        List<RankingGroup> listRankingGroup = iRankingGroupService.getAllRankingGroups();
+
+        List<RankingGroupResponse> listRankingGroupResponse = new ArrayList<>();
+        for (RankingGroup rankingGroup : listRankingGroup) {
+            RankingGroupResponse rankingGroupResponse = convertToDTO(rankingGroup, rankingGroup.getDecisionName());
+            listRankingGroupResponse.add(rankingGroupResponse);
+        }
+        return listRankingGroupResponse;
     }
 
     @GetMapping("/get/{id}")
     public ResponseEntity<RankingGroupResponse> findRankingGroupById(@PathVariable int id) {
-        RankingGroupResponse rankingGroup = iRankingGroupService.findRankingGroupByResponseId(id);
+        RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(id);
         if (rankingGroup == null) {
             // Tự động đi vào CatchException (RankingGroupException handler)
             throw new RankingGroupException("Ranking group not found");
         }
-        return ResponseEntity.ok(rankingGroup);
+        RankingGroupResponse response = convertToDTO(rankingGroup, rankingGroup.getDecisionName());
+        return ResponseEntity.ok(response);
     }
 
-//    @GetMapping("/get/{id}")
-//    public ResponseEntity<RankingGroup> findRankingGroupById(@PathVariable int id) {
-//        RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(id);
-//        if (rankingGroup == null) {
-//            // Tự động đi vào CatchException (RankingGroupException handler)
-//            throw new RankingGroupException("Ranking group not found");
-//        }
-//        return ResponseEntity.ok(rankingGroup);
-//    }
 
     @PostMapping("/add")
     public ResponseEntity<RankingGroup> addRankingGroup(@RequestBody RankingGroup rankingGroup) {
