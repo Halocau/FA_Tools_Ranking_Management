@@ -43,18 +43,13 @@ public class TokenProvider {
         Map<String, Object> claims = new HashMap<>();
 
         return Jwts.builder()
-                .header().add("typ", "JWT")
-                .and()
-                .signWith(getKey())
                 .claims()
                 .add(claims)
+                .subject(account.getUsername())
                 .issuedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()))
                 .expiration(Date.from(LocalDateTime.now().plusMinutes(30).atZone(ZoneId.systemDefault()).toInstant()))
-                .id(UUID.randomUUID().toString())
                 .and()
-                .subject(account.getUsername())
-                .claim("id", account.getId())
-                .claim("role", account.getRole())
+                .signWith(getKey())
                 .compact();
     }
 
