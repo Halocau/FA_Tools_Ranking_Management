@@ -3,9 +3,9 @@ package backend.service.Implement;
 import backend.dao.IAccount;
 import backend.dao.IRankingDecisionRepository;
 import backend.dao.IRankingGroupRepository;
-import backend.model.Account;
-import backend.model.RankingDecision;
-import backend.model.RankingGroup;
+import backend.model.entity.Account;
+import backend.model.entity.RankingDecision;
+import backend.model.entity.RankingGroup;
 import backend.service.IRankingGroupService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +113,7 @@ public class RankingGroupService implements IRankingGroupService {
     @Override
     @Transactional
     public void deleteRankingGroup(RankingGroup rankingGroup) {
+
         iRankingGroupRepository.delete(rankingGroup);
     }
 }

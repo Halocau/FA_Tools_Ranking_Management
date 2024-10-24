@@ -1,6 +1,6 @@
 package backend.service;
 
-import backend.model.RankingGroup;
+import backend.model.entity.RankingGroup;
 
 import java.util.List;
 
