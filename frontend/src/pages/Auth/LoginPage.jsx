@@ -1,5 +1,5 @@
 // src/Login.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../assets/css/LoginForm.css";
 import Image from "../../assets/image/fsoft_2.jpg";
 import Logo from "../../assets/image/logo.png";
@@ -8,6 +8,8 @@ import { FaEye } from "react-icons/fa6";
 import { FaEyeSlash } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import useLogin from "../../hooks/useLogin";
+import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -15,13 +17,24 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const { data, error, loading, login } = useLogin();
 
-    const handleLogin = async () => {
-        try {
-            await login(username, password);
-        } catch (err) {
-            console.log(err);
-        }
-    };
+  const navigate = useNavigate();
+
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      console.log("User:", user);
+      navigate("/ranking_group");
+    }
+  }, [user, navigate]);
+
+  const handleLogin = async () => {
+    try {
+      await login(username, password);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <div className="login-main">
@@ -76,9 +89,9 @@ const LoginPage = () => {
                     Remember for 30 days
                   </label>
                 </div>
-                <a href="#" className="forgot-pass-link">
+                <div className="forgot-pass-link">
                   <Link to={`/forgetpassword`}>Forget password</Link>
-                </a>
+                </div>
               </div>
               <div className="login-center-buttons">
                 <button type="button" onClick={() => handleLogin()}>

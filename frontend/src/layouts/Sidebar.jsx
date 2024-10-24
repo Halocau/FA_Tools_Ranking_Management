@@ -29,8 +29,8 @@ const Sidebar = () => {
         </Nav.Link>
         {openLogWork && (
           <div className="submenu ms-4">
-            <Nav.Link href="#log-task">Log Task</Nav.Link>
-            <Nav.Link href="#log-hours">Log Hours</Nav.Link>
+            <Nav.Link href="/ranking_group">Ranking Group List</Nav.Link>
+            <Nav.Link href="/ranking_decision">Ranking Decision List</Nav.Link>
           </div>
         )}
 

@@ -6,6 +6,7 @@ import { FaEdit } from "react-icons/fa";
 import { FaRankingStar } from "react-icons/fa6";
 import Slider from "../layouts/Slider.jsx";
 import ModalCustom from "../components/Common/Modal.jsx";
+import { useAuth } from "../contexts/AuthContext";
 
 const RankingGroups = () => {
   // State for modal controls and new group name
@@ -13,7 +14,8 @@ const RankingGroups = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [groupToDelete, setGroupToDelete] = useState(null);
-
+  const { user } = useAuth();
+  console.log("user", user);
   // Destructure data and fetch function from custom hook
   const {
     data: groups,
