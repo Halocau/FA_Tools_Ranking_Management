@@ -5,6 +5,7 @@ import backend.model.RankingDecision;
 import backend.service.IRankingDecisionService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Optional;
 @Service
 public class RankingDecisionService implements IRankingDecisionService {
     private IRankingDecisionRepository iRankingDecisionRepository;
+
     @Autowired
     public RankingDecisionService(IRankingDecisionRepository iRankingDecisionRepository) {
         this.iRankingDecisionRepository = iRankingDecisionRepository;
@@ -49,6 +51,12 @@ public class RankingDecisionService implements IRankingDecisionService {
     @Override
     public RankingDecision findByGroupId(int groupId) {
         return iRankingDecisionRepository.findByGroupId(groupId);
+    }
+
+    @Override
+    @Transactional
+    public void updateRankingDecisionGroupIdToNull(int groupId) {
+        iRankingDecisionRepository.updateRankingDecisionGroupIdToNull(groupId);
     }
 
 

@@ -12,4 +12,5 @@ public interface IRankingDecisionService {
     public RankingDecision updateRankingDecision(RankingDecision rankingDecision);
     public void deleteRankingDecision(int id);
     public RankingDecision findByGroupId(int groupId);
+    public void updateRankingDecisionGroupIdToNull(int groupId);
 }
