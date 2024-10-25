@@ -1,6 +1,12 @@
-/* src/pages/RankingGroupList.css */
+
 .container {
     max-width: 800px;
     margin: auto;
+  }
+  .custom-modal {
+    position: fixed;
+    top: 20px;
+    right: 0px;
+    z-index: 1050; /* Đảm bảo modal hiển thị trên các thành phần khác */
   }
   
