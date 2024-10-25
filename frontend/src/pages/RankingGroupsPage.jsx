@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form } from "react-bootstrap";
+import { Table, Button, Modal, Form, Alert } from "react-bootstrap";
 import useRankingGroup from "../hooks/useRankingGroup";
 import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { FaRankingStar } from "react-icons/fa6";
 import Slider from "../layouts/Slider.jsx";
 import ModalCustom from "../components/Common/Modal.jsx";
-import { DataGrid } from "@mui/x-data-grid";
-import Box from "@mui/material/Box";
 
 const RankingGroups = () => {
-  // State for modal controls and new group name
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [groupToDelete, setGroupToDelete] = useState(null);
+  const [deleteMessage, setDeleteMessage] = useState(null); // Message for Add group status
+  const [addMessage, setAddMessage] = useState(null); // Message for Add group status
+  const [successMessage, setSuccessMessage] = useState(null); // Message for success add status
 
-  // Destructure data and fetch function from custom hook
   const {
     data: groups,
     error,
@@ -26,103 +25,78 @@ const RankingGroups = () => {
     addRankingGroup,
   } = useRankingGroup();
 
-  // Fetch all ranking groups on component mount
   useEffect(() => {
     fetchAllRankingGroups();
-  }, []); // Empty dependency array to run only once when the component mounts
+  }, []);
 
-  // Handlers for opening and closing the modal
   const handleOpenAddModal = () => setShowAddModal(true);
-  const handleCloseAddModal = () => setShowAddModal(false);
+  const handleCloseAddModal = () => {
+    setShowAddModal(false);
+    setNewGroupName("");
+    setAddMessage(null);
+  };
 
   const handleOpenDeleteModal = (groupId) => {
-    setGroupToDelete(groupId); // Set group to be deleted
+    setGroupToDelete(groupId);
     setShowDeleteModal(true);
   };
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
 
-  // Handler for adding a new ranking group
   const handleAddGroup = async () => {
+    if (newGroupName.trim() === "") {
+      setAddMessage({ type: "danger", text: "Group name cannot be empty!" });
+      return;
+    }
+
+    const isDuplicate = groups.some((group) => group.groupName === newGroupName.trim());
+    if (isDuplicate) {
+      setAddMessage({ type: "danger", text: "Group name already exists!" });
+      return;
+    }
+
     try {
-      const newGroup = {
-        groupName: newGroupName,
-        createdBy: 1,
-      };
-      console.log("New group:", newGroup);
-      await addRankingGroup(newGroup); // This assumes addRankingGroup is async
-      handleCloseAddModal(); // Close the modal
-      fetchAllRankingGroups(); // Fetch all ranking groups again
+      const newGroup = { groupName: newGroupName, createdBy: 1 };
+      await addRankingGroup(newGroup);
+      handleCloseAddModal();
+      fetchAllRankingGroups();
+      setSuccessMessage("Group added successfully!"); // Set success message here
     } catch (error) {
-      console.error("Failed to add group:", error); // Handle any errors
+      console.error("Failed to add group:", error);
+      setAddMessage({ type: "danger", text: "Failed to add group!" });
     }
   };
 
   const handleDeleteGroup = async () => {
     try {
       if (groupToDelete) {
-        await deleteRankingGroup(groupToDelete); // Delete the selected group
-        setGroupToDelete(null); // Reset the group to be deleted
-        handleCloseDeleteModal(); // Close the modal
-        fetchAllRankingGroups(); // Fetch all ranking groups again
+        await deleteRankingGroup(groupToDelete);
+        setGroupToDelete(null);
+        handleCloseDeleteModal();
+        fetchAllRankingGroups();
+        setDeleteMessage({ type: "success", text: "Group deleted successfully!" });
       }
     } catch (error) {
-      console.error("Failed to delete group:", error); // Handle any errors
+      console.error("Failed to delete group:", error);
+      setDeleteMessage({ type: "danger", text: "Failed to delete group!" });
     }
   };
 
-  // Handle loading state
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  useEffect(() => {
+    if (deleteMessage) {
+      const timer = setTimeout(() => setDeleteMessage(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [deleteMessage]);
 
-  // Handle error state
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(null), 2000); // Clear success message after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
-  // Prepare table data
-  const columns = [
-    { field: "index", headerName: "Index", width: 70 },
-    { field: "groupName", headerName: "Group Name", width: 250 },
-    { field: "numEmployees", headerName: "No. of Employees", width: 180 },
-    {
-      field: "currentRankingDecision",
-      headerName: "Current Ranking Decision",
-      width: 250,
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      width: 150,
-      renderCell: (params) => (
-        <>
-          <Button variant="primary" size="sm">
-            <FaEdit />
-          </Button>{" "}
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => handleOpenDeleteModal(params.row.groupId)}
-          >
-            <MdDeleteForever />
-          </Button>
-        </>
-      ),
-    },
-  ];
-
-  const rows = groups
-    ? groups.map((group, index) => ({
-        id: group.groupId,
-        index: index + 1,
-        groupName: group.groupName,
-        numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
-        currentRankingDecision:
-          group.currrentRankingDecision == null
-            ? "N/A"
-            : group.currrentRankingDecision,
-      }))
-    : [];
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
     <div style={{ marginTop: "60px" }}>
@@ -131,25 +105,63 @@ const RankingGroups = () => {
         <h2>
           <FaRankingStar /> Ranking Group List
         </h2>
-        {/* Use MUI Table */}
-        <Box sx={{ width: "100%" }}>
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 5,
-                },
-              },
-            }}
-            pageSizeOptions={[5]}
-            checkboxSelection
-            disableRowSelectionOnClick
-          />
-        </Box>
 
-        {/* Modal for delete group */}
+        {successMessage && (
+          <Alert variant="success" onClose={() => setSuccessMessage(null)} dismissible>
+            {successMessage}
+          </Alert>
+        )}
+
+        {deleteMessage && (
+          <Alert variant={deleteMessage.type} onClose={() => setDeleteMessage(null)} dismissible>
+            {deleteMessage.text}
+          </Alert>
+        )}
+
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>Index</th>
+              <th>Group Name</th>
+              <th>No. of Employees</th>
+              <th>Current Ranking Decision</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {groups && groups.length > 0 ? (
+              groups.map((group, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{group.groupName}</td>
+                  <td>{group.numEmployees < 1 ? "N/A" : group.numEmployees}</td>
+                  <td>
+                    {group.currrentRankingDecision == null
+                      ? "N/A"
+                      : group.currrentRankingDecision}
+                  </td>
+                  <td>
+                    <Button variant="primary" size="sm">
+                      <FaEdit />
+                    </Button>{" "}
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleOpenDeleteModal(group.groupId)}
+                    >
+                      <MdDeleteForever />
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5">No groups available</td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+
         <ModalCustom
           show={showDeleteModal}
           handleClose={handleCloseDeleteModal}
@@ -167,18 +179,20 @@ const RankingGroups = () => {
           }
         />
 
-        {/* Button to open modal for adding a new group */}
         <Button variant="success" onClick={handleOpenAddModal}>
           Add New Group
         </Button>
 
-        {/* Modal for adding a new group */}
-        {/* ModalCustom for adding a new group */}
-        <ModalCustom
-          show={showAddModal}
-          handleClose={handleCloseAddModal}
-          title="Add New Group"
-          bodyContent={
+        <Modal show={showAddModal} onHide={handleCloseAddModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>Add New Group</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {addMessage && (
+              <Alert variant={addMessage.type} onClose={() => setAddMessage(null)} dismissible>
+                {addMessage.text}
+              </Alert>
+            )}
             <Form>
               <Form.Group controlId="formGroupName">
                 <Form.Label>Group Name</Form.Label>
@@ -190,18 +204,16 @@ const RankingGroups = () => {
                 />
               </Form.Group>
             </Form>
-          }
-          footerContent={
-            <>
-              <Button variant="secondary" onClick={handleCloseAddModal}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={handleAddGroup}>
-                Save
-              </Button>
-            </>
-          }
-        />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseAddModal}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleAddGroup}>
+              Save
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </div>
   );
