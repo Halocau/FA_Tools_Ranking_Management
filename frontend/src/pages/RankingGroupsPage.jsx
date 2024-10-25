@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form } from "react-bootstrap";
+import { Table, Button, Modal, Form, Alert } from "react-bootstrap";
 import useRankingGroup from "../hooks/useRankingGroup";
 import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
@@ -8,13 +8,14 @@ import Slider from "../layouts/Slider.jsx";
 import ModalCustom from "../components/Common/Modal.jsx";
 
 const RankingGroups = () => {
-  // State for modal controls and new group name
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [groupToDelete, setGroupToDelete] = useState(null);
+  const [deleteMessage, setDeleteMessage] = useState(null); // Message for Add group status
+  const [addMessage, setAddMessage] = useState(null); // Message for Add group status
+  const [successMessage, setSuccessMessage] = useState(null); // Message for success add status
 
-  // Destructure data and fetch function from custom hook
   const {
     data: groups,
     error,
@@ -24,59 +25,78 @@ const RankingGroups = () => {
     addRankingGroup,
   } = useRankingGroup();
 
-  // Fetch all ranking groups on component mount
   useEffect(() => {
     fetchAllRankingGroups();
-  }, []); // Empty dependency array to run only once when the component mounts
+  }, []);
 
-  // Handlers for opening and closing the modal
   const handleOpenAddModal = () => setShowAddModal(true);
-  const handleCloseAddModal = () => setShowAddModal(false);
+  const handleCloseAddModal = () => {
+    setShowAddModal(false);
+    setNewGroupName("");
+    setAddMessage(null);
+  };
 
   const handleOpenDeleteModal = (groupId) => {
-    setGroupToDelete(groupId); // Set group to be deleted
+    setGroupToDelete(groupId);
     setShowDeleteModal(true);
   };
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
 
-  // Handler for adding a new ranking group
   const handleAddGroup = async () => {
+    if (newGroupName.trim() === "") {
+      setAddMessage({ type: "danger", text: "Group name cannot be empty!" });
+      return;
+    }
+
+    const isDuplicate = groups.some((group) => group.groupName === newGroupName.trim());
+    if (isDuplicate) {
+      setAddMessage({ type: "danger", text: "Group name already exists!" });
+      return;
+    }
+
     try {
-      const newGroup = {
-        groupName: newGroupName,
-        createdBy: 1,
-      };
-      console.log("New group:", newGroup);
-      await addRankingGroup(newGroup); // This assumes addRankingGroup is async
-      handleCloseAddModal(); // Close the modal
-      fetchAllRankingGroups(); // Fetch all ranking groups again
+      const newGroup = { groupName: newGroupName, createdBy: 1 };
+      await addRankingGroup(newGroup);
+      handleCloseAddModal();
+      fetchAllRankingGroups();
+      setSuccessMessage("Group added successfully!"); // Set success message here
     } catch (error) {
-      console.error("Failed to add group:", error); // Handle any errors
+      console.error("Failed to add group:", error);
+      setAddMessage({ type: "danger", text: "Failed to add group!" });
     }
   };
 
   const handleDeleteGroup = async () => {
     try {
       if (groupToDelete) {
-        await deleteRankingGroup(groupToDelete); // Delete the selected group
-        setGroupToDelete(null); // Reset the group to be deleted
-        handleCloseDeleteModal(); // Close the modal
-        fetchAllRankingGroups(); // Fetch all ranking groups again
+        await deleteRankingGroup(groupToDelete);
+        setGroupToDelete(null);
+        handleCloseDeleteModal();
+        fetchAllRankingGroups();
+        setDeleteMessage({ type: "success", text: "Group deleted successfully!" });
       }
     } catch (error) {
-      console.error("Failed to delete group:", error); // Handle any errors
+      console.error("Failed to delete group:", error);
+      setDeleteMessage({ type: "danger", text: "Failed to delete group!" });
     }
   };
 
-  // Handle loading state
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  useEffect(() => {
+    if (deleteMessage) {
+      const timer = setTimeout(() => setDeleteMessage(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [deleteMessage]);
 
-  // Handle error state
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(null), 2000); // Clear success message after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
     <div style={{ marginTop: "60px" }}>
@@ -85,6 +105,19 @@ const RankingGroups = () => {
         <h2>
           <FaRankingStar /> Ranking Group List
         </h2>
+
+        {successMessage && (
+          <Alert variant="success" onClose={() => setSuccessMessage(null)} dismissible>
+            {successMessage}
+          </Alert>
+        )}
+
+        {deleteMessage && (
+          <Alert variant={deleteMessage.type} onClose={() => setDeleteMessage(null)} dismissible>
+            {deleteMessage.text}
+          </Alert>
+        )}
+
         <Table striped bordered hover>
           <thead>
             <tr>
@@ -129,7 +162,6 @@ const RankingGroups = () => {
           </tbody>
         </Table>
 
-        {/* Modal for delete group */}
         <ModalCustom
           show={showDeleteModal}
           handleClose={handleCloseDeleteModal}
@@ -147,17 +179,20 @@ const RankingGroups = () => {
           }
         />
 
-        {/* Button to open modal for adding a new group */}
         <Button variant="success" onClick={handleOpenAddModal}>
           Add New Group
         </Button>
 
-        {/* Modal for adding a new group */}
         <Modal show={showAddModal} onHide={handleCloseAddModal}>
           <Modal.Header closeButton>
             <Modal.Title>Add New Group</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+            {addMessage && (
+              <Alert variant={addMessage.type} onClose={() => setAddMessage(null)} dismissible>
+                {addMessage.text}
+              </Alert>
+            )}
             <Form>
               <Form.Group controlId="formGroupName">
                 <Form.Label>Group Name</Form.Label>
