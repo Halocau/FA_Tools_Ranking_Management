@@ -11,6 +11,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Col, Row } from "react-bootstrap";
+import NotFound from "./pages/404NotFound.jsx";
 import Slider from "./layouts/Slider.jsx";
 function App() {
   return (
@@ -27,7 +28,7 @@ function App() {
               <>
                 <Row>
                   <Header />
-                  
+
                 </Row>
                 <Row></Row>
                 <Row>
@@ -36,13 +37,14 @@ function App() {
                   </Col>
 
                   <Col md={10}>
-                    
+
                     <RankingGroups className="ml-2" />
                   </Col>
                 </Row>
               </>
             }
           />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
