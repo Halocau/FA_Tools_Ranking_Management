@@ -3,10 +3,13 @@ import http from '../api/apiClient';
 
 // Custom hook for Ranking Group API
 const useRankingGroup = () => {
+
+    // State for API data, loading, and error handling
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    // HTTP GET request to fetch all ranking groups
     const fetchAllRankingGroups = async () => {
         setLoading(true);
         try {
@@ -19,6 +22,7 @@ const useRankingGroup = () => {
         }
     };
 
+    // HTTP GET request to fetch a ranking group by ID
     const fetchRankingGroupById = async (id) => {
         setLoading(true);
         try {
@@ -31,6 +35,7 @@ const useRankingGroup = () => {
         }
     };
 
+    // HTTP POST request to add a ranking group
     const addRankingGroup = async (newGroup) => {
         setLoading(true);
         try {
@@ -43,6 +48,7 @@ const useRankingGroup = () => {
         }
     };
 
+    // HTTP PUT request to update a ranking group by ID
     const updateRankingGroup = async (id, updatedGroup) => {
         setLoading(true);
         try {
@@ -55,19 +61,17 @@ const useRankingGroup = () => {
         }
     };
 
-    const deleteRankingGroup = async (groupId) => {
-        setLoading(true);
+    // HTTP DELETE request to delete a ranking group by ID
+    const deleteRankingGroup = async (id) => {
         try {
-            const response = await http.delete(`/ranking-group/delete/${groupId}`);
-            return response.data;
-        } catch (err) {
-            setError(err);
-            throw new Error('Failed to delete group');
-        } finally {
-            setLoading(false);
+            await http.delete(`/ranking-group/delete/${id}`);
+            setData(groups.filter((dt1) => dt1.id !== id));
+        } catch (error) {
+            console.error("Error deleting employee:", error);
         }
     };
 
+    // Return the data and functions to be used in components
     return {
         data,
         loading,

@@ -14,6 +14,7 @@ const RankingGroups = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [groupToDelete, setGroupToDelete] = useState(null);
+  const [selectedRows, setSelectedRows] = useState([]);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("success");
   const [validationMessage, setValidationMessage] = useState("");
@@ -34,8 +35,8 @@ const RankingGroups = () => {
   const handleOpenAddModal = () => setShowAddModal(true);
   const handleCloseAddModal = () => {
     setShowAddModal(false);
-    setNewGroupName(""); // Reset the input field
-    setValidationMessage(""); // Reset validation message
+    setNewGroupName("");
+    setValidationMessage("");
   };
 
   const handleOpenDeleteModal = (groupId) => {
@@ -47,12 +48,10 @@ const RankingGroups = () => {
 
   const handleAddGroup = async () => {
     setValidationMessage("");
-
     if (!newGroupName.trim()) {
       setValidationMessage("Group name cannot be empty.");
       return;
     }
-
     const isDuplicate = groups.some(group => group.groupName.toLowerCase() === newGroupName.toLowerCase());
     if (isDuplicate) {
       setValidationMessage("Group name already exists.");
@@ -64,12 +63,12 @@ const RankingGroups = () => {
         groupName: newGroupName,
         createdBy: 1,
       };
-      await addRankingGroup(newGroup);
+      await addRankingGroup(newGroup); // Gọi hàm thêm nhóm
       setMessageType("success");
       setMessage("Group added successfully!");
       setTimeout(() => setMessage(null), 2000);
       handleCloseAddModal();
-      fetchAllRankingGroups();
+      await fetchAllRankingGroups(); // Tải lại danh sách nhóm
     } catch (error) {
       console.error("Failed to add group:", error);
       setMessageType("danger");
@@ -79,7 +78,6 @@ const RankingGroups = () => {
   };
 
   const handleDeleteGroup = async () => {
-    console.log("Attempting to delete group with ID:", groupToDelete);
     try {
       if (groupToDelete) {
         await deleteRankingGroup(groupToDelete);
@@ -87,29 +85,39 @@ const RankingGroups = () => {
         setMessage("Group deleted successfully!");
         setTimeout(() => setMessage(null), 2000);
         setGroupToDelete(null);
-        handleCloseDeleteModal(); // Đóng modal sau khi xóa thành công
-        await fetchAllRankingGroups();
+        handleCloseDeleteModal();
+        await fetchAllRankingGroups(); // Tải lại danh sách nhóm
       }
     } catch (error) {
       console.error("Failed to delete group:", error);
       setMessageType("danger");
       setMessage("Failed to delete group. Please try again.");
       setTimeout(() => setMessage(null), 2000);
-      handleCloseDeleteModal(); // Đóng modal nếu xóa thất bại
+      handleCloseDeleteModal();
     }
   };
 
-
-
-  // Handle loading state
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  // Handle error state
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
+  const handleBulkDelete = async () => {
+    if (selectedRows.length === 0) {
+      setMessageType("warning");
+      setMessage("Please select groups to delete.");
+      setTimeout(() => setMessage(null), 2000);
+      return;
+    }
+    try {
+      await Promise.all(selectedRows.map(id => deleteRankingGroup(id)));
+      setMessageType("success");
+      setMessage("Selected groups deleted successfully!");
+      setTimeout(() => setMessage(null), 2000);
+      fetchAllRankingGroups();
+      setSelectedRows([]);
+    } catch (error) {
+      console.error("Failed to delete selected groups:", error);
+      setMessageType("danger");
+      setMessage("Failed to delete selected groups. Please try again.");
+      setTimeout(() => setMessage(null), 2000);
+    }
+  };
 
   const columns = [
     { field: "index", headerName: "Index", width: 70 },
@@ -162,13 +170,17 @@ const RankingGroups = () => {
         <h2>
           <FaRankingStar /> Ranking Group List
         </h2>
-        {/* Alert for success/error messages */}
         {message && <Alert severity={messageType}>{message}</Alert>}
 
         <Box sx={{ width: "100%" }}>
           <DataGrid
             rows={rows}
             columns={columns}
+            checkboxSelection
+            onSelectionModelChange={(newSelection) => {
+              setSelectedRows(newSelection);
+            }}
+            selectionModel={selectedRows}
             initialState={{
               pagination: {
                 paginationModel: {
@@ -177,12 +189,50 @@ const RankingGroups = () => {
               },
             }}
             pageSizeOptions={[5]}
-            checkboxSelection
             disableRowSelectionOnClick
           />
         </Box>
 
-        {/* Modal for delete group */}
+        {/* Buttons for adding and bulk deleting */}
+        <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+          <Button variant="contained" color="success" onClick={handleOpenAddModal}>
+            Add New Group
+          </Button>
+          <Button variant="contained" color="error" onClick={handleBulkDelete}>
+            Delete Selected Groups
+          </Button>
+        </div>
+        {/* Modal for adding a new group */}
+        <ModalCustom
+          show={showAddModal}
+          handleClose={handleCloseAddModal}
+          title="Add New Group"
+          bodyContent={
+            <TextField
+              label="Group Name"
+              variant="outlined"
+              fullWidth
+              value={newGroupName}
+              onChange={(e) => {
+                setNewGroupName(e.target.value);
+                setValidationMessage("");
+              }}
+              error={!!validationMessage}
+              helperText={validationMessage}
+            />
+          }
+          footerContent={
+            <>
+              <Button variant="outlined" onClick={handleCloseAddModal}>
+                Cancel
+              </Button>
+              <Button variant="contained" color="primary" onClick={handleAddGroup}>
+                Save
+              </Button>
+            </>
+          }
+        />
+        {/* Modal for deleting a single group */}
         <ModalCustom
           show={showDeleteModal}
           handleClose={handleCloseDeleteModal}
@@ -195,44 +245,6 @@ const RankingGroups = () => {
               </Button>
               <Button variant="outlined" color="error" onClick={handleDeleteGroup}>
                 Delete
-              </Button>
-            </>
-          }
-        />
-
-        {/* Button to open modal for adding a new group */}
-        <Button variant="contained" color="success" onClick={handleOpenAddModal}>
-          Add New Group
-        </Button>
-
-        {/* Modal for adding a new group */}
-        <ModalCustom
-          show={showAddModal}
-          handleClose={handleCloseAddModal}
-          title="Add New Group"
-          bodyContent={
-            <>
-              <TextField
-                label="Group Name"
-                variant="outlined"
-                fullWidth
-                value={newGroupName}
-                onChange={(e) => {
-                  setNewGroupName(e.target.value);
-                  setValidationMessage(""); // Clear validation message on input change
-                }}
-                error={!!validationMessage}
-                helperText={validationMessage}
-              />
-            </>
-          }
-          footerContent={
-            <>
-              <Button variant="outlined" onClick={handleCloseAddModal}>
-                Cancel
-              </Button>
-              <Button variant="contained" color="primary" onClick={handleAddGroup}>
-                Save
               </Button>
             </>
           }
