@@ -1,14 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { Table, Button, Modal, Form } from 'react-bootstrap';
-import useRankingGroup from '../hooks/useRankingGroup';
+import React, { useEffect, useState } from "react";
+import { Table, Button, Modal, Form } from "react-bootstrap";
+import useRankingGroup from "../hooks/useRankingGroup";
 
 const RankingGroups = () => {
   // State for modal controls and new group name
   const [showModal, setShowModal] = useState(false);
-  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupName, setNewGroupName] = useState("");
 
   // Destructure data and fetch function from custom hook
-  const { data: groups, error, loading, fetchAllRankingGroups, deleteRankingGroup, addRankingGroup } = useRankingGroup();
+  const {
+    data: groups,
+    error,
+    loading,
+    fetchAllRankingGroups,
+    deleteRankingGroup,
+    addRankingGroup,
+  } = useRankingGroup();
 
   // Fetch all ranking groups on component mount
   useEffect(() => {
@@ -19,7 +26,7 @@ const RankingGroups = () => {
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => {
     setShowModal(false);
-    setNewGroupName('');
+    setNewGroupName("");
   };
 
   // Handler for adding a new ranking group
@@ -27,7 +34,7 @@ const RankingGroups = () => {
     try {
       const newGroup = {
         groupName: newGroupName,
-        createdBy: 1
+        createdBy: 1,
       };
       console.log("New group:", newGroup);
       await addRankingGroup(newGroup); // This assumes addRankingGroup is async
@@ -77,10 +84,16 @@ const RankingGroups = () => {
               <tr key={index}>
                 <td>{index + 1}</td>
                 <td>{group.groupName}</td>
-                <td>{group.numEmployees < 1 ? 'N/A' : group.numEmployees}</td>
-                <td>{group.currentRankingDecision == null ? 'N/A' : group.currentRankingDecision}</td>
+                <td>{group.numEmployees < 1 ? "N/A" : group.numEmployees}</td>
                 <td>
-                  <Button variant="primary" size="sm">Edit</Button>{' '}
+                  {group.currrentRankingDecision == null
+                    ? "N/A"
+                    : group.currrentRankingDecision}
+                </td>
+                <td>
+                  <Button variant="primary" size="sm">
+                    Edit
+                  </Button>{" "}
                   <Button
                     variant="danger"
                     size="sm"

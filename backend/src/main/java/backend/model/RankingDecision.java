@@ -17,7 +17,7 @@ public class RankingDecision {
     private int decisionId;
 
     @Column(name = "group_id")
-    private int groupId;
+    private Integer groupId;
 
     @Column(name = "decision_name")
     private String decisionName;
@@ -41,4 +41,5 @@ public class RankingDecision {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
 }

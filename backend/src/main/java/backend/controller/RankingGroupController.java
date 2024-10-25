@@ -1,7 +1,9 @@
 package backend.controller;
 
+import backend.model.RankingDecision;
 import backend.model.dto.RankingGroupDTO;
 import backend.security.exception.RankingGroupException;
+import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupDTOService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,11 +16,13 @@ import java.util.List;
 @RequestMapping("api/ranking-group")
 public class RankingGroupController {
 
-    private final IRankingGroupDTOService iRankingGroupDTOService;
+    private IRankingGroupDTOService iRankingGroupDTOService;
+    private IRankingDecisionService iRankingDecisionService;
 
     @Autowired
-    public RankingGroupController(IRankingGroupDTOService iRankingGroupDTOService) {
+    public RankingGroupController(IRankingGroupDTOService iRankingGroupDTOService, IRankingDecisionService iRankingDecisionService) {
         this.iRankingGroupDTOService = iRankingGroupDTOService;
+        this.iRankingDecisionService = iRankingDecisionService;
     }
 
     @GetMapping
@@ -58,7 +62,7 @@ public class RankingGroupController {
         exists.setGroupId(rankingGroup.getGroupId());
         exists.setGroupName(rankingGroup.getGroupName());
         exists.setNumEmployees(rankingGroup.getNumEmployees());
-        exists.setCurrrentRankingDecision(rankingGroup.getCurrrentRankingDecision());
+        exists.setCurrentRankingDecision(rankingGroup.getCurrentRankingDecision());
         iRankingGroupDTOService.updateRankingGroup(exists);
         return ResponseEntity.ok(exists);
     }
@@ -69,8 +73,14 @@ public class RankingGroupController {
         if (exists == null) {
             throw new RankingGroupException("Ranking group not found for deletion");
         }
+        RankingDecision checkNullGroupId = iRankingDecisionService.findByGroupId(id);
+        if (checkNullGroupId != null) {
+            iRankingDecisionService.updateRankingDecisionGroupIdToNull(id);
+            iRankingGroupDTOService.deleteRankingGroup(exists);
+        } else {
+            iRankingGroupDTOService.deleteRankingGroup(exists);
+        }
 
-        iRankingGroupDTOService.deleteRankingGroup(exists);
         return ResponseEntity.ok().build();
     }
 }
