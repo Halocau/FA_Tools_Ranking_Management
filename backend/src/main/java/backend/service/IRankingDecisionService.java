@@ -1,9 +1,8 @@
 package backend.service;
 
-import backend.model.RankingDecision;
+import backend.model.entity.RankingDecision;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface IRankingDecisionService {
     public List<RankingDecision> getRankingDecisions();

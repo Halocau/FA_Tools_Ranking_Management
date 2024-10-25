@@ -1,14 +1,11 @@
 package backend.controller;
 
 
-import backend.model.Account;
-import backend.model.dto.LoginRequest;
-import backend.model.dto.LoginResponse;
-import backend.security.TokenProvider;
-import backend.security.exception.AccountException;
+import backend.model.entity.Account;
+import backend.model.request.LoginRequest;
+import backend.config.security.TokenProvider;
 import backend.service.IAccountService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,12 +51,10 @@ public class AccountController {
         return iAccountService.getAllAccounts();
     }
 
-    @GetMapping("/login")
-    public ResponseEntity<String> login(
-            @RequestParam String username,
-            @RequestParam String password) {
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         // Find account by username and password
-        Account account = iAccountService.findAccountByUsernameAndPassword(username, password);
+        Account account = iAccountService.findAccountByUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword());
 
         if (account != null) {
 
