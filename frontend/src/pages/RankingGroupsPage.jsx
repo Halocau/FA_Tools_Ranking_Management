@@ -12,10 +12,9 @@ const RankingGroups = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [groupToDelete, setGroupToDelete] = useState(null);
-  const [addMessage, setAddMessage] = useState(null);
-  const [deleteMessage, setDeleteMessage] = useState(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false); // State for success modal
-  const [successMessage, setSuccessMessage] = useState(""); // Message for success modal
+  const [deleteMessage, setDeleteMessage] = useState(null); // Message for Add group status
+  const [addMessage, setAddMessage] = useState(null); // Message for Add group status
+  const [successMessage, setSuccessMessage] = useState(null); // Message for success add status
 
   const {
     data: groups,
@@ -60,8 +59,7 @@ const RankingGroups = () => {
       await addRankingGroup(newGroup);
       handleCloseAddModal();
       fetchAllRankingGroups();
-      setSuccessMessage("Group added successfully!"); // Set success message
-      setShowSuccessModal(true); // Show success modal
+      setSuccessMessage("Group added successfully!"); // Set success message here
     } catch (error) {
       console.error("Failed to add group:", error);
       setAddMessage({ type: "danger", text: "Failed to add group!" });
@@ -75,8 +73,7 @@ const RankingGroups = () => {
         setGroupToDelete(null);
         handleCloseDeleteModal();
         fetchAllRankingGroups();
-        setSuccessMessage("Group deleted successfully!"); // Set success message
-        setShowSuccessModal(true); // Show success modal
+        setDeleteMessage({ type: "success", text: "Group deleted successfully!" });
       }
     } catch (error) {
       console.error("Failed to delete group:", error);
@@ -84,13 +81,19 @@ const RankingGroups = () => {
     }
   };
 
-  // Close success modal after 5 seconds
   useEffect(() => {
-    if (showSuccessModal) {
-      const timer = setTimeout(() => setShowSuccessModal(false), 5000);
+    if (deleteMessage) {
+      const timer = setTimeout(() => setDeleteMessage(null), 2000);
       return () => clearTimeout(timer);
     }
-  }, [showSuccessModal]);
+  }, [deleteMessage]);
+
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(null), 2000); // Clear success message after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -102,6 +105,18 @@ const RankingGroups = () => {
         <h2>
           <FaRankingStar /> Ranking Group List
         </h2>
+
+        {successMessage && (
+          <Alert variant="success" onClose={() => setSuccessMessage(null)} dismissible>
+            {successMessage}
+          </Alert>
+        )}
+
+        {deleteMessage && (
+          <Alert variant={deleteMessage.type} onClose={() => setDeleteMessage(null)} dismissible>
+            {deleteMessage.text}
+          </Alert>
+        )}
 
         <Table striped bordered hover>
           <thead>
@@ -196,22 +211,6 @@ const RankingGroups = () => {
             </Button>
             <Button variant="primary" onClick={handleAddGroup}>
               Save
-            </Button>
-          </Modal.Footer>
-        </Modal>
-        {/* Success Modal */}
-        <Modal
-          className="custom-modal"
-          show={showSuccessModal}
-          onHide={() => setShowSuccessModal(false)}
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Success</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>{successMessage}</Modal.Body>
-          <Modal.Footer>
-            <Button variant="primary" onClick={() => setShowSuccessModal(false)}>
-              Close
             </Button>
           </Modal.Footer>
         </Modal>
