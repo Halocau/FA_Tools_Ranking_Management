@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form } from "react-bootstrap";
+import { Table, Button, Modal, Form, Alert } from "react-bootstrap";
 import useRankingGroup from "../hooks/useRankingGroup";
 import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
@@ -13,6 +13,8 @@ const RankingGroups = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [groupToDelete, setGroupToDelete] = useState(null);
+  // Status notification when deleting
+  const [deleteMessage, setDeleteMessage] = useState(null);
 
   // Destructure data and fetch function from custom hook
   const {
@@ -46,10 +48,9 @@ const RankingGroups = () => {
         groupName: newGroupName,
         createdBy: 1,
       };
-      console.log("New group:", newGroup);
-      await addRankingGroup(newGroup); // This assumes addRankingGroup is async
-      handleCloseAddModal(); // Close the modal
-      fetchAllRankingGroups(); // Fetch all ranking groups again
+      await addRankingGroup(newGroup); // Add new group
+      handleCloseAddModal(); // Close modal
+      fetchAllRankingGroups(); // Fetch groups again
     } catch (error) {
       console.error("Failed to add group:", error); // Handle any errors
     }
@@ -58,15 +59,28 @@ const RankingGroups = () => {
   const handleDeleteGroup = async () => {
     try {
       if (groupToDelete) {
-        await deleteRankingGroup(groupToDelete); // Delete the selected group
-        setGroupToDelete(null); // Reset the group to be deleted
-        handleCloseDeleteModal(); // Close the modal
-        fetchAllRankingGroups(); // Fetch all ranking groups again
+        await deleteRankingGroup(groupToDelete); // Delete selected group
+        setGroupToDelete(null); // Reset group to delete
+        handleCloseDeleteModal(); // Close modal
+        fetchAllRankingGroups(); // Refresh groups list
+        setDeleteMessage({ type: "success", text: "Group deleted successfully!" });
       }
     } catch (error) {
-      console.error("Failed to delete group:", error); // Handle any errors
+      console.error("Failed to delete group:", error); // Handle error
+      setDeleteMessage({ type: "danger", text: "Failed to delete group!" });
     }
   };
+
+  // Automatically hide the delete message after 5 seconds
+  useEffect(() => {
+    if (deleteMessage) {
+      const timer = setTimeout(() => {
+        setDeleteMessage(null);
+      }, 5000); // Hide after 5 seconds
+
+      return () => clearTimeout(timer); // Clean up the timer
+    }
+  }, [deleteMessage]);
 
   // Handle loading state
   if (loading) {
@@ -85,6 +99,14 @@ const RankingGroups = () => {
         <h2>
           <FaRankingStar /> Ranking Group List
         </h2>
+
+        {/* Display the delete message */}
+        {deleteMessage && (
+          <Alert variant={deleteMessage.type} onClose={() => setDeleteMessage(null)} dismissible>
+            {deleteMessage.text}
+          </Alert>
+        )}
+
         <Table striped bordered hover>
           <thead>
             <tr>

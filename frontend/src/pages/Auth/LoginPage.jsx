@@ -1,9 +1,8 @@
 // src/Login.js
 import React, { useState } from "react";
 import "../../assets/css/LoginForm.css";
-import Image from "../../assets/image/fsoft_2.jpg";
+import Image from "../../assets/image/image.png";
 import Logo from "../../assets/image/logo.png";
-import GoogleSvg from "../../assets/image/icons8-google.svg";
 import { FaEye } from "react-icons/fa6";
 import { FaEyeSlash } from "react-icons/fa6";
 import { Link } from "react-router-dom";
@@ -15,13 +14,13 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const { data, error, loading, login } = useLogin();
 
-    const handleLogin = async () => {
-        try {
-            await login(username, password);
-        } catch (err) {
-            console.log(err);
-        }
-    };
+  const handleLogin = async () => {
+    try {
+      await login(username, password);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <div className="login-main">
@@ -83,10 +82,6 @@ const LoginPage = () => {
               <div className="login-center-buttons">
                 <button type="button" onClick={() => handleLogin()}>
                   Log In
-                </button>
-                <button type="button">
-                  <img src={GoogleSvg} alt="" />
-                  Log In with Google
                 </button>
               </div>
             </form>
