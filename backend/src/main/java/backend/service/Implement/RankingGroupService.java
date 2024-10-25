@@ -9,27 +9,34 @@ import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
 import backend.service.IRankingGroupService;
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
+import org.modelmapper.TypeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-public class RankingGroupService implements IRankingGroupService {
+public class RankingGroupService extends BaseService implements IRankingGroupService {
     private IRankingGroupRepository iRankingGroupRepository;
     private IAccount iAccount;
     private IRankingDecisionRepository iRankingDecisionRepository;
+    private ModelMapper modelMapper;
 
     @Autowired
-    public RankingGroupService(IRankingGroupRepository iRankingGroupRepository, IAccount iAccount, IRankingDecisionRepository iRankingDecisionRepository) {
+    public RankingGroupService(ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository, IAccount iAccount, IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper1) {
+        super(modelMapper);
         this.iRankingGroupRepository = iRankingGroupRepository;
         this.iAccount = iAccount;
         this.iRankingDecisionRepository = iRankingDecisionRepository;
+        this.modelMapper = modelMapper1;
     }
-
     //    @Override
 //    public List<RankingGroup> getAllRankingGroups() {
 //        return iRankingGroupRepository.findAll();
@@ -120,5 +127,25 @@ public class RankingGroupService implements IRankingGroupService {
         iRankingGroupRepository.delete(rankingGroup);
     }
 
+    @Override
+    public List<RankingGroupResponse> getAllRankingGroupResponses(List<RankingGroup> rankingGroups) {
+        List<RankingGroupResponse> responseList = new ArrayList<>();
+        for (RankingGroup rankingGroup : rankingGroups) {
+            // Ánh xạ cơ bản từ RankingGroup sang RankingGroupResponse
+            RankingGroupResponse response = modelMapper.map(rankingGroup, RankingGroupResponse.class);
+
+            // Thiết lập giá trị cho currentRankingDecision từ decisionName
+            response.setCurrentRankingDecision(rankingGroup.getDecisionName());
+            responseList.add(response);
+        }
+        return responseList;
+    }
+    
+    @Override
+    public RankingGroupResponse getRankingGroupResponseById(RankingGroup rankingGroup) {
+        RankingGroupResponse response = modelMapper.map(rankingGroup, RankingGroupResponse.class);
+        response.setCurrentRankingDecision(rankingGroup.getDecisionName());
+        return response;
+    }
 
 }

@@ -10,4 +10,5 @@ public class RankingGroupResponse {
     private String groupName;
     private int numEmployees;
     private String currentRankingDecision;//decisionName
+
 }

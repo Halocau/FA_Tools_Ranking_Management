@@ -28,26 +28,20 @@ public class RankingGroupController {
         this.iRankingDecisionService = iRankingDecisionService;
     }
 
-    // Covert data RankingGroup -> RankingGroupResponse
-    public RankingGroupResponse convertToDTO(RankingGroup group, String decisionName) {
-        RankingGroupResponse dto = new RankingGroupResponse();
-        dto.setGroupId(group.getGroupId());
-        dto.setGroupName(group.getGroupName());
-        dto.setNumEmployees(group.getNumEmployees());
-        dto.setCurrentRankingDecision(decisionName);  // Gán giá trị quyết định xếp hạng
-        return dto;
-    }
+//    // Covert data RankingGroup -> RankingGroupResponse
+//    public RankingGroupResponse convertToDTO(RankingGroup group, String decisionName) {
+//        RankingGroupResponse dto = new RankingGroupResponse();
+//        dto.setGroupId(group.getGroupId());
+//        dto.setGroupName(group.getGroupName());
+//        dto.setNumEmployees(group.getNumEmployees());
+//        dto.setCurrentRankingDecision(decisionName);  // Gán giá trị quyết định xếp hạng
+//        return dto;
+//    }
 
     @GetMapping
     public List<RankingGroupResponse> getAllRankingGroups() {
-        List<RankingGroup> listRankingGroup = iRankingGroupService.getAllRankingGroups();
-
-        List<RankingGroupResponse> listRankingGroupResponse = new ArrayList<>();
-        for (RankingGroup rankingGroup : listRankingGroup) {
-            RankingGroupResponse rankingGroupResponse = convertToDTO(rankingGroup, rankingGroup.getDecisionName());
-            listRankingGroupResponse.add(rankingGroupResponse);
-        }
-        return listRankingGroupResponse;
+        List<RankingGroup> rankingGroups =iRankingGroupService.getAllRankingGroups();
+        return iRankingGroupService.getAllRankingGroupResponses(rankingGroups);
     }
 
     @GetMapping("/get/{id}")
@@ -57,7 +51,7 @@ public class RankingGroupController {
             // Tự động đi vào CatchException (RankingGroupException handler)
             throw new RankingGroupException("Ranking group not found");
         }
-        RankingGroupResponse response = convertToDTO(rankingGroup, rankingGroup.getDecisionName());
+        RankingGroupResponse response = iRankingGroupService.getRankingGroupResponseById(rankingGroup);
         return ResponseEntity.ok(response);
     }
 
