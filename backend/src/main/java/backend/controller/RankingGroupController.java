@@ -1,49 +1,71 @@
 package backend.controller;
 
-import backend.model.RankingDecision;
-import backend.model.dto.RankingGroupDTO;
-import backend.security.exception.RankingGroupException;
+
+import backend.config.exception.RankingGroupException;
+import backend.model.dto.RankingGroupResponse;
+import backend.model.entity.RankingDecision;
+import backend.model.entity.RankingGroup;
 import backend.service.IRankingDecisionService;
-import backend.service.IRankingGroupDTOService;
+import backend.service.IRankingGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("api/ranking-group")
 public class RankingGroupController {
 
-    private IRankingGroupDTOService iRankingGroupDTOService;
+    private IRankingGroupService iRankingGroupService;
     private IRankingDecisionService iRankingDecisionService;
 
     @Autowired
-    public RankingGroupController(IRankingGroupDTOService iRankingGroupDTOService, IRankingDecisionService iRankingDecisionService) {
-        this.iRankingGroupDTOService = iRankingGroupDTOService;
+    public RankingGroupController(IRankingGroupService iRankingGroupService, IRankingDecisionService iRankingDecisionService) {
+        this.iRankingGroupService = iRankingGroupService;
         this.iRankingDecisionService = iRankingDecisionService;
     }
 
+    // Covert data RankingGroup -> RankingGroupResponse
+    public RankingGroupResponse convertToDTO(RankingGroup group, String decisionName) {
+        RankingGroupResponse dto = new RankingGroupResponse();
+        dto.setGroupId(group.getGroupId());
+        dto.setGroupName(group.getGroupName());
+        dto.setNumEmployees(group.getNumEmployees());
+        dto.setCurrentRankingDecision(decisionName);  // Gán giá trị quyết định xếp hạng
+        return dto;
+    }
+
     @GetMapping
-    public List<RankingGroupDTO> getAllRankingGroups() {
-        return iRankingGroupDTOService.getAllRankingGroups();
+    public List<RankingGroupResponse> getAllRankingGroups() {
+        List<RankingGroup> listRankingGroup = iRankingGroupService.getAllRankingGroups();
+
+        List<RankingGroupResponse> listRankingGroupResponse = new ArrayList<>();
+        for (RankingGroup rankingGroup : listRankingGroup) {
+            RankingGroupResponse rankingGroupResponse = convertToDTO(rankingGroup, rankingGroup.getDecisionName());
+            listRankingGroupResponse.add(rankingGroupResponse);
+        }
+        return listRankingGroupResponse;
     }
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<RankingGroupDTO> findRankingGroupById(@PathVariable int id) {
-        RankingGroupDTO rankingGroup = iRankingGroupDTOService.findRankingGroupById(id);
+    public ResponseEntity<RankingGroupResponse> findRankingGroupById(@PathVariable int id) {
+        RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(id);
         if (rankingGroup == null) {
             // Tự động đi vào CatchException (RankingGroupException handler)
             throw new RankingGroupException("Ranking group not found");
         }
-        return ResponseEntity.ok(rankingGroup);
+        RankingGroupResponse response = convertToDTO(rankingGroup, rankingGroup.getDecisionName());
+        return ResponseEntity.ok(response);
     }
 
+
     @PostMapping("/add")
-    public ResponseEntity<RankingGroupDTO> addRankingGroup(@RequestBody RankingGroupDTO rankingGroup) {
+    public ResponseEntity<RankingGroup> addRankingGroup(@RequestBody RankingGroup rankingGroup) {
         rankingGroup.setGroupId(0);
-        RankingGroupDTO result = iRankingGroupDTOService.addRankingGroup(rankingGroup);
+        RankingGroup result = iRankingGroupService.addRankingGroup(rankingGroup);
 
         if (result != null) {
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
@@ -53,8 +75,8 @@ public class RankingGroupController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<RankingGroupDTO> updateRankingGroup(@RequestBody RankingGroupDTO rankingGroup, @PathVariable int id) {
-        RankingGroupDTO exists = iRankingGroupDTOService.findRankingGroupById(id);
+    public ResponseEntity<RankingGroup> updateRankingGroup(@RequestBody RankingGroup rankingGroup, @PathVariable int id) {
+        RankingGroup exists = iRankingGroupService.findRankingGroupById(id);
         if (exists == null) {
             throw new RankingGroupException("Ranking group not found for update");
         }
@@ -62,23 +84,23 @@ public class RankingGroupController {
         exists.setGroupId(rankingGroup.getGroupId());
         exists.setGroupName(rankingGroup.getGroupName());
         exists.setNumEmployees(rankingGroup.getNumEmployees());
-        exists.setCurrentRankingDecision(rankingGroup.getCurrentRankingDecision());
-        iRankingGroupDTOService.updateRankingGroup(exists);
+        exists.setDecisionName(rankingGroup.getDecisionName());
+        iRankingGroupService.updateRankingGroup(exists);
         return ResponseEntity.ok(exists);
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteRankingGroup(@PathVariable int id) {
-        RankingGroupDTO exists = iRankingGroupDTOService.findRankingGroupById(id);
+        RankingGroup exists = iRankingGroupService.findRankingGroupById(id);
         if (exists == null) {
             throw new RankingGroupException("Ranking group not found for deletion");
         }
         RankingDecision checkNullGroupId = iRankingDecisionService.findByGroupId(id);
         if (checkNullGroupId != null) {
             iRankingDecisionService.updateRankingDecisionGroupIdToNull(id);
-            iRankingGroupDTOService.deleteRankingGroup(exists);
+            iRankingGroupService.deleteRankingGroup(exists);
         } else {
-            iRankingGroupDTOService.deleteRankingGroup(exists);
+            iRankingGroupService.deleteRankingGroup(exists);
         }
 
         return ResponseEntity.ok().build();

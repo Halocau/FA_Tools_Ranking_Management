@@ -1,16 +1,12 @@
-package backend.security;
+package backend.config.security;
 
-import backend.model.Account;
+import backend.model.entity.Account;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.io.Decoders;
 
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 
 import org.springframework.stereotype.Component;
 
@@ -21,7 +17,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
-import java.security.Key;
 
 @Component
 public class TokenProvider {
