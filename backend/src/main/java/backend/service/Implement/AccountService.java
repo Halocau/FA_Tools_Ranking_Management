@@ -1,7 +1,7 @@
 package backend.service.Implement;
 
 import backend.dao.IAccount;
-import backend.model.entity.Account;
+import backend.model.Account;
 import backend.service.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

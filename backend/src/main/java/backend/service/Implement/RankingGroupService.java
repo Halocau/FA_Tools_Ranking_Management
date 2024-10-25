@@ -3,10 +3,9 @@ package backend.service.Implement;
 import backend.dao.IAccount;
 import backend.dao.IRankingDecisionRepository;
 import backend.dao.IRankingGroupRepository;
-import backend.model.dto.RankingGroupResponse;
-import backend.model.entity.Account;
-import backend.model.entity.RankingDecision;
-import backend.model.entity.RankingGroup;
+import backend.model.Account;
+import backend.model.RankingDecision;
+import backend.model.RankingGroup;
 import backend.service.IRankingGroupService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +33,6 @@ public class RankingGroupService implements IRankingGroupService {
 //    public List<RankingGroup> getAllRankingGroups() {
 //        return iRankingGroupRepository.findAll();
 //    }
-
-
     @Override
     public List<RankingGroup> getAllRankingGroups() {
         List<RankingGroup> rankingGroups = iRankingGroupRepository.findAll();
@@ -116,9 +113,6 @@ public class RankingGroupService implements IRankingGroupService {
     @Override
     @Transactional
     public void deleteRankingGroup(RankingGroup rankingGroup) {
-
         iRankingGroupRepository.delete(rankingGroup);
     }
-
-
 }

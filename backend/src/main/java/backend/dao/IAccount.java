@@ -1,6 +1,6 @@
 package backend.dao;
 
-import backend.model.entity.Account;
+import backend.model.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

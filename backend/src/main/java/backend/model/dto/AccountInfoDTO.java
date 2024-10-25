@@ -1,17 +1,13 @@
 package backend.model.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
+import java.sql.Date;
+
 import lombok.Data;
 
-import java.time.LocalDateTime;
-import java.util.Date;
-
 @Data
-@AllArgsConstructor
-public class LoginResponse {
+public class AccountInfoDTO {
     private int id;
-
+    private String username;
     private String email;
     private String role;
     private String status;
@@ -20,6 +16,4 @@ public class LoginResponse {
     private String address;
     private String phoneNumber;
     private String gender;
-    private String token;
-    private LocalDateTime tokenExpiration;
 }

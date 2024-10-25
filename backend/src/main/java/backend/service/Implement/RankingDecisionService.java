@@ -1,13 +1,15 @@
 package backend.service.Implement;
 
 import backend.dao.IRankingDecisionRepository;
-import backend.model.entity.RankingDecision;
+import backend.model.RankingDecision;
 import backend.service.IRankingDecisionService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RankingDecisionService implements IRankingDecisionService {

@@ -1,6 +1,6 @@
 package backend.service;
 
-import backend.model.entity.Account;
+import backend.model.Account;
 
 import java.util.List;
 
