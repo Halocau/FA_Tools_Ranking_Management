@@ -1,7 +1,7 @@
 // src/Login.js
 import React, { useState } from "react";
 import "../../assets/css/LoginForm.css";
-import Image from "../../assets/image/fsoft_2.jpg";
+import Image from "../../assets/image/Login_mig.png";
 import Logo from "../../assets/image/logo.png";
 import GoogleSvg from "../../assets/image/icons8-google.svg";
 import { FaEye } from "react-icons/fa6";
@@ -15,13 +15,13 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const { data, error, loading, login } = useLogin();
 
-    const handleLogin = async () => {
-        try {
-            await login(username, password);
-        } catch (err) {
-            console.log(err);
-        }
-    };
+  const handleLogin = async () => {
+    try {
+      await login(username, password);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <div className="login-main">

@@ -6,6 +6,8 @@ import { FaEdit } from "react-icons/fa";
 import { FaRankingStar } from "react-icons/fa6";
 import Slider from "../layouts/Slider.jsx";
 import ModalCustom from "../components/Common/Modal.jsx";
+import { DataGrid } from "@mui/x-data-grid";
+import Box from "@mui/material/Box";
 
 const RankingGroups = () => {
   // State for modal controls and new group name
@@ -78,6 +80,50 @@ const RankingGroups = () => {
     return <div>Error: {error.message}</div>;
   }
 
+  // Prepare table data
+  const columns = [
+    { field: "index", headerName: "Index", width: 70 },
+    { field: "groupName", headerName: "Group Name", width: 250 },
+    { field: "numEmployees", headerName: "No. of Employees", width: 180 },
+    {
+      field: "currentRankingDecision",
+      headerName: "Current Ranking Decision",
+      width: 250,
+    },
+    {
+      field: "action",
+      headerName: "Action",
+      width: 150,
+      renderCell: (params) => (
+        <>
+          <Button variant="primary" size="sm">
+            <FaEdit />
+          </Button>{" "}
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => handleOpenDeleteModal(params.row.groupId)}
+          >
+            <MdDeleteForever />
+          </Button>
+        </>
+      ),
+    },
+  ];
+
+  const rows = groups
+    ? groups.map((group, index) => ({
+        id: group.groupId,
+        index: index + 1,
+        groupName: group.groupName,
+        numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
+        currentRankingDecision:
+          group.currrentRankingDecision == null
+            ? "N/A"
+            : group.currrentRankingDecision,
+      }))
+    : [];
+
   return (
     <div style={{ marginTop: "60px" }}>
       <Slider />
@@ -85,49 +131,23 @@ const RankingGroups = () => {
         <h2>
           <FaRankingStar /> Ranking Group List
         </h2>
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>Index</th>
-              <th>Group Name</th>
-              <th>No. of Employees</th>
-              <th>Current Ranking Decision</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {groups && groups.length > 0 ? (
-              groups.map((group, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{group.groupName}</td>
-                  <td>{group.numEmployees < 1 ? "N/A" : group.numEmployees}</td>
-                  <td>
-                    {group.currrentRankingDecision == null
-                      ? "N/A"
-                      : group.currrentRankingDecision}
-                  </td>
-                  <td>
-                    <Button variant="primary" size="sm">
-                      <FaEdit />
-                    </Button>{" "}
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => handleOpenDeleteModal(group.groupId)}
-                    >
-                      <MdDeleteForever />
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5">No groups available</td>
-              </tr>
-            )}
-          </tbody>
-        </Table>
+        {/* Use MUI Table */}
+        <Box sx={{ width: "100%" }}>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 5,
+                },
+              },
+            }}
+            pageSizeOptions={[5]}
+            checkboxSelection
+            disableRowSelectionOnClick
+          />
+        </Box>
 
         {/* Modal for delete group */}
         <ModalCustom
@@ -153,11 +173,12 @@ const RankingGroups = () => {
         </Button>
 
         {/* Modal for adding a new group */}
-        <Modal show={showAddModal} onHide={handleCloseAddModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>Add New Group</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
+        {/* ModalCustom for adding a new group */}
+        <ModalCustom
+          show={showAddModal}
+          handleClose={handleCloseAddModal}
+          title="Add New Group"
+          bodyContent={
             <Form>
               <Form.Group controlId="formGroupName">
                 <Form.Label>Group Name</Form.Label>
@@ -169,16 +190,18 @@ const RankingGroups = () => {
                 />
               </Form.Group>
             </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseAddModal}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={handleAddGroup}>
-              Save
-            </Button>
-          </Modal.Footer>
-        </Modal>
+          }
+          footerContent={
+            <>
+              <Button variant="secondary" onClick={handleCloseAddModal}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleAddGroup}>
+                Save
+              </Button>
+            </>
+          }
+        />
       </div>
     </div>
   );
