@@ -11,7 +11,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Col, Row } from "react-bootstrap";
-import Slider from "./layouts/Slider.jsx";
+
 function App() {
   return (
     <AuthProvider>
