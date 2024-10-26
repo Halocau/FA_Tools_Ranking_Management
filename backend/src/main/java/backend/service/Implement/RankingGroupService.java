@@ -160,4 +160,9 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
 
     }
 
+    @Override
+    public boolean isRankingGroupExitsByGroupName(String groupName) {
+        return iRankingGroupRepository.existsByGroupName(groupName);
+    }
+
 }

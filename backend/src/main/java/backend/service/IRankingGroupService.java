@@ -22,4 +22,6 @@ public interface IRankingGroupService {
     public RankingGroupResponse getRankingGroupResponseById(RankingGroup rankingGroup);
 
     public void createRankingGroup(AddNewGroup form);
+
+    boolean isRankingGroupExitsByGroupName(String groupName);
 }

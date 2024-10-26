@@ -71,7 +71,7 @@ public class RankingGroupController {
 //    }
 
     @PostMapping("/add")
-    public String addRankingGroup(@RequestBody AddNewGroup form) {
+    public String addRankingGroup(@RequestBody @Valid AddNewGroup form) {
         iRankingGroupService.createRankingGroup(form);
         return "create successfully!";
     }
