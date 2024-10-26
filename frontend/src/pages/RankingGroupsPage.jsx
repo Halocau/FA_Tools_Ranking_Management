@@ -47,16 +47,43 @@ const RankingGroups = () => {
 
   const handleAddGroup = async () => {
     setValidationMessage("");
-
+    // check name group have space
     if (!newGroupName.trim()) {
-      setValidationMessage("Group name cannot be empty.");
-      return;
+        setValidationMessage("Group name cannot be empty.");
+        return;
+    }
+    //  check length
+    if (newGroupName.length < 3) {
+        setValidationMessage("Group name must be at least 3 characters long.");
+        return;
+    }
+    if (newGroupName.length > 50) {
+        setValidationMessage("Group name cannot exceed 50 characters.");
+        return;
+    }
+    // check space in head and tail
+    if (newGroupName !== newGroupName.trim()) {
+        setValidationMessage("Group name cannot have leading or trailing spaces.");
+        return;
+    }
+    // check 
+    const specialCharRegex = /[^a-zA-Z0-9\s]/;
+    if (specialCharRegex.test(newGroupName)) {
+        setValidationMessage("Group name cannot contain special characters.");
+        return;
+    }
+    // check forbidden word
+    const forbiddenWords = ["admin", "group"]; // Danh sách từ cấm
+    if (forbiddenWords.some(word => newGroupName.toLowerCase().includes(word))) {
+        setValidationMessage("Group name cannot contain forbidden words.");
+        return;
     }
 
+    // check group name exist
     const isDuplicate = groups.some(group => group.groupName.toLowerCase() === newGroupName.toLowerCase());
     if (isDuplicate) {
-      setValidationMessage("Group name already exists.");
-      return;
+        setValidationMessage("Group name already exists.");
+        return;
     }
 
     try {
@@ -87,7 +114,7 @@ const RankingGroups = () => {
         setMessage("Group deleted successfully!");
         setTimeout(() => setMessage(null), 2000);
         setGroupToDelete(null);
-        handleCloseDeleteModal(); // Đóng modal sau khi xóa thành công
+        handleCloseDeleteModal(); //  closed modal after successflly
         await fetchAllRankingGroups();
       }
     } catch (error) {
@@ -95,7 +122,7 @@ const RankingGroups = () => {
       setMessageType("danger");
       setMessage("Failed to delete group. Please try again.");
       setTimeout(() => setMessage(null), 2000);
-      handleCloseDeleteModal(); // Đóng modal nếu xóa thất bại
+      handleCloseDeleteModal(); // closed  modal if not successflly
     }
   };
 
