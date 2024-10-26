@@ -5,8 +5,10 @@ import backend.config.exception.RankingGroupException;
 import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
+import backend.model.form.RankingGroup.AddNewGroup;
 import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +42,7 @@ public class RankingGroupController {
 
     @GetMapping
     public List<RankingGroupResponse> getAllRankingGroups() {
-        List<RankingGroup> rankingGroups =iRankingGroupService.getAllRankingGroups();
+        List<RankingGroup> rankingGroups = iRankingGroupService.getAllRankingGroups();
         return iRankingGroupService.getAllRankingGroupResponses(rankingGroups);
     }
 
@@ -56,16 +58,22 @@ public class RankingGroupController {
     }
 
 
-    @PostMapping("/add")
-    public ResponseEntity<RankingGroup> addRankingGroup(@RequestBody RankingGroup rankingGroup) {
-        rankingGroup.setGroupId(0);
-        RankingGroup result = iRankingGroupService.addRankingGroup(rankingGroup);
+//    @PostMapping("/add")
+//    public ResponseEntity<RankingGroup> addRankingGroup(@RequestBody RankingGroup rankingGroup) {
+//        rankingGroup.setGroupId(0);
+//        RankingGroup result = iRankingGroupService.addRankingGroup(rankingGroup);
+//
+//        if (result != null) {
+//            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+//        } else {
+//            throw new RankingGroupException("Unable to add ranking group"); // Exception will be caught in CatchException
+//        }
+//    }
 
-        if (result != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(result);
-        } else {
-            throw new RankingGroupException("Unable to add ranking group"); // Exception will be caught in CatchException
-        }
+    @PostMapping("/add")
+    public String addRankingGroup(@RequestBody AddNewGroup form) {
+        iRankingGroupService.createRankingGroup(form);
+        return "create successfully!";
     }
 
     @PutMapping("/update/{id}")

@@ -2,7 +2,7 @@ package backend.controller;
 
 
 import backend.model.entity.Account;
-import backend.model.request.LoginRequest;
+import backend.model.form.LoginRequest;
 import backend.config.security.TokenProvider;
 import backend.service.IAccountService;
 

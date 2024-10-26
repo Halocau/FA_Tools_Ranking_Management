@@ -2,6 +2,7 @@ package backend.service;
 
 import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingGroup;
+import backend.model.form.RankingGroup.AddNewGroup;
 
 import java.util.List;
 
@@ -19,4 +20,6 @@ public interface IRankingGroupService {
     public List<RankingGroupResponse> getAllRankingGroupResponses(List<RankingGroup> rankingGroups);
 
     public RankingGroupResponse getRankingGroupResponseById(RankingGroup rankingGroup);
+
+    public void createRankingGroup(AddNewGroup form);
 }

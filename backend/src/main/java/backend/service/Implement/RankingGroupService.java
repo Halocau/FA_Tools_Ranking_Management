@@ -7,20 +7,19 @@ import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.Account;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
+import backend.model.form.RankingGroup.AddNewGroup;
 import backend.service.IRankingGroupService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.PropertyMap;
-import org.modelmapper.TypeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class RankingGroupService extends BaseService implements IRankingGroupService {
@@ -140,12 +139,25 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
         }
         return responseList;
     }
-    
+
     @Override
     public RankingGroupResponse getRankingGroupResponseById(RankingGroup rankingGroup) {
         RankingGroupResponse response = modelMapper.map(rankingGroup, RankingGroupResponse.class);
         response.setCurrentRankingDecision(rankingGroup.getDecisionName());
         return response;
+    }
+
+    @Override
+    public void createRankingGroup(AddNewGroup form) {
+        // Tạo đối tượng RankingGroup từ đối tượng form
+        RankingGroup rankingGroup = RankingGroup.builder()
+                .groupName(form.getGroupName())
+                .createdBy(form.getCreateBy())
+                .build();
+
+        // Lưu đối tượng RankingGroup vào cơ sở dữ liệu
+        iRankingGroupRepository.save(rankingGroup);
+
     }
 
 }
