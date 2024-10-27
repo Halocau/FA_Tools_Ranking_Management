@@ -102,6 +102,7 @@ const RankingGroups = () => {
     }
   }, [successMessage]);
 
+  // console.log(groups);
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
   // Prepare table data
@@ -137,17 +138,19 @@ const RankingGroups = () => {
 
   const rows = groups
     ? groups.map((group, index) => ({
-        id: group.groupId,
-        index: index + 1,
-        groupName: group.groupName,
-        numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
-        currentRankingDecision:
-          group.currrentRankingDecision == null
-            ? "N/A"
-            : group.currrentRankingDecision,
-      }))
+      id: group.groupId,
+      index: index + 1,
+      groupName: group.groupName,
+      numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
+      currentRankingDecision:
+        group.currentRankingDecision == null
+          ? "N/A"
+          : group.currentRankingDecision,
+    }))
     : [];
 
+  console.log(groups);
+  console.log(rows);
   return (
     <div style={{ marginTop: "60px" }}>
       <Slider />
