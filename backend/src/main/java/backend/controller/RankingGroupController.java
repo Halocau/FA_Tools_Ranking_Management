@@ -92,7 +92,7 @@ public class RankingGroupController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteRankingGroup(@PathVariable int id) {
+    public ResponseEntity<String> deleteRankingGroup(@PathVariable int id) {
         RankingGroup exists = iRankingGroupService.findRankingGroupById(id);
         if (exists == null) {
             throw new RankingGroupException("Ranking group not found for deletion");
@@ -100,11 +100,12 @@ public class RankingGroupController {
         RankingDecision checkNullGroupId = iRankingDecisionService.findByGroupId(id);
         if (checkNullGroupId != null) {
             iRankingDecisionService.updateRankingDecisionGroupIdToNull(id);
-            iRankingGroupService.deleteRankingGroup(exists);
-        } else {
-            iRankingGroupService.deleteRankingGroup(exists);
         }
+        if("Trainer".equals(exists.getGroupName())){
+            throw new RankingGroupException("Cannot delete the group name \"Trainer.\"");
+        }
+        iRankingGroupService.deleteRankingGroup(id);
+        return ResponseEntity.ok("deleted successfully "+id);
 
-        return ResponseEntity.ok().build();
     }
 }

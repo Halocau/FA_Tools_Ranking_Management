@@ -15,7 +15,7 @@ public interface IRankingGroupService {
 
     public RankingGroup updateRankingGroup(RankingGroup rankingGroup);
 
-    public void deleteRankingGroup(RankingGroup rankingGroup);
+    public void deleteRankingGroup(int id);
 
     public List<RankingGroupResponse> getAllRankingGroupResponses(List<RankingGroup> rankingGroups);
 

@@ -85,10 +85,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
         RankingDecision decision = iRankingDecisionRepository.findByGroupId(group.getGroupId());
         if (decision != null) {
             group.setDecisionName(decision.getDecisionName());
-        } else {
-            throw new ResourceNotFoundException("RankingDecision not found for groupId: " + group.getGroupId());
         }
-
         return group;
     }
 
@@ -120,11 +117,10 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     }
 
     @Override
-    @Transactional
-    public void deleteRankingGroup(RankingGroup rankingGroup) {
-
-        iRankingGroupRepository.delete(rankingGroup);
+    public void deleteRankingGroup(int id) {
+        iRankingGroupRepository.deleteById(id);
     }
+
 
     @Override
     public List<RankingGroupResponse> getAllRankingGroupResponses(List<RankingGroup> rankingGroups) {
@@ -148,6 +144,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     }
 
     @Override
+    @Transactional
     public void createRankingGroup(AddNewGroup form) {
         // Tạo đối tượng RankingGroup từ đối tượng form
         RankingGroup rankingGroup = RankingGroup.builder()
@@ -164,5 +161,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     public boolean isRankingGroupExitsByGroupName(String groupName) {
         return iRankingGroupRepository.existsByGroupName(groupName);
     }
+
+
 
 }
