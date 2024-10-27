@@ -148,7 +148,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
         // Tạo đối tượng RankingGroup từ đối tượng form
         RankingGroup rankingGroup = RankingGroup.builder()
                 .groupName(form.getGroupName())
-                .createdBy(form.getCreateBy())
+                .createdBy(form.getCreatedBy())
                 .build();
 
         // Lưu đối tượng RankingGroup vào cơ sở dữ liệu
