@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import http from '../api/apiClient';
-
+import authClient from '../api/baseapi/AuthorAPI';
 // Custom hook for Ranking Group API
 const useRankingGroup = () => {
 
@@ -13,7 +13,7 @@ const useRankingGroup = () => {
     const fetchAllRankingGroups = async () => {
         setLoading(true);
         try {
-            const response = await http.get('/ranking-group');
+            const response = await authClient.get('/ranking-group');
             setData(response.data);
         } catch (err) {
             setError(err);
@@ -26,7 +26,7 @@ const useRankingGroup = () => {
     const fetchRankingGroupById = async (id) => {
         setLoading(true);
         try {
-            const response = await http.get(`/ranking-group/get/${id}`);
+            const response = await authClient.get(`/ranking-group/get/${id}`);
             setData(response.data);
         } catch (err) {
             setError(err);
@@ -39,7 +39,7 @@ const useRankingGroup = () => {
     const addRankingGroup = async (newGroup) => {
         setLoading(true);
         try {
-            const response = await http.post(`/ranking-group/add`, newGroup);
+            const response = await authClient.post(`/ranking-group/add`, newGroup);
             setData(response.data);
         } catch (err) {
             setError(err);
@@ -52,7 +52,7 @@ const useRankingGroup = () => {
     const updateRankingGroup = async (id, updatedGroup) => {
         setLoading(true);
         try {
-            const response = await http.put(`/ranking-group/update/${id}`, updatedGroup);
+            const response = await authClient.put(`/ranking-group/update/${id}`, updatedGroup);
             setData(response.data);
         } catch (err) {
             setError(err);
@@ -62,13 +62,13 @@ const useRankingGroup = () => {
     };
 
     // HTTP DELETE request to delete a ranking group by ID
-    const deleteRankingGroup = async (id) => {          
-     try {
-       await http.delete(`/ranking-group/delete/${id}`);
-       setData(groups.filter((dt1) => dt1.id !== id));
-     } catch (error) {
-       console.error("Error deleting employee:", error);
-     }   
+    const deleteRankingGroup = async (id) => {
+        try {
+            await authClient.delete(`/ranking-group/delete/${id}`);
+            setData(groups.filter((dt1) => dt1.id !== id));
+        } catch (error) {
+            console.error("Error deleting employee:", error);
+        }
     };
 
     // Return the data and functions to be used in components

@@ -1,6 +1,7 @@
 package backend.service.Implement;
 
 import backend.dao.IAccount;
+import backend.model.dto.LoginResponse;
 import backend.model.entity.Account;
 import backend.service.IAccountService;
 import backend.service.JWTService;
@@ -83,5 +84,16 @@ public class AccountService implements IAccountService {
             return jwtService.generateToken(user);
         }
         return null;
+    }
+
+    @Override
+    public LoginResponse login(Account user) {
+        String token = verify(user);
+        return new LoginResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getRole(),
+                user.getFullName(),
+                token);
     }
 }

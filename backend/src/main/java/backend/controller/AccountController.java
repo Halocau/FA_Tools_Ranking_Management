@@ -55,7 +55,7 @@ public class AccountController {
         Account account = iAccountService.findAccountByUsernameAndPassword(loginRequest.getUsername(),
                 loginRequest.getPassword());
         if (account != null) {
-            return ResponseEntity.ok(iAccountService.verify(account));
+            return ResponseEntity.ok(iAccountService.login(account));
         } else {
             return ResponseEntity.status(401).body(null); // Unauthorized
         }

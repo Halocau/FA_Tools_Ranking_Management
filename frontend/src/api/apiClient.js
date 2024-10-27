@@ -10,5 +10,16 @@ const http = axios.create({
     withCredentials: true,
 });
 
-// Export the instance
+// // Attach the token to each request, except for the login endpoint
+// http.interceptors.request.use(
+//     (config) => {
+//         const token = localStorage.getItem('jwtToken');
+//         if (token && config.url !== '/login') { // Adjust '/login' to match your login endpoint
+//             config.headers.Authorization = `Bearer ${token}`;
+//         }
+//         return config;
+//     },
+//     (error) => Promise.reject(error)
+// );
+
 export default http;

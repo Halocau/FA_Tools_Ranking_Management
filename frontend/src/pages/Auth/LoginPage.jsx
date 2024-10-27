@@ -19,6 +19,8 @@ const LoginPage = () => {
 
   const navigate = useNavigate();
 
+  // localStorage.removeItem('jwtToken');
+  console.log(localStorage.getItem('jwtToken'));
   const { user } = useAuth();
 
   useEffect(() => {

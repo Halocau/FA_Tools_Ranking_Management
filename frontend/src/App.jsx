@@ -13,6 +13,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { Col, Row } from "react-bootstrap";
 import NotFound from "./pages/404NotFound.jsx";
 import Slider from "./layouts/Slider.jsx";
+import TestComponent from "./components/TestComponent.jsx";
 function App() {
   return (
     <AuthProvider>
@@ -44,6 +45,7 @@ function App() {
               </>
             }
           />
+          <Route path="/test" element={<TestComponent />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

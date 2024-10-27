@@ -65,11 +65,12 @@ public class SecurityConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // Apply to all paths
-                        .allowedOrigins("http://localhost:5002") // Allow the frontend origin
+                registry.addMapping("/**") // Apply to all endpoints
+                        .allowedOrigins("http://localhost:5002") // Allow frontend on port 5002
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
-                        .allowCredentials(true); // Allow credentials such as cookies
+                        .exposedHeaders("Authorization") // Expose JWT token in header if needed
+                        .allowCredentials(true); // Allow credentials like cookies
             }
         };
     }
