@@ -14,7 +14,7 @@ public class AddNewGroupRequest {
     private String groupName;
 
     @NotNull
-    private int createBy;
+    private int createdBy;
 
 
 }
