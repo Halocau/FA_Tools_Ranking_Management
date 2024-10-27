@@ -1,6 +1,6 @@
 package backend.backend;
 
-import org.junit.jupiter.ains.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
