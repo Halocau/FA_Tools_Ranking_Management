@@ -7,7 +7,7 @@ import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.Account;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
-import backend.model.form.RankingGroup.AddNewGroup;
+import backend.model.form.RankingGroup.AddNewGroupRequest;
 import backend.service.IRankingGroupService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -16,7 +16,6 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -145,7 +144,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
 
     @Override
     @Transactional
-    public void createRankingGroup(AddNewGroup form) {
+    public void createRankingGroup(AddNewGroupRequest form) {
         // Tạo đối tượng RankingGroup từ đối tượng form
         RankingGroup rankingGroup = RankingGroup.builder()
                 .groupName(form.getGroupName())

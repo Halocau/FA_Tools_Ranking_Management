@@ -5,16 +5,14 @@ import backend.config.exception.RankingGroupException;
 import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
-import backend.model.form.RankingGroup.AddNewGroup;
+import backend.model.form.RankingGroup.AddNewGroupRequest;
 import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -71,7 +69,7 @@ public class RankingGroupController {
 //    }
 
     @PostMapping("/add")
-    public String addRankingGroup(@RequestBody @Valid AddNewGroup form) {
+    public String addRankingGroup(@RequestBody @Valid AddNewGroupRequest form) {
         iRankingGroupService.createRankingGroup(form);
         return "create successfully!";
     }
