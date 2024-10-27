@@ -1,17 +1,20 @@
 package backend.model.entity;
 
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 
 @Data
 @Entity
 @Table(name = "Ranking_Group")
+@SuperBuilder
 public class RankingGroup {
 
     @Id
@@ -47,4 +50,5 @@ public class RankingGroup {
 
     public RankingGroup() {
     }
+
 }

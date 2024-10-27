@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IRankingGroupRepository extends JpaRepository<RankingGroup, Integer> {
-
+    boolean existsByGroupName(String groupName);// check group name
 }

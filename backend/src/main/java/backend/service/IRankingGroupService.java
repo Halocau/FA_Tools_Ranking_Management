@@ -2,6 +2,7 @@ package backend.service;
 
 import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingGroup;
+import backend.model.form.RankingGroup.AddNewGroupRequest;
 
 import java.util.List;
 
@@ -14,6 +15,13 @@ public interface IRankingGroupService {
 
     public RankingGroup updateRankingGroup(RankingGroup rankingGroup);
 
-    public void deleteRankingGroup(RankingGroup rankingGroup);
+    public void deleteRankingGroup(int id);
 
+    public List<RankingGroupResponse> getAllRankingGroupResponses(List<RankingGroup> rankingGroups);
+
+    public RankingGroupResponse getRankingGroupResponseById(RankingGroup rankingGroup);
+
+    public void createRankingGroup(AddNewGroupRequest form);
+
+    boolean isRankingGroupExitsByGroupName(String groupName);
 }

@@ -1,4 +1,4 @@
-package backend.model.request;
+package backend.model.form;
 
 import lombok.Data;
 

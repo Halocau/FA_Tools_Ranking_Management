@@ -5,14 +5,14 @@ import backend.config.exception.RankingGroupException;
 import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
+import backend.model.form.RankingGroup.AddNewGroupRequest;
 import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -28,26 +28,20 @@ public class RankingGroupController {
         this.iRankingDecisionService = iRankingDecisionService;
     }
 
-    // Covert data RankingGroup -> RankingGroupResponse
-    public RankingGroupResponse convertToDTO(RankingGroup group, String decisionName) {
-        RankingGroupResponse dto = new RankingGroupResponse();
-        dto.setGroupId(group.getGroupId());
-        dto.setGroupName(group.getGroupName());
-        dto.setNumEmployees(group.getNumEmployees());
-        dto.setCurrentRankingDecision(decisionName);  // Gán giá trị quyết định xếp hạng
-        return dto;
-    }
+//    // Covert data RankingGroup -> RankingGroupResponse
+//    public RankingGroupResponse convertToDTO(RankingGroup group, String decisionName) {
+//        RankingGroupResponse dto = new RankingGroupResponse();
+//        dto.setGroupId(group.getGroupId());
+//        dto.setGroupName(group.getGroupName());
+//        dto.setNumEmployees(group.getNumEmployees());
+//        dto.setCurrentRankingDecision(decisionName);  // Gán giá trị quyết định xếp hạng
+//        return dto;
+//    }
 
     @GetMapping
     public List<RankingGroupResponse> getAllRankingGroups() {
-        List<RankingGroup> listRankingGroup = iRankingGroupService.getAllRankingGroups();
-
-        List<RankingGroupResponse> listRankingGroupResponse = new ArrayList<>();
-        for (RankingGroup rankingGroup : listRankingGroup) {
-            RankingGroupResponse rankingGroupResponse = convertToDTO(rankingGroup, rankingGroup.getDecisionName());
-            listRankingGroupResponse.add(rankingGroupResponse);
-        }
-        return listRankingGroupResponse;
+        List<RankingGroup> rankingGroups = iRankingGroupService.getAllRankingGroups();
+        return iRankingGroupService.getAllRankingGroupResponses(rankingGroups);
     }
 
     @GetMapping("/get/{id}")
@@ -57,21 +51,27 @@ public class RankingGroupController {
             // Tự động đi vào CatchException (RankingGroupException handler)
             throw new RankingGroupException("Ranking group not found");
         }
-        RankingGroupResponse response = convertToDTO(rankingGroup, rankingGroup.getDecisionName());
+        RankingGroupResponse response = iRankingGroupService.getRankingGroupResponseById(rankingGroup);
         return ResponseEntity.ok(response);
     }
 
 
-    @PostMapping("/add")
-    public ResponseEntity<RankingGroup> addRankingGroup(@RequestBody RankingGroup rankingGroup) {
-        rankingGroup.setGroupId(0);
-        RankingGroup result = iRankingGroupService.addRankingGroup(rankingGroup);
+//    @PostMapping("/add")
+//    public ResponseEntity<RankingGroup> addRankingGroup(@RequestBody RankingGroup rankingGroup) {
+//        rankingGroup.setGroupId(0);
+//        RankingGroup result = iRankingGroupService.addRankingGroup(rankingGroup);
+//
+//        if (result != null) {
+//            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+//        } else {
+//            throw new RankingGroupException("Unable to add ranking group"); // Exception will be caught in CatchException
+//        }
+//    }
 
-        if (result != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(result);
-        } else {
-            throw new RankingGroupException("Unable to add ranking group"); // Exception will be caught in CatchException
-        }
+    @PostMapping("/add")
+    public String addRankingGroup(@RequestBody @Valid AddNewGroupRequest form) {
+        iRankingGroupService.createRankingGroup(form);
+        return "create successfully!";
     }
 
     @PutMapping("/update/{id}")
@@ -90,7 +90,7 @@ public class RankingGroupController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteRankingGroup(@PathVariable int id) {
+    public ResponseEntity<String> deleteRankingGroup(@PathVariable int id) {
         RankingGroup exists = iRankingGroupService.findRankingGroupById(id);
         if (exists == null) {
             throw new RankingGroupException("Ranking group not found for deletion");
@@ -98,11 +98,12 @@ public class RankingGroupController {
         RankingDecision checkNullGroupId = iRankingDecisionService.findByGroupId(id);
         if (checkNullGroupId != null) {
             iRankingDecisionService.updateRankingDecisionGroupIdToNull(id);
-            iRankingGroupService.deleteRankingGroup(exists);
-        } else {
-            iRankingGroupService.deleteRankingGroup(exists);
         }
+        if("Trainer".equals(exists.getGroupName())){
+            throw new RankingGroupException("Cannot delete the group name \"Trainer.\"");
+        }
+        iRankingGroupService.deleteRankingGroup(id);
+        return ResponseEntity.ok("deleted successfully "+id);
 
-        return ResponseEntity.ok().build();
     }
 }

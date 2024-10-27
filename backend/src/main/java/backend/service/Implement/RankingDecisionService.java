@@ -54,8 +54,7 @@ public class RankingDecisionService implements IRankingDecisionService {
     @Override
     @Transactional
     public void updateRankingDecisionGroupIdToNull(int groupId) {
+
         iRankingDecisionRepository.updateRankingDecisionGroupIdToNull(groupId);
     }
-
-
 }
