@@ -20,5 +20,8 @@ public interface IAccountService {
     public Account updateAccount(Account account);
 
     public void deleteAccount(int id);
+
     public String findUsernameById(int id);
+
+    public String verify(Account user);
 }
