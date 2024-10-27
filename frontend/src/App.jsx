@@ -14,6 +14,7 @@ import { Col, Row } from "react-bootstrap";
 import NotFound from "./pages/404NotFound.jsx";
 import Slider from "./layouts/Slider.jsx";
 import TestComponent from "./components/TestComponent.jsx";
+import ForbiddenPage from "./pages/403Forbidden.jsx";
 function App() {
   return (
     <AuthProvider>
@@ -46,6 +47,7 @@ function App() {
             }
           />
           <Route path="/test" element={<TestComponent />} />
+          <Route path="403" element={<ForbiddenPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

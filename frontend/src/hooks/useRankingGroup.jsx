@@ -1,13 +1,25 @@
 import { useState } from 'react';
-import http from '../api/apiClient';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+// import http from '../api/apiClient';
 import authClient from '../api/baseapi/AuthorAPI';
+
 // Custom hook for Ranking Group API
 const useRankingGroup = () => {
+    const navigate = useNavigate(); // Initialize navigate
 
     // State for API data, loading, and error handling
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Function to handle the API error response
+    const handleError = (err) => {
+        if (err.response && err.response.status === 403) {
+            navigate('/403'); // Redirect to 403 page
+        } else {
+            setError(err); // Set other errors
+        }
+    };
 
     // HTTP GET request to fetch all ranking groups
     const fetchAllRankingGroups = async () => {
@@ -16,7 +28,7 @@ const useRankingGroup = () => {
             const response = await authClient.get('/ranking-group');
             setData(response.data);
         } catch (err) {
-            setError(err);
+            handleError(err); // Handle error
         } finally {
             setLoading(false);
         }
@@ -29,7 +41,7 @@ const useRankingGroup = () => {
             const response = await authClient.get(`/ranking-group/get/${id}`);
             setData(response.data);
         } catch (err) {
-            setError(err);
+            handleError(err); // Handle error
         } finally {
             setLoading(false);
         }
@@ -42,7 +54,7 @@ const useRankingGroup = () => {
             const response = await authClient.post(`/ranking-group/add`, newGroup);
             setData(response.data);
         } catch (err) {
-            setError(err);
+            handleError(err); // Handle error
         } finally {
             setLoading(false);
         }
@@ -55,7 +67,7 @@ const useRankingGroup = () => {
             const response = await authClient.put(`/ranking-group/update/${id}`, updatedGroup);
             setData(response.data);
         } catch (err) {
-            setError(err);
+            handleError(err); // Handle error
         } finally {
             setLoading(false);
         }
@@ -63,11 +75,14 @@ const useRankingGroup = () => {
 
     // HTTP DELETE request to delete a ranking group by ID
     const deleteRankingGroup = async (id) => {
+        setLoading(true);
         try {
             await authClient.delete(`/ranking-group/delete/${id}`);
-            setData(groups.filter((dt1) => dt1.id !== id));
-        } catch (error) {
-            console.error("Error deleting employee:", error);
+            setData((prevData) => prevData.filter((dt1) => dt1.id !== id)); // Update state after deletion
+        } catch (err) {
+            handleError(err); // Handle error
+        } finally {
+            setLoading(false);
         }
     };
 
