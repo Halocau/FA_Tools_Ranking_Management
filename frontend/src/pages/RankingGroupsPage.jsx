@@ -48,11 +48,34 @@ const RankingGroups = () => {
 
   const handleAddGroup = async () => {
     setValidationMessage("");
-    if (!newGroupName.trim()) {
+    let trimmedName = newGroupName.trim();
+
+    // Condition 1: Check if the group name is empty
+    if (!trimmedName) {
       setValidationMessage("Group name cannot be empty.");
       return;
     }
-    const isDuplicate = groups.some(group => group.groupName.toLowerCase() === newGroupName.toLowerCase());
+
+    // Condition 2: Check for minimum and maximum length (e.g., 3 to 20 characters)
+    if (trimmedName.length < 3 || trimmedName.length > 20) {
+      setValidationMessage("Group name must be between 3 and 20 characters.");
+      return;
+    }
+
+    // Condition 3: Only allow alphanumeric characters and spaces
+    const nameRegex = /^[a-zA-Z0-9 ]+$/;
+    if (!nameRegex.test(trimmedName)) {
+      setValidationMessage("Group name can only contain letters, numbers, and spaces.");
+      return;
+    }
+
+    // Format the name to capitalize each word's first letter
+    trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
+
+    // Condition 4: Check for duplicate names (case-insensitive)
+    const isDuplicate = groups.some(
+      group => group.groupName.toLowerCase() === trimmedName.toLowerCase()
+    );
     if (isDuplicate) {
       setValidationMessage("Group name already exists.");
       return;
@@ -60,15 +83,15 @@ const RankingGroups = () => {
 
     try {
       const newGroup = {
-        groupName: newGroupName,
+        groupName: trimmedName,
         createdBy: 1,
       };
-      await addRankingGroup(newGroup); // Gọi hàm thêm nhóm
+      await addRankingGroup(newGroup);
       setMessageType("success");
       setMessage("Group added successfully!");
       setTimeout(() => setMessage(null), 2000);
       handleCloseAddModal();
-      await fetchAllRankingGroups(); // Tải lại danh sách nhóm
+      await fetchAllRankingGroups();
     } catch (error) {
       console.error("Failed to add group:", error);
       setMessageType("danger");
@@ -76,6 +99,8 @@ const RankingGroups = () => {
       setTimeout(() => setMessage(null), 2000);
     }
   };
+
+
 
   const handleDeleteGroup = async () => {
     try {

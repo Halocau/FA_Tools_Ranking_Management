@@ -36,17 +36,19 @@ const useRankingGroup = () => {
     };
 
     // HTTP POST request to add a ranking group
+
     const addRankingGroup = async (newGroup) => {
         setLoading(true);
         try {
             const response = await http.post(`/ranking-group/add`, newGroup);
-            setData(response.data);
+            return response.data; // Return added group
         } catch (err) {
             setError(err);
         } finally {
             setLoading(false);
         }
     };
+
 
     // HTTP PUT request to update a ranking group by ID
     const updateRankingGroup = async (id, updatedGroup) => {
