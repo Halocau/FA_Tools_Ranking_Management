@@ -7,6 +7,7 @@ import ForgetPasswordPage from "./pages/Auth/ForgetPasswordPage";
 import Sidebar from "./layouts/Sidebar";
 import Header from "./layouts/Header";
 import RankingGroups from "./pages/RankingGroupsPage.jsx";
+import EditRankingGroup from './pages/EditRankingGroups';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -39,6 +40,25 @@ function App() {
                   <Col md={10}>
 
                     <RankingGroups className="ml-2" />
+                  </Col>
+                </Row>
+              </>
+            }
+          />
+          {/* Thêm route cho trang chỉnh sửa */}
+          <Route
+            path="/ranking-group/edit/:id"
+            element={
+              <>
+                <Row>
+                  <Header />
+                </Row>
+                <Row>
+                  <Col md={2}>
+                    <Sidebar />
+                  </Col>
+                  <Col md={10}>
+                    <EditRankingGroup /> {/* Chuyển sang sử dụng EditRankingGroup */}
                   </Col>
                 </Row>
               </>

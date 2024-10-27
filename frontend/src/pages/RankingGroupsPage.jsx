@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button, TextField, Alert } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import ModalCustom from "../components/Common/Modal.jsx";
@@ -10,6 +11,7 @@ import Slider from "../layouts/Slider.jsx";
 import Box from "@mui/material/Box";
 
 const RankingGroups = () => {
+  const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
@@ -100,8 +102,6 @@ const RankingGroups = () => {
     }
   };
 
-
-
   const handleDeleteGroup = async () => {
     try {
       if (groupToDelete) {
@@ -111,7 +111,7 @@ const RankingGroups = () => {
         setTimeout(() => setMessage(null), 2000);
         setGroupToDelete(null);
         handleCloseDeleteModal();
-        await fetchAllRankingGroups(); // Tải lại danh sách nhóm
+        await fetchAllRankingGroups(); // Reload the group list
       }
     } catch (error) {
       console.error("Failed to delete group:", error);
@@ -134,7 +134,7 @@ const RankingGroups = () => {
       setMessageType("success");
       setMessage("Selected groups deleted successfully!");
       setTimeout(() => setMessage(null), 2000);
-      fetchAllRankingGroups();
+      await fetchAllRankingGroups(); // Reload the group list after bulk delete
       setSelectedRows([]);
     } catch (error) {
       console.error("Failed to delete selected groups:", error);
@@ -159,9 +159,17 @@ const RankingGroups = () => {
       width: 150,
       renderCell: (params) => (
         <>
-          <Button variant="outlined" size="small">
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => {
+              console.log(`Navigating to edit group with ID: ${params.row.id}`);
+              navigate(`/ranking-group/edit/${params.row.id}`);
+            }}
+          >
             <FaEdit />
           </Button>
+
           <Button
             variant="outlined"
             color="error"
@@ -227,6 +235,7 @@ const RankingGroups = () => {
             Delete Selected Groups
           </Button>
         </div>
+
         {/* Modal for adding a new group */}
         <ModalCustom
           show={showAddModal}
@@ -257,6 +266,7 @@ const RankingGroups = () => {
             </>
           }
         />
+
         {/* Modal for deleting a single group */}
         <ModalCustom
           show={showDeleteModal}

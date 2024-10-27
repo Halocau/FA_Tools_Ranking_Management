@@ -3,77 +3,77 @@ import http from '../api/apiClient';
 
 // Custom hook for Ranking Group API
 const useRankingGroup = () => {
-
-    // State for API data, loading, and error handling
-    const [data, setData] = useState(null);
+    const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // HTTP GET request to fetch all ranking groups
     const fetchAllRankingGroups = async () => {
         setLoading(true);
         try {
             const response = await http.get('/ranking-group');
             setData(response.data);
         } catch (err) {
-            setError(err);
+            setError(err.response?.data || "An error occurred while fetching ranking groups.");
         } finally {
             setLoading(false);
         }
     };
 
-    // HTTP GET request to fetch a ranking group by ID
     const fetchRankingGroupById = async (id) => {
         setLoading(true);
         try {
             const response = await http.get(`/ranking-group/get/${id}`);
-            setData(response.data);
+            return response.data; // Return data to the calling component
         } catch (err) {
-            setError(err);
+            setError(err.response?.data || "An error occurred while fetching the ranking group.");
         } finally {
             setLoading(false);
         }
     };
-
-    // HTTP POST request to add a ranking group
 
     const addRankingGroup = async (newGroup) => {
         setLoading(true);
         try {
-            const response = await http.post(`/ranking-group/add`, newGroup);
-            return response.data; // Return added group
+            const response = await http.post('/ranking-group/add', newGroup);
+            await fetchAllRankingGroups(); // Refresh the list after adding
+            return response.data;
         } catch (err) {
-            setError(err);
+            setError(err.response?.data || "An error occurred while adding the ranking group.");
         } finally {
             setLoading(false);
         }
     };
 
-
-    // HTTP PUT request to update a ranking group by ID
     const updateRankingGroup = async (id, updatedGroup) => {
         setLoading(true);
         try {
             const response = await http.put(`/ranking-group/update/${id}`, updatedGroup);
-            setData(response.data);
+            setData((prevData) =>
+                prevData.map(group => (group.id === id ? response.data : group))
+            );
+            return response.data;
         } catch (err) {
-            setError(err);
+            const errorMsg = err.response?.data || "An error occurred while updating the ranking group.";
+            setError(errorMsg);
+            console.error("Update error:", errorMsg);
         } finally {
             setLoading(false);
         }
     };
 
-    // HTTP DELETE request to delete a ranking group by ID
     const deleteRankingGroup = async (id) => {
+        setLoading(true);
         try {
             await http.delete(`/ranking-group/delete/${id}`);
-            setData(groups.filter((dt1) => dt1.id !== id));
+            setData(prevData => prevData.filter((dt) => dt.id !== id));
         } catch (error) {
-            console.error("Error deleting employee:", error);
+            setError(error.response?.data || "An error occurred while deleting the ranking group.");
+            console.error("Error deleting group:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    // Return the data and functions to be used in components
     return {
         data,
         loading,
