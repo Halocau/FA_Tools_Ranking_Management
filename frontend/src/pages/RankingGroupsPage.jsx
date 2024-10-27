@@ -30,9 +30,17 @@ const RankingGroups = () => {
     addRankingGroup,
   } = useRankingGroup();
 
+  // Fetch all ranking groups when component mounts
   useEffect(() => {
     fetchAllRankingGroups();
   }, []);
+
+  // Debugging logs
+  useEffect(() => {
+    console.log("Groups:", groups);
+    console.log("Loading:", loading);
+    console.log("Error:", error);
+  }, [groups, loading, error]);
 
   const handleOpenAddModal = () => setShowAddModal(true);
   const handleCloseAddModal = () => {
@@ -52,29 +60,27 @@ const RankingGroups = () => {
     setValidationMessage("");
     let trimmedName = newGroupName.trim();
 
-    // Condition 1: Check if the group name is empty
+    // Validate group name
     if (!trimmedName) {
       setValidationMessage("Group name cannot be empty.");
       return;
     }
 
-    // Condition 2: Check for minimum and maximum length (e.g., 3 to 20 characters)
     if (trimmedName.length < 3 || trimmedName.length > 20) {
       setValidationMessage("Group name must be between 3 and 20 characters.");
       return;
     }
 
-    // Condition 3: Only allow alphanumeric characters and spaces
     const nameRegex = /^[a-zA-Z0-9 ]+$/;
     if (!nameRegex.test(trimmedName)) {
       setValidationMessage("Group name can only contain letters, numbers, and spaces.");
       return;
     }
 
-    // Format the name to capitalize each word's first letter
+    // Capitalize first letter of each word
     trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
 
-    // Condition 4: Check for duplicate names (case-insensitive)
+    // Check for duplicate names
     const isDuplicate = groups.some(
       group => group.groupName.toLowerCase() === trimmedName.toLowerCase()
     );
@@ -86,14 +92,14 @@ const RankingGroups = () => {
     try {
       const newGroup = {
         groupName: trimmedName,
-        createdBy: 1,
+        createdBy: 1, // Assuming 1 is the ID of the user creating the group
       };
       await addRankingGroup(newGroup);
       setMessageType("success");
       setMessage("Group added successfully!");
       setTimeout(() => setMessage(null), 2000);
       handleCloseAddModal();
-      await fetchAllRankingGroups();
+      await fetchAllRankingGroups(); // Refresh the group list
     } catch (error) {
       console.error("Failed to add group:", error);
       setMessageType("danger");
@@ -190,9 +196,7 @@ const RankingGroups = () => {
       groupName: group.groupName,
       numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
       currentRankingDecision:
-        group.currentRankingDecision == null
-          ? "N/A"
-          : group.currentRankingDecision,
+        group.currentRankingDecision == null ? "N/A" : group.currentRankingDecision,
     }))
     : [];
 
@@ -226,7 +230,6 @@ const RankingGroups = () => {
           />
         </Box>
 
-        {/* Buttons for adding and bulk deleting */}
         <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
           <Button variant="contained" color="success" onClick={handleOpenAddModal}>
             Add New Group

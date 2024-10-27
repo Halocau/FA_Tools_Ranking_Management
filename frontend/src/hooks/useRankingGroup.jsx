@@ -1,11 +1,27 @@
 import { useState } from 'react';
 import http from '../api/apiClient';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+// import http from '../api/apiClient';
+import authClient from '../api/baseapi/AuthorAPI';
+
 
 // Custom hook for Ranking Group API
 const useRankingGroup = () => {
-    const [data, setData] = useState([]);
+    const navigate = useNavigate(); // Initialize navigate
+
+    // State for API data, loading, and error handling
+    const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Function to handle the API error response
+    const handleError = (err) => {
+        if (err.response && err.response.status === 403) {
+            navigate('/403'); // Redirect to 403 page
+        } else {
+            setError(err); // Set other errors
+        }
+    };
 
     const fetchAllRankingGroups = async () => {
         setLoading(true);
@@ -22,8 +38,9 @@ const useRankingGroup = () => {
     const fetchRankingGroupById = async (id) => {
         setLoading(true);
         try {
-            const response = await http.get(`/ranking-group/get/${id}`);
-            return response.data; // Return data to the calling component
+            const response = await authClient.get(`/ranking-group/get/${id}`);
+            // return response.data; // Return data to the calling component
+            setData(response.data);
         } catch (err) {
             setError(err.response?.data || "An error occurred while fetching the ranking group.");
         } finally {
@@ -34,9 +51,10 @@ const useRankingGroup = () => {
     const addRankingGroup = async (newGroup) => {
         setLoading(true);
         try {
-            const response = await http.post('/ranking-group/add', newGroup);
+            const response = await authClient.post(`/ranking-group/add`, newGroup);
             await fetchAllRankingGroups(); // Refresh the list after adding
-            return response.data;
+            // return response.data;
+            setData(response.data);
         } catch (err) {
             setError(err.response?.data || "An error occurred while adding the ranking group.");
         } finally {
@@ -47,11 +65,12 @@ const useRankingGroup = () => {
     const updateRankingGroup = async (id, updatedGroup) => {
         setLoading(true);
         try {
-            const response = await http.put(`/ranking-group/update/${id}`, updatedGroup);
+            const response = await authClient.put(`/ranking-group/update/${id}`, updatedGroup);
             setData((prevData) =>
                 prevData.map(group => (group.id === id ? response.data : group))
             );
-            return response.data;
+            // return response.data;
+            setData(response.data);
         } catch (err) {
             const errorMsg = err.response?.data || "An error occurred while updating the ranking group.";
             setError(errorMsg);
@@ -64,7 +83,7 @@ const useRankingGroup = () => {
     const deleteRankingGroup = async (id) => {
         setLoading(true);
         try {
-            await http.delete(`/ranking-group/delete/${id}`);
+            await authClient.delete(`/ranking-group/delete/${id}`);
             setData(prevData => prevData.filter((dt) => dt.id !== id));
         } catch (error) {
             setError(error.response?.data || "An error occurred while deleting the ranking group.");
