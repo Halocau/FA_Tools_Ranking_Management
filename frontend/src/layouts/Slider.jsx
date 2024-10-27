@@ -1,5 +1,5 @@
 import React from "react";
-import Slider_img from "../assets/image/fville-hanoi.jpg";
+import Slider_img from "../assets/image/fville-hanoi.png";
 const Slider = () => {
   return (
     <div>
