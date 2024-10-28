@@ -1,19 +1,20 @@
-package backend.model;
+package backend.model.entity;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 
 @Data
 @Entity
 @Table(name = "Ranking_Group")
+@SuperBuilder
 public class RankingGroup {
 
     @Id
@@ -28,10 +29,10 @@ public class RankingGroup {
     private int numEmployees;
 
     @Column(name = "current_ranking_decision")
-    private int current_ranking_decision;
+    private Integer current_ranking_decision;
 
     @Column(name = "created_by")
-    private int createdBy;
+    private Integer createdBy;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -49,4 +50,5 @@ public class RankingGroup {
 
     public RankingGroup() {
     }
+
 }

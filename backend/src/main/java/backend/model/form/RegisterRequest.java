@@ -1,4 +1,4 @@
-package backend.model.dto;
+package backend.model.form;
 
 import lombok.Data;
 

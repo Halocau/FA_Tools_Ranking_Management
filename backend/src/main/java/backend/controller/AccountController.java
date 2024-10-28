@@ -1,14 +1,10 @@
 package backend.controller;
 
-
-import backend.model.Account;
-import backend.model.dto.LoginRequest;
-import backend.model.dto.LoginResponse;
-import backend.security.TokenProvider;
-import backend.security.exception.AccountException;
+import backend.model.entity.Account;
+import backend.model.form.LoginRequest;
 import backend.service.IAccountService;
+import backend.service.JWTService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +20,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("api/account")
 public class AccountController {
+
     private IAccountService iAccountService;
+
+    private JWTService jwtService;
 
     @Autowired
     public AccountController(IAccountService iAccountService) {
         this.iAccountService = iAccountService;
     }
-
-    @Autowired
-    private TokenProvider tokenProvider;
 
     @GetMapping("/user-and-pass")
 
@@ -54,38 +50,12 @@ public class AccountController {
         return iAccountService.getAllAccounts();
     }
 
-    @GetMapping("/login")
-    public ResponseEntity<String> login(
-            @RequestParam String username,
-            @RequestParam String password) {
-        // Find account by username and password
-        Account account = iAccountService.findAccountByUsernameAndPassword(username, password);
-
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        Account account = iAccountService.findAccountByUsernameAndPassword(loginRequest.getUsername(),
+                loginRequest.getPassword());
         if (account != null) {
-
-            // Generate JWT token
-            // String token = tokenProvider.generateToken(account);
-
-            // // Update the token and expiration in the database
-            // account.setToken(token);
-            // account.setTokenExpiration(LocalDateTime.now().plusHours(1)); // Token
-            // expires in 1 hour
-
-            // // Prepare response
-            // LoginResponse response = new LoginResponse(
-            // account.getId(),
-            // account.getEmail(),
-            // account.getRole(),
-            // account.getStatus(),
-            // account.getFullName(),
-            // account.getDateOfBirth(),
-            // account.getAddress(),
-            // account.getPhoneNumber(),
-            // account.getGender(),
-            // token,
-            // account.getTokenExpiration());
-
-            return ResponseEntity.ok("Login successful");
+            return ResponseEntity.ok(iAccountService.login(account));
         } else {
             return ResponseEntity.status(401).body(null); // Unauthorized
         }
@@ -106,13 +76,7 @@ public class AccountController {
             @RequestParam String password) {
         // Generate a JWT token using the provided account information
         Account account = iAccountService.findAccountByUsernameAndPassword(username, password);
-        String token = tokenProvider.generateToken(account);
+        String token = iAccountService.verify(account);
         return token;
-        // Validate the generated token
-        // if (tokenProvider.validateToken(token)) {
-        // return "Token generated and validated successfully!";
-        // } else {
-        // return "Token generation or validation failed!";
-        // }
     }
 }

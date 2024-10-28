@@ -1,15 +1,10 @@
 package backend.controller;
 
-import backend.model.RankingDecision;
+import backend.model.entity.RankingDecision;
 import backend.service.IRankingDecisionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @RestController
 public class RankingDecisionController {
