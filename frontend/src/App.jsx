@@ -6,8 +6,8 @@ import SignupPage from "./pages/Auth/SignupPage";
 import ForgetPasswordPage from "./pages/Auth/ForgetPasswordPage";
 import Sidebar from "./layouts/Sidebar";
 import Header from "./layouts/Header";
-import RankingGroups from "./pages/RankingGroupsPage.jsx";
-import EditRankingGroup from './pages/EditRankingGroups'; // Import EditRankingGroup
+import RankingGroups from "./pages/Auth/RankingGroupsPage.jsx";
+import EditRankingGroup from './pages/Auth/EditRankingGroups.jsx'; // Import EditRankingGroup
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import { AuthProvider } from "./contexts/AuthContext";

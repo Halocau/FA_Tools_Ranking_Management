@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../assets/css/RankingGroups.css"
 import { Button, TextField, Alert } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import ModalCustom from "../components/Common/Modal.jsx";
-import useRankingGroup from "../hooks/useRankingGroup";
+import ModalCustom from "../../components/Common/Modal.jsx";
+import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { FaRankingStar } from "react-icons/fa6";
-import Slider from "../layouts/Slider.jsx";
+import Slider from "../../layouts/Slider.jsx";
 import Box from "@mui/material/Box";
 
 const RankingGroups = () => {
@@ -54,9 +55,22 @@ const RankingGroups = () => {
   };
 
   const handleOpenDeleteModal = (groupId) => {
+    // Tìm nhóm theo ID để kiểm tra tên
+    const selectedGroup = groups.find(group => group.groupId === groupId);
+
+    // Nếu nhóm có tên là "Trainer", hiển thị thông báo và không mở modal
+    if (selectedGroup && selectedGroup.groupName === "Trainer") {
+      setMessageType("warning");
+      setMessage("Cannot delete the 'Trainer' group.");
+      setTimeout(() => setMessage(null), 2000);
+      return;
+    }
+
+    // Nếu không phải "Trainer", mở modal xóa
     setGroupToDelete(groupId);
     setShowDeleteModal(true);
   };
+
 
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
 

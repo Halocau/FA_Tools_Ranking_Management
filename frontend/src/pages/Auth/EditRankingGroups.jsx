@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Button, Typography, Alert, TextField, FormControl, InputLabel, Select, MenuItem, Modal } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate, useParams } from "react-router-dom";
-import Slider from "../layouts/Slider.jsx";
-import useRankingGroup from "../hooks/useRankingGroup";
+import Slider from "../../layouts/Slider.jsx";
+import useRankingGroup from "../../hooks/useRankingGroup";
 
 const EditRankingGroup = () => {
     const navigate = useNavigate();
