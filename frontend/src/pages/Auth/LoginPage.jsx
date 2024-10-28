@@ -1,6 +1,6 @@
 // src/Login.js
 import React, { useEffect, useState } from "react";
-import "../../assets/css/LoginForm.css";
+import "../../assets/css/LoginPage.css";
 import Image from "../../assets/image/image.png";
 import Logo from "../../assets/image/logo.png";
 import GoogleSvg from "../../assets/image/icons8-google.svg";
