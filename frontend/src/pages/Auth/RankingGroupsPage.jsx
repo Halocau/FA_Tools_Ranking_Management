@@ -234,7 +234,7 @@ const RankingGroups = () => {
         {message && <Alert severity={messageType}>{message}</Alert>}
 
         <Box sx={{ width: "100%" }}>
-          <DataGrid
+          <DataGrid className="custom-data-grid"
             rows={rows}
             columns={columns}
             checkboxSelection
