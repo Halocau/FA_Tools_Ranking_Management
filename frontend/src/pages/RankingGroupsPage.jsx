@@ -12,6 +12,8 @@ import Box from "@mui/material/Box";
 
 const RankingGroups = () => {
   const navigate = useNavigate();
+
+  // State for managing modal visibility and user input
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
@@ -21,6 +23,7 @@ const RankingGroups = () => {
   const [messageType, setMessageType] = useState("success");
   const [validationMessage, setValidationMessage] = useState("");
 
+  // Destructuring from useRankingGroup custom hook
   const {
     data: groups,
     error,
@@ -35,13 +38,14 @@ const RankingGroups = () => {
     fetchAllRankingGroups();
   }, []);
 
-  // Debugging logs
+  // Log state changes for debugging purposes
   useEffect(() => {
     console.log("Groups:", groups);
     console.log("Loading:", loading);
     console.log("Error:", error);
   }, [groups, loading, error]);
 
+  // Handlers to open/close modals for adding or deleting groups
   const handleOpenAddModal = () => setShowAddModal(true);
   const handleCloseAddModal = () => {
     setShowAddModal(false);
@@ -56,11 +60,12 @@ const RankingGroups = () => {
 
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
 
+  // Function to add a new group with validation checks
   const handleAddGroup = async () => {
     setValidationMessage("");
     let trimmedName = newGroupName.trim();
 
-    // Validate group name
+    // Validate group name length and character requirements
     if (!trimmedName) {
       setValidationMessage("Group name cannot be empty.");
       return;
@@ -77,10 +82,10 @@ const RankingGroups = () => {
       return;
     }
 
-    // Capitalize first letter of each word
+    // Capitalize the first letter of each word in the group name
     trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
 
-    // Check for duplicate names
+    // Check for duplicate group name
     const isDuplicate = groups.some(
       group => group.groupName.toLowerCase() === trimmedName.toLowerCase()
     );
@@ -94,11 +99,11 @@ const RankingGroups = () => {
         groupName: trimmedName,
         createdBy: 1, // Assuming 1 is the ID of the user creating the group
       };
-      await addRankingGroup(newGroup);
+      await addRankingGroup(newGroup); // Call API to add new group
       setMessageType("success");
       setMessage("Group added successfully!");
       setTimeout(() => setMessage(null), 2000);
-      handleCloseAddModal();
+      handleCloseAddModal(); // Close the add modal after successful addition
       await fetchAllRankingGroups(); // Refresh the group list
     } catch (error) {
       console.error("Failed to add group:", error);
@@ -108,16 +113,17 @@ const RankingGroups = () => {
     }
   };
 
+  // Function to delete a selected group
   const handleDeleteGroup = async () => {
     try {
       if (groupToDelete) {
-        await deleteRankingGroup(groupToDelete);
+        await deleteRankingGroup(groupToDelete); // Call API to delete group
         setMessageType("success");
         setMessage("Group deleted successfully!");
         setTimeout(() => setMessage(null), 2000);
         setGroupToDelete(null);
-        handleCloseDeleteModal();
-        await fetchAllRankingGroups(); // Reload the group list
+        handleCloseDeleteModal(); // Close the delete modal after successful deletion
+        await fetchAllRankingGroups(); // Refresh the group list
       }
     } catch (error) {
       console.error("Failed to delete group:", error);
@@ -128,6 +134,7 @@ const RankingGroups = () => {
     }
   };
 
+  // Function to delete multiple selected groups
   const handleBulkDelete = async () => {
     if (selectedRows.length === 0) {
       setMessageType("warning");
@@ -136,12 +143,13 @@ const RankingGroups = () => {
       return;
     }
     try {
+      // Delete each selected group
       await Promise.all(selectedRows.map(id => deleteRankingGroup(id)));
       setMessageType("success");
       setMessage("Selected groups deleted successfully!");
       setTimeout(() => setMessage(null), 2000);
-      await fetchAllRankingGroups(); // Reload the group list after bulk delete
-      setSelectedRows([]);
+      await fetchAllRankingGroups(); // Refresh the group list
+      setSelectedRows([]); // Clear selected rows
     } catch (error) {
       console.error("Failed to delete selected groups:", error);
       setMessageType("danger");
@@ -150,6 +158,7 @@ const RankingGroups = () => {
     }
   };
 
+  // Define columns for DataGrid
   const columns = [
     { field: "index", headerName: "Index", width: 70 },
     { field: "groupName", headerName: "Group Name", width: 500 },
@@ -189,6 +198,7 @@ const RankingGroups = () => {
     },
   ];
 
+  // Map group data to rows for DataGrid
   const rows = groups
     ? groups.map((group, index) => ({
       id: group.groupId,
@@ -263,25 +273,25 @@ const RankingGroups = () => {
               <Button variant="outlined" onClick={handleCloseAddModal}>
                 Cancel
               </Button>
-              <Button variant="contained" color="primary" onClick={handleAddGroup}>
-                Save
+              <Button variant="contained" color="success" onClick={handleAddGroup}>
+                Add
               </Button>
             </>
           }
         />
 
-        {/* Modal for deleting a single group */}
+        {/* Modal for deleting a group */}
         <ModalCustom
           show={showDeleteModal}
           handleClose={handleCloseDeleteModal}
           title="Delete Group"
-          bodyContent={<p>Are you sure you want to delete this group?</p>}
+          bodyContent="Are you sure you want to delete this group?"
           footerContent={
             <>
               <Button variant="outlined" onClick={handleCloseDeleteModal}>
                 Cancel
               </Button>
-              <Button variant="outlined" color="error" onClick={handleDeleteGroup}>
+              <Button variant="contained" color="error" onClick={handleDeleteGroup}>
                 Delete
               </Button>
             </>

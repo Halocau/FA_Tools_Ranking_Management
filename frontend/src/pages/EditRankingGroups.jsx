@@ -7,42 +7,97 @@ import useRankingGroup from "../hooks/useRankingGroup";
 
 const EditRankingGroup = () => {
     const navigate = useNavigate();
-    const { groupId } = useParams();
+    const { id } = useParams();
     const { fetchRankingGroupById, updateRankingGroup, data: group, loading, error } = useRankingGroup();
+
+    // State for handling editing and displaying group information
     const [editGroup, setEditGroup] = useState({ groupName: '', currentRankingDecision: '' });
-    const [originalGroupName, setOriginalGroupName] = useState('');
+    const [originalGroupName, setOriginalGroupName] = useState(''); // Original group name for display purposes
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState("success");
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [newGroupName, setNewGroupName] = useState("");
-    const [validationMessage, setValidationMessage] = useState("");
-    const [selectedDecision, setSelectedDecision] = useState("");
-    const [rankingDecisions, setRankingDecisions] = useState([]); // Add this if decisions are fetched or predefined
+    const [showAddModal, setShowAddModal] = useState(false); // Control modal visibility
+    const [newGroupName, setNewGroupName] = useState(""); // New group name being edited
+    const [validationMessage, setValidationMessage] = useState(""); // Validation message for group name
+    const [selectedDecision, setSelectedDecision] = useState(""); // Selected decision in the dropdown
+    const [rankingDecisions, setRankingDecisions] = useState([]); // List of ranking decisions
 
+    // Destructuring from useRankingGroup custom hook
+    const {
+        data: groups
+    } = useRankingGroup();
+    // Load the group data when the component mounts
     useEffect(() => {
         const loadGroup = async () => {
             try {
-                const groupData = await fetchRankingGroupById(groupId);
+                const groupData = await fetchRankingGroupById(id);
+                console.log("Group Data:", groupData); // Kiểm tra dữ liệu trả về
                 setEditGroup({
                     groupName: groupData.groupName,
                     currentRankingDecision: groupData.currentRankingDecision,
                 });
-                setOriginalGroupName(groupData.groupName); // Lưu tên nhóm gốc
-                setNewGroupName(groupData.groupName); // Khởi tạo tên mới với tên gốc
+                setOriginalGroupName(groupData.groupName);
+                setNewGroupName(groupData.groupName);
+                setRankingDecisions(groupData.rankingDecisions || []); // Lưu danh sách quyết định nếu có
             } catch (error) {
                 console.error("Error fetching group:", error);
             }
         };
         loadGroup();
-    }, [groupId, fetchRankingGroupById]);
+    }, [id]);
 
+    // Update group information when Save is clicked
     const handleEditGroup = async () => {
+        setValidationMessage("");
+        let trimmedName = newGroupName.trim();
+
+        // Validate group name length and character requirements
+        if (!trimmedName) {
+            setValidationMessage("Group name cannot be empty.");
+            return;
+        }
+
+        if (trimmedName.length < 3 || trimmedName.length > 20) {
+            setValidationMessage("Group name must be between 3 and 20 characters.");
+            return;
+        }
+
+        const nameRegex = /^[a-zA-Z0-9 ]+$/;
+        if (!nameRegex.test(trimmedName)) {
+            setValidationMessage("Group name can only contain letters, numbers, and spaces.");
+            return;
+        }
+
+        // Capitalize the first letter of each word in the group name
+        trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
+
+        // // Check for duplicate group name, excluding the current group's name
+        // const isDuplicate = groups.some(existingGroup =>
+        //     existingGroup.id !== editGroup.id && // Kiểm tra để không so sánh với nhóm hiện tại
+        //     existingGroup.groupName.toLowerCase() === trimmedName.toLowerCase()
+        // );
+
+        // if (isDuplicate) {
+        //     setValidationMessage("Group name already exists.");
+        //     return;
+        // }
+
+
         try {
             const updatedGroup = {
-                groupName: newGroupName || originalGroupName, // Nếu newGroupName trống thì dùng tên gốc
-                currentRankingDecision: editGroup.currentRankingDecision,
+                groupName: trimmedName,
+                currentRankingDecision: selectedDecision || editGroup.currentRankingDecision,
             };
-            await updateRankingGroup(groupId, updatedGroup);
+
+            // Log the updated group data for debugging
+            console.log("Updating group with data:", updatedGroup);
+
+            const response = await updateRankingGroup(id, updatedGroup);
+
+            // Kiểm tra phản hồi từ server
+            console.log("Update response:", response);
+
+            // Cập nhật `originalGroupName` với tên mới ngay khi lưu
+            setOriginalGroupName(trimmedName);
             setMessageType("success");
             setMessage("Group updated successfully!");
             setTimeout(() => setMessage(null), 2000);
@@ -55,16 +110,22 @@ const EditRankingGroup = () => {
         }
     };
 
+
+
+
+    // Open the edit group info modal
     const handleOpenAddModal = () => {
         setShowAddModal(true);
-        setNewGroupName(originalGroupName); // Đặt tên mới là tên gốc khi mở modal
+        setValidationMessage("");
     };
 
+    // Close the modal and reset validation message
     const handleCloseAddModal = () => {
         setShowAddModal(false);
         setValidationMessage("");
     };
 
+    // Columns for DataGrid
     const columns = [
         { field: "id", headerName: "ID", width: 70 },
         { field: "name", headerName: "Ranking Decision Name", width: 200 },
@@ -85,6 +146,7 @@ const EditRankingGroup = () => {
                     <Typography>Current Ranking Decision: {editGroup.currentRankingDecision}</Typography>
                 </div>
 
+                {/* Display the group's ranking decisions in a table */}
                 <DataGrid rows={group?.rankingDecisions || []} columns={columns} pageSize={5} />
 
                 {/* Modal for editing group info */}
@@ -98,7 +160,7 @@ const EditRankingGroup = () => {
                             value={newGroupName}
                             onChange={(e) => {
                                 setNewGroupName(e.target.value);
-                                setValidationMessage("");
+                                setValidationMessage(""); // Clear validation message on change
                             }}
                             error={!!validationMessage}
                             helperText={validationMessage}
