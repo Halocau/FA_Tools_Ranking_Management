@@ -20,7 +20,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   // localStorage.removeItem('jwtToken');
-  console.log(localStorage.getItem('jwtToken'));
+  console.log(localStorage.getItem("jwtToken"));
   const { user } = useAuth();
 
   useEffect(() => {
@@ -99,6 +99,7 @@ const LoginPage = () => {
                 <button type="button" onClick={() => handleLogin()}>
                   Log In
                 </button>
+                
               </div>
             </form>
           </div>
