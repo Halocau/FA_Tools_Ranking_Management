@@ -39,8 +39,16 @@ const RankingGroups = () => {
   };
 
   const handleOpenDeleteModal = (groupId) => {
-    setGroupToDelete(groupId);
-    setShowDeleteModal(true);
+    const group = groups.find((g) => g.groupId === groupId);
+    if (group.groupName === "Trainer") {
+      setDeleteMessage({
+        type: "danger",
+        text: "Cannot delete Trainer Group !",
+      });
+    } else {
+      setGroupToDelete(groupId);
+      setShowDeleteModal(true);
+    }
   };
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
 
@@ -102,7 +110,6 @@ const RankingGroups = () => {
     }
   }, [successMessage]);
 
-  // console.log(groups);
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
   // Prepare table data
@@ -138,19 +145,17 @@ const RankingGroups = () => {
 
   const rows = groups
     ? groups.map((group, index) => ({
-      id: group.groupId,
-      index: index + 1,
-      groupName: group.groupName,
-      numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
-      currentRankingDecision:
-        group.currentRankingDecision == null
-          ? "N/A"
-          : group.currentRankingDecision,
-    }))
+        id: group.groupId,
+        index: index + 1,
+        groupName: group.groupName,
+        numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
+        currentRankingDecision:
+          group.currentRankingDecision == null
+            ? "N/A"
+            : group.currentRankingDecision,
+      }))
     : [];
 
-  console.log(groups);
-  console.log(rows);
   return (
     <div style={{ marginTop: "60px" }}>
       <Slider />
