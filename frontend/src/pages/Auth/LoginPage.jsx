@@ -99,10 +99,6 @@ const LoginPage = () => {
                 <button type="button" onClick={() => handleLogin()}>
                   Log In
                 </button>
-                <button type="button">
-                  <img src={GoogleSvg} alt="" />
-                  Log In with Google
-                </button>
               </div>
             </form>
           </div>
