@@ -1,7 +1,7 @@
 // src/Login.js
 import React, { useEffect, useState } from "react";
 import "../../assets/css/LoginForm.css";
-import Image from "../../assets/image/fsoft_2.jpg";
+import Image from "../../assets/image/image.png";
 import Logo from "../../assets/image/logo.png";
 import GoogleSvg from "../../assets/image/icons8-google.svg";
 import { FaEye } from "react-icons/fa6";
@@ -20,7 +20,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   // localStorage.removeItem('jwtToken');
-  console.log(localStorage.getItem('jwtToken'));
+  console.log(localStorage.getItem("jwtToken"));
   const { user } = useAuth();
 
   useEffect(() => {
@@ -99,10 +99,7 @@ const LoginPage = () => {
                 <button type="button" onClick={() => handleLogin()}>
                   Log In
                 </button>
-                <button type="button">
-                  <img src={GoogleSvg} alt="" />
-                  Log In with Google
-                </button>
+                
               </div>
             </form>
           </div>

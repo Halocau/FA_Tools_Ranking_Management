@@ -39,8 +39,16 @@ const RankingGroups = () => {
   };
 
   const handleOpenDeleteModal = (groupId) => {
-    setGroupToDelete(groupId);
-    setShowDeleteModal(true);
+    const group = groups.find((g) => g.groupId === groupId);
+    if (group.groupName === "Trainer") {
+      setDeleteMessage({
+        type: "danger",
+        text: "Cannot delete Trainer Group !",
+      });
+    } else {
+      setGroupToDelete(groupId);
+      setShowDeleteModal(true);
+    }
   };
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
 
@@ -142,9 +150,9 @@ const RankingGroups = () => {
         groupName: group.groupName,
         numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
         currentRankingDecision:
-          group.currrentRankingDecision == null
+          group.currentRankingDecision == null
             ? "N/A"
-            : group.currrentRankingDecision,
+            : group.currentRankingDecision,
       }))
     : [];
 
