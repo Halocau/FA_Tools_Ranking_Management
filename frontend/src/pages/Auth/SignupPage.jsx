@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 import Image from "../../assets/image/image.png";
 import Logo from "../../assets/image/logo.png";
-import GoogleSvg from "../../assets/image/icons8-google.svg";
 import { FaEye } from "react-icons/fa6";
 import { FaEyeSlash } from "react-icons/fa6";
 import { Link } from "react-router-dom";
