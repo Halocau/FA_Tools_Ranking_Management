@@ -19,4 +19,6 @@ public interface IRankingDecisionService {
 
     //form
     public void createRankingDecision(CreateRankingDecision form);
+    //validate
+    boolean isRankingDecisionNameExist(String decisionName);
 }

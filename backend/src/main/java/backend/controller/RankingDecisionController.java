@@ -39,9 +39,9 @@ public class RankingDecisionController {
         return iRankingDecisionService.getRankingDecisionResponses(decisionList);
     }
     @PostMapping("/add")
-    public ResponseEntity<String> addRankingDecision(@RequestBody @Valid CreateRankingDecision form) {
+    public String addRankingDecision(@RequestBody @Valid CreateRankingDecision form) {
         iRankingDecisionService.createRankingDecision(form);
-        return ResponseEntity.ok().body("Ranking Decision Added Successfully");
+        return "Ranking Decision Added Successfully";
     }
 
 }
