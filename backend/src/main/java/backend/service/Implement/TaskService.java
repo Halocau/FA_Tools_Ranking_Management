@@ -5,6 +5,7 @@ import backend.model.dto.TaskResponse;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
 import backend.service.ITaskService;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,16 +35,19 @@ public class TaskService implements ITaskService {
     }
 
     @Override
+    @Transactional
     public Task addTask(Task task) {
         return iTaskRepository.save(task);
     }
 
     @Override
+    @Transactional
     public Task updateTask(Task task) {
         return iTaskRepository.saveAndFlush(task);
     }
 
     @Override
+    @Transactional
     public void deleteTaskById(int id) {
         iTaskRepository.deleteById(id);
     }
@@ -59,7 +63,18 @@ public class TaskService implements ITaskService {
     }
 
     @Override
-    public void createTaskByForm(AddTaskRequest form) {
+    public TaskResponse getTaskResponseById(Task task) {
+        TaskResponse taskResponse = modelMapper.map(task, TaskResponse.class);
+        return taskResponse;
+    }
 
+    @Override
+    @Transactional
+    public void createTaskByForm(AddTaskRequest form) {
+        Task task = Task.builder()
+                .taskName(form.getTaskName())
+                .createdBy(form.getCreatedBy())
+                .build();
+        iTaskRepository.save(task);
     }
 }

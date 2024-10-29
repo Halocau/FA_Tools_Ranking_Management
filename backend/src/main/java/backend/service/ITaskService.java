@@ -15,6 +15,7 @@ public interface ITaskService {
     public void deleteTaskById(int id);
     //response
     public List<TaskResponse> getAllTaskResponse(List<Task> tasks);
+    public TaskResponse getTaskResponseById(Task task);
     //form
     public void createTaskByForm(AddTaskRequest form);
 
