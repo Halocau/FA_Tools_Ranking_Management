@@ -65,7 +65,6 @@ const RankingGroups = () => {
       setTimeout(() => setMessage(null), 2000);
       return;
     }
-
     // Nếu không phải "Trainer", mở modal xóa
     setGroupToDelete(groupId);
     setShowDeleteModal(true);
@@ -175,7 +174,7 @@ const RankingGroups = () => {
   // Define columns for DataGrid
   const columns = [
     { field: "index", headerName: "Index", width: 70 },
-    { field: "groupName", headerName: "Group Name", width: 500 },
+    { field: "groupName", headerName: "Group Name", width: 250 },
     { field: "numEmployees", headerName: "No. of Employees", width: 250 },
     {
       field: "currentRankingDecision",
@@ -190,7 +189,6 @@ const RankingGroups = () => {
         <>
           <Button
             variant="outlined"
-            size="small"
             onClick={() => {
               console.log(`Navigating to edit group with ID: ${params.row.id}`);
               navigate(`/ranking-group/edit/${params.row.id}`);

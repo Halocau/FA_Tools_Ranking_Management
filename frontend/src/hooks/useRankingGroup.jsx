@@ -27,6 +27,7 @@ const useRankingGroup = () => {
         try {
             const response = await authClient.get('/ranking-group');
             setData(response.data); // Update data state with fetched groups
+            return response.data; // Return data for validation check
         } catch (err) {
             handleError(err); // Handle and log errors
         } finally {
