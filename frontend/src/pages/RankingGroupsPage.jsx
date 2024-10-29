@@ -114,18 +114,18 @@ const RankingGroups = () => {
   if (error) return <div>Error: {error.message}</div>;
   // Prepare table data
   const columns = [
-    { field: "index", headerName: "Index", width: 100 },
-    { field: "groupName", headerName: "Group Name", width: 350 },
+    { field: "index", headerName: "Index", width: 50 },
+    { field: "groupName", headerName: "Group Name", width: 230 },
     { field: "numEmployees", headerName: "No. of Employees", width: 220 },
     {
       field: "currentRankingDecision",
       headerName: "Current Ranking Decision",
-      width: 300,
+      width: 220,
     },
     {
       field: "action",
       headerName: "Action",
-      width: 150,
+      width: 170,
       renderCell: (params) => (
         <>
           <Button variant="primary" size="sm">
