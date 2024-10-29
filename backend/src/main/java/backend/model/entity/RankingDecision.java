@@ -1,15 +1,21 @@
 package backend.model.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "Ranking_Decision")
+@SuperBuilder
 public class RankingDecision {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

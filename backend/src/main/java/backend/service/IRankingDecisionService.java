@@ -2,6 +2,7 @@ package backend.service;
 
 import backend.model.dto.RankingDecisionResponse;
 import backend.model.entity.RankingDecision;
+import backend.model.form.RankingDecision.CreateRankingDecision;
 
 import java.util.List;
 
@@ -15,4 +16,7 @@ public interface IRankingDecisionService {
     public void updateRankingDecisionGroupIdToNull(int groupId);
     //response
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions);
+
+    //form
+    public void createRankingDecision(CreateRankingDecision form);
 }

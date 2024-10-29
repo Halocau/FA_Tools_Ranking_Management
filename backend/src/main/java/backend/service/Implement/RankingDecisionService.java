@@ -3,6 +3,7 @@ package backend.service.Implement;
 import backend.dao.IRankingDecisionRepository;
 import backend.model.dto.RankingDecisionResponse;
 import backend.model.entity.RankingDecision;
+import backend.model.form.RankingDecision.CreateRankingDecision;
 import backend.service.IRankingDecisionService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -70,5 +71,14 @@ public class RankingDecisionService implements IRankingDecisionService {
             rankingDecisionResponses.add(modelMapper.map(rankingDecision, RankingDecisionResponse.class));
         }
         return rankingDecisionResponses;
+    }
+
+    @Override
+    public void createRankingDecision(CreateRankingDecision form) {
+        RankingDecision decision = RankingDecision.builder()
+                .decisionName(form.getDecisionName())
+                .createdBy(form.getCreatedBy())
+                .build();
+        iRankingDecisionRepository.save(decision);
     }
 }

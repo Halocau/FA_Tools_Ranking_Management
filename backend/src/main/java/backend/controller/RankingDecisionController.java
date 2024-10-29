@@ -2,7 +2,9 @@ package backend.controller;
 
 import backend.model.dto.RankingDecisionResponse;
 import backend.model.entity.RankingDecision;
+import backend.model.form.RankingDecision.CreateRankingDecision;
 import backend.service.IRankingDecisionService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,11 +32,16 @@ public class RankingDecisionController {
         iRankingDecisionService.updateRankingDecisionGroupIdToNull(groupId);
         return ResponseEntity.noContent().build();
     }
+
     @GetMapping
-    public List<RankingDecisionResponse> getRankingDecisionList(){
+    public List<RankingDecisionResponse> getRankingDecisionList() {
         List<RankingDecision> decisionList = iRankingDecisionService.getRankingDecisions();
         return iRankingDecisionService.getRankingDecisionResponses(decisionList);
     }
-
+    @PostMapping("/add")
+    public ResponseEntity<String> addRankingDecision(@RequestBody @Valid CreateRankingDecision form) {
+        iRankingDecisionService.createRankingDecision(form);
+        return ResponseEntity.ok().body("Ranking Decision Added Successfully");
+    }
 
 }
