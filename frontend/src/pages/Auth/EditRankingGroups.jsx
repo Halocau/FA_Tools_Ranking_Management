@@ -1,3 +1,4 @@
+// Import các thư viện cần thiết từ React, Material-UI và các component khác
 import React, { useEffect, useState } from "react";
 import {
     Box, Button, Typography, TextField, FormControl, InputLabel, Select, MenuItem, Modal, IconButton, Switch, FormControlLabel, Alert
@@ -7,26 +8,27 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate, useParams } from "react-router-dom";
 import Slider from "../../layouts/Slider.jsx";
 import useRankingGroup from "../../hooks/useRankingGroup.jsx";
+import "../../assets/css/RankingGroups.css"
 
 const EditRankingGroup = () => {
-    const navigate = useNavigate();
-    const { id } = useParams();
-    const { fetchRankingGroupById, updateRankingGroup, fetchAllRankingGroups, data: group } = useRankingGroup();
+    const navigate = useNavigate(); // Để điều hướng giữa các trang
+    const { id } = useParams(); // Lấy tham số id từ URL
+    const { fetchRankingGroupById, updateRankingGroup, fetchAllRankingGroups, data: group } = useRankingGroup(); // Các hàm từ hook để quản lý nhóm xếp hạng
 
-    // State for handling editing and displaying group information
+    // State cho việc chỉnh sửa và hiển thị thông tin nhóm
     const [editGroup, setEditGroup] = useState({ groupName: '', currentRankingDecision: '' });
     const [originalGroupName, setOriginalGroupName] = useState('');
-    const [message, setMessage] = useState("");
-    const [messageType, setMessageType] = useState("success");
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [newGroupName, setNewGroupName] = useState("");
-    const [validationMessage, setValidationMessage] = useState("");
-    const [selectedDecision, setSelectedDecision] = useState("");
-    const [rankingDecisions, setRankingDecisions] = useState([]);
-    const [showDecisionModal, setShowDecisionModal] = useState(false);
-    const [decisionName, setDecisionName] = useState("");
-    const [clone, setClone] = useState(false);
-    const [selectedCloneDecision, setSelectedCloneDecision] = useState("");
+    const [message, setMessage] = useState(""); // Thông báo trạng thái
+    const [messageType, setMessageType] = useState("success"); // Loại thông báo (success/error)
+    const [showAddModal, setShowAddModal] = useState(false); // Hiển thị modal thêm nhóm
+    const [newGroupName, setNewGroupName] = useState(""); // Tên nhóm mới
+    const [validationMessage, setValidationMessage] = useState(""); // Thông báo lỗi validate
+    const [selectedDecision, setSelectedDecision] = useState(""); // Quyết định xếp hạng hiện tại
+    const [rankingDecisions, setRankingDecisions] = useState([]); // Danh sách các quyết định xếp hạng
+    const [showDecisionModal, setShowDecisionModal] = useState(false); // Hiển thị modal thêm quyết định
+    const [decisionName, setDecisionName] = useState(""); // Tên quyết định mới
+    const [clone, setClone] = useState(false); // Trạng thái clone quyết định
+    const [selectedCloneDecision, setSelectedCloneDecision] = useState(""); // Quyết định clone
 
     // Fetching the ranking group details when the component mounts
     useEffect(() => {
@@ -161,11 +163,35 @@ const EditRankingGroup = () => {
 
     // Columns configuration for the DataGrid
     const columns = [
-        { field: "id", headerName: "ID", width: 70 },
-        { field: "name", headerName: "Ranking Decision Name", width: 200 },
-        { field: "finalizedAt", headerName: "Finalized At", width: 150 },
-        { field: "finalizedBy", headerName: "Finalized By", width: 150 },
-        { field: "status", headerName: "Status", width: 100 },
+        { field: "id", headerName: "ID", width: 80 },
+        { field: "name", headerName: "Ranking Decision Name", width: 400 },
+        { field: "finalizedAt", headerName: "Finalized At", width: 200 },
+        { field: "finalizedBy", headerName: "Finalized By", width: 180 },
+        { field: "status", headerName: "Status", width: 159 },
+        {
+            field: "action", headerName: "Action", width: 150, renderCell: (params) => (
+                <>
+                    <Button
+                        variant="outlined"
+                        onClick={() => {
+                            console.log(`Navigating to edit group with ID: ${params.row.id}`);
+                            navigate(`/ranking-decision/edit/${params.row.id}`);
+                        }}
+                    >
+                        <FaEdit />
+                    </Button>
+
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        onClick={() => handleOpenDeleteModal(params.row.id)}
+                    >
+                        <MdDeleteForever />
+                    </Button>
+                </>
+            ),
+        },
     ];
 
     return (
@@ -205,10 +231,33 @@ const EditRankingGroup = () => {
                     </Button>
                 </Box>
 
-                <Box sx={{ height: 400, marginTop: 2 }}>
-                    <DataGrid rows={group?.rankingDecisions || []} columns={columns} pageSize={5} />
+                <Box sx={{ width: "100%" }}>
+                    <DataGrid className="custom-data-grid"
+                        rows={group?.rankingDecisions || []}
+                        columns={columns}
+                        pageSize={5}
+                        disableRowSelectionOnClick />
                 </Box>
-
+                {/* <Box sx={{ width: "100%" }}>
+                    <DataGrid className="custom-data-grid"
+                        rows={rows}
+                        columns={columns}
+                        checkboxSelection
+                        onSelectionModelChange={(newSelection) => {
+                            setSelectedRows(newSelection);
+                        }}
+                        selectionModel={selectedRows}
+                        initialState={{
+                            pagination: {
+                                paginationModel: {
+                                    pageSize: 5,
+                                },
+                            },
+                        }}
+                        pageSizeOptions={[5]}
+                        disableRowSelectionOnClick
+                    />
+                </Box> */}
                 {/* Modal for editing group info */}
                 <Modal open={showAddModal} onClose={handleCloseAddModal}>
                     <Box sx={{
@@ -277,11 +326,11 @@ const EditRankingGroup = () => {
                         />
                         <FormControlLabel
                             control={<Switch checked={clone} onChange={() => setClone(!clone)} />}
-                            label="Clone from existing decision"
+                            label="Clone from other decision"
                         />
                         {clone && (
                             <FormControl fullWidth sx={{ marginTop: 2 }}>
-                                <InputLabel>Clone Decision</InputLabel>
+                                <InputLabel>Choose Decision</InputLabel>
                                 <Select
                                     value={selectedCloneDecision}
                                     onChange={(e) => setSelectedCloneDecision(e.target.value)}

@@ -173,19 +173,12 @@ const RankingGroups = () => {
 
   // Define columns for DataGrid
   const columns = [
-    { field: "index", headerName: "Index", width: 70 },
+    { field: "index", headerName: "ID", width: 70 },
     { field: "groupName", headerName: "Group Name", width: 250 },
     { field: "numEmployees", headerName: "No. of Employees", width: 250 },
+    { field: "currentRankingDecision", headerName: "Current Ranking Decision", width: 400 },
     {
-      field: "currentRankingDecision",
-      headerName: "Current Ranking Decision",
-      width: 400,
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      width: 150,
-      renderCell: (params) => (
+      field: "action", headerName: "Action", width: 150, renderCell: (params) => (
         <>
           <Button
             variant="outlined"
