@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../assets/css/RankingGroups.css"
+import "../../assets/css/RankingGroups.css";
 import { Button, TextField, Alert } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import ModalCustom from "../../components/Common/Modal.jsx";
@@ -55,10 +55,8 @@ const RankingGroups = () => {
   };
 
   const handleOpenDeleteModal = (groupId) => {
-    // Tìm nhóm theo ID để kiểm tra tên
-    const selectedGroup = groups.find(group => group.groupId === groupId);
+    const selectedGroup = groups.find((group) => group.groupId === groupId);
 
-    // Nếu nhóm có tên là "Trainer", hiển thị thông báo và không mở modal
     if (selectedGroup && selectedGroup.groupName === "Trainer") {
       setMessageType("warning");
       setMessage("Cannot delete the 'Trainer' group.");
@@ -66,11 +64,9 @@ const RankingGroups = () => {
       return;
     }
 
-    // Nếu không phải "Trainer", mở modal xóa
     setGroupToDelete(groupId);
     setShowDeleteModal(true);
   };
-
 
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
 
@@ -92,7 +88,9 @@ const RankingGroups = () => {
 
     const nameRegex = /^[a-zA-Z0-9 ]+$/;
     if (!nameRegex.test(trimmedName)) {
-      setValidationMessage("Group name can only contain letters, numbers, and spaces.");
+      setValidationMessage(
+        "Group name can only contain letters, numbers, and spaces."
+      );
       return;
     }
 
@@ -101,7 +99,7 @@ const RankingGroups = () => {
 
     // Check for duplicate group name
     const isDuplicate = groups.some(
-      group => group.groupName.toLowerCase() === trimmedName.toLowerCase()
+      (group) => group.groupName.toLowerCase() === trimmedName.toLowerCase()
     );
     if (isDuplicate) {
       setValidationMessage("Group name already exists.");
@@ -158,7 +156,7 @@ const RankingGroups = () => {
     }
     try {
       // Delete each selected group
-      await Promise.all(selectedRows.map(id => deleteRankingGroup(id)));
+      await Promise.all(selectedRows.map((id) => deleteRankingGroup(id)));
       setMessageType("success");
       setMessage("Selected groups deleted successfully!");
       setTimeout(() => setMessage(null), 2000);
@@ -175,7 +173,7 @@ const RankingGroups = () => {
   // Define columns for DataGrid
   const columns = [
     { field: "index", headerName: "Index", width: 70 },
-    { field: "groupName", headerName: "Group Name", width: 500 },
+    { field: "groupName", headerName: "Group Name", width: 250 },
     { field: "numEmployees", headerName: "No. of Employees", width: 250 },
     {
       field: "currentRankingDecision",
@@ -190,7 +188,6 @@ const RankingGroups = () => {
         <>
           <Button
             variant="outlined"
-            size="small"
             onClick={() => {
               console.log(`Navigating to edit group with ID: ${params.row.id}`);
               navigate(`/ranking-group/edit/${params.row.id}`);
@@ -215,13 +212,15 @@ const RankingGroups = () => {
   // Map group data to rows for DataGrid
   const rows = groups
     ? groups.map((group, index) => ({
-      id: group.groupId,
-      index: index + 1,
-      groupName: group.groupName,
-      numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
-      currentRankingDecision:
-        group.currentRankingDecision == null ? "N/A" : group.currentRankingDecision,
-    }))
+        id: group.groupId,
+        index: index + 1,
+        groupName: group.groupName,
+        numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
+        currentRankingDecision:
+          group.currentRankingDecision == null
+            ? "N/A"
+            : group.currentRankingDecision,
+      }))
     : [];
 
   return (
@@ -234,7 +233,8 @@ const RankingGroups = () => {
         {message && <Alert severity={messageType}>{message}</Alert>}
 
         <Box sx={{ width: "100%" }}>
-          <DataGrid className="custom-data-grid"
+          <DataGrid
+            className="custom-data-grid"
             rows={rows}
             columns={columns}
             checkboxSelection
@@ -255,7 +255,11 @@ const RankingGroups = () => {
         </Box>
 
         <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-          <Button variant="contained" color="success" onClick={handleOpenAddModal}>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleOpenAddModal}
+          >
             Add New Group
           </Button>
           <Button variant="contained" color="error" onClick={handleBulkDelete}>
@@ -287,7 +291,11 @@ const RankingGroups = () => {
               <Button variant="outlined" onClick={handleCloseAddModal}>
                 Cancel
               </Button>
-              <Button variant="contained" color="success" onClick={handleAddGroup}>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={handleAddGroup}
+              >
                 Add
               </Button>
             </>
@@ -305,7 +313,11 @@ const RankingGroups = () => {
               <Button variant="outlined" onClick={handleCloseDeleteModal}>
                 Cancel
               </Button>
-              <Button variant="contained" color="error" onClick={handleDeleteGroup}>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={handleDeleteGroup}
+              >
                 Delete
               </Button>
             </>
