@@ -1,12 +1,26 @@
-
 .container {
-    max-width: 800px;
-    margin: auto;
-  }
-  .custom-modal {
-    position: fixed;
-    top: 20px;
-    right: 0px;
-    z-index: 1050; /* Đảm bảo modal hiển thị trên các thành phần khác */
-  }
-  
+  max-width: 800px;
+  margin: auto;
+}
+
+.custom-modal {
+  position: fixed;
+  top: 20px;
+  right: 0px;
+  z-index: 1050;
+  /* Đảm bảo modal hiển thị trên các thành phần khác */
+}
+
+/* Đặt kích thước chữ lớn hơn cho các ô dữ liệu */
+.custom-data-grid .MuiDataGrid-cell {
+  font-size: 1.2rem;
+  /* Điều chỉnh kích thước theo ý bạn */
+}
+
+/* Điều chỉnh kích thước chữ cho tiêu đề cột */
+.custom-data-grid .MuiDataGrid-columnHeaders {
+  font-size: 1.3rem;
+  /* Điều chỉnh kích thước theo ý bạn */
+  font-weight: bold;
+  color: midnightblue;
+}

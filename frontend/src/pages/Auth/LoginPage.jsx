@@ -1,18 +1,34 @@
 // src/Login.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../assets/css/LoginPage.css";
 import Image from "../../assets/image/image.png";
 import Logo from "../../assets/image/logo.png";
+import GoogleSvg from "../../assets/image/icons8-google.svg";
 import { FaEye } from "react-icons/fa6";
 import { FaEyeSlash } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import useLogin from "../../hooks/useLogin";
+import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { data, error, loading, login } = useLogin();
+
+  const navigate = useNavigate();
+
+  // localStorage.removeItem('jwtToken');
+  console.log(localStorage.getItem("jwtToken"));
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      console.log("User:", user);
+      navigate("/ranking_group");
+    }
+  }, [user, navigate]);
 
   const handleLogin = async () => {
     try {
@@ -75,14 +91,15 @@ const LoginPage = () => {
                     Remember for 30 days
                   </label>
                 </div>
-                <a href="#" className="forgot-pass-link">
+                <div className="forgot-pass-link">
                   <Link to={`/forgetpassword`}>Forget password</Link>
-                </a>
+                </div>
               </div>
               <div className="login-center-buttons">
                 <button type="button" onClick={() => handleLogin()}>
                   Log In
                 </button>
+                
               </div>
             </form>
           </div>

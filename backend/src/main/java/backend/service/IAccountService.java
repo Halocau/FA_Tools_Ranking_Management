@@ -1,7 +1,7 @@
 package backend.service;
 
-import backend.model.Account;
-
+import backend.model.entity.Account;
+import backend.model.dto.LoginResponse;
 import java.util.List;
 
 public interface IAccountService {
@@ -20,5 +20,10 @@ public interface IAccountService {
     public Account updateAccount(Account account);
 
     public void deleteAccount(int id);
+
     public String findUsernameById(int id);
+
+    public String verify(Account user);
+
+    public LoginResponse login(Account user);
 }

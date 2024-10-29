@@ -14,12 +14,19 @@ const useLogin = () => {
   const login = async (username, password) => {
     setLoading(true);
     try {
-      const response = await http.get("/account/user-and-pass", {
-        params: {
-          username,
-          password,
-        },
+      const response = await http.post('/account/login', {
+        username,
+        password
       });
+      const { id, email, role, fullName, token } = response.data;
+
+      // Store the token and other user details in local storage
+      localStorage.setItem('jwtToken', token);
+      localStorage.setItem('userId', id);
+      localStorage.setItem('userRole', role);
+      localStorage.setItem('userFullName', fullName);
+      localStorage.setItem('userEmail', email);
+
       setData(response.data); // Store the response data in the component state
       saveUserInfo(response.data); // Save user data in the AuthContext
       // Navigate to /ranking-groups after successful login
