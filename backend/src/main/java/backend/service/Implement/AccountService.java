@@ -1,15 +1,29 @@
 package backend.service.Implement;
 
 import backend.dao.IAccount;
+import backend.model.dto.LoginResponse;
 import backend.model.entity.Account;
 import backend.service.IAccountService;
+import backend.service.JWTService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 @Service
 public class AccountService implements IAccountService {
     private IAccount iAccount;
+
+    @Autowired
+    private JWTService jwtService;
+
+    @Autowired
+    AuthenticationManager authManager;
+
     @Autowired
     public AccountService(IAccount iAccount) {
         this.iAccount = iAccount;
@@ -58,5 +72,28 @@ public class AccountService implements IAccountService {
     @Override
     public String findUsernameById(int id) {
         return iAccount.findUsernameById(id);
+    }
+
+    @Override
+    public String verify(Account user) {
+        Authentication authentication = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(user.getUsername(),
+                        user.getPassword()));
+
+        if (authentication.isAuthenticated()) {
+            return jwtService.generateToken(user);
+        }
+        return null;
+    }
+
+    @Override
+    public LoginResponse login(Account user) {
+        String token = verify(user);
+        return new LoginResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getRole(),
+                user.getFullName(),
+                token);
     }
 }

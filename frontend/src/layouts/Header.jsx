@@ -7,10 +7,10 @@ const Header = () => {
   return (
     <header className="header">
       <div className="header-left">
-        <span className="web-title">FA Management</span>
+        <span className="web-title" onClick={() => window.location.href = "/ranking_group"} style={{ cursor: "pointer" }}> FPT Software </span>
       </div>
       <div className="header-right">
-        <span className="welcome-text">Welcome Nguyen Minh Cuong (PMBA)</span>
+        <span className="welcome-text">Welcome </span>
         <img
           src="https://via.placeholder.com/30"
           alt="UniGate Logo"
