@@ -3,7 +3,7 @@ package backend.service;
 import backend.model.dto.TaskResponse;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
-import backend.model.form.Task.EditTaskRequest;
+import backend.model.form.Task.UpdateTaskRequest;
 
 import java.util.List;
 
@@ -19,6 +19,6 @@ public interface ITaskService {
     public TaskResponse getTaskResponseById(Task task);
     //form
     public void createTaskByForm(AddTaskRequest form);
-    public void editTaskByForm(EditTaskRequest form);
+    public void updateTaskByForm(int taskId, UpdateTaskRequest form);
 
 }

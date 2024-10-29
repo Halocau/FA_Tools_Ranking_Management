@@ -4,6 +4,7 @@ import backend.config.exception.TaskException;
 import backend.model.dto.TaskResponse;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
+import backend.model.form.Task.UpdateTaskRequest;
 import backend.service.ITaskService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,11 @@ public class TaskController {
         return ResponseEntity.ok("Task successfully added");
     }
 
+    @PutMapping("/update/{id}")
+    public ResponseEntity<String> updateTask(@PathVariable int id, @RequestBody @Valid UpdateTaskRequest form) {
+        iTaskService.updateTaskByForm(id, form);
+        return ResponseEntity.ok("Task successfully updated");
+    }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteTaskById(@PathVariable int id) {

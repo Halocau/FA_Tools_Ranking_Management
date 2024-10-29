@@ -4,7 +4,7 @@ import backend.dao.ITaskRepository;
 import backend.model.dto.TaskResponse;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
-import backend.model.form.Task.EditTaskRequest;
+import backend.model.form.Task.UpdateTaskRequest;
 import backend.service.ITaskService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -81,11 +81,21 @@ public class TaskService implements ITaskService {
 
     @Override
     @Transactional
-    public void editTaskByForm(EditTaskRequest form) {
-        Task task = Task.builder()
-                .taskName(form.getTaskName())
-                .createdBy(form.getCreatedBy())
-                .build();
+    public void updateTaskByForm(int id, UpdateTaskRequest form) {
+        Task task = iTaskRepository.findById(id).get();
+//        Account oldManager = department.getManager();
+//        if(oldManager.getId() != form.getManagerId()) {
+//            // update role of old manager
+//            oldManager.setRole(Role.EMPLOYEE);
+//            accountRepository.save(oldManager);
+//            // update role of new manager
+//            Account newManager = accountRepository.findById(form.getManagerId()).get();
+//            newManager.setRole(Role.MANAGER);
+//            // update manager of department
+//            department.setManager(newManager);
+//        }
+        task.setTaskName(form.getTaskName());
+        task.setCreatedBy(form.getCreatedBy());
         iTaskRepository.saveAndFlush(task);
     }
 
