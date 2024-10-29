@@ -63,7 +63,7 @@ const RankingGroups = () => {
       setTimeout(() => setMessage(null), 2000);
       return;
     }
-
+    // If not  "Trainer" -> open Modal Delete
     setGroupToDelete(groupId);
     setShowDeleteModal(true);
   };
