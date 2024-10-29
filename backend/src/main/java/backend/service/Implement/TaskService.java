@@ -4,6 +4,7 @@ import backend.dao.ITaskRepository;
 import backend.model.dto.TaskResponse;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
+import backend.model.form.Task.EditTaskRequest;
 import backend.service.ITaskService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -77,4 +78,16 @@ public class TaskService implements ITaskService {
                 .build();
         iTaskRepository.save(task);
     }
+
+    @Override
+    @Transactional
+    public void editTaskByForm(EditTaskRequest form) {
+        Task task = Task.builder()
+                .taskName(form.getTaskName())
+                .createdBy(form.getCreatedBy())
+                .build();
+        iTaskRepository.saveAndFlush(task);
+    }
+
+
 }

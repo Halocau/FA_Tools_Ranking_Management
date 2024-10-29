@@ -39,8 +39,19 @@ public class TaskController {
     }
 
     @PostMapping("/add")
-    public String createTask(@RequestBody @Valid AddTaskRequest form) {
+    public ResponseEntity<String> createTask(@RequestBody @Valid AddTaskRequest form) {
         iTaskService.createTaskByForm(form);
-        return "Task successfully added";
+        return ResponseEntity.ok("Task successfully added");
+    }
+
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteTaskById(@PathVariable int id) {
+        Task task = iTaskService.getTaskById(id);
+        if (task == null) {
+            throw new TaskException("task not found for deletion");
+        }
+        iTaskService.deleteTaskById(id);
+        return ResponseEntity.ok("Task successfully deleted id " + id);
     }
 }
