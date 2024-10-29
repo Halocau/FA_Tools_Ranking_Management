@@ -26,10 +26,10 @@ public class RankingDecision {
     private String status;
 
     @Column(name = "finalized_at")
-    private LocalDateTime finalized_at;
+    private LocalDateTime finalizedAt;
 
     @Column(name = "finalized_by")
-    private Integer finalized_by;
+    private Integer finalizedBy;
 
     @Column(name = "created_by")
     private Integer createdBy;
