@@ -1,5 +1,6 @@
 // Import các thư viện cần thiết từ React, Material-UI và các component khác
 import React, { useEffect, useState } from "react";
+import "../../assets/css/RankingGroups.css"
 import {
     Box, Button, Typography, TextField, FormControl, InputLabel, Select, MenuItem, Modal, IconButton, Switch, FormControlLabel, Alert
 } from "@mui/material";
@@ -7,11 +8,9 @@ import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate, useParams } from "react-router-dom";
-import Slider from "../../layouts/Slider.jsx";
 import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import useRankingDecision from "../../hooks/useRankingDecision.jsx";
-import "../../assets/css/RankingGroups.css"
-
+import Slider from "../../layouts/Slider.jsx";
 
 const EditRankingGroup = () => {
     const navigate = useNavigate(); // Để điều hướng giữa các trang
@@ -39,12 +38,23 @@ const EditRankingGroup = () => {
     // Destructuring from useRankingGroup custom hook
     const {
         data: groups,
-        error,
-        loading,
         fetchAllRankingDecisions,
         deleteRankingGroup,
         addRankingGroup,
     } = useRankingGroup();
+    // // Destructuring from useRankingDecision custom hook
+    const {
+        data: decisions,
+        error,
+        loading,
+        fetchAllDecisions,
+        deleteRankingDecision,
+        addRankingDecision,
+    } = useRankingDecision();
+    // Lấy danh sách các quyết định xếp hạng
+    useEffect(() => {
+        fetchAllDecisions();
+    }, []);
 
     // Fetching the ranking group details when the component mounts
     useEffect(() => {
@@ -73,7 +83,7 @@ const EditRankingGroup = () => {
         setShowEditGroupInfoModal(true);
         setValidationMessage("");
     };
-    const handleEditGroup = async () => {
+    const handleEditGroupInfo = async () => {
         setValidationMessage("");
         let trimmedName = newGroupName.trim();
         // Validation for the group name
@@ -359,7 +369,7 @@ const EditRankingGroup = () => {
                         </FormControl>
                         <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
                             <Button variant="outlined" onClick={handleCloseEditGroupInfoModal}>Cancel</Button>
-                            <Button variant="contained" onClick={handleEditGroup}>Save</Button>
+                            <Button variant="contained" onClick={handleEditGroupInfo}>Save</Button>
                         </Box>
                     </Box>
                 </Modal>

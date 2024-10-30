@@ -5,12 +5,11 @@ import { Box, Button, TextField, Menu, MenuItem, IconButton, Alert } from "@mui/
 import MenuIcon from '@mui/icons-material/Menu';
 import { DataGrid } from "@mui/x-data-grid";
 import ModalCustom from "../../components/Common/Modal.jsx";
-import useRankingdecision from "../../hooks/useRankingdecision.jsx";
+import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import Slider from "../../layouts/Slider.jsx";
 import { Link } from 'react-router-dom';
-import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 
 
 const RankingDecision = () => {
@@ -42,8 +41,8 @@ const RankingDecision = () => {
         error,
         loading,
         fetchAllDecisions,
-        deleteDecision,
-        addDecision,
+        deleteRankingDecision,
+        addRankingDecision,
     } = useRankingDecision();
 
     // Fetch all ranking decisions when component mounts
@@ -69,7 +68,7 @@ const RankingDecision = () => {
         setValidationMessage("");
     };
     // Function to add a new decision with validation checks
-    const handleAdddecision = async () => {
+    const handleaddRankingDecision = async () => {
         setValidationMessage("");
         let trimmedName = newDecisionName.trim();
 
@@ -105,7 +104,7 @@ const RankingDecision = () => {
                 decisionName: trimmedName,
                 createdBy: 1, // Assuming 1 is the ID of the user creating the decision
             };
-            await addDecision(newdecision); // Call API to add new decision
+            await addRankingDecision(newdecision); // Call API to add new decision
             setMessageType("success");
             setMessage("Decision added successfully!");
             setTimeout(() => setMessage(null), 2000);
@@ -123,10 +122,10 @@ const RankingDecision = () => {
     const handleOpenDeleteModal = () => setShowDeleteModal(true);
     const handleCloseDeleteModal = () => setShowDeleteModal(false);
     // Function to delete a selected decision
-    const handleDeletedecision = async () => {
+    const handledeleteRankingDecision = async () => {
         try {
             if (decisionToDelete) {
-                await deleteDecision(decisionToDelete); // Gọi API để xóa decision
+                await deleteRankingDecision(decisionToDelete); // Gọi API để xóa decision
                 setMessageType("success");
                 setMessage("Decision deleted successfully!");
                 setTimeout(() => setMessage(null), 2000);
@@ -153,7 +152,7 @@ const RankingDecision = () => {
         }
         try {
             // Xóa từng decision trong danh sách đã chọn
-            await Promise.all(selectedRows.map(id => deleteDecision(id)));
+            await Promise.all(selectedRows.map(id => deleteRankingDecision(id)));
             setMessageType("success");
             setMessage("Selected decisions deleted successfully!");
             setTimeout(() => setMessage(null), 2000);
@@ -302,7 +301,7 @@ const RankingDecision = () => {
                             <Button variant="outlined" onClick={handleCloseAddModal}>
                                 Cancel
                             </Button>
-                            <Button variant="contained" color="success" onClick={handleAdddecision}>
+                            <Button variant="contained" color="success" onClick={handleaddRankingDecision}>
                                 Add
                             </Button>
                         </>
@@ -320,7 +319,7 @@ const RankingDecision = () => {
                             <Button variant="outlined" onClick={handleCloseDeleteModal}>
                                 Cancel
                             </Button>
-                            <Button variant="contained" color="error" onClick={handleDeletedecision}>
+                            <Button variant="contained" color="error" onClick={handledeleteRankingDecision}>
                                 Delete
                             </Button>
                         </>

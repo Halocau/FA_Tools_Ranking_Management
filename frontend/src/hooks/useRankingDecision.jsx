@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authClient from '../api/baseapi/AuthorAPI';
 
-const useDecision = () => {
+const useRankingDecision = () => {
     const navigate = useNavigate();
 
     const [data, setData] = useState(null);  // Holds the decision data retrieved from the API
@@ -46,7 +46,7 @@ const useDecision = () => {
     };
 
     // Adds a new decision to the API and refreshes the list
-    const addDecision = async (newDecision) => {
+    const addRankingDecision = async (newDecision) => {
         setLoading(true);
         try {
             const response = await authClient.post(`/decision/add`, newDecision);  // API call to add new decision
@@ -76,7 +76,7 @@ const useDecision = () => {
     };
 
     // Deletes a decision by ID and removes it from the data state
-    const deleteDecision = async (id) => {
+    const deleteRankingDecision = async (id) => {
         setLoading(true);
         try {
             await authClient.delete(`/decision/delete/${id}`);  // API call to delete decision
@@ -94,10 +94,10 @@ const useDecision = () => {
         error,  // Holds error messages if any error occurs
         fetchAllDecisions,  // Function to fetch all decisions
         fetchDecisionById,  // Function to fetch a decision by ID
-        addDecision,  // Function to add a new decision
+        addRankingDecision,  // Function to add a new decision
         updateDecision,  // Function to update a decision
-        deleteDecision,  // Function to delete a decision
+        deleteRankingDecision,  // Function to delete a decision
     };
 };
 
-export default useDecision;
+export default useRankingDecision;
