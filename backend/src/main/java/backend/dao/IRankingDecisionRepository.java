@@ -5,9 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-import java.util.List;
+import org.springframework.stereotype.Repository;
 
-@RepositoryRestResource(path = "r")
+@Repository
 public interface IRankingDecisionRepository extends JpaRepository<RankingDecision, Integer> {
     public RankingDecision findByGroupId(int groupId);
 
@@ -16,5 +16,7 @@ public interface IRankingDecisionRepository extends JpaRepository<RankingDecisio
     @Modifying
     @Query("UPDATE RankingDecision rd SET rd.groupId = null WHERE rd.groupId = :groupId")
     public void updateRankingDecisionGroupIdToNull(int groupId);
+
+    boolean existsByDecisionName(String decisionName);
 
 }
