@@ -7,8 +7,6 @@ import ForgetPasswordPage from "./pages/Auth/ForgetPasswordPage";
 import Sidebar from "./layouts/Sidebar";
 import Header from "./layouts/Header";
 import RankingGroups from "./pages/Auth/RankingGroupsPage.jsx";
-import RankingDecisionList from "./pages/Auth/RankingDecisionList.jsx";
-import TaskManagement from "./pages/Auth/TaskManager.jsx";
 import EditRankingGroup from './pages/Auth/EditRankingGroupsPage.jsx'; 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
@@ -64,43 +62,6 @@ function App() {
               </>
             }
           />
-          <Route
-            path="/ranking_decision"
-            element={
-              <>
-                <Row>
-                  <Header />
-                </Row>
-                <Row>
-                  <Col md={2}>
-                    <Sidebar />
-                  </Col>
-                  <Col md={10}>
-                    <RankingDecisionList /> 
-                  </Col>
-                </Row>
-              </>
-            }
-          />
-                    <Route
-            path="/task-management"
-            element={
-              <>
-                <Row>
-                  <Header />
-                </Row>
-                <Row>
-                  <Col md={2}>
-                    <Sidebar />
-                  </Col>
-                  <Col md={10}>
-                    <TaskManagement /> 
-                  </Col>
-                </Row>
-              </>
-            }
-          />
-
           <Route path="403" element={<ForbiddenPage />} /> {/* ]403 Page */}
           <Route path="*" element={<NotFound />} />
         </Routes>
