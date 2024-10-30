@@ -71,33 +71,21 @@ const RankingDecision = () => {
     const handleaddRankingDecision = async () => {
         setValidationMessage("");
         let trimmedName = newDecisionName.trim();
-
-        // Validate decision name length and character requirements
+        // Kiểm tra tên quyết định có bị trống không
         if (!trimmedName) {
-            setValidationMessage("Decision name cannot be empty.");
+            setValidationMessage("Tên quyết định không được để trống.");
             return;
         }
-
-        if (trimmedName.length < 3 || trimmedName.length > 20) {
-            setValidationMessage("Decision name must be between 3 and 20 characters.");
-            return;
-        }
-
-        const nameRegex = /^[a-zA-Z0-9 ]+$/;
-        if (!nameRegex.test(trimmedName)) {
-            setValidationMessage("Decision name can only contain letters, numbers, and spaces.");
-            return;
-        }
-        // Capitalize the first letter of each word in the decision name
-        trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
-        // Check for duplicate decision name
+        // Kiểm tra trùng lặp tên quyết định
         const isDuplicate = decisions.some(
             decision => decision.decisionName.toLowerCase() === trimmedName.toLowerCase()
         );
         if (isDuplicate) {
-            setValidationMessage("Decision name already exists.");
+            setValidationMessage("Tên quyết định đã tồn tại.");
             return;
         }
+        // Viết hoa chữ cái đầu của mỗi từ trong tên quyết định
+        trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
 
         try {
             const newdecision = {
@@ -169,8 +157,8 @@ const RankingDecision = () => {
 
     // Columns configuration for the DataGrid
     const columns = [
-        { field: "id", headerName: "ID", width: 80 },
-        { field: "name", headerName: "Ranking Decision Name", width: 400 },
+        { field: "index", headerName: "ID", width: 80 },
+        { field: "dicisionname", headerName: "Ranking Decision Name", width: 400 },
         { field: "finalizedAt", headerName: "Finalized At", width: 200 },
         { field: "finalizedBy", headerName: "Finalized By", width: 180 },
         { field: "status", headerName: "Status", width: 159 },
@@ -206,10 +194,10 @@ const RankingDecision = () => {
         ? decisions.map((decision, index) => ({
             id: decision.decisionId,
             index: index + 1,
-            decisionName: decision.decisionName,
-            numEmployees: decision.numEmployees < 1 ? "N/A" : decision.numEmployees,
-            currentRankingDecision:
-                decision.currentRankingDecision == null ? "N/A" : decision.currentRankingDecision,
+            dicisionname: decision.decisionName,
+            finalizedAt: decision.finalizedAt < 1 ? "N/A" : decision.finalizedBy,
+            finalizedBy: decision.finalizedBy == null ? "N/A" : decision.finalizedBy,
+            status: decision.status
         }))
         : [];
 
