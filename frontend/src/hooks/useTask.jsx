@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import authClient from "../api/baseapi/AuthorAPI";
 
-const TaskList = () => {
+const useTask = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false); // Indicates loading state during API requests
@@ -23,7 +23,7 @@ const TaskList = () => {
   const fetchAllTasks = async () => {
     setLoading(true); // Sets loading state to true during the request
     try {
-      const response = await authClient.get("/api/task");
+      const response = await authClient.get("/task");
       setData(response.data);
       return response.data;
     } catch (err) {
@@ -37,12 +37,70 @@ const TaskList = () => {
   const fetchTaskById = async (id) => {
     setLoading(true);
     try {
-      const response = await authClient.get(`/api/task/get/${id}`);
+      const response = await authClient.get(`/task/get/${id}`);
       return response.data;
     } catch (err) {
-      handleError(err);
+      setError(
+        err.response?.data ||
+          "An error occurred while fetching the ranking group."
+      );
+    } finally {
+      setLoading(false); // Stop loading after response
+    }
+  };
+
+  // Adds a new Task
+  const addTask = async (newTask) => {
+    setLoading(true);
+    try {
+      const response = await authClient.post(`/task/add`, newTask);
+      await fetchAllTasks(); // Refresh list to include new group
+      return response.data; // Returns new group data to the caller
+    } catch (err) {
+      setError(
+        err.response?.data || "An error occurred while adding the task."
+      ); // Set error state
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Updates Task
+  const updateTask = async (id, updateTask) => {
+    setLoading(true);
+    try {
+      const response = await authClient.put(
+        `/task/update/${id}`,
+        updateTask
+      );
+      setData(
+        (prevData) =>
+          prevData.map((task) => (task.id === id ? response.data : task)) // Update specific task in state
+      );
+      setData(response.data); // Sets updated data directly
+    } catch (err) {
+      const errorMsg =
+        err.response?.data || "An error occurred while updating the Task.";
+      setError(errorMsg); // Set error state if update fails
+      console.error("Update error:", errorMsg);
+    } finally {
+      setLoading(false); // Stop loading after response
+    }
+  };
+
+  // Delete task
+  const deleteTask = async (id) => {
+    setLoading(true);
+    try {
+      await authClient.delete(`/task/delete/${id}`);
+      setData((prevData) => prevData.filter((dt) => dt.id !== id)); // Remove deleted group from state
+    } catch (error) {
+      setError(
+        error.response?.data || "An error occurred while deleting task."
+      );
+      console.error("Error deleting task :", error); // Log delete error
+    } finally {
+      setLoading(false); // Stop loading after response
     }
   };
 
@@ -52,7 +110,10 @@ const TaskList = () => {
     error,
     fetchAllTasks,
     fetchTaskById,
+    addTask,
+    updateTask,
+    deleteTask,
   };
 };
 
-export default TaskList;
+export default useTask;

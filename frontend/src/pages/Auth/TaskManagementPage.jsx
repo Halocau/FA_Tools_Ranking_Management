@@ -1,57 +1,26 @@
-// Import các thư viện cần thiết từ React, Material-UI và các component khác
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Button,
-  Typography,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Modal,
-  IconButton,
-  Switch,
-  FormControlLabel,
-  Alert,
-} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { Button, TextField, Alert, CircularProgress, Typography } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
-import EditIcon from "@mui/icons-material/Edit";
-import { useNavigate, useParams } from "react-router-dom";
+import ModalCustom from "../../components/Common/Modal.jsx";
+import { MdDeleteForever } from "react-icons/md";
+import { FaEdit } from "react-icons/fa";
+import { FaRankingStar } from "react-icons/fa6";
 import Slider from "../../layouts/Slider.jsx";
-import useRankingGroup from "../../hooks/useRankingGroup.jsx";
-import useRankingDecision from "../../hooks/useRankingDecision.jsx";
-import "../../assets/css/RankingGroups.css";
+import Box from "@mui/material/Box";
+import useTask from "../../hooks/useTask.jsx";
+
 
 const TaskManagement = () => {
-  const navigate = useNavigate(); // Để điều hướng giữa các trang
-  const { id } = useParams(); // Lấy tham số id từ URL
-  const {
-    fetchRankingGroupById,
-    updateRankingGroup,
-    fetchAllRankingGroups,
-    data: group,
-  } = useRankingGroup(); // Các hàm từ hook để quản lý nhóm xếp hạng
+  const navigate = useNavigate();
 
-  // State cho việc chỉnh sửa và hiển thị thông tin nhóm
-  const [editGroup, setEditGroup] = useState({
-    groupName: "",
-    currentRankingDecision: "",
-  });
-  const [originalGroupName, setOriginalGroupName] = useState("");
-  const [message, setMessage] = useState(""); // Thông báo trạng thái
-  const [messageType, setMessageType] = useState("success"); // Loại thông báo (success/error)
-  const [showAddModal, setShowEditGroupInfoModal] = useState(false); // Hiển thị modal sửa nhóm
-  const [newGroupName, setNewGroupName] = useState(""); // Tên nhóm mới
-  const [validationMessage, setValidationMessage] = useState(""); // Thông báo lỗi validate
-  const [selectedDecision, setSelectedDecision] = useState(""); // Quyết định xếp hạng hiện tại
-  const [rankingDecisions, setTasks] = useState([]); // Danh sách các quyết định xếp hạng
-  const [showDecisionModal, setShowTaskModal] = useState(false); // Hiển thị modal thêm quyết định
-  const [decisionName, setTaskName] = useState(""); // Tên quyết định mới
-  const [clone, setClone] = useState(false); // Trạng thái clone quyết định
-  const [selectedCloneDecision, setSelectedCloneTask] = useState(""); // Quyết định clone
+  const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [DecisionToDelete, setDecisionToDelete] = useState(null);
+  const [newTaskName, setNewTaskName] = useState("");
+  const [groupToDelete, setGroupToDelete] = useState(null); // State để lưu ID của nhóm sẽ bị xóa
+  const [message, setMessage] = useState(""); // State để lưu thông điệp thông báo cho người dùng
+  const [messageType, setMessageType] = useState("success"); // State để xác định kiểu thông điệp (thành công hoặc lỗi)
+  const [validationMessage, setValidationMessage] = useState(""); // State để lưu thông điệp xác thực cho người dùng
   const apiRef = useGridApiRef(); // Tạo apiRef để chọn nhiều group để xóa
 
   // Destructuring from useRankingGroup custom hook
@@ -59,162 +28,129 @@ const TaskManagement = () => {
     data: tasks,
     error,
     loading,
-    fetchAllRankingDecisions,
-    deleteRankingGroup,
-    addRankingGroup,
-  } = useRankingGroup();
+    fetchAllTasks,
+    addTask,
+    deleteTask,
+  } = useTask();
 
-  // Fetching the ranking group details when the component mounts
+  // Fetch all ranking groups
   useEffect(() => {
-    const loadGroup = async () => {
-      try {
-        const groupData = await fetchRankingGroupById(id);
-        setEditGroup({
-          groupName: groupData.groupName,
-          currentRankingDecision: groupData.currentRankingDecision,
-        });
-        setOriginalGroupName(groupData.groupName);
-        setNewGroupName(groupData.groupName);
-        setSelectedDecision(groupData.currentRankingDecision);
-        setTasks(groupData.rankingDecisions || []);
-      } catch (error) {
-        console.error("Error fetching group:", error);
-      }
-    };
-    loadGroup();
-  }, [id]);
+    fetchAllTasks();
+  }, []);
 
-  //// Handlers to open/close modals for editing of the group info
-  const handleOpenEditGroupInfoModal = () => {
-    setShowEditGroupInfoModal(true);
+  // Log state changes for debugging purposes
+  useEffect(() => {
+    console.log("Task:", tasks);
+    console.log("Loading:", loading);
+    console.log("Error:", error);
+  }, [tasks, loading, error]);
+
+  // Modal Add
+  const handleOpenAddModal = () => setShowAddModal(true);
+  const handleCloseAddModal = () => {
+    setShowAddModal(false);
+    setNewTaskName("");
     setValidationMessage("");
   };
-  const handleEditGroup = async () => {
+  // Function to add a new group with validation checks
+  const handleAddTask = async () => {
     setValidationMessage("");
-    let trimmedName = newGroupName.trim();
-    // Validation for the group name
+    let trimmedName = newTaskName.trim();
+
+    // Validate group name length and character requirements
     if (!trimmedName) {
-      setValidationMessage("Group name cannot be empty.");
+      setValidationMessage("Task name cannot be empty !");
       return;
     }
+
     if (trimmedName.length < 3 || trimmedName.length > 20) {
-      setValidationMessage("Group name must be between 3 and 20 characters.");
+      setValidationMessage("Task name must be between 3 and 20 characters.");
       return;
     }
+
     const nameRegex = /^[a-zA-Z0-9 ]+$/;
     if (!nameRegex.test(trimmedName)) {
       setValidationMessage(
-        "Group name can only contain letters, numbers, and spaces."
+        "Task name can only contain letters, numbers, and spaces."
       );
       return;
     }
-    // Check if the group name already exists
-    const existingGroups = await fetchAllRankingGroups(); // Assuming this function fetches all groups
-    const groupExists = existingGroups.some(
+
+    // Capitalize the first letter of each word in the group name
+    trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
+    // Check for duplicate group name
+    const isDuplicate = groups.some(
       (group) => group.groupName.toLowerCase() === trimmedName.toLowerCase()
     );
-    if (groupExists) {
-      setValidationMessage(
-        "Group name already exists. Please choose a different name."
-      );
-      return;
-    }
-    // Prevent changing the name of the trainer group
-    if (editGroup.groupName === "Trainer" && trimmedName !== "Trainer") {
-      setValidationMessage("Cannot change the name of the Trainer group.");
-      return;
-    }
-    // Capitalize the first letter of each word
-    trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
-
-    // Prepare the updated group object
-    try {
-      const updatedGroup = {
-        groupName: trimmedName,
-        currentRankingDecision:
-          selectedDecision || editGroup.currentRankingDecision,
-      };
-
-      await updateRankingGroup(id, updatedGroup);
-      setOriginalGroupName(trimmedName);
-      setMessageType("success");
-      setMessage("Group updated successfully!");
-      setTimeout(() => setMessage(null), 2000);
-      setShowEditGroupInfoModal(false);
-    } catch (error) {
-      console.error("Error updating group:", error);
-      setMessageType("error");
-      setMessage("Failed to update group. Please try again.");
-      setTimeout(() => setMessage(null), 2000);
-    }
-  };
-
-  const handleCloseEditGroupInfoModal = () => {
-    setShowEditGroupInfoModal(false);
-    setValidationMessage("");
-  };
-  //// Handlers to open/close modals for adding Decision
-  const handleOpenAddTaskModal = () => {
-    setShowTaskModal(true);
-    setTaskName("");
-    setClone(false);
-    setSelectedCloneTask("");
-    setValidationMessage("");
-  };
-  // Handling the add of a new ranking decision
-  const handleAddTask = () => {
-    setValidationMessage("");
-    if (!decisionName.trim()) {
-      setValidationMessage("Task Name is required.");
-      return;
-    }
-    const isDuplicate = rankingDecisions.some(
-      (decision) => decision.name.toLowerCase() === decisionName.toLowerCase()
-    );
     if (isDuplicate) {
-      setValidationMessage("Task Name already exists.");
+      setValidationMessage("Task name already exists !");
       return;
     }
-    const newDecision = {
-      name: decisionName,
-      status: "Draft",
-      ...(clone && { baseDecisionId: selectedCloneDecision }), // Clone logic
-    };
-    setTasks([...rankingDecisions, newDecision]);
-    setMessage("Task successfully added.");
-    setMessageType("success");
-    setShowTaskModal(false);
-  };
-  const handleCloseDeleteTaskModal = () => {
-    setShowTaskModal(false);
-    setValidationMessage("");
+
+    try {
+      const newTask = {
+        taskName: trimmedName,
+        createdBy: 1, // Assuming 1 is the ID of the user creating the list task
+      };
+      await addTask(newTask); // Call API to add
+      setMessageType("success");
+      setMessage("Task added successfully!");
+      setTimeout(() => setMessage(null), 2000);
+      handleCloseAddModal();
+      await fetchAllTasks();
+    } catch (error) {
+      console.error("Failed to add Task:", error);
+      setMessageType("danger");
+      setMessage("Failed to add task. Please try again !");
+      setTimeout(() => setMessage(null), 2000);
+    }
   };
 
-  // Handlers to open/close modals for deleting Decision
-  const handleOpenDeleteModal = (DecisionId) => {
-    // Tìm nhóm theo ID để kiểm tra tên
-    const selectedGroup = DecisionId.find(
-      (group) => group.groupId === DecisionId
-    );
-    // Nếu nhóm có tên là "Trainer", hiển thị thông báo và không mở modal
-    if (selectedGroup && selectedGroup.groupName === "Trainer") {
+  // Modal Delete
+  const handleOpenDeleteModal = (taskId) => {
+    const selectedTask = tasks.find((t) => t.taskId === taskId);
+    if (selectedTask && selectedTask.taskName === "") {
       setMessageType("warning");
-      setMessage("Cannot delete the 'Trainer' group.");
+      setMessage("Cannot delete the '' group.");
       setTimeout(() => setMessage(null), 2000);
       return;
     }
-    // Nếu không phải "Trainer", mở modal xóa
-    setDecisionToDelete(DecisionId);
+    // If not "Trainer", open the delete modal
+    setGroupToDelete(taskId);
     setShowDeleteModal(true);
   };
+  const handleCloseDeleteModal = () => setShowDeleteModal(false);
+
+  // Function to delete a task
+  const handleDeleteTask = async () => {
+    try {
+      if (groupToDelete) {
+        await deleteTask(groupToDelete);
+        setMessageType("success");
+        setMessage("Task deleted successfully!");
+        setTimeout(() => setMessage(null), 2000);
+        setGroupToDelete(null);
+        handleCloseDeleteModal();
+        await fetchAllTasks();
+      }
+    } catch (error) {
+      console.error("Failed to delete Task:", error);
+      setMessageType("danger");
+      setMessage("Failed to delete Task. Please try again.");
+      setTimeout(() => setMessage(null), 2000);
+      handleCloseDeleteModal();
+    }
+  };
+
 
   // Columns configuration for the DataGrid
   const columns = [
-    { field: "id", headerName: "ID", width: 80 },
-    { field: "name", headerName: "Task Name", width: 400 },
-    { field: "finalizedAt", headerName: "Finalized At", width: 200 },
-    { field: "finalizedBy", headerName: "Finalized By", width: 180 },
-    { field: "status", headerName: "Status", width: 159 },
+    { field: "index", headerName: "ID", width: 80 },
+    { field: "taskName", headerName: "Task Name", width: 400 },
+    { field: "createdBy", headerName: "Created By", width: 200 },
+    { field: "createdAt", headerName: "Created At", width: 180 },
+    { field: "updatedAt", headerName: "Updated At", width: 159 },
+
     {
       field: "action",
       headerName: "Action",
@@ -227,7 +163,7 @@ const TaskManagement = () => {
               console.log(
                 `Navigating to edit decision with ID: ${params.row.id}`
               );
-              navigate(`/ranking-decision/edit/${params.row.id}`);
+              navigate(`/task/edit/${params.row.id}`);
             }}
           >
             <FaEdit />
@@ -245,16 +181,15 @@ const TaskManagement = () => {
       ),
     },
   ];
+
   const rows = tasks
     ? tasks.map((item, index) => ({
-        id: item.task_id,
-        id: index + 1,
-        name: item.task_name,
-        finalizedAt: item.finalizedAt < 1 ? "N/A" : decision.numEmployees,
-        currentRankingDecision:
-          decision.currentRankingDecision == null
-            ? "N/A"
-            : decision.currentRankingDecision,
+        id: item.taskId,
+        index: index + 1,
+        taskName: item.taskName,
+        createdBy: item.createdBy < 1 ? "N/A" : item.createdBy,
+        createdAt: item.createdAt == null ? "N/A" : item.createdAt,
+        updatedAt: item.updateAt == null ? "N/A" : item.updateAt,
       }))
     : [];
 
@@ -267,173 +202,31 @@ const TaskManagement = () => {
           Management
         </Typography>
 
-        {/*Add new Task */}
-        <Box
-          sx={{
-            marginTop: "12px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "12px",
-          }}
-        >
-          <Typography variant="h5">Task List</Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleOpenAddTaskModal}
-          >
-            Add New Task
-          </Button>
-        </Box>
-
-        <Box sx={{ width: "100%" }}>
-          <DataGrid
-            className="custom-data-grid"
-            apiRef={apiRef} //
-            rows={rows}
-            columns={columns}
-            checkboxSelection
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 5,
-                },
+        <DataGrid
+          className="custom-data-grid"
+          rows={rows}
+          columns={columns}
+          checkboxSelection
+          
+          
+          initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 5,
               },
-            }}
-            pageSizeOptions={[5]}
-            disableRowSelectionOnClick
-          />
-        </Box>
+            },
+          }}
+          pageSizeOptions={[5]}
+          disableRowSelectionOnClick
+        />
+
+        {/*Add new Task */}
 
         {/* Modal for editing group info */}
-        <Modal open={showAddModal} onClose={handleCloseEditGroupInfoModal}>
-          <Box
-            sx={{
-              padding: 2,
-              backgroundColor: "white",
-              borderRadius: 1,
-              maxWidth: 400,
-              margin: "auto",
-              marginTop: "100px",
-            }}
-          >
-            <Typography variant="h6">Edit Group Info</Typography>
-            <TextField
-              label="Group Name"
-              variant="outlined"
-              fullWidth
-              value={newGroupName}
-              onChange={(e) => {
-                setNewGroupName(e.target.value);
-                setValidationMessage("");
-              }}
-              error={!!validationMessage}
-              helperText={validationMessage}
-              sx={{ marginTop: 2 }}
-            />
-            <FormControl fullWidth sx={{ marginTop: 2 }}>
-              <InputLabel>Current Ranking Decision</InputLabel>
-              <Select
-                value={selectedDecision}
-                onChange={(e) => setSelectedDecision(e.target.value)}
-                label="Current Ranking Decision"
-              >
-                {rankingDecisions.map((decision) => (
-                  <MenuItem key={decision.id} value={decision.name}>
-                    {decision.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Box
-              sx={{
-                marginTop: 2,
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <Button
-                variant="outlined"
-                onClick={handleCloseEditGroupInfoModal}
-              >
-                Cancel
-              </Button>
-              <Button variant="contained" onClick={handleEditGroup}>
-                Save
-              </Button>
-            </Box>
-          </Box>
-        </Modal>
 
         {/* Modal for adding new Task */}
-        <Modal open={showDecisionModal} onClose={handleCloseDeleteTaskModal}>
-          <Box
-            sx={{
-              padding: 2,
-              backgroundColor: "white",
-              borderRadius: 1,
-              maxWidth: 400,
-              margin: "auto",
-              marginTop: "100px",
-            }}
-          >
-            <Typography variant="h6">Add New Ranking Decision</Typography>
-            <TextField
-              label="Decision Name"
-              variant="outlined"
-              fullWidth
-              value={decisionName}
-              onChange={(e) => setTaskName(e.target.value)}
-              error={!!validationMessage}
-              helperText={validationMessage}
-              sx={{ marginTop: 2 }}
-            />
-            <FormControlLabel
-              control={
-                <Switch checked={clone} onChange={() => setClone(!clone)} />
-              }
-              label="Clone from other decision"
-            />
-            {clone && (
-              <FormControl fullWidth sx={{ marginTop: 2 }}>
-                <InputLabel>Choose Decision</InputLabel>
-                <Select
-                  value={selectedCloneDecision}
-                  onChange={(e) => setSelectedCloneTask(e.target.value)}
-                  label="Clone Decision"
-                >
-                  {rankingDecisions.map((decision) => (
-                    <MenuItem key={decision.id} value={decision.id}>
-                      {decision.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-            <Box
-              sx={{
-                marginTop: 2,
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <Button variant="outlined" onClick={handleCloseDeleteTaskModal}>
-                Cancel
-              </Button>
-              <Button variant="contained" onClick={handleAddTask}>
-                Save
-              </Button>
-            </Box>
-          </Box>
-        </Modal>
 
         {/* Displaying messages */}
-        {message && (
-          <Alert severity={messageType} sx={{ marginTop: 2 }}>
-            {message}
-          </Alert>
-        )}
       </Box>
     </div>
   );
