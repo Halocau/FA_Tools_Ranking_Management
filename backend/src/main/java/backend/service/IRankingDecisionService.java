@@ -8,17 +8,27 @@ import java.util.List;
 
 public interface IRankingDecisionService {
     public List<RankingDecision> getRankingDecisions();
+
     public RankingDecision getRankingDecisionById(int id);
+
     public RankingDecision addRankingDecision(RankingDecision rankingDecision);
+
     public RankingDecision updateRankingDecision(RankingDecision rankingDecision);
+
     public void deleteRankingDecision(int id);
-    public RankingDecision findByGroupId(int groupId);
+
+    // public RankingDecision findByGroupId(int groupId);
+
     public void updateRankingDecisionGroupIdToNull(int groupId);
-    //response
+
+    // response
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions);
 
-    //form
+    // form
     public void createRankingDecision(CreateRankingDecision form);
-    //validate
+
+    // validate
     boolean isRankingDecisionNameExist(String decisionName);
+
+    public List<RankingDecision> getRankingDecisionsByGroupId(int groupId);
 }
