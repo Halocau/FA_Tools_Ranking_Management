@@ -53,7 +53,7 @@ const useRankingDecision = () => {
             await fetchAllDecisions();  // Refreshes decision list after adding new entry
             return response.data;  // Returns the added decision data to the caller
         } catch (err) {
-            handleError(err);
+            setError(err.response?.data || "An error occurred while adding the ranking decision."); // Set error state
         } finally {
             setLoading(false);
         }
@@ -69,7 +69,9 @@ const useRankingDecision = () => {
             );
             return response.data;  // Returns the updated decision data to the caller
         } catch (err) {
-            handleError(err);
+            const errorMsg = err.response?.data || "An error occurred while updating the ranking decision.";
+            setError(errorMsg); // Set error state if update fails
+            console.error("Update error:", errorMsg);
         } finally {
             setLoading(false);
         }
@@ -81,10 +83,11 @@ const useRankingDecision = () => {
         try {
             await authClient.delete(`/ranking-decision/delete/${id}`);  // API call to delete decision
             setData(prevData => prevData.filter((dt) => dt.id !== id));  // Filters out the deleted decision from data state
-        } catch (err) {
-            handleError(err);
+        } catch (error) {
+            setError(error.response?.data || "An error occurred while deleting the ranking decision.");
+            console.error("Error deleting group:", error); // Log delete error
         } finally {
-            setLoading(false);
+            setLoading(false); // Stop loading after response
         }
     };
 

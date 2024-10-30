@@ -46,4 +46,9 @@ public class RankingDecisionController {
         iRankingDecisionService.createRankingDecision(form);
         return "Ranking Decision Added Successfully";
     }
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteRankingDecision(@PathVariable int id) {
+        iRankingDecisionService.deleteRankingDecision(id);
+        return ResponseEntity.noContent().build();
+    }
 }
