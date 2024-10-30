@@ -23,7 +23,7 @@ const EditRankingGroup = () => {
     const [originalGroupName, setOriginalGroupName] = useState('');
     const [message, setMessage] = useState(""); // Thông báo trạng thái
     const [messageType, setMessageType] = useState("success"); // Loại thông báo (success/error)
-    const [showAddModal, setShowEditGroupInfoModal] = useState(false); // Hiển thị modal sửa nhóm
+    const [showEditGroupInfoModal, setShowEditGroupInfoModal] = useState(false); // Hiển thị modal sửa nhóm
     const [newGroupName, setNewGroupName] = useState(""); // Tên nhóm mới
     const [validationMessage, setValidationMessage] = useState(""); // Thông báo lỗi validate
     const [selectedDecision, setSelectedDecision] = useState(""); // Quyết định xếp hạng hiện tại
@@ -316,7 +316,7 @@ const EditRankingGroup = () => {
                     />
                 </Box> */}
                 {/* Modal for editing group info */}
-                <Modal open={showAddModal} onClose={handleCloseEditGroupInfoModal}>
+                <Modal open={showEditGroupInfoModal} onClose={handleCloseEditGroupInfoModal}>
                     <Box sx={{
                         padding: 2,
                         backgroundColor: 'white',
