@@ -35,6 +35,12 @@ public class RankingDecisionController {
         return ResponseEntity.ok().body(decision);
     }
 
+    @GetMapping("/list/{groupId}")
+    public List<RankingDecisionResponse> getRankingDecisionListByGroupId(@PathVariable int groupId) {
+        List<RankingDecision> decisionList = iRankingDecisionService.getRankingDecisionsByGroupId(groupId);
+        return iRankingDecisionService.getRankingDecisionResponses(decisionList);
+    }
+
     @PutMapping("/putid/{groupId}")
     public ResponseEntity<Void> clearGroupId(@PathVariable int groupId) {
         iRankingDecisionService.updateRankingDecisionGroupIdToNull(groupId);
@@ -45,5 +51,11 @@ public class RankingDecisionController {
     public String addRankingDecision(@RequestBody @Valid CreateRankingDecision form) {
         iRankingDecisionService.createRankingDecision(form);
         return "Ranking Decision Added Successfully";
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteRankingDecision(@PathVariable int id) {
+        iRankingDecisionService.deleteRankingDecision(id);
+        return ResponseEntity.noContent().build();
     }
 }
