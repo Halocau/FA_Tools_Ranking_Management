@@ -203,10 +203,8 @@ const EditRankingGroup = () => {
     <div style={{ marginTop: "60px" }}>
       <Slider />
       <Box sx={{ marginTop: 4, padding: 2 }}>
-        <Typography variant="h6">
-          <a href="/ranking_group">Ranking Group List </a>
-          <VscTriangleRight />
-          Edit Ranking Group
+      <Typography variant="h6">
+          <a href="/ranking_group">Ranking Group List </a> / Edit Ranking Group
         </Typography>
         <Box
           sx={{
