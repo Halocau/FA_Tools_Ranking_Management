@@ -19,7 +19,7 @@ public class RankingDecisionController {
         this.iRankingDecisionService = iRankingDecisionService;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<List<RankingDecision>> getRankingDecisions() {
         List<RankingDecision> rankingDecisions = iRankingDecisionService.getRankingDecisions();
         return ResponseEntity.ok().body(rankingDecisions);
