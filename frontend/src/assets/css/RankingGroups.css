@@ -3,6 +3,10 @@
   margin: auto;
 }
 
+.center-header {
+  text-align: center !important;
+}
+
 .custom-modal {
   position: fixed;
   top: 20px;
