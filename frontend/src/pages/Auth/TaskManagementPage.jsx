@@ -1,29 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, TextField, Alert, CircularProgress, Typography } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Alert,
+  CircularProgress,
+  Typography,
+} from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import ModalCustom from "../../components/Common/Modal.jsx";
 import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
-import { FaRankingStar } from "react-icons/fa6";
 import Slider from "../../layouts/Slider.jsx";
 import Box from "@mui/material/Box";
 import useTask from "../../hooks/useTask.jsx";
-
 
 const TaskManagement = () => {
   const navigate = useNavigate();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false); // State for Edit Modal
   const [newTaskName, setNewTaskName] = useState("");
-  const [groupToDelete, setGroupToDelete] = useState(null); // State để lưu ID của nhóm sẽ bị xóa
-  const [message, setMessage] = useState(""); // State để lưu thông điệp thông báo cho người dùng
-  const [messageType, setMessageType] = useState("success"); // State để xác định kiểu thông điệp (thành công hoặc lỗi)
-  const [validationMessage, setValidationMessage] = useState(""); // State để lưu thông điệp xác thực cho người dùng
-  const apiRef = useGridApiRef(); // Tạo apiRef để chọn nhiều group để xóa
+  const [editTaskName, setEditTaskName] = useState(""); // State for edited task name
+  const [selectedTask, setSelectedTask] = useState(null); // State to store selected task for editing
+  const [groupToDelete, setGroupToDelete] = useState(null);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("success");
+  const [validationMessage, setValidationMessage] = useState("");
+  const apiRef = useGridApiRef();
 
-  // Destructuring from useRankingGroup custom hook
   const {
     data: tasks,
     error,
@@ -31,19 +37,12 @@ const TaskManagement = () => {
     fetchAllTasks,
     addTask,
     deleteTask,
+    updateTask, // Assuming you have an updateTask function in your useTask hook
   } = useTask();
 
-  // Fetch all ranking groups
   useEffect(() => {
     fetchAllTasks();
   }, []);
-
-  // Log state changes for debugging purposes
-  useEffect(() => {
-    console.log("Task:", tasks);
-    console.log("Loading:", loading);
-    console.log("Error:", error);
-  }, [tasks, loading, error]);
 
   // Modal Add
   const handleOpenAddModal = () => setShowAddModal(true);
@@ -52,12 +51,12 @@ const TaskManagement = () => {
     setNewTaskName("");
     setValidationMessage("");
   };
-  // Function to add a new group with validation checks
+
+  // Function to add a new task with validation checks
   const handleAddTask = async () => {
     setValidationMessage("");
     let trimmedName = newTaskName.trim();
 
-    // Validate group name length and character requirements
     if (!trimmedName) {
       setValidationMessage("Task name cannot be empty !");
       return;
@@ -76,11 +75,9 @@ const TaskManagement = () => {
       return;
     }
 
-    // Capitalize the first letter of each word in the group name
     trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
-    // Check for duplicate group name
-    const isDuplicate = groups.some(
-      (group) => group.groupName.toLowerCase() === trimmedName.toLowerCase()
+    const isDuplicate = tasks.some(
+      (task) => task.taskName.toLowerCase() === trimmedName.toLowerCase()
     );
     if (isDuplicate) {
       setValidationMessage("Task name already exists !");
@@ -90,9 +87,9 @@ const TaskManagement = () => {
     try {
       const newTask = {
         taskName: trimmedName,
-        createdBy: 1, // Assuming 1 is the ID of the user creating the list task
+        createdBy: 1,
       };
-      await addTask(newTask); // Call API to add
+      await addTask(newTask);
       setMessageType("success");
       setMessage("Task added successfully!");
       setTimeout(() => setMessage(null), 2000);
@@ -106,22 +103,46 @@ const TaskManagement = () => {
     }
   };
 
+  // Modal Edit
+  const handleOpenEditModal = (task) => {
+    setSelectedTask(task);
+    setEditTaskName(task.taskName);
+    setShowEditModal(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditTaskName("");
+  };
+
+  const handleUpdateTask = async () => {
+    try {
+      const updatedTask = {
+        ...selectedTask,
+        taskName: editTaskName.trim(),
+      };
+      await updateTask(selectedTask.taskId, updatedTask); // Pass task ID and updated data
+      setMessageType("success");
+      setMessage("Task updated successfully!");
+      setTimeout(() => setMessage(null), 2000);
+      handleCloseEditModal();
+      await fetchAllTasks(); // Refresh tasks after updating
+    } catch (error) {
+      console.error("Failed to update task:", error);
+      setMessageType("danger");
+      setMessage("Failed to update task. Please try again.");
+      setTimeout(() => setMessage(null), 2000);
+    }
+  };
+
   // Modal Delete
   const handleOpenDeleteModal = (taskId) => {
-    const selectedTask = tasks.find((t) => t.taskId === taskId);
-    if (selectedTask && selectedTask.taskName === "") {
-      setMessageType("warning");
-      setMessage("Cannot delete the '' group.");
-      setTimeout(() => setMessage(null), 2000);
-      return;
-    }
-    // If not "Trainer", open the delete modal
     setGroupToDelete(taskId);
     setShowDeleteModal(true);
   };
+
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
 
-  // Function to delete a task
   const handleDeleteTask = async () => {
     try {
       if (groupToDelete) {
@@ -142,15 +163,47 @@ const TaskManagement = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
+    if (selectedIDs.length === 0) {
+      setMessageType("warning");
+      setMessage("Please select groups to delete.");
+      setTimeout(() => setMessage(null), 2000);
+      return;
+    }
+    // Lọc các ID của nhóm không phải "Trainer"
+    const groupsToDelete = selectedIDs.filter((id) => {
+      const group = rows.find((row) => row.id === id);
+      return group && group.taskName !== "Trainer"; // Chỉ xóa nếu không phải là "Trainer"
+    });
+    if (groupsToDelete.length === 0) {
+      setMessageType("warning");
+      setMessage("Cannot delete the 'Trainer' group.");
+      setTimeout(() => setMessage(null), 2000);
+      return;
+    }
+    try {
+      // Xóa từng nhóm không phải "Trainer"
+      await Promise.all(groupsToDelete.map((id) => deleteTask(id)));
+      setMessageType("success");
+      setMessage("Selected groups deleted successfully!");
+      setTimeout(() => setMessage(null), 2000);
+      await fetchAllTasks(); // Cập nhật lại danh sách nhóm sau khi xóa thành công
+    } catch (error) {
+      console.error("Failed to delete selected groups:", error);
+      setMessageType("danger");
+      setMessage("Failed to delete selected groups. Please try again.");
+      setTimeout(() => setMessage(null), 2000);
+    }
+  };
 
-  // Columns configuration for the DataGrid
+  // Columns configuration
   const columns = [
     { field: "index", headerName: "ID", width: 80 },
     { field: "taskName", headerName: "Task Name", width: 400 },
     { field: "createdBy", headerName: "Created By", width: 200 },
     { field: "createdAt", headerName: "Created At", width: 180 },
     { field: "updatedAt", headerName: "Updated At", width: 159 },
-
     {
       field: "action",
       headerName: "Action",
@@ -159,16 +212,10 @@ const TaskManagement = () => {
         <>
           <Button
             variant="outlined"
-            onClick={() => {
-              console.log(
-                `Navigating to edit decision with ID: ${params.row.id}`
-              );
-              navigate(`/task/edit/${params.row.id}`);
-            }}
+            onClick={() => handleOpenEditModal(params.row)}
           >
             <FaEdit />
           </Button>
-
           <Button
             variant="outlined"
             color="error"
@@ -201,32 +248,133 @@ const TaskManagement = () => {
           <a href="/ranking_decision">Ranking Decision List</a> {">"} Task
           Management
         </Typography>
-
-        <DataGrid
-          className="custom-data-grid"
-          rows={rows}
-          columns={columns}
-          checkboxSelection
-          
-          
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 5,
+        {message && <Alert severity={messageType}>{message}</Alert>}
+        {loading ? (
+          <CircularProgress />
+        ) : (
+          <DataGrid
+            className="custom-data-grid"
+            apiRef={apiRef}
+            rows={rows}
+            columns={columns}
+            checkboxSelection
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 5 },
               },
-            },
-          }}
-          pageSizeOptions={[5]}
-          disableRowSelectionOnClick
+            }}
+            pageSizeOptions={[5]}
+            disableRowSelectionOnClick
+          />
+        )}
+
+        <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleOpenAddModal}
+          >
+            Add New Task
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleBulkDelete}
+            sx={{ ml: 2 }}
+          >
+            Delete Selected Tasks
+          </Button>
+        </Box>
+
+        {/* Add Task Modal */}
+        <ModalCustom
+          show={showAddModal}
+          handleClose={handleCloseAddModal}
+          title="Add New Task"
+          bodyContent={
+            <TextField
+              label="Task Name"
+              variant="outlined"
+              fullWidth
+              value={newTaskName}
+              onChange={(e) => {
+                setNewTaskName(e.target.value);
+                setValidationMessage("");
+              }}
+              error={!!validationMessage}
+              helperText={validationMessage}
+            />
+          }
+          footerContent={
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+              <Button variant="outlined" onClick={handleCloseAddModal}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={handleAddTask}
+                sx={{ ml: 2 }}
+              >
+                Add
+              </Button>
+            </Box>
+          }
         />
 
-        {/*Add new Task */}
+        {/* Edit Task Modal */}
+        <ModalCustom
+          show={showEditModal}
+          handleClose={handleCloseEditModal}
+          title="Edit Task"
+          bodyContent={
+            <TextField
+              label="Task Name"
+              variant="outlined"
+              fullWidth
+              value={editTaskName}
+              onChange={(e) => setEditTaskName(e.target.value)}
+            />
+          }
+          footerContent={
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+              <Button variant="outlined" onClick={handleCloseEditModal}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={handleUpdateTask}
+                sx={{ ml: 2 }}
+              >
+                Save
+              </Button>
+            </Box>
+          }
+        />
 
-        {/* Modal for editing group info */}
-
-        {/* Modal for adding new Task */}
-
-        {/* Displaying messages */}
+        {/* Delete Task Modal */}
+        <ModalCustom
+          show={showDeleteModal}
+          handleClose={handleCloseDeleteModal}
+          title="Confirm Delete"
+          bodyContent="Are you sure you want to delete this task?"
+          footerContent={
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+              <Button variant="outlined" onClick={handleCloseDeleteModal}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={handleDeleteTask}
+                sx={{ ml: 2 }}
+              >
+                Delete
+              </Button>
+            </Box>
+          }
+        />
       </Box>
     </div>
   );

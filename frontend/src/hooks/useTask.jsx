@@ -73,11 +73,12 @@ const useTask = () => {
         `/task/update/${id}`,
         updateTask
       );
+
       setData(
         (prevData) =>
-          prevData.map((task) => (task.id === id ? response.data : task)) // Update specific task in state
+          prevData.map((task) => (task.taskId === id ? response.data : task)) // Update only the specific task in state
       );
-      setData(response.data); // Sets updated data directly
+      setData(response.data);
     } catch (err) {
       const errorMsg =
         err.response?.data || "An error occurred while updating the Task.";
