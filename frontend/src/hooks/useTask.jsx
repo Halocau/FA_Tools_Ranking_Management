@@ -69,23 +69,20 @@ const useTask = () => {
   const updateTask = async (id, updateTask) => {
     setLoading(true);
     try {
-      const response = await authClient.put(
-        `/task/update/${id}`,
-        updateTask
-      );
+      const response = await authClient.put(`/task/update/${id}`, updatedTask);
 
-      setData(
-        (prevData) =>
-          prevData.map((task) => (task.taskId === id ? response.data : task)) // Update only the specific task in state
+      setData((prevData) =>
+        prevData.map((task) =>
+          task.taskId === id ? { ...task, ...response.data } : task
+        )
       );
-      setData(response.data);
     } catch (err) {
       const errorMsg =
         err.response?.data || "An error occurred while updating the Task.";
-      setError(errorMsg); // Set error state if update fails
+      setError(errorMsg);
       console.error("Update error:", errorMsg);
     } finally {
-      setLoading(false); // Stop loading after response
+      setLoading(false);
     }
   };
 

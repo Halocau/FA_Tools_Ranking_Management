@@ -118,7 +118,6 @@ const TaskManagement = () => {
   const handleUpdateTask = async () => {
     try {
       const updatedTask = {
-        ...selectedTask,
         taskName: editTaskName.trim(),
       };
       await updateTask(selectedTask.taskId, updatedTask); // Pass task ID and updated data
