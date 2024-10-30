@@ -72,16 +72,14 @@ const RankingGroups = () => {
 
     const nameRegex = /^[a-zA-Z0-9 ]+$/;
     if (!nameRegex.test(trimmedName)) {
-      setValidationMessage(
-        "Group name can only contain letters, numbers, and spaces."
-      );
+      setValidationMessage("Group name can only contain letters, numbers, and spaces.");
       return;
     }
     // Capitalize the first letter of each word in the group name
     trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
     // Check for duplicate group name
     const isDuplicate = groups.some(
-      (group) => group.groupName.toLowerCase() === trimmedName.toLowerCase()
+      group => group.groupName.toLowerCase() === trimmedName.toLowerCase()
     );
     if (isDuplicate) {
       setValidationMessage("Group name already exists.");
@@ -214,15 +212,13 @@ const RankingGroups = () => {
   // Map group data to rows for DataGrid
   const rows = groups
     ? groups.map((group, index) => ({
-        id: group.groupId,
-        index: index + 1,
-        groupName: group.groupName,
-        numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
-        currentRankingDecision:
-          group.currentRankingDecision == null
-            ? "N/A"
-            : group.currentRankingDecision,
-      }))
+      id: group.groupId,
+      index: index + 1,
+      groupName: group.groupName,
+      numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
+      currentRankingDecision:
+        group.currentRankingDecision == null ? "N/A" : group.currentRankingDecision,
+    }))
     : [];
 
   return (
