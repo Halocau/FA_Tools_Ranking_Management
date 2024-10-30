@@ -41,10 +41,12 @@
 .read-the-docs {
   color: #888;
 }
+
 /* src/App.css */
 .app-layout {
   display: flex;
-  height: 100vh; /* Chiếm toàn bộ chiều cao trang */
+  height: 100vh;
+  /* Chiếm toàn bộ chiều cao trang */
 }
 
 .sidebar {
@@ -58,7 +60,8 @@
   flex: 1;
   padding: 20px;
   background-color: #f5f5f5;
-  overflow-y: auto; /* Cho phép cuộn nếu nội dung vượt quá chiều cao */
+  overflow-y: auto;
+  /* Cho phép cuộn nếu nội dung vượt quá chiều cao */
 }
 
 h2 {
@@ -71,7 +74,8 @@ table {
   margin-top: 20px;
 }
 
-th, td {
+th,
+td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: left;
@@ -101,7 +105,8 @@ button {
 .content {
   flex: 1;
   padding: 20px;
-  background-color: #f8f9fa; /* Màu nền sáng */
+  background-color: #f8f9fa;
+  /* Màu nền sáng */
   overflow-y: auto;
 }
 
@@ -110,13 +115,15 @@ button {
 /* Đặt app-layout full màn hình và chỉnh layout Sidebar + Content */
 .app-layout {
   display: flex;
-  height: 100vh; /* Full chiều cao màn hình */
+  height: 100vh;
+  /* Full chiều cao màn hình */
   overflow: hidden;
 }
 
 /* Sidebar cố định ở bên trái */
 .sidebar {
-  width: 250px; /* Chiều rộng của Sidebar */
+  width: 250px;
+  /* Chiều rộng của Sidebar */
   background-color: #343a40;
   color: white;
   padding: 20px;
@@ -128,8 +135,10 @@ button {
 
 /* Nội dung chính, nằm bên cạnh Sidebar */
 .main-content {
-  margin-left: 250px; /* Dịch sang phải để tránh bị Sidebar đè */
-  width: calc(100% - 250px); /* Chiếm phần còn lại của màn hình */
+  margin-left: 250px;
+  /* Dịch sang phải để tránh bị Sidebar đè */
+  width: calc(100% - 250px);
+  /* Chiếm phần còn lại của màn hình */
   display: flex;
   flex-direction: column;
   overflow: auto;
@@ -164,15 +173,21 @@ button {
 
 /* Header cố định trên cùng, chiếm toàn bộ chiều ngang */
 .header {
-  width: 100%; /* Chiều rộng toàn màn hình */
-  height: 60px; /* Đảm bảo chiều cao cố định */
+  width: 100%;
+  /* Chiều rộng toàn màn hình */
+  height: 60px;
+  /* Đảm bảo chiều cao cố định */
   background-color: #007bff;
   color: white;
   display: flex;
-  align-items: center; /* Căn giữa theo chiều dọc */
-  padding: 0 20px; /* Khoảng cách nội dung bên trong */
-  box-sizing: border-box; /* Bao gồm padding trong width */
-  z-index: 1; /* Đảm bảo Header nằm trên các thành phần khác */
+  align-items: center;
+  /* Căn giữa theo chiều dọc */
+  padding: 0 20px;
+  /* Khoảng cách nội dung bên trong */
+  box-sizing: border-box;
+  /* Bao gồm padding trong width */
+  z-index: 1;
+  /* Đảm bảo Header nằm trên các thành phần khác */
   position: fixed;
   top: 0;
   left: 0;
@@ -182,7 +197,8 @@ button {
 .layout-body {
   display: flex;
   flex: 1;
-  margin-top: 60px; /* Đẩy nội dung xuống dưới Header */
+  margin-top: 60px;
+  /* Đẩy nội dung xuống dưới Header */
   overflow: hidden;
 }
 
@@ -194,16 +210,19 @@ button {
   padding: 20px;
   position: fixed;
   left: 0;
-  top: 60px; /* Bắt đầu ngay dưới Header */
+  top: 60px;
+  /* Bắt đầu ngay dưới Header */
   bottom: 0;
   z-index: 0;
 }
 
 /* Nội dung trang nằm bên phải Sidebar */
 .page-content {
-  margin-left: 250px; /* Đẩy sang phải để tránh Sidebar */
+  margin-left: 250px;
+  /* Đẩy sang phải để tránh Sidebar */
   padding: 20px;
   background-color: #f8f9fa;
-  width: calc(100% - 250px); /* Chiếm phần còn lại của màn hình */
+  width: calc(100% - 250px);
+  /* Chiếm phần còn lại của màn hình */
   overflow: auto;
 }
