@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../assets/css/RankingGroups.css"
-import { Button, TextField, Alert } from "@mui/material";
+import { Button, TextField, Alert, CircularProgress } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import ModalCustom from "../../components/Common/Modal.jsx";
 import useRankingGroup from "../../hooks/useRankingGroup.jsx";
@@ -15,7 +15,7 @@ const RankingGroups = () => {
   const navigate = useNavigate(); // Khởi tạo hook useNavigate để điều hướng giữa các trang trong ứng dụng
 
   // State để quản lý hiển thị của các modal và thông tin người dùng nhập
-  const [showAddModal, setShowAddModal] = useState(false); // State để xác định xem modal thêm nhóm có hiển thị hay không
+  const [showAddModal, setShowAddModal] = useState(false); // State để xác định xem modal thêm nhóm có hiển thị hay không  
   const [showDeleteModal, setShowDeleteModal] = useState(false); // State để xác định xem modal xóa nhóm có hiển thị hay không
   const [newGroupName, setNewGroupName] = useState(""); // State để lưu tên nhóm mới mà người dùng nhập vào
   const [groupToDelete, setGroupToDelete] = useState(null); // State để lưu ID của nhóm sẽ bị xóa
@@ -54,24 +54,6 @@ const RankingGroups = () => {
     setNewGroupName("");
     setValidationMessage("");
   };
-
-  // Modal Delete
-  const handleOpenDeleteModal = (groupId) => {
-    // Find groups by ID to check names
-    const selectedGroup = groups.find(group => group.groupId === groupId);
-    // If the group is named "Trainer", show a notification and do not open the modal
-    if (selectedGroup && selectedGroup.groupName === "Trainer") {
-      setMessageType("warning");
-      setMessage("Cannot delete the 'Trainer' group.");
-      setTimeout(() => setMessage(null), 2000);
-      return;
-    }
-    // If not "Trainer", open the delete modal
-    setGroupToDelete(groupId);
-    setShowDeleteModal(true);
-  };
-  const handleCloseDeleteModal = () => setShowDeleteModal(false);
-  //// Modal Add
   // Function to add a new group with validation checks
   const handleAddGroup = async () => {
     setValidationMessage("");
@@ -123,7 +105,24 @@ const RankingGroups = () => {
     }
   };
 
-  // Function to delete a selected group
+  // Modal Delete
+  const handleOpenDeleteModal = (groupId) => {
+    // Find groups by ID to check names
+    const selectedGroup = groups.find(group => group.groupId === groupId);
+    // If the group is named "Trainer", show a notification and do not open the modal
+    if (selectedGroup && selectedGroup.groupName === "Trainer") {
+      setMessageType("warning");
+      setMessage("Cannot delete the 'Trainer' group.");
+      setTimeout(() => setMessage(null), 2000);
+      return;
+    }
+    // If not "Trainer", open the delete modal
+    setGroupToDelete(groupId);
+    setShowDeleteModal(true);
+  };
+  const handleCloseDeleteModal = () => setShowDeleteModal(false);
+
+  // Function to delete a group
   const handleDeleteGroup = async () => {
     try {
       if (groupToDelete) {
@@ -143,41 +142,32 @@ const RankingGroups = () => {
       handleCloseDeleteModal();
     }
   };
-
   const handleBulkDelete = async () => {
-    const selectedIDs = apiRef.current.getSelectedRows();
-
-    if (selectedIDs.size === 0) {
-      // Không có hàng nào được chọn
+    const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
+    if (selectedIDs.length === 0) {
       setMessageType("warning");
       setMessage("Please select groups to delete.");
       setTimeout(() => setMessage(null), 2000);
       return;
     }
-
     // Lọc các ID của nhóm không phải "Trainer"
-    const groupsToDelete = Array.from(selectedIDs.keys()).filter((id) => {
-      const group = rows.find((row) => row.id === id); // Tìm nhóm theo ID
+    const groupsToDelete = selectedIDs.filter((id) => {
+      const group = rows.find((row) => row.id === id);
       return group && group.groupName !== "Trainer"; // Chỉ xóa nếu không phải là "Trainer"
     });
-
     if (groupsToDelete.length === 0) {
-      // Không có nhóm hợp lệ để xóa sau khi lọc
       setMessageType("warning");
       setMessage("Cannot delete the 'Trainer' group.");
       setTimeout(() => setMessage(null), 2000);
       return;
     }
-
     try {
       // Xóa từng nhóm không phải "Trainer"
       await Promise.all(groupsToDelete.map((id) => deleteRankingGroup(id)));
       setMessageType("success");
       setMessage("Selected groups deleted successfully!");
       setTimeout(() => setMessage(null), 2000);
-
-      // Cập nhật lại danh sách nhóm sau khi xóa thành công
-      await fetchAllRankingGroups();
+      await fetchAllRankingGroups(); // Cập nhật lại danh sách nhóm sau khi xóa thành công
     } catch (error) {
       console.error("Failed to delete selected groups:", error);
       setMessageType("danger");
@@ -185,7 +175,6 @@ const RankingGroups = () => {
       setTimeout(() => setMessage(null), 2000);
     }
   };
-
 
   // Define columns for DataGrid
   const columns = [
@@ -237,36 +226,38 @@ const RankingGroups = () => {
       <Slider />
       <div>
         <h2>
-          <FaRankingStar /> Ranking Group List
+          {/* <FaRankingStar />  */}
+          Ranking Group List
         </h2>
         {message && <Alert severity={messageType}>{message}</Alert>}
 
         <Box sx={{ width: "100%" }}>
-          <DataGrid className="custom-data-grid"
-            apiRef={apiRef} // Cung cấp `apiRef` cho DataGrid
-            rows={rows}
-            columns={columns}
-            checkboxSelection
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 5,
+          {loading ? <CircularProgress /> : (
+            <DataGrid className="custom-data-grid"
+              apiRef={apiRef} // Cung cấp `apiRef` cho DataGrid
+              rows={rows}
+              columns={columns}
+              checkboxSelection
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 5,
+                  },
                 },
-              },
-            }}
-            pageSizeOptions={[5]}
-            disableRowSelectionOnClick
-          />
+              }}
+              pageSizeOptions={[5]}
+              disableRowSelectionOnClick
+            />
+          )}
         </Box>
-        <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
           <Button variant="contained" color="success" onClick={handleOpenAddModal}>
             Add New Group
           </Button>
-          <Button variant="contained" color="error" onClick={handleBulkDelete}>
+          <Button variant="contained" color="error" onClick={handleBulkDelete} sx={{ ml: 2 }}>
             Delete Selected Groups
           </Button>
-        </div>
-
+        </Box>
         {/* Modal for adding a new group */}
         <ModalCustom
           show={showAddModal}
@@ -287,17 +278,17 @@ const RankingGroups = () => {
             />
           }
           footerContent={
-            <>
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
               <Button variant="outlined" onClick={handleCloseAddModal}>
                 Cancel
               </Button>
-              <Button variant="contained" color="success" onClick={handleAddGroup}>
+              <Button variant="contained" color="success" onClick={handleAddGroup} sx={{ ml: 2 }}>
                 Add
               </Button>
-            </>
+            </Box>
           }
-        />
 
+        />
         {/* Modal for deleting a group */}
         <ModalCustom
           show={showDeleteModal}
@@ -305,14 +296,14 @@ const RankingGroups = () => {
           title="Delete Group"
           bodyContent="Are you sure you want to delete this group?"
           footerContent={
-            <>
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
               <Button variant="outlined" onClick={handleCloseDeleteModal}>
                 Cancel
               </Button>
-              <Button variant="contained" color="error" onClick={handleDeleteGroup}>
+              <Button variant="contained" color="error" onClick={handleDeleteGroup} sx={{ ml: 2 }}>
                 Delete
               </Button>
-            </>
+            </Box>
           }
         />
       </div>

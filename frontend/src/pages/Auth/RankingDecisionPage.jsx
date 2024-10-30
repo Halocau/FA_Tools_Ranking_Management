@@ -1,180 +1,179 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../assets/css/RankingGroups.css"
-import { Button, TextField, Alert } from "@mui/material";
+import { Box, Button, TextField, Menu, MenuItem, IconButton, Alert } from "@mui/material";
+import MenuIcon from '@mui/icons-material/Menu';
 import { DataGrid } from "@mui/x-data-grid";
 import ModalCustom from "../../components/Common/Modal.jsx";
-import useRankingGroup from "../../hooks/useRankingGroup.jsx";
+import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
-import { FaRankingStar } from "react-icons/fa6";
 import Slider from "../../layouts/Slider.jsx";
-import Box from "@mui/material/Box";
+import { Link } from 'react-router-dom';
+
 
 const RankingDecision = () => {
     const navigate = useNavigate(); // Khởi tạo hook useNavigate để điều hướng giữa các trang trong ứng dụng
 
     // State để quản lý hiển thị của các modal và thông tin người dùng nhập
-    const [showAddModal, setShowAddModal] = useState(false); // State để xác định xem modal thêm nhóm có hiển thị hay không
-    const [showDeleteModal, setShowDeleteModal] = useState(false); // State để xác định xem modal xóa nhóm có hiển thị hay không
-    const [newGroupName, setNewGroupName] = useState(""); // State để lưu tên nhóm mới mà người dùng nhập vào
-    const [groupToDelete, setGroupToDelete] = useState(null); // State để lưu ID của nhóm sẽ bị xóa
+    const [showAddModal, setShowAddModal] = useState(false); // State để xác định xem modal thêm decision có hiển thị hay không
+    const [showDeleteModal, setShowDeleteModal] = useState(false); // State để xác định xem modal xóa decision có hiển thị hay không
+    const [newDecisionName, setnewDecisionName] = useState(""); // State để lưu tên decison mới mà người dùng nhập vào
+    const [decisionToDelete, setdecisionToDelete] = useState(null); // State để lưu ID của decision sẽ bị xóa
     const [selectedRows, setSelectedRows] = useState([]); // State để lưu danh sách ID của các hàng đã chọn trong DataGrid
     const [message, setMessage] = useState(""); // State để lưu thông điệp thông báo cho người dùng
     const [messageType, setMessageType] = useState("success"); // State để xác định kiểu thông điệp (thành công hoặc lỗi)
     const [validationMessage, setValidationMessage] = useState(""); // State để lưu thông điệp xác thực cho người dùng
+    // Khai báo trạng thái để quản lý menu
+    const [anchorEl, setAnchorEl] = useState(null);
+    // Hàm mở menu khi nhấn vào tiêu đề
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget); // Lưu trữ vị trí của tiêu đề để hiển thị menu
+    };
+    // Hàm đóng menu
+    const handleClose = () => {
+        setAnchorEl(null); // Đặt anchorEl về null để ẩn menu
+    };
 
-    // Destructuring from useRankingGroup custom hook
+    // Sử dụng `useRankingDecision` 
     const {
-        data: groups,
+        data: decisions,
         error,
         loading,
-        fetchAllRankingGroups,
-        deleteRankingGroup,
-        addRankingGroup,
-    } = useRankingGroup();
+        fetchAllDecisions,
+        deleteRankingDecision,
+        addRankingDecision,
+    } = useRankingDecision();
 
-    // Fetch all ranking groups when component mounts
+    // Fetch all ranking decisions when component mounts
     useEffect(() => {
-        fetchAllRankingGroups();
+        fetchAllDecisions(); // Gọi fetchAllDecisions thay vì fetchAllRankingdecisions
     }, []);
 
     // Log state changes for debugging purposes
     useEffect(() => {
-        console.log("Groups:", groups);
+        console.log("Decisions:", decisions);
         console.log("Loading:", loading);
         console.log("Error:", error);
 
-    }, [groups, loading, error]);
-    //// Handlers to open/close modals for adding or deleting groups
+    }, [decisions, loading, error]);
+
+
+    //// Handlers to open/close modals for adding or deleting decisions
     // Modal Add
     const handleOpenAddModal = () => setShowAddModal(true);
     const handleCloseAddModal = () => {
         setShowAddModal(false);
-        setNewGroupName("");
+        setnewDecisionName("");
         setValidationMessage("");
     };
-
-    // Modal Delete
-    const handleOpenDeleteModal = (groupId) => {
-        // Tìm nhóm theo ID để kiểm tra tên
-        const selectedGroup = groups.find(group => group.groupId === groupId);
-        // Nếu nhóm có tên là "Trainer", hiển thị thông báo và không mở modal
-        if (selectedGroup && selectedGroup.groupName === "Trainer") {
-            setMessageType("warning");
-            setMessage("Cannot delete the 'Trainer' group.");
-            setTimeout(() => setMessage(null), 2000);
-            return;
-        }
-        // Nếu không phải "Trainer", mở modal xóa
-        setGroupToDelete(groupId);
-        setShowDeleteModal(true);
-    };
-    const handleCloseDeleteModal = () => setShowDeleteModal(false);
-    ////
-    // Function to add a new group with validation checks
-    const handleAddGroup = async () => {
+    // Function to add a new decision with validation checks
+    const handleaddRankingDecision = async () => {
         setValidationMessage("");
-        let trimmedName = newGroupName.trim();
+        let trimmedName = newDecisionName.trim();
 
-        // Validate group name length and character requirements
+        // Validate decision name length and character requirements
         if (!trimmedName) {
-            setValidationMessage("Group name cannot be empty.");
+            setValidationMessage("Decision name cannot be empty.");
             return;
         }
 
         if (trimmedName.length < 3 || trimmedName.length > 20) {
-            setValidationMessage("Group name must be between 3 and 20 characters.");
+            setValidationMessage("Decision name must be between 3 and 20 characters.");
             return;
         }
 
         const nameRegex = /^[a-zA-Z0-9 ]+$/;
         if (!nameRegex.test(trimmedName)) {
-            setValidationMessage("Group name can only contain letters, numbers, and spaces.");
+            setValidationMessage("Decision name can only contain letters, numbers, and spaces.");
             return;
         }
-        // Capitalize the first letter of each word in the group name
+        // Capitalize the first letter of each word in the decision name
         trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
-        // Check for duplicate group name
-        const isDuplicate = groups.some(
-            group => group.groupName.toLowerCase() === trimmedName.toLowerCase()
+        // Check for duplicate decision name
+        const isDuplicate = decisions.some(
+            decision => decision.decisionName.toLowerCase() === trimmedName.toLowerCase()
         );
         if (isDuplicate) {
-            setValidationMessage("Group name already exists.");
+            setValidationMessage("Decision name already exists.");
             return;
         }
 
         try {
-            const newGroup = {
-                groupName: trimmedName,
-                createdBy: 1, // Assuming 1 is the ID of the user creating the group
+            const newdecision = {
+                decisionName: trimmedName,
+                createdBy: 1, // Assuming 1 is the ID of the user creating the decision
             };
-            await addRankingGroup(newGroup); // Call API to add new group
+            await addRankingDecision(newdecision); // Call API to add new decision
             setMessageType("success");
-            setMessage("Group added successfully!");
+            setMessage("Decision added successfully!");
             setTimeout(() => setMessage(null), 2000);
             handleCloseAddModal(); // Close the add modal after successful addition
-            await fetchAllRankingGroups(); // Refresh the group list
+            await fetchAllDecisions(); // Refresh the decision list
         } catch (error) {
-            console.error("Failed to add group:", error);
+            console.error("Failed to add decision:", error);
             setMessageType("danger");
-            setMessage("Failed to add group. Please try again.");
+            setMessage("Failed to add decision. Please try again.");
             setTimeout(() => setMessage(null), 2000);
         }
     };
 
-    // Function to delete a selected group
-    const handleDeleteGroup = async () => {
+    // Modal Delete
+    const handleOpenDeleteModal = () => setShowDeleteModal(true);
+    const handleCloseDeleteModal = () => setShowDeleteModal(false);
+    // Function to delete a selected decision
+    const handledeleteRankingDecision = async () => {
         try {
-            if (groupToDelete) {
-                await deleteRankingGroup(groupToDelete); // Gọi API để xóa nhóm
+            if (decisionToDelete) {
+                await deleteRankingDecision(decisionToDelete); // Gọi API để xóa decision
                 setMessageType("success");
-                setMessage("Group deleted successfully!");
+                setMessage("Decision deleted successfully!");
                 setTimeout(() => setMessage(null), 2000);
-                setGroupToDelete(null); // Reset lại groupToDelete
+                setdecisionToDelete(null); // Reset lại decisionToDelete
                 handleCloseDeleteModal(); // Đóng modal xóa sau khi xóa thành công
-                await fetchAllRankingGroups(); // Refresh danh sách nhóm
+                await fetchAllDecisions(); // Refresh danh sách decision
             }
         } catch (error) {
-            console.error("Failed to delete group:", error);
+            console.error("Failed to delete decision:", error);
             setMessageType("danger");
-            setMessage("Failed to delete group. Please try again.");
+            setMessage("Failed to delete decision. Please try again.");
             setTimeout(() => setMessage(null), 2000);
             handleCloseDeleteModal();
         }
     };
 
-    // Function to delete multiple selected groups
+    // Function to delete multiple selected decisions
     const handleBulkDelete = async () => {
         if (selectedRows.length === 0) {
             setMessageType("warning");
-            setMessage("Please select groups to delete.");
+            setMessage("Please select decisions to delete.");
             setTimeout(() => setMessage(null), 2000);
             return;
         }
         try {
-            // Xóa từng nhóm trong danh sách đã chọn
-            await Promise.all(selectedRows.map(id => deleteRankingGroup(id)));
+            // Xóa từng decision trong danh sách đã chọn
+            await Promise.all(selectedRows.map(id => deleteRankingDecision(id)));
             setMessageType("success");
-            setMessage("Selected groups deleted successfully!");
+            setMessage("Selected decisions deleted successfully!");
             setTimeout(() => setMessage(null), 2000);
-            await fetchAllRankingGroups(); // Refresh danh sách nhóm
+            await fetchAllDecisions(); // Refresh danh sách decision
             setSelectedRows([]); // Xóa các hàng đã chọn
         } catch (error) {
-            console.error("Failed to delete selected groups:", error);
+            console.error("Failed to delete selected decisions:", error);
             setMessageType("danger");
-            setMessage("Failed to delete selected groups. Please try again.");
+            setMessage("Failed to delete selected decisions. Please try again.");
             setTimeout(() => setMessage(null), 2000);
         }
     };
 
 
-    // Define columns for DataGrid
+    // Columns configuration for the DataGrid
     const columns = [
-        { field: "index", headerName: "ID", width: 70 },
-        { field: "groupName", headerName: "Group Name", width: 250 },
-        { field: "numEmployees", headerName: "No. of Employees", width: 250 },
-        { field: "currentRankingDecision", headerName: "Current Ranking Decision", width: 400 },
+        { field: "id", headerName: "ID", width: 80 },
+        { field: "name", headerName: "Ranking Decision Name", width: 400 },
+        { field: "finalizedAt", headerName: "Finalized At", width: 200 },
+        { field: "finalizedBy", headerName: "Finalized By", width: 180 },
+        { field: "status", headerName: "Status", width: 159 },
         {
             field: "action", headerName: "Action", width: 150, renderCell: (params) => (
                 <>
@@ -182,8 +181,8 @@ const RankingDecision = () => {
                         variant="outlined"
                         // size="small"
                         onClick={() => {
-                            console.log(`Navigating to edit group with ID: ${params.row.id}`);
-                            navigate(`/ranking-group/edit/${params.row.id}`);
+                            console.log(`Navigating to edit decision with ID: ${params.row.id}`);
+                            navigate(`/ranking-decision/edit/${params.row.id}`);
                         }}
                     >
                         <FaEdit />
@@ -202,15 +201,15 @@ const RankingDecision = () => {
         },
     ];
 
-    // Map group data to rows for DataGrid
-    const rows = groups
-        ? groups.map((group, index) => ({
-            id: group.groupId,
+    // Map decision data to rows for DataGrid
+    const rows = decisions
+        ? decisions.map((decision, index) => ({
+            id: decision.decisionId,
             index: index + 1,
-            groupName: group.groupName,
-            numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
+            decisionName: decision.decisionName,
+            numEmployees: decision.numEmployees < 1 ? "N/A" : decision.numEmployees,
             currentRankingDecision:
-                group.currentRankingDecision == null ? "N/A" : group.currentRankingDecision,
+                decision.currentRankingDecision == null ? "N/A" : decision.currentRankingDecision,
         }))
         : [];
 
@@ -218,10 +217,34 @@ const RankingDecision = () => {
         <div style={{ marginTop: "60px" }}>
             <Slider />
             <div>
-                <h2>
-                    <FaRankingStar /> Ranking Group List
+                <h2 onClick={handleClick} style={{ cursor: 'pointer' }}>
+                    <IconButton onClick={handleClick} style={{ cursor: 'pointer' }}>
+                        <MenuIcon />
+                    </IconButton>
+                    {/* Tiêu đề với sự kiện onClick để mở menu */}
+                    Ranking Decision List
                 </h2>
                 {message && <Alert severity={messageType}>{message}</Alert>}
+                {/* Hiển thị thông báo nếu có message */}
+
+                <Menu
+                    anchorEl={anchorEl} // Vị trí của menu dựa trên anchorEl
+                    open={Boolean(anchorEl)} // Mở menu nếu anchorEl không null
+                    onClose={handleClose} // Đóng menu khi không còn tương tác
+                >
+                    {/* Tùy chọn 1 */}
+                    <MenuItem onClick={handleClose}>
+                        <Link to="/task_management" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            Task Management
+                        </Link>
+                    </MenuItem>
+                    {/* Tùy chọn 2 */}
+                    <MenuItem onClick={handleClose}>
+                        <Link to="/criteria_management" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            Criteria Management
+                        </Link>
+                    </MenuItem>
+                </Menu>
 
                 <Box sx={{ width: "100%" }}>
                     <DataGrid className="custom-data-grid"
@@ -247,26 +270,26 @@ const RankingDecision = () => {
 
                 <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
                     <Button variant="contained" color="success" onClick={handleOpenAddModal}>
-                        Add New Group
+                        Add New Decision
                     </Button>
                     <Button variant="contained" color="error" onClick={handleBulkDelete}>
-                        Delete Selected Groups
+                        Delete Selected Decision
                     </Button>
                 </div>
 
-                {/* Modal for adding a new group */}
+                {/* Modal for adding a new decision */}
                 <ModalCustom
                     show={showAddModal}
                     handleClose={handleCloseAddModal}
-                    title="Add New Group"
+                    title="Add New decision"
                     bodyContent={
                         <TextField
-                            label="Group Name"
+                            label="Decision Name"
                             variant="outlined"
                             fullWidth
-                            value={newGroupName}
+                            value={newDecisionName}
                             onChange={(e) => {
-                                setNewGroupName(e.target.value);
+                                setnewDecisionName(e.target.value);
                                 setValidationMessage("");
                             }}
                             error={!!validationMessage}
@@ -278,25 +301,25 @@ const RankingDecision = () => {
                             <Button variant="outlined" onClick={handleCloseAddModal}>
                                 Cancel
                             </Button>
-                            <Button variant="contained" color="success" onClick={handleAddGroup}>
+                            <Button variant="contained" color="success" onClick={handleaddRankingDecision}>
                                 Add
                             </Button>
                         </>
                     }
                 />
 
-                {/* Modal for deleting a group */}
+                {/* Modal for deleting a decision */}
                 <ModalCustom
                     show={showDeleteModal}
                     handleClose={handleCloseDeleteModal}
-                    title="Delete Group"
-                    bodyContent="Are you sure you want to delete this group?"
+                    title="Delete decision"
+                    bodyContent="Are you sure you want to delete this decision?"
                     footerContent={
                         <>
                             <Button variant="outlined" onClick={handleCloseDeleteModal}>
                                 Cancel
                             </Button>
-                            <Button variant="contained" color="error" onClick={handleDeleteGroup}>
+                            <Button variant="contained" color="error" onClick={handledeleteRankingDecision}>
                                 Delete
                             </Button>
                         </>

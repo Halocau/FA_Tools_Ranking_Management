@@ -1,18 +1,18 @@
 // Import các thư viện cần thiết từ React, Material-UI và các component khác
 import React, { useEffect, useState } from "react";
-import "../../assets/css/RankingGroups.css"
 import {
     Box, Button, Typography, TextField, FormControl, InputLabel, Select, MenuItem, Modal, IconButton, Switch, FormControlLabel, Alert
 } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import EditIcon from '@mui/icons-material/Edit';
-import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate, useParams } from "react-router-dom";
+import Slider from "../../layouts/Slider.jsx";
 import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import useRankingDecision from "../../hooks/useRankingDecision.jsx";
-import Slider from "../../layouts/Slider.jsx";
+import "../../assets/css/RankingGroups.css"
 
-const EditRankingGroup = () => {
+
+const TaskManagement = () => {
     const navigate = useNavigate(); // Để điều hướng giữa các trang
     const { id } = useParams(); // Lấy tham số id từ URL
     const { fetchRankingGroupById, updateRankingGroup, fetchAllRankingGroups, data: group } = useRankingGroup(); // Các hàm từ hook để quản lý nhóm xếp hạng
@@ -22,15 +22,15 @@ const EditRankingGroup = () => {
     const [originalGroupName, setOriginalGroupName] = useState('');
     const [message, setMessage] = useState(""); // Thông báo trạng thái
     const [messageType, setMessageType] = useState("success"); // Loại thông báo (success/error)
-    const [showEditGroupInfoModal, setShowEditGroupInfoModal] = useState(false); // Hiển thị modal sửa nhóm
+    const [showAddModal, setShowEditGroupInfoModal] = useState(false); // Hiển thị modal sửa nhóm
     const [newGroupName, setNewGroupName] = useState(""); // Tên nhóm mới
     const [validationMessage, setValidationMessage] = useState(""); // Thông báo lỗi validate
     const [selectedDecision, setSelectedDecision] = useState(""); // Quyết định xếp hạng hiện tại
-    const [rankingDecisions, setRankingDecisions] = useState([]); // Danh sách các quyết định xếp hạng
-    const [showDecisionModal, setShowDecisionModal] = useState(false); // Hiển thị modal thêm quyết định
-    const [decisionName, setDecisionName] = useState(""); // Tên quyết định mới
+    const [rankingDecisions, setTasks] = useState([]); // Danh sách các quyết định xếp hạng
+    const [showDecisionModal, setShowTaskModal] = useState(false); // Hiển thị modal thêm quyết định
+    const [decisionName, setTaskName] = useState(""); // Tên quyết định mới
     const [clone, setClone] = useState(false); // Trạng thái clone quyết định
-    const [selectedCloneDecision, setSelectedCloneDecision] = useState(""); // Quyết định clone
+    const [selectedCloneDecision, setSelectedCloneTask] = useState(""); // Quyết định clone
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [DecisionToDelete, setDecisionToDelete] = useState(null);
     const apiRef = useGridApiRef(); // Tạo apiRef để chọn nhiều group để xóa
@@ -38,23 +38,12 @@ const EditRankingGroup = () => {
     // Destructuring from useRankingGroup custom hook
     const {
         data: groups,
+        error,
+        loading,
         fetchAllRankingDecisions,
         deleteRankingGroup,
         addRankingGroup,
     } = useRankingGroup();
-    // // Destructuring from useRankingDecision custom hook
-    const {
-        data: decisions,
-        error,
-        loading,
-        fetchAllDecisions,
-        deleteRankingDecision,
-        addRankingDecision,
-    } = useRankingDecision();
-    // Lấy danh sách các quyết định xếp hạng
-    useEffect(() => {
-        fetchAllDecisions();
-    }, []);
 
     // Fetching the ranking group details when the component mounts
     useEffect(() => {
@@ -68,7 +57,7 @@ const EditRankingGroup = () => {
                 setOriginalGroupName(groupData.groupName);
                 setNewGroupName(groupData.groupName);
                 setSelectedDecision(groupData.currentRankingDecision);
-                setRankingDecisions(groupData.rankingDecisions || []);
+                setTasks(groupData.rankingDecisions || []);
             } catch (error) {
                 console.error("Error fetching group:", error);
             }
@@ -83,7 +72,7 @@ const EditRankingGroup = () => {
         setShowEditGroupInfoModal(true);
         setValidationMessage("");
     };
-    const handleEditGroupInfo = async () => {
+    const handleEditGroup = async () => {
         setValidationMessage("");
         let trimmedName = newGroupName.trim();
         // Validation for the group name
@@ -141,23 +130,23 @@ const EditRankingGroup = () => {
         setValidationMessage("");
     };
     //// Handlers to open/close modals for adding Decision
-    const handleOpenAddDecisionModal = () => {
-        setShowDecisionModal(true);
-        setDecisionName("");
+    const handleOpenAddTaskModal = () => {
+        setShowTaskModal(true);
+        setTaskName("");
         setClone(false);
-        setSelectedCloneDecision("");
+        setSelectedCloneTask("");
         setValidationMessage("");
     };
     // Handling the add of a new ranking decision
-    const handleAddDecision = () => {
+    const handleAddTask = () => {
         setValidationMessage("");
         if (!decisionName.trim()) {
-            setValidationMessage("Ranking Decision Name is required.");
+            setValidationMessage("Task Name is required.");
             return;
         }
         const isDuplicate = rankingDecisions.some(decision => decision.name.toLowerCase() === decisionName.toLowerCase());
         if (isDuplicate) {
-            setValidationMessage("Ranking Decision Name already exists.");
+            setValidationMessage("Task Name already exists.");
             return;
         }
         const newDecision = {
@@ -165,13 +154,13 @@ const EditRankingGroup = () => {
             status: "Draft",
             ...(clone && { baseDecisionId: selectedCloneDecision }) // Clone logic
         };
-        setRankingDecisions([...rankingDecisions, newDecision]);
-        setMessage("Ranking Decision successfully added.");
+        setTasks([...rankingDecisions, newDecision]);
+        setMessage("Task successfully added.");
         setMessageType("success");
-        setShowDecisionModal(false);
+        setShowTaskModal(false);
     };
-    const handleCloseAddDecisionModal = () => {
-        setShowDecisionModal(false);
+    const handleCloseDeleteTaskModal = () => {
+        setShowTaskModal(false);
         setValidationMessage("");
     };
 
@@ -216,7 +205,7 @@ const EditRankingGroup = () => {
     // Columns configuration for the DataGrid
     const columns = [
         { field: "id", headerName: "ID", width: 80 },
-        { field: "name", headerName: "Ranking Decision Name", width: 400 },
+        { field: "name", headerName: "Task Name", width: 400 },
         { field: "finalizedAt", headerName: "Finalized At", width: 200 },
         { field: "finalizedBy", headerName: "Finalized By", width: 180 },
         { field: "status", headerName: "Status", width: 159 },
@@ -251,9 +240,9 @@ const EditRankingGroup = () => {
             <Slider />
             <Box sx={{ marginTop: 4, padding: 2 }}>
                 <Typography variant="h6">
-                    <a href="/ranking_group">Ranking Group List</a> {'>'} Edit Ranking Group
+                    <a href="/ranking_decision">Ranking Decision List</a> {'>'} Task Management
                 </Typography>
-                <Box sx={{
+                {/* <Box sx={{
                     border: '1px solid black',
                     borderRadius: '4px',
                     padding: '16px',
@@ -275,11 +264,11 @@ const EditRankingGroup = () => {
                             <TextField variant="outlined" fullWidth value={editGroup.currentRankingDecision} disabled />
                         </Box>
                     </Box>
-                </Box>
+                </Box> */}
                 <Box sx={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                    <Typography variant="h5">Ranking Decision List</Typography>
-                    <Button variant="contained" color="primary" onClick={handleOpenAddDecisionModal}>
-                        Add New Ranking Decision
+                    <Typography variant="h5">Task List</Typography>
+                    <Button variant="contained" color="primary" onClick={handleOpenAddTaskModal}>
+                        Add New Task
                     </Button>
                 </Box>
 
@@ -326,7 +315,7 @@ const EditRankingGroup = () => {
                     />
                 </Box> */}
                 {/* Modal for editing group info */}
-                <Modal open={showEditGroupInfoModal} onClose={handleCloseEditGroupInfoModal}>
+                <Modal open={showAddModal} onClose={handleCloseEditGroupInfoModal}>
                     <Box sx={{
                         padding: 2,
                         backgroundColor: 'white',
@@ -335,11 +324,7 @@ const EditRankingGroup = () => {
                         margin: 'auto',
                         marginTop: '100px'
                     }}>
-                        <Typography variant="h6" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            Edit Group Info
-                            <button type="button" className="btn-close" aria-label="Close" onClick={handleCloseEditGroupInfoModal}></button>
-                        </Typography>
-
+                        <Typography variant="h6">Edit Group Info</Typography>
                         <TextField
                             label="Group Name"
                             variant="outlined"
@@ -369,13 +354,13 @@ const EditRankingGroup = () => {
                         </FormControl>
                         <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
                             <Button variant="outlined" onClick={handleCloseEditGroupInfoModal}>Cancel</Button>
-                            <Button variant="contained" onClick={handleEditGroupInfo}>Save</Button>
+                            <Button variant="contained" onClick={handleEditGroup}>Save</Button>
                         </Box>
                     </Box>
                 </Modal>
 
-                {/* Modal for adding new ranking decision */}
-                <Modal open={showDecisionModal} onClose={handleCloseAddDecisionModal}>
+                {/* Modal for adding new Task */}
+                <Modal open={showDecisionModal} onClose={handleCloseDeleteTaskModal}>
                     <Box sx={{
                         padding: 2,
                         backgroundColor: 'white',
@@ -384,18 +369,13 @@ const EditRankingGroup = () => {
                         margin: 'auto',
                         marginTop: '100px'
                     }}>
-
-                        <Typography variant="h6" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            Add New Ranking Decision
-                            <button type="button" className="btn-close" aria-label="Close" onClick={handleCloseAddDecisionModal}></button>
-                        </Typography>
-
+                        <Typography variant="h6">Add New Ranking Decision</Typography>
                         <TextField
                             label="Decision Name"
                             variant="outlined"
                             fullWidth
                             value={decisionName}
-                            onChange={(e) => setDecisionName(e.target.value)}
+                            onChange={(e) => setTaskName(e.target.value)}
                             error={!!validationMessage}
                             helperText={validationMessage}
                             sx={{ marginTop: 2 }}
@@ -409,7 +389,7 @@ const EditRankingGroup = () => {
                                 <InputLabel>Choose Decision</InputLabel>
                                 <Select
                                     value={selectedCloneDecision}
-                                    onChange={(e) => setSelectedCloneDecision(e.target.value)}
+                                    onChange={(e) => setSelectedCloneTask(e.target.value)}
                                     label="Clone Decision"
                                 >
                                     {rankingDecisions.map((decision) => (
@@ -421,8 +401,8 @@ const EditRankingGroup = () => {
                             </FormControl>
                         )}
                         <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
-                            <Button variant="outlined" onClick={handleCloseAddDecisionModal}>Cancel</Button>
-                            <Button variant="contained" onClick={handleAddDecision}>Save</Button>
+                            <Button variant="outlined" onClick={handleCloseDeleteTaskModal}>Cancel</Button>
+                            <Button variant="contained" onClick={handleAddTask}>Save</Button>
                         </Box>
                     </Box>
                 </Modal>
@@ -455,4 +435,4 @@ const EditRankingGroup = () => {
     );
 };
 
-export default EditRankingGroup;
+export default TaskManagement;
