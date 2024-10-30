@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../../assets/css/LoginForm.css';
+import '../../assets/css/LoginPage.css';
 import Image from "../../assets/image/image.png";
 import Logo from "../../assets/image/logo.png";
 import { FaEye } from "react-icons/fa6";
