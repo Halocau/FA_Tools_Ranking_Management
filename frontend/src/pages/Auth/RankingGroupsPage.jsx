@@ -15,7 +15,7 @@ const RankingGroups = () => {
   const navigate = useNavigate(); // Khởi tạo hook useNavigate để điều hướng giữa các trang trong ứng dụng
 
   // State để quản lý hiển thị của các modal và thông tin người dùng nhập
-  const [showAddModal, setShowAddModal] = useState(false); // State để xác định xem modal thêm nhóm có hiển thị hay không
+  const [showAddModal, setShowAddModal] = useState(false); // State để xác định xem modal thêm nhóm có hiển thị hay không  
   const [showDeleteModal, setShowDeleteModal] = useState(false); // State để xác định xem modal xóa nhóm có hiển thị hay không
   const [newGroupName, setNewGroupName] = useState(""); // State để lưu tên nhóm mới mà người dùng nhập vào
   const [groupToDelete, setGroupToDelete] = useState(null); // State để lưu ID của nhóm sẽ bị xóa
@@ -54,24 +54,6 @@ const RankingGroups = () => {
     setNewGroupName("");
     setValidationMessage("");
   };
-
-  // Modal Delete
-  const handleOpenDeleteModal = (groupId) => {
-    // Find groups by ID to check names
-    const selectedGroup = groups.find(group => group.groupId === groupId);
-    // If the group is named "Trainer", show a notification and do not open the modal
-    if (selectedGroup && selectedGroup.groupName === "Trainer") {
-      setMessageType("warning");
-      setMessage("Cannot delete the 'Trainer' group.");
-      setTimeout(() => setMessage(null), 2000);
-      return;
-    }
-    // If not "Trainer", open the delete modal
-    setGroupToDelete(groupId);
-    setShowDeleteModal(true);
-  };
-  const handleCloseDeleteModal = () => setShowDeleteModal(false);
-  //// Modal Add
   // Function to add a new group with validation checks
   const handleAddGroup = async () => {
     setValidationMessage("");
@@ -123,7 +105,24 @@ const RankingGroups = () => {
     }
   };
 
-  // Function to delete a selected group
+  // Modal Delete
+  const handleOpenDeleteModal = (groupId) => {
+    // Find groups by ID to check names
+    const selectedGroup = groups.find(group => group.groupId === groupId);
+    // If the group is named "Trainer", show a notification and do not open the modal
+    if (selectedGroup && selectedGroup.groupName === "Trainer") {
+      setMessageType("warning");
+      setMessage("Cannot delete the 'Trainer' group.");
+      setTimeout(() => setMessage(null), 2000);
+      return;
+    }
+    // If not "Trainer", open the delete modal
+    setGroupToDelete(groupId);
+    setShowDeleteModal(true);
+  };
+  const handleCloseDeleteModal = () => setShowDeleteModal(false);
+
+  // Function to delete a group
   const handleDeleteGroup = async () => {
     try {
       if (groupToDelete) {
@@ -143,7 +142,7 @@ const RankingGroups = () => {
       handleCloseDeleteModal();
     }
   };
-
+  // Function to delete selects multiple groups
   const handleBulkDelete = async () => {
     const selectedIDs = apiRef.current.getSelectedRows();
 
@@ -237,7 +236,8 @@ const RankingGroups = () => {
       <Slider />
       <div>
         <h2>
-          <FaRankingStar /> Ranking Group List
+          {/* <FaRankingStar />  */}
+          Ranking Group List
         </h2>
         {message && <Alert severity={messageType}>{message}</Alert>}
 

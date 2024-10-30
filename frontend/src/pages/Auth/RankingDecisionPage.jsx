@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../assets/css/RankingGroups.css"
-import { Button, TextField, Alert } from "@mui/material";
+import { Box, Button, TextField, Menu, MenuItem, IconButton, Alert } from "@mui/material";
+import MenuIcon from '@mui/icons-material/Menu';
 import { DataGrid } from "@mui/x-data-grid";
 import ModalCustom from "../../components/Common/Modal.jsx";
 import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
-import { FaRankingStar } from "react-icons/fa6";
 import Slider from "../../layouts/Slider.jsx";
-import Box from "@mui/material/Box";
+import { Link } from 'react-router-dom';
 
 const RankingDecision = () => {
     const navigate = useNavigate(); // Khởi tạo hook useNavigate để điều hướng giữa các trang trong ứng dụng
@@ -23,6 +23,18 @@ const RankingDecision = () => {
     const [message, setMessage] = useState(""); // State để lưu thông điệp thông báo cho người dùng
     const [messageType, setMessageType] = useState("success"); // State để xác định kiểu thông điệp (thành công hoặc lỗi)
     const [validationMessage, setValidationMessage] = useState(""); // State để lưu thông điệp xác thực cho người dùng
+    // Khai báo trạng thái để quản lý menu
+    const [anchorEl, setAnchorEl] = useState(null);
+
+    // Hàm mở menu khi nhấn vào tiêu đề
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget); // Lưu trữ vị trí của tiêu đề để hiển thị menu
+    };
+
+    // Hàm đóng menu
+    const handleClose = () => {
+        setAnchorEl(null); // Đặt anchorEl về null để ẩn menu
+    };
 
     // Destructuring from useRankingGroup custom hook
     const {
@@ -172,7 +184,7 @@ const RankingDecision = () => {
     // Define columns for DataGrid
     const columns = [
         { field: "index", headerName: "ID", width: 70 },
-        { field: "groupName", headerName: "Group Name", width: 250 },
+        { field: "Ranking Decision Name", headerName: "Ranking Decision Name", width: 250 },
         { field: "numEmployees", headerName: "No. of Employees", width: 250 },
         { field: "currentRankingDecision", headerName: "Current Ranking Decision", width: 400 },
         {
@@ -218,10 +230,34 @@ const RankingDecision = () => {
         <div style={{ marginTop: "60px" }}>
             <Slider />
             <div>
-                <h2>
-                    <FaRankingStar /> Ranking Group List
+                <h2 onClick={handleClick} style={{ cursor: 'pointer' }}>
+                    <IconButton onClick={handleClick} style={{ cursor: 'pointer' }}>
+                        <MenuIcon />
+                    </IconButton>
+                    {/* Tiêu đề với sự kiện onClick để mở menu */}
+                    Ranking Decision List
                 </h2>
                 {message && <Alert severity={messageType}>{message}</Alert>}
+                {/* Hiển thị thông báo nếu có message */}
+
+                <Menu
+                    anchorEl={anchorEl} // Vị trí của menu dựa trên anchorEl
+                    open={Boolean(anchorEl)} // Mở menu nếu anchorEl không null
+                    onClose={handleClose} // Đóng menu khi không còn tương tác
+                >
+                    {/* Tùy chọn 1 */}
+                    <MenuItem onClick={handleClose}>
+                        <Link to="/task_management" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            Task Management
+                        </Link>
+                    </MenuItem>
+                    {/* Tùy chọn 2 */}
+                    <MenuItem onClick={handleClose}>
+                        <Link to="/criteria_management" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            Criteria Management
+                        </Link>
+                    </MenuItem>
+                </Menu>
 
                 <Box sx={{ width: "100%" }}>
                     <DataGrid className="custom-data-grid"
@@ -247,10 +283,10 @@ const RankingDecision = () => {
 
                 <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
                     <Button variant="contained" color="success" onClick={handleOpenAddModal}>
-                        Add New Group
+                        Add New Decision
                     </Button>
                     <Button variant="contained" color="error" onClick={handleBulkDelete}>
-                        Delete Selected Groups
+                        Delete Selected Decision
                     </Button>
                 </div>
 
