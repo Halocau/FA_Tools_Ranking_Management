@@ -1,5 +1,6 @@
 package backend.controller;
 
+
 import backend.config.exception.RankingGroupException;
 import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingDecision;
@@ -22,23 +23,20 @@ public class RankingGroupController {
     private IRankingDecisionService iRankingDecisionService;
 
     @Autowired
-    public RankingGroupController(IRankingGroupService iRankingGroupService,
-            IRankingDecisionService iRankingDecisionService) {
+    public RankingGroupController(IRankingGroupService iRankingGroupService, IRankingDecisionService iRankingDecisionService) {
         this.iRankingGroupService = iRankingGroupService;
         this.iRankingDecisionService = iRankingDecisionService;
     }
 
-    // // Covert data RankingGroup -> RankingGroupResponse
-    // public RankingGroupResponse convertToDTO(RankingGroup group, String
-    // decisionName) {
-    // RankingGroupResponse dto = new RankingGroupResponse();
-    // dto.setGroupId(group.getGroupId());
-    // dto.setGroupName(group.getGroupName());
-    // dto.setNumEmployees(group.getNumEmployees());
-    // dto.setCurrentRankingDecision(decisionName); // Gán giá trị quyết định xếp
-    // hạng
-    // return dto;
-    // }
+//    // Covert data RankingGroup -> RankingGroupResponse
+//    public RankingGroupResponse convertToDTO(RankingGroup group, String decisionName) {
+//        RankingGroupResponse dto = new RankingGroupResponse();
+//        dto.setGroupId(group.getGroupId());
+//        dto.setGroupName(group.getGroupName());
+//        dto.setNumEmployees(group.getNumEmployees());
+//        dto.setCurrentRankingDecision(decisionName);  // Gán giá trị quyết định xếp hạng
+//        return dto;
+//    }
 
     @GetMapping
     public List<RankingGroupResponse> getAllRankingGroups() {
@@ -57,19 +55,18 @@ public class RankingGroupController {
         return ResponseEntity.ok(response);
     }
 
-    // @PostMapping("/add")
-    // public ResponseEntity<RankingGroup> addRankingGroup(@RequestBody RankingGroup
-    // rankingGroup) {
-    // rankingGroup.setGroupId(0);
-    // RankingGroup result = iRankingGroupService.addRankingGroup(rankingGroup);
-    //
-    // if (result != null) {
-    // return ResponseEntity.status(HttpStatus.CREATED).body(result);
-    // } else {
-    // throw new RankingGroupException("Unable to add ranking group"); // Exception
-    // will be caught in CatchException
-    // }
-    // }
+
+//    @PostMapping("/add")
+//    public ResponseEntity<RankingGroup> addRankingGroup(@RequestBody RankingGroup rankingGroup) {
+//        rankingGroup.setGroupId(0);
+//        RankingGroup result = iRankingGroupService.addRankingGroup(rankingGroup);
+//
+//        if (result != null) {
+//            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+//        } else {
+//            throw new RankingGroupException("Unable to add ranking group"); // Exception will be caught in CatchException
+//        }
+//    }
 
     @PostMapping("/add")
     public String addRankingGroup(@RequestBody @Valid AddNewGroupRequest form) {
@@ -78,13 +75,13 @@ public class RankingGroupController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<RankingGroup> updateRankingGroup(@RequestBody RankingGroup rankingGroup,
-            @PathVariable int id) {
+    public ResponseEntity<RankingGroup> updateRankingGroup(@RequestBody RankingGroup rankingGroup, @PathVariable int id) {
         RankingGroup exists = iRankingGroupService.findRankingGroupById(id);
         if (exists == null) {
             throw new RankingGroupException("Ranking group not found for update");
         }
 
+        exists.setGroupId(rankingGroup.getGroupId());
         exists.setGroupName(rankingGroup.getGroupName());
         exists.setNumEmployees(rankingGroup.getNumEmployees());
         exists.setDecisionName(rankingGroup.getDecisionName());
@@ -102,11 +99,11 @@ public class RankingGroupController {
         if (checkNullGroupId != null) {
             iRankingDecisionService.updateRankingDecisionGroupIdToNull(id);
         }
-        if ("Trainer".equals(exists.getGroupName())) {
+        if("Trainer".equals(exists.getGroupName())){
             throw new RankingGroupException("Cannot delete the group name \"Trainer.\"");
         }
         iRankingGroupService.deleteRankingGroup(id);
-        return ResponseEntity.ok("deleted successfully " + id);
+        return ResponseEntity.ok("deleted successfully "+id);
 
     }
 }
