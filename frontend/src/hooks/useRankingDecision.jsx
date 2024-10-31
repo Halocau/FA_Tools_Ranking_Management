@@ -36,10 +36,11 @@ const useRankingDecision = () => {
     const fetchDecisionById = async (id) => {
         setLoading(true);
         try {
-            const response = await authClient.get(`/decision/get/${id}`);  // API call to get decision by ID
+            const response = await authClient.get(`/ranking-decision/get/${id}`);  // API call to get decision by ID
             return response.data;  // Returns fetched decision data to the caller
         } catch (err) {
-            handleError(err);
+            setError(err.response?.data || "An error occurred while fetching the ranking decision."); // Set error state
+
         } finally {
             setLoading(false);
         }
@@ -49,11 +50,11 @@ const useRankingDecision = () => {
     const addRankingDecision = async (newDecision) => {
         setLoading(true);
         try {
-            const response = await authClient.post(`/decision/add`, newDecision);  // API call to add new decision
+            const response = await authClient.post(`/ranking-decision/add`, newDecision);  // API call to add new decision
             await fetchAllDecisions();  // Refreshes decision list after adding new entry
             return response.data;  // Returns the added decision data to the caller
         } catch (err) {
-            handleError(err);
+            setError(err.response?.data || "An error occurred while adding the ranking decision."); // Set error state
         } finally {
             setLoading(false);
         }
@@ -63,13 +64,15 @@ const useRankingDecision = () => {
     const updateDecision = async (id, updatedDecision) => {
         setLoading(true);
         try {
-            const response = await authClient.put(`/decision/update/${id}`, updatedDecision);  // API call to update decision
+            const response = await authClient.put(`/ranking-decision/update/${id}`, updatedDecision);  // API call to update decision
             setData(prevData =>
                 prevData.map(decision => (decision.id === id ? response.data : decision))  // Updates specific decision in data state
             );
             return response.data;  // Returns the updated decision data to the caller
         } catch (err) {
-            handleError(err);
+            const errorMsg = err.response?.data || "An error occurred while updating the ranking decision.";
+            setError(errorMsg); // Set error state if update fails
+            console.error("Update error:", errorMsg);
         } finally {
             setLoading(false);
         }
@@ -79,12 +82,13 @@ const useRankingDecision = () => {
     const deleteRankingDecision = async (id) => {
         setLoading(true);
         try {
-            await authClient.delete(`/decision/delete/${id}`);  // API call to delete decision
+            await authClient.delete(`/ranking-decision/delete/${id}`);  // API call to delete decision
             setData(prevData => prevData.filter((dt) => dt.id !== id));  // Filters out the deleted decision from data state
-        } catch (err) {
-            handleError(err);
+        } catch (error) {
+            setError(error.response?.data || "An error occurred while deleting the ranking decision.");
+            console.error("Error deleting group:", error); // Log delete error
         } finally {
-            setLoading(false);
+            setLoading(false); // Stop loading after response
         }
     };
 

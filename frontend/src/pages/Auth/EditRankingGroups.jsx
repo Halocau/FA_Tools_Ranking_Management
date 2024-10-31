@@ -8,6 +8,8 @@ import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate, useParams } from "react-router-dom";
+import { MdDeleteForever } from "react-icons/md";
+import { FaEdit } from "react-icons/fa";
 import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 import Slider from "../../layouts/Slider.jsx";
@@ -32,7 +34,7 @@ const EditRankingGroup = () => {
     const [clone, setClone] = useState(false); // Trạng thái clone quyết định
     const [selectedCloneDecision, setSelectedCloneDecision] = useState(""); // Quyết định clone
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [DecisionToDelete, setDecisionToDelete] = useState(null);
+    const [decisionToDelete, setDecisionToDelete] = useState(null);
     const apiRef = useGridApiRef(); // Tạo apiRef để chọn nhiều group để xóa
 
     // Destructuring from useRankingGroup custom hook
@@ -141,87 +143,121 @@ const EditRankingGroup = () => {
         setValidationMessage("");
     };
     //// Handlers to open/close modals for adding Decision
+    // Mở Modal thêm quyết định
     const handleOpenAddDecisionModal = () => {
         setShowDecisionModal(true);
+    };
+    // Đóng Modal thêm quyết định
+    const handleCloseAddDecisionModal = () => {
+        setShowDecisionModal(false);
         setDecisionName("");
         setClone(false);
-        setSelectedCloneDecision("");
+        setSelectedCloneDecision(""); // Reset quyết định clone khi mở modal
         setValidationMessage("");
     };
-    // Handling the add of a new ranking decision
-    const handleAddDecision = () => {
+    // Hàm xử lý thêm quyết định mới
+    // Hàm xử lý thêm quyết định mới
+    const handleAddDecision = async () => { // Thêm async vào đây
         setValidationMessage("");
+
+        // Kiểm tra tên quyết định
         if (!decisionName.trim()) {
             setValidationMessage("Ranking Decision Name is required.");
             return;
         }
-        const isDuplicate = rankingDecisions.some(decision => decision.name.toLowerCase() === decisionName.toLowerCase());
+
+        // Kiểm tra trùng lặp tên quyết định
+        const isDuplicate = rankingDecisions.some(decision =>
+            decision.name.toLowerCase() === decisionName.toLowerCase()
+        );
         if (isDuplicate) {
             setValidationMessage("Ranking Decision Name already exists.");
             return;
         }
+
+        // Tạo quyết định mới với điều kiện clone
         const newDecision = {
             name: decisionName,
             status: "Draft",
-            ...(clone && { baseDecisionId: selectedCloneDecision }) // Clone logic
+            ...(clone && { baseDecisionId: selectedCloneDecision }) // Nếu clone được bật, thêm ID quyết định gốc
         };
+
+        // Thêm quyết định mới vào danh sách quyết định xếp hạng
         setRankingDecisions([...rankingDecisions, newDecision]);
         setMessage("Ranking Decision successfully added.");
         setMessageType("success");
-        setShowDecisionModal(false);
+        setShowDecisionModal(false); // Đóng modal khi hoàn tất
+        await fetchAllDecisions();
+        // Gọi API để thêm quyết định mới
+        try {
+            await addRankingDecision(newDecision); // Thêm quyết định mới qua API
+            setMessage("Decision added successfully!");
+            setTimeout(() => setMessage(null), 2000);
+            // setShowDecisionModal(); // Đóng modal khi hoàn tất
+            await fetchAllDecisions(); // Làm mới danh sách quyết định
+        } catch (error) {
+            console.error("Failed to add decision:", error);
+            setMessageType("danger");
+            setMessage("Failed to add decision. Please try again.");
+            setShowDecisionModal()
+            setTimeout(() => setMessage(null), 2000);
+        }
     };
-    const handleCloseAddDecisionModal = () => {
-        setShowDecisionModal(false);
-        setValidationMessage("");
-    };
+
+
+
 
 
     // Handlers to open/close modals for deleting Decision
+    // Modal Delete
     const handleOpenDeleteModal = (DecisionId) => {
-        // Tìm nhóm theo ID để kiểm tra tên
-        const selectedGroup = DecisionId.find(group => group.groupId === DecisionId);
-        // Nếu nhóm có tên là "Trainer", hiển thị thông báo và không mở modal
-        if (selectedGroup && selectedGroup.groupName === "Trainer") {
+        const selectedDecision = decisions.find(decision => decision.id === DecisionId);
+        if (selectedDecision && selectedDecision.name === "Trainer") {
             setMessageType("warning");
-            setMessage("Cannot delete the 'Trainer' group.");
+            setMessage("Cannot delete the 'Trainer' decision.");
             setTimeout(() => setMessage(null), 2000);
             return;
         }
-        // Nếu không phải "Trainer", mở modal xóa
         setDecisionToDelete(DecisionId);
         setShowDeleteModal(true);
     };
-    // // Function to delete a selected Decision
-    // const handleDeleteDecision = async () => {
-    //     try {
-    //         if (DecisionToDelete) {
-    //             await deleteRankingDecision(DecisionToDelete); // Call API to delete Decision
-    //             setMessageType("success");
-    //             setMessage("Decision deleted successfully!");
-    //             setTimeout(() => setMessage(null), 2000);
-    //             setDecisionToDelete(null);
-    //             handleCloseDeleteModal(); // Close the delete modal after successful deletion
-    //             await fetchAllRankingDecisions(); // Refresh the Decision list
-    //         }
-    //     } catch (error) {
-    //         console.error("Failed to delete group:", error);
-    //         setMessageType("danger");
-    //         setMessage("Failed to delete group. Please try again.");
-    //         setTimeout(() => setMessage(null), 2000);
-    //         handleCloseDeleteModal();
-    //     }
-    // };
-    // const handleCloseDeleteModal = () => setShowDeleteModal(false);
+
+
+    const handleCloseDeleteModal = () => setShowDeleteModal(false);
+
+    // Function to delete a selected decision
+    const handleDeleteDecision = async () => {
+        try {
+            if (decisionToDelete) {
+                await deleteRankingDecision(decisionToDelete); // Gọi API để xóa decision
+                setMessageType("success");
+                setMessage("Decision deleted successfully!");
+                setTimeout(() => setMessage(null), 2000);
+                setDecisionToDelete(null); // Reset lại decisionToDelete
+                handleCloseDeleteModal(); // Đóng modal xóa sau khi xóa thành công
+                await fetchAllDecisions(); // Refresh danh sách decision
+            }
+        } catch (error) {
+            console.error("Failed to delete decision:", error);
+            setMessageType("danger");
+            setMessage("Failed to delete decision. Please try again.");
+            setTimeout(() => setMessage(null), 2000);
+            handleCloseDeleteModal();
+        }
+    };
 
     // Columns configuration for the DataGrid
     const columns = [
-        { field: "id", headerName: "ID", width: 80 },
-        { field: "name", headerName: "Ranking Decision Name", width: 400 },
+        { field: "index", headerName: "ID", width: 80 },
+        { field: "dicisionname", headerName: "Ranking Decision Name", width: 400 },
         { field: "finalizedAt", headerName: "Finalized At", width: 200 },
         { field: "finalizedBy", headerName: "Finalized By", width: 180 },
         { field: "status", headerName: "Status", width: 159 },
         {
-            field: "action", headerName: "Action", width: 150, renderCell: (params) => (
+            field: "action",
+            headerName: "Action",
+            width: 150,
+            renderCell: (params) => (
                 <>
                     <Button
                         variant="outlined"
@@ -233,18 +269,32 @@ const EditRankingGroup = () => {
                         <FaEdit />
                     </Button>
 
-                    <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        onClick={() => handleOpenDeleteModal(params.row.id)}
-                    >
-                        <MdDeleteForever />
-                    </Button>
+                    {/* Chỉ hiển thị nút xóa nếu status là 'Finalized' */}
+                    {params.row.status !== 'Finalized' && (
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => handleOpenDeleteModal(params.row.id)}
+                        >
+                            <MdDeleteForever />
+                        </Button>
+                    )}
                 </>
             ),
         },
     ];
+
+    // Map decision data to rows for DataGrid
+    const rows = decisions
+        ? decisions.map((decision, index) => ({
+            id: decision.decisionId,
+            index: index + 1,
+            dicisionname: decision.decisionName,
+            finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-', // Hiển thị ngày giờ nếu là 'Finalized', ngược lại hiển thị '-'
+            finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-', // Hiển thị tên người nếu là 'Finalized', ngược lại hiển thị '-'
+            status: decision.status
+        }))
+        : [];
 
     return (
         <div style={{ marginTop: "60px" }}>
@@ -282,11 +332,16 @@ const EditRankingGroup = () => {
                         Add New Ranking Decision
                     </Button>
                 </Box>
-
+                {/* Displaying messages */}
+                {message && (
+                    <Alert severity={messageType} sx={{ marginTop: 2 }}>
+                        {message}
+                    </Alert>
+                )}
                 <Box sx={{ width: "100%" }}>
                     <DataGrid className="custom-data-grid"
                         apiRef={apiRef} // Cung cấp `apiRef` cho DataGrid
-                        rows={group?.rankingDecisions || []}
+                        rows={rows}
                         columns={columns}
                         checkboxSelection
                         initialState={{
@@ -375,7 +430,7 @@ const EditRankingGroup = () => {
                 </Modal>
 
                 {/* Modal for adding new ranking decision */}
-                <Modal open={showDecisionModal} onClose={handleCloseAddDecisionModal}>
+                <Modal open={showDecisionModal} onClose={handleOpenAddDecisionModal}>
                     <Box sx={{
                         padding: 2,
                         backgroundColor: 'white',
@@ -384,7 +439,6 @@ const EditRankingGroup = () => {
                         margin: 'auto',
                         marginTop: '100px'
                     }}>
-
                         <Typography variant="h6" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             Add New Ranking Decision
                             <button type="button" className="btn-close" aria-label="Close" onClick={handleCloseAddDecisionModal}></button>
@@ -400,17 +454,19 @@ const EditRankingGroup = () => {
                             helperText={validationMessage}
                             sx={{ marginTop: 2 }}
                         />
+
                         <FormControlLabel
                             control={<Switch checked={clone} onChange={() => setClone(!clone)} />}
                             label="Clone from other decision"
                         />
+
                         {clone && (
                             <FormControl fullWidth sx={{ marginTop: 2 }}>
-                                <InputLabel>Choose Decision</InputLabel>
+                                <InputLabel>Choose Decision to Clone</InputLabel>
                                 <Select
                                     value={selectedCloneDecision}
                                     onChange={(e) => setSelectedCloneDecision(e.target.value)}
-                                    label="Clone Decision"
+                                    label="Choose Decision to Clone"
                                 >
                                     {rankingDecisions.map((decision) => (
                                         <MenuItem key={decision.id} value={decision.id}>
@@ -420,6 +476,7 @@ const EditRankingGroup = () => {
                                 </Select>
                             </FormControl>
                         )}
+
                         <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
                             <Button variant="outlined" onClick={handleCloseAddDecisionModal}>Cancel</Button>
                             <Button variant="contained" onClick={handleAddDecision}>Save</Button>
@@ -427,30 +484,33 @@ const EditRankingGroup = () => {
                     </Box>
                 </Modal>
 
-                {/* Displaying messages */}
-                {message && (
-                    <Alert severity={messageType} sx={{ marginTop: 2 }}>
-                        {message}
-                    </Alert>
-                )}
             </Box>
             {/* Modal for deleting a Decision */}
-            {/* <ModalCustom
-                show={showDeleteModal}
-                handleClose={handleCloseDeleteModal}
-                title="Delete Decision"
-                bodyContent="Are you sure you want to delete this Decision?"
-                footerContent={
-                    <>
-                        <Button variant="outlined" onClick={handleCloseDeleteModal}>
-                            Cancel
-                        </Button>
-                        <Button variant="contained" color="error" onClick={handleDeleteDecision}>
-                            Delete
-                        </Button>
-                    </>
-                }
-            /> */}
+            <Modal open={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+                <Box sx={{
+                    padding: 2,
+                    backgroundColor: 'white',
+                    borderRadius: 1,
+                    maxWidth: 400,
+                    margin: 'auto',
+                    marginTop: '100px'
+                }}>
+                    <Typography variant="h6" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        Confirm Delete
+                        <IconButton size="small" onClick={() => setShowDeleteModal(false)}>
+                            <CloseIcon />
+                        </IconButton>
+                    </Typography>
+                    <Typography sx={{ marginTop: 2 }}>
+                        Are you sure you want to delete this decision?
+                    </Typography>
+                    <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
+                        <Button variant="outlined" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
+                        <Button variant="contained" color="error" onClick={handleDeleteDecision}>Delete</Button>
+                    </Box>
+                </Box>
+            </Modal>
+
         </div>
     );
 };

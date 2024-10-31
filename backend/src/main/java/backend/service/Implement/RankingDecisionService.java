@@ -79,7 +79,6 @@ public class RankingDecisionService implements IRankingDecisionService {
         RankingDecision decision = RankingDecision.builder()
                 .decisionName(form.getDecisionName())
                 .createdBy(form.getCreatedBy())
-                .status("Draft")
                 .build();
         iRankingDecisionRepository.save(decision);
     }
@@ -87,11 +86,5 @@ public class RankingDecisionService implements IRankingDecisionService {
     @Override
     public boolean isRankingDecisionNameExist(String decisionName) {
         return iRankingDecisionRepository.existsByDecisionName(decisionName);
-    }
-
-    @Override
-    public List<RankingDecision> getRankingDecisionsByGroupId(int groupId) {
-        return iRankingDecisionRepository.findAllByGroupId(groupId);
-        // return null;
     }
 }
