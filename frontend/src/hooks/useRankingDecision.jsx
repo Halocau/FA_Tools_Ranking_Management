@@ -39,7 +39,8 @@ const useRankingDecision = () => {
             const response = await authClient.get(`/ranking-decision/get/${id}`);  // API call to get decision by ID
             return response.data;  // Returns fetched decision data to the caller
         } catch (err) {
-            handleError(err);
+            setError(err.response?.data || "An error occurred while fetching the ranking decision."); // Set error state
+
         } finally {
             setLoading(false);
         }
