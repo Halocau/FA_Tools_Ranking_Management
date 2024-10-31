@@ -22,6 +22,9 @@ public class RankingDecision {
     @Column(name = "decision_id")
     private int decisionId;
 
+    @Column(name = "group_id")
+    private Integer groupId;
+
     @Column(name = "decision_name")
     private String decisionName;
 
