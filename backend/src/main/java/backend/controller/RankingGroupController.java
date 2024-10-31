@@ -11,7 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import backend.model.form.RankingGroup.EditRankingGroupRequest;
 import java.util.List;
 
 @RestController
@@ -57,20 +57,6 @@ public class RankingGroupController {
         return ResponseEntity.ok(response);
     }
 
-    // @PostMapping("/add")
-    // public ResponseEntity<RankingGroup> addRankingGroup(@RequestBody RankingGroup
-    // rankingGroup) {
-    // rankingGroup.setGroupId(0);
-    // RankingGroup result = iRankingGroupService.addRankingGroup(rankingGroup);
-    //
-    // if (result != null) {
-    // return ResponseEntity.status(HttpStatus.CREATED).body(result);
-    // } else {
-    // throw new RankingGroupException("Unable to add ranking group"); // Exception
-    // will be caught in CatchException
-    // }
-    // }
-
     @PostMapping("/add")
     public String addRankingGroup(@RequestBody @Valid AddNewGroupRequest form) {
         iRankingGroupService.createRankingGroup(form);
@@ -78,7 +64,7 @@ public class RankingGroupController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<RankingGroup> updateRankingGroup(@RequestBody RankingGroup rankingGroup,
+    public ResponseEntity<RankingGroup> updateRankingGroup(@RequestBody EditRankingGroupRequest rankingGroup,
             @PathVariable int id) {
         RankingGroup exists = iRankingGroupService.findRankingGroupById(id);
         if (exists == null) {
@@ -86,8 +72,9 @@ public class RankingGroupController {
         }
 
         exists.setGroupName(rankingGroup.getGroupName());
-        exists.setNumEmployees(rankingGroup.getNumEmployees());
-        exists.setDecisionName(rankingGroup.getDecisionName());
+        exists.setCurrent_ranking_decision(rankingGroup.getDecisionId());
+        // exists.setCurrentRankingDecision(rankingGroup.getDecisionId());
+
         iRankingGroupService.updateRankingGroup(exists);
         return ResponseEntity.ok(exists);
     }

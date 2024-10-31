@@ -29,11 +29,12 @@ public class RankingDecisionController {
         return iRankingDecisionService.getRankingDecisionResponses(decisionList);
     }
 
-    @GetMapping("/groupid/{groupId}")
-    public ResponseEntity<RankingDecision> findByGroupId(@PathVariable int groupId) {
-        RankingDecision decision = iRankingDecisionService.findByGroupId(groupId);
-        return ResponseEntity.ok().body(decision);
-    }
+    // @GetMapping("/groupid/{groupId}")
+    // public ResponseEntity<RankingDecision> findByGroupId(@PathVariable int
+    // groupId) {
+    // RankingDecision decision = iRankingDecisionService.findByGroupId(groupId);
+    // return ResponseEntity.ok().body(decision);
+    // }
 
     @GetMapping("/list/{groupId}")
     public List<RankingDecisionResponse> getRankingDecisionListByGroupId(@PathVariable int groupId) {
