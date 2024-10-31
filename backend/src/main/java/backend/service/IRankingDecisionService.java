@@ -26,5 +26,7 @@ public interface IRankingDecisionService {
     // validate
     boolean isRankingDecisionNameExist(String decisionName);
 
+    //apply form updateAddNewGroup
+//    public RankingDecision updateDecisionName(Integer decisionId, String decisionName);
 
 }

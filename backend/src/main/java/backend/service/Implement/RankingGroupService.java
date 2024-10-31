@@ -8,6 +8,7 @@ import backend.model.entity.Account;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
+import backend.model.form.RankingGroup.UpdateNewGroupRequest;
 import backend.service.IRankingGroupService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -98,7 +99,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
 
     @Override
     @Transactional
-    public RankingGroup updateRankingGroup(RankingGroup rankingGroup) {
+    public RankingGroup editRankingGroup(RankingGroup rankingGroup) {
         return iRankingGroupRepository.saveAndFlush(rankingGroup);
     }
 
@@ -147,6 +148,19 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
                 .build();
         iRankingGroupRepository.save(rankingGroup);
 
+    }
+
+    @Override
+    @Transactional
+    public void updateRankingGroup(Integer groupId, UpdateNewGroupRequest form) {
+        RankingGroup group = iRankingGroupRepository.findById(groupId).orElse(null);
+        if (group != null) {
+            group.setGroupName(form.getGroupName());
+            group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
+            RankingDecision decision = iRankingDecisionRepository.findById(form.getCurrentRankingDecision()).get();
+            decision.setDecisionName(form.getTextDecisionName());
+            iRankingGroupRepository.saveAndFlush(group);
+        }
     }
 
     @Override

@@ -78,4 +78,12 @@ public class RankingDecisionService implements IRankingDecisionService {
         return iRankingDecisionRepository.existsByDecisionName(decisionName);
     }
 
+//    @Override
+//    @Transactional
+//    public RankingDecision updateDecisionName(Integer decisionId, String decisionName) {
+//        RankingDecision decision = iRankingDecisionRepository.findById(decisionId).get();
+//        decision.setDecisionName(decisionName);
+//        return iRankingDecisionRepository.saveAndFlush(decision);
+//    }
+
 }

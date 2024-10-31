@@ -5,6 +5,7 @@ import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
+import backend.model.form.RankingGroup.UpdateNewGroupRequest;
 import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupService;
 import jakarta.validation.Valid;
@@ -58,26 +59,32 @@ public class RankingGroupController {
         RankingGroupResponse response = iRankingGroupService.getRankingGroupResponseById(rankingGroup);
         return ResponseEntity.ok(response);
     }
-    
+
     @PostMapping("/add")
     public String addRankingGroup(@RequestBody @Valid AddNewGroupRequest form) {
         iRankingGroupService.createRankingGroup(form);
         return "create successfully!";
     }
 
+    //    @PutMapping("/update/{id}")
+//    public ResponseEntity<RankingGroup> updateRankingGroup(@RequestBody RankingGroup rankingGroup, @PathVariable int id) {
+//        RankingGroup exists = iRankingGroupService.findRankingGroupById(id);
+//        if (exists == null) {
+//            throw new RankingGroupException("Ranking group not found for update");
+//        }
+//
+//        exists.setGroupName(rankingGroup.getGroupName());
+//        exists.setNumEmployees(rankingGroup.getNumEmployees());
+//        exists.setDecisionName(rankingGroup.getDecisionName());
+//        iRankingGroupService.updateRankingGroup(exists);
+//        return ResponseEntity.ok(exists);
+//    }
     @PutMapping("/update/{id}")
-    public ResponseEntity<RankingGroup> updateRankingGroup(@RequestBody RankingGroup rankingGroup,
-                                                           @PathVariable int id) {
-        RankingGroup exists = iRankingGroupService.findRankingGroupById(id);
-        if (exists == null) {
-            throw new RankingGroupException("Ranking group not found for update");
-        }
-
-        exists.setGroupName(rankingGroup.getGroupName());
-        exists.setNumEmployees(rankingGroup.getNumEmployees());
-        exists.setDecisionName(rankingGroup.getDecisionName());
-        iRankingGroupService.updateRankingGroup(exists);
-        return ResponseEntity.ok(exists);
+    public String updateRankingGroup(@RequestBody @Valid UpdateNewGroupRequest form,
+                                     @PathVariable(name = "id") Integer groupId) {
+        RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(groupId);
+        iRankingGroupService.updateRankingGroup(groupId, form);
+        return "update successfully!";
     }
 
     @DeleteMapping("/delete/{id}")
