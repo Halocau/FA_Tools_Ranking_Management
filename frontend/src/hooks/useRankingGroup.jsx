@@ -78,7 +78,7 @@ const useRankingGroup = () => {
         } finally {
             setLoading(false); // Stop loading after response
         }
-    };
+    }
 
     // Deletes a ranking group and updates the data state
     const deleteRankingGroup = async (id) => {
