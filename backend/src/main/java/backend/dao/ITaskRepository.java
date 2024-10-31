@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ITaskRepository extends JpaRepository<Task, Integer> {
-
+    public Task findByCreatedBy(int createdBy);
 }
