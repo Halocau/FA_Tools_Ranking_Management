@@ -1,7 +1,9 @@
 package backend.service.Implement;
 
+import backend.dao.IAccount;
 import backend.dao.ITaskRepository;
 import backend.model.dto.TaskResponse;
+import backend.model.entity.Account;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
 import backend.model.form.Task.UpdateTaskRequest;
@@ -13,15 +15,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TaskService implements ITaskService {
     private ITaskRepository iTaskRepository;
+    private IAccount iAccount;
     private ModelMapper modelMapper;
 
     @Autowired
-    public TaskService(ITaskRepository iTaskRepository, ModelMapper modelMapper) {
+    public TaskService(ITaskRepository iTaskRepository, IAccount iAccount, ModelMapper modelMapper) {
         this.iTaskRepository = iTaskRepository;
+        this.iAccount = iAccount;
         this.modelMapper = modelMapper;
     }
 
@@ -53,12 +58,29 @@ public class TaskService implements ITaskService {
         iTaskRepository.deleteById(id);
     }
 
+    @Override
+    public Task findTaskByCreatedBy(int createdBy) {
+        return iTaskRepository.findByCreatedBy(createdBy);
+    }
+
     //Response
     @Override
     public List<TaskResponse> getAllTaskResponse(List<Task> tasks) {
         List<TaskResponse> taskResponses = new ArrayList<>();
         for (Task task : tasks) {
-            taskResponses.add(modelMapper.map(task, TaskResponse.class));
+            TaskResponse response = modelMapper.map(task, TaskResponse.class);
+
+            if (task.getCreatedBy() == null) {
+                response.setCreatedByName(null);
+            } else {
+                Account account = iAccount.findById(task.getCreatedBy()).get();
+                if (account == null) {
+                    response.setCreatedByName(null);
+                } else {
+                    response.setCreatedByName(account.getUsername());
+                }
+            }
+            taskResponses.add(response);
         }
         return taskResponses;
     }
