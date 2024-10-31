@@ -42,12 +42,12 @@ public class SecurityConfig {
                 .csrf().disable() // Disable CSRF if needed
                 .authorizeHttpRequests(
                         request -> request
-                                .requestMatchers("/api/account/register", "/api/account/login", "/api/account/all","/api/account/generate-and-validate")
+                                .requestMatchers("/api/account/register", "/api/account/login", "/api/account/all")
                                 .permitAll()
                                 .anyRequest()
-                                .authenticated()
-                                // .permitAll()
-                                )
+//                                .authenticated()
+                                .permitAll()
+                )
 //                .formLogin().disable() // Disable form login
 //                .httpBasic().disable() // Disable HTTP Basic authentication
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
