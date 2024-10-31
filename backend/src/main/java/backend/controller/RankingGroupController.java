@@ -9,6 +9,7 @@ import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +24,7 @@ public class RankingGroupController {
 
     @Autowired
     public RankingGroupController(IRankingGroupService iRankingGroupService,
-            IRankingDecisionService iRankingDecisionService) {
+                                  IRankingDecisionService iRankingDecisionService) {
         this.iRankingGroupService = iRankingGroupService;
         this.iRankingDecisionService = iRankingDecisionService;
     }
@@ -53,24 +54,11 @@ public class RankingGroupController {
             // Tự động đi vào CatchException (RankingGroupException handler)
             throw new RankingGroupException("Ranking group not found");
         }
+        //RG convert Response
         RankingGroupResponse response = iRankingGroupService.getRankingGroupResponseById(rankingGroup);
         return ResponseEntity.ok(response);
     }
-
-    // @PostMapping("/add")
-    // public ResponseEntity<RankingGroup> addRankingGroup(@RequestBody RankingGroup
-    // rankingGroup) {
-    // rankingGroup.setGroupId(0);
-    // RankingGroup result = iRankingGroupService.addRankingGroup(rankingGroup);
-    //
-    // if (result != null) {
-    // return ResponseEntity.status(HttpStatus.CREATED).body(result);
-    // } else {
-    // throw new RankingGroupException("Unable to add ranking group"); // Exception
-    // will be caught in CatchException
-    // }
-    // }
-
+    
     @PostMapping("/add")
     public String addRankingGroup(@RequestBody @Valid AddNewGroupRequest form) {
         iRankingGroupService.createRankingGroup(form);
@@ -79,7 +67,7 @@ public class RankingGroupController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<RankingGroup> updateRankingGroup(@RequestBody RankingGroup rankingGroup,
-            @PathVariable int id) {
+                                                           @PathVariable int id) {
         RankingGroup exists = iRankingGroupService.findRankingGroupById(id);
         if (exists == null) {
             throw new RankingGroupException("Ranking group not found for update");
@@ -97,10 +85,6 @@ public class RankingGroupController {
         RankingGroup exists = iRankingGroupService.findRankingGroupById(id);
         if (exists == null) {
             throw new RankingGroupException("Ranking group not found for deletion");
-        }
-        RankingDecision checkNullGroupId = iRankingDecisionService.findByGroupId(id);
-        if (checkNullGroupId != null) {
-            iRankingDecisionService.updateRankingDecisionGroupIdToNull(id);
         }
         if ("Trainer".equals(exists.getGroupName())) {
             throw new RankingGroupException("Cannot delete the group name \"Trainer.\"");

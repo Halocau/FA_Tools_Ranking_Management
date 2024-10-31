@@ -11,15 +11,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IRankingDecisionRepository extends JpaRepository<RankingDecision, Integer> {
-    public RankingDecision findByGroupId(int groupId);
-
-    public List<RankingDecision> findAllByGroupId(int groupId);
 
     public RankingDecision findByDecisionId(int decisionId);
-
-    @Modifying
-    @Query("UPDATE RankingDecision rd SET rd.groupId = null WHERE rd.groupId = :groupId")
-    public void updateRankingDecisionGroupIdToNull(int groupId);
 
     boolean existsByDecisionName(String decisionName);
 

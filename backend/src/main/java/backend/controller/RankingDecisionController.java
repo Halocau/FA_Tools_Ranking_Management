@@ -29,23 +29,18 @@ public class RankingDecisionController {
         return iRankingDecisionService.getRankingDecisionResponses(decisionList);
     }
 
-    @GetMapping("/groupid/{groupId}")
-    public ResponseEntity<RankingDecision> findByGroupId(@PathVariable int groupId) {
-        RankingDecision decision = iRankingDecisionService.findByGroupId(groupId);
-        return ResponseEntity.ok().body(decision);
-    }
+//    @GetMapping("/groupid/{groupId}")
+//    public ResponseEntity<RankingDecision> findByGroupId(@PathVariable int groupId) {
+//        RankingDecision decision = iRankingDecisionService.findByGroupId(groupId);
+//        return ResponseEntity.ok().body(decision);
+//    }
 
-    @GetMapping("/list/{groupId}")
-    public List<RankingDecisionResponse> getRankingDecisionListByGroupId(@PathVariable int groupId) {
-        List<RankingDecision> decisionList = iRankingDecisionService.getRankingDecisionsByGroupId(groupId);
-        return iRankingDecisionService.getRankingDecisionResponses(decisionList);
-    }
+//    @GetMapping("/list/{groupId}")
+//    public List<RankingDecisionResponse> getRankingDecisionListByGroupId(@PathVariable int groupId) {
+//        List<RankingDecision> decisionList = iRankingDecisionService.getRankingDecisionsByGroupId(groupId);
+//        return iRankingDecisionService.getRankingDecisionResponses(decisionList);
+//    }
 
-    @PutMapping("/putid/{groupId}")
-    public ResponseEntity<Void> clearGroupId(@PathVariable int groupId) {
-        iRankingDecisionService.updateRankingDecisionGroupIdToNull(groupId);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/add")
     public String addRankingDecision(@RequestBody @Valid CreateRankingDecision form) {

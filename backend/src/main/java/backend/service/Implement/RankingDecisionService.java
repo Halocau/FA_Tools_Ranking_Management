@@ -52,17 +52,6 @@ public class RankingDecisionService implements IRankingDecisionService {
         iRankingDecisionRepository.deleteById(id);
     }
 
-    @Override
-    public RankingDecision findByGroupId(int groupId) {
-        return iRankingDecisionRepository.findByGroupId(groupId);
-    }
-
-    @Override
-    @Transactional
-    public void updateRankingDecisionGroupIdToNull(int groupId) {
-
-        iRankingDecisionRepository.updateRankingDecisionGroupIdToNull(groupId);
-    }
 
     @Override
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions) {
@@ -89,9 +78,4 @@ public class RankingDecisionService implements IRankingDecisionService {
         return iRankingDecisionRepository.existsByDecisionName(decisionName);
     }
 
-    @Override
-    public List<RankingDecision> getRankingDecisionsByGroupId(int groupId) {
-        return iRankingDecisionRepository.findAllByGroupId(groupId);
-        // return null;
-    }
 }
