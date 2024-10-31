@@ -240,7 +240,7 @@ const TaskManagement = () => {
             <Slider />
             <Box sx={{ marginTop: 4, padding: 2 }}>
                 <Typography variant="h6">
-                    <a href="/ranking_decision">Ranking Decision List</a> {'>'} Task Management
+                    <a href="/ranking_decision">Ranking Decision List</a> {'>'} Task List
                 </Typography>
                 {/* <Box sx={{
                     border: '1px solid black',
