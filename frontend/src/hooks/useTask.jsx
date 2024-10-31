@@ -66,11 +66,13 @@ const useTask = () => {
   };
 
   // Updates Task
-  const updateTask = async (id, updateTask) => {
+  const updateTask = async (id, updatedTask) => {
     setLoading(true);
+    console.log("Updating task with ID:", id); 
+    console.log("Updated task data:", updatedTask); 
+
     try {
       const response = await authClient.put(`/task/update/${id}`, updatedTask);
-
       setData((prevData) =>
         prevData.map((task) =>
           task.taskId === id ? { ...task, ...response.data } : task

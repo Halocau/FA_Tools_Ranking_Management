@@ -116,16 +116,19 @@ const TaskManagement = () => {
   };
 
   const handleUpdateTask = async () => {
+    
+    if (!selectedTask || !selectedTask.taskId) {
+      console.error("No valid task selected for update.");
+      return;
+    }
+
     try {
-      const updatedTask = {
-        taskName: editTaskName.trim(),
-      };
-      await updateTask(selectedTask.taskId, updatedTask); // Pass task ID and updated data
+      const updatedTask = { taskName: editTaskName.trim() };
+      await updateTask(selectedTask.taskId, updatedTask); 
       setMessageType("success");
       setMessage("Task updated successfully!");
       setTimeout(() => setMessage(null), 2000);
       handleCloseEditModal();
-      await fetchAllTasks(); // Refresh tasks after updating
     } catch (error) {
       console.error("Failed to update task:", error);
       setMessageType("danger");
@@ -170,24 +173,23 @@ const TaskManagement = () => {
       setTimeout(() => setMessage(null), 2000);
       return;
     }
-    // Lọc các ID của nhóm không phải "Trainer"
+
     const groupsToDelete = selectedIDs.filter((id) => {
       const group = rows.find((row) => row.id === id);
-      return group && group.taskName !== "Trainer"; // Chỉ xóa nếu không phải là "Trainer"
+      return group && group.taskName !== "";
     });
     if (groupsToDelete.length === 0) {
       setMessageType("warning");
-      setMessage("Cannot delete the 'Trainer' group.");
+      setMessage("Cannot delete the '' group.");
       setTimeout(() => setMessage(null), 2000);
       return;
     }
     try {
-      // Xóa từng nhóm không phải "Trainer"
       await Promise.all(groupsToDelete.map((id) => deleteTask(id)));
       setMessageType("success");
       setMessage("Selected groups deleted successfully!");
       setTimeout(() => setMessage(null), 2000);
-      await fetchAllTasks(); // Cập nhật lại danh sách nhóm sau khi xóa thành công
+      await fetchAllTasks();
     } catch (error) {
       console.error("Failed to delete selected groups:", error);
       setMessageType("danger");
@@ -233,7 +235,7 @@ const TaskManagement = () => {
         id: item.taskId,
         index: index + 1,
         taskName: item.taskName,
-        createdBy: item.createdBy < 1 ? "N/A" : item.createdBy,
+        createdBy: item.createdBy || "Unknown",
         createdAt: item.createdAt == null ? "N/A" : item.createdAt,
         updatedAt: item.updateAt == null ? "N/A" : item.updateAt,
       }))
