@@ -105,7 +105,10 @@ const TaskManagement = () => {
 
   // Modal Edit
   const handleOpenEditModal = (task) => {
-    setSelectedTask(task);
+    setSelectedTask(task); // Gán `selectedTask` với task đã chọn
+    
+   
+   
     setEditTaskName(task.taskName);
     setShowEditModal(true);
   };
@@ -117,7 +120,7 @@ const TaskManagement = () => {
 
   const handleUpdateTask = async () => {
     
-    if (!selectedTask || !selectedTask.taskId) {
+    if (!selectedTask || !selectedTask.taskId || !selectedTask.createdBy) {
       console.error("No valid task selected for update.");
       return;
     }
@@ -234,8 +237,9 @@ const TaskManagement = () => {
     ? tasks.map((item, index) => ({
         id: item.taskId,
         index: index + 1,
+        taskId: item.taskId,
         taskName: item.taskName,
-        createdBy: item.createdBy || "Unknown",
+        createdBy: item.createdBy ,
         createdAt: item.createdAt == null ? "N/A" : item.createdAt,
         updatedAt: item.updateAt == null ? "N/A" : item.updateAt,
       }))
