@@ -27,6 +27,7 @@ const useRankingGroup = () => {
         try {
             const response = await authClient.get('/ranking-group');
             setData(response.data); // Update data state with fetched groups
+            return response.data; // Return data for validation check
         } catch (err) {
             handleError(err); // Handle and log errors
         } finally {
@@ -77,7 +78,7 @@ const useRankingGroup = () => {
         } finally {
             setLoading(false); // Stop loading after response
         }
-    };
+    }
 
     // Deletes a ranking group and updates the data state
     const deleteRankingGroup = async (id) => {

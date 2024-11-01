@@ -1,48 +1,36 @@
 package backend.model.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Table(name = "Ranking_Decision")
+@Table(name = "Task")
 @SuperBuilder
-public class RankingDecision {
+public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "decision_id")
-    private int decisionId; //hihi
+    @Column(name = "task_id")
+    private int taskId;
 
-    @Column(name = "decision_name")
-    private String decisionName;
-
-    @Column(name = "status")
-    private String status;
-
-    @Column(name = "finalized_at")
-    private LocalDateTime finalizedAt;
-
-    @Column(name = "finalized_by")
-    private Integer finalizedBy;
+    @Column(name = "task_name")
+    private String taskName;
 
     @Column(name = "created_by")
     private Integer createdBy;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    public Task() {
+    }
 }
