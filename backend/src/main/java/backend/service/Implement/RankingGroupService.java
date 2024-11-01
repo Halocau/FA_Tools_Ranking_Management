@@ -122,18 +122,18 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
             // Ánh xạ cơ bản từ RankingGroup sang RankingGroupResponse
             RankingGroupResponse response = modelMapper.map(rankingGroup, RankingGroupResponse.class);
 
-            // if (rankingGroup.getCurrent_ranking_decision() == null) {
-            // response.setCurrentRankingDecision(null);
-            // } else {
-            // RankingDecision decision = iRankingDecisionRepository
-            // .findByDecisionId(rankingGroup.getCurrent_ranking_decision());
-            // // Thiết lập giá trị cho currentRankingDecision từ decisionName
-            // if (decision != null) {
-            // response.setCurrentRankingDecision(decision.getDecisionName());
-            // } else {
-            // response.setCurrentRankingDecision(null);
-            // }
-            // }
+            if (rankingGroup.getCurrent_ranking_decision() == null) {
+                response.setCurrentRankingDecision(null);
+            } else {
+                RankingDecision decision = iRankingDecisionRepository
+                        .findByDecisionId(rankingGroup.getCurrent_ranking_decision());
+                // Thiết lập giá trị cho currentRankingDecision từ decisionName
+                if (decision != null) {
+                    response.setCurrentRankingDecision(decision.getDecisionName());
+                } else {
+                    response.setCurrentRankingDecision(null);
+                }
+            }
             responseList.add(response);
         }
         return responseList;
