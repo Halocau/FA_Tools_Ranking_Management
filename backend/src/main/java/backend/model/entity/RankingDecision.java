@@ -20,7 +20,7 @@ public class RankingDecision {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "decision_id")
-    private int decisionId; //hihi
+    private int decisionId;
 
     @Column(name = "decision_name")
     private String decisionName;
