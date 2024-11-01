@@ -55,9 +55,13 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
                 Account account = optionalAccount.get(); // get account
                 group.setUsername(account.getUsername()); // set username
             }
-            RankingDecision decision = iRankingDecisionRepository.findById(group.getCurrent_ranking_decision())
-                    .orElse(null);
-            group.setDecisionName(decision.getDecisionName());
+            if (group.getCurrent_ranking_decision() != null) {
+                RankingDecision decision = iRankingDecisionRepository
+                        .findByDecisionId(group.getCurrent_ranking_decision());
+                group.setDecisionName(decision.getDecisionName());
+            } else {
+                group.setDecisionName(null);
+            }
         }
         return rankingGroups;
     }
@@ -150,7 +154,6 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
                 .createdBy(form.getCreatedBy())
                 .build();
         iRankingGroupRepository.save(rankingGroup);
-
     }
 
     @Override

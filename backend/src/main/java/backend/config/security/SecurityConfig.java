@@ -46,9 +46,9 @@ public class SecurityConfig {
                                         "/api/account/generate-and-validate")
                                 .permitAll()
                                 .anyRequest()
-                                 .authenticated()
-//                                .permitAll()
-                                )
+                                .authenticated()
+                // .permitAll()
+                )
                 // .formLogin().disable() // Disable form login
                 // .httpBasic().disable() // Disable HTTP Basic authentication
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
