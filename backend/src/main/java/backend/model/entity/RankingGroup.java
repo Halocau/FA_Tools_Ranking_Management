@@ -1,8 +1,6 @@
 package backend.model.entity;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -12,9 +10,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "Ranking_Group")
 @SuperBuilder
@@ -50,5 +47,8 @@ public class RankingGroup {
 
     @Transient
     private String decisionName;
+
+    public RankingGroup() {
+    }
 
 }

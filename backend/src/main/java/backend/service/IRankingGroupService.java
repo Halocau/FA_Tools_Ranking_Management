@@ -3,8 +3,6 @@ package backend.service;
 import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingGroup;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
-import backend.model.form.RankingGroup.UpdateGroupInfo;
-import backend.model.form.RankingGroup.UpdateNewGroupRequest;
 
 import java.util.List;
 
@@ -15,22 +13,15 @@ public interface IRankingGroupService {
 
     public RankingGroup addRankingGroup(RankingGroup rankingGroup);
 
-    public RankingGroup editRankingGroup(RankingGroup rankingGroup);
+    public RankingGroup updateRankingGroup(RankingGroup rankingGroup);
 
     public void deleteRankingGroup(int id);
 
-    // response
     public List<RankingGroupResponse> getAllRankingGroupResponses(List<RankingGroup> rankingGroups);
 
     public RankingGroupResponse getRankingGroupResponseById(RankingGroup rankingGroup);
 
-    // form
     public void createRankingGroup(AddNewGroupRequest form);
 
-    public void updateRankingGroup(Integer groupId, UpdateNewGroupRequest form);
-
-    public void updateRankingGroupInfo(Integer groupId, UpdateGroupInfo form);
-
-    // validate
     boolean isRankingGroupExitsByGroupName(String groupName);
 }
