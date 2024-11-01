@@ -63,7 +63,7 @@ public class TaskService implements ITaskService {
         return iTaskRepository.findByCreatedBy(createdBy);
     }
 
-    // Response
+    //Response
     @Override
     public List<TaskResponse> getAllTaskResponse(List<Task> tasks) {
         List<TaskResponse> taskResponses = new ArrayList<>();
@@ -105,20 +105,21 @@ public class TaskService implements ITaskService {
     @Transactional
     public void updateTaskByForm(int id, UpdateTaskRequest form) {
         Task task = iTaskRepository.findById(id).get();
-        // Account oldManager = department.getManager();
-        // if(oldManager.getId() != form.getManagerId()) {
-        // // update role of old manager
-        // oldManager.setRole(Role.EMPLOYEE);
-        // accountRepository.save(oldManager);
-        // // update role of new manager
-        // Account newManager = accountRepository.findById(form.getManagerId()).get();
-        // newManager.setRole(Role.MANAGER);
-        // // update manager of department
-        // department.setManager(newManager);
-        // }
+//        Account oldManager = department.getManager();
+//        if(oldManager.getId() != form.getManagerId()) {
+//            // update role of old manager
+//            oldManager.setRole(Role.EMPLOYEE);
+//            accountRepository.save(oldManager);
+//            // update role of new manager
+//            Account newManager = accountRepository.findById(form.getManagerId()).get();
+//            newManager.setRole(Role.MANAGER);
+//            // update manager of department
+//            department.setManager(newManager);
+//        }
         task.setTaskName(form.getTaskName());
         task.setCreatedBy(form.getCreatedBy());
         iTaskRepository.saveAndFlush(task);
     }
+
 
 }
