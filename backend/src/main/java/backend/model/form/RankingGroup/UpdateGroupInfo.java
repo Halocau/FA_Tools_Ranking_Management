@@ -13,9 +13,7 @@ public class UpdateGroupInfo {
     @RankingGroupNameNotExits
     private String groupName;
 
-    @NotNull
     private Integer currentRankingDecision;
 
-    @NotNull
     private int createdBy;
 }
