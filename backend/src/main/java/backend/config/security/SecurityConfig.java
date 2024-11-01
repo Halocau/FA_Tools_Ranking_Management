@@ -45,9 +45,15 @@ public class SecurityConfig {
                                 .requestMatchers("/api/account/register", "/api/account/login", "/api/account/all","/api/account/generate-and-validate")
                                 .permitAll()
                                 .anyRequest()
+<<<<<<< HEAD
 //                                .permitAll()
                                 .authenticated()
                 )
+=======
+                                .authenticated()
+                                // .permitAll()
+                                )
+>>>>>>> parent of da6b20d (Merge remote-tracking branch 'origin/DuyPQ18' into DuongLBQ)
 //                .formLogin().disable() // Disable form login
 //                .httpBasic().disable() // Disable HTTP Basic authentication
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

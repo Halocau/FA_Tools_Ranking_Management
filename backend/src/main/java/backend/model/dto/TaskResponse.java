@@ -6,5 +6,4 @@ import lombok.Data;
 public class TaskResponse {
     private int taskId;
     private String taskName;
-    private int createdBy;
 }
