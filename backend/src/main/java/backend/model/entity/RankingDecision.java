@@ -20,10 +20,7 @@ public class RankingDecision {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "decision_id")
-    private int decisionId;
-
-    @Column(name = "group_id")
-    private Integer groupId;
+    private int decisionId; //hihi
 
     @Column(name = "decision_name")
     private String decisionName;
