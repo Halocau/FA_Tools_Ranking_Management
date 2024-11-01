@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import "../../assets/css/RankingGroups.css"
 import { Button, TextField, Alert, CircularProgress } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
+import Box from "@mui/material/Box";
 import ModalCustom from "../../components/Common/Modal.jsx";
 import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { FaRankingStar } from "react-icons/fa6";
 import Slider from "../../layouts/Slider.jsx";
-import Box from "@mui/material/Box";
 
 const RankingGroups = () => {
   const navigate = useNavigate(); // Khởi tạo hook useNavigate để điều hướng giữa các trang trong ứng dụng
@@ -231,25 +231,39 @@ const RankingGroups = () => {
         </h2>
         {message && <Alert severity={messageType}>{message}</Alert>}
 
-        <Box sx={{ width: "100%" }}>
+        <Box sx={{ width: "100%", height: 370 }}>
           {loading ? <CircularProgress /> : (
-            <DataGrid className="custom-data-grid"
-              apiRef={apiRef} // Cung cấp `apiRef` cho DataGrid
+            <DataGrid
+              className="custom-data-grid"
+              apiRef={apiRef}
               rows={rows}
               columns={columns}
               checkboxSelection
+              pagination // Bật tính năng phân trang
+              pageSizeOptions={[5, 10, 25]} // Các tùy chọn số hàng mỗi trang
               initialState={{
                 pagination: {
                   paginationModel: {
-                    pageSize: 5,
+                    pageSize: 5, // Số hàng mặc định hiển thị trên mỗi trang
+                    page: 0, // Trang mặc định
                   },
                 },
               }}
-              pageSizeOptions={[5]}
               disableRowSelectionOnClick
+              autoHeight={false}
+              sx={{
+                height: '100%', // Đảm bảo DataGrid chiếm toàn bộ chiều cao của Box
+                overflow: 'auto', // Bật thanh cuộn khi vượt quá chiều cao
+                '& .MuiDataGrid-virtualScroller': {
+                  overflowY: 'auto', // Đảm bảo thanh cuộn dọc bên trong DataGrid
+                },
+              }}
             />
           )}
         </Box>
+
+
+
         <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
           <Button variant="contained" color="success" onClick={handleOpenAddModal}>
             Add New Group

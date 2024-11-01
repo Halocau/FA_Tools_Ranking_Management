@@ -66,6 +66,7 @@ const useRankingGroup = () => {
     const updateRankingGroup = async (id, updatedGroup) => {
         setLoading(true);
         try {
+            console.log(updatedGroup)
             const response = await authClient.put(`/ranking-group/update/${id}`, updatedGroup);
             setData((prevData) =>
                 prevData.map(group => (group.id === id ? response.data : group)) // Update specific group in state

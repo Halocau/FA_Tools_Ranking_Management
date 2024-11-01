@@ -4,6 +4,7 @@ import "../../assets/css/RankingGroups.css"
 import { Box, Button, TextField, Menu, MenuItem, IconButton, Alert } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
 import { DataGrid } from "@mui/x-data-grid";
+import { DataGridPro } from '@mui/x-data-grid-pro';
 import ModalCustom from "../../components/Common/Modal.jsx";
 import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 import { MdDeleteForever } from "react-icons/md";
