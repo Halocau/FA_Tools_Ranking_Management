@@ -77,9 +77,15 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
                 .ifPresent(account -> group.setUsername(account.getUsername()));
 
         // Lấy quyết định xếp hạng dựa trên groupId, nếu có, thiết lập decisionName
-        RankingDecision decision = iRankingDecisionRepository.findByDecisionId(group.getCurrent_ranking_decision());
-        if (decision != null) {
-            group.setDecisionName(decision.getDecisionName());
+        if (group.getCurrent_ranking_decision() != null) {
+            RankingDecision decision = iRankingDecisionRepository.findByDecisionId(group.getCurrent_ranking_decision());
+            if (decision != null) {
+                group.setDecisionName(decision.getDecisionName());
+            } else {
+                group.setDecisionName(null);
+            }
+        } else {
+            group.setDecisionName(null);
         }
         return group;
     }
