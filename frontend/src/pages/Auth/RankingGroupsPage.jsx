@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../assets/css/RankingGroups.css"
-import { Button, TextField, Alert, CircularProgress } from "@mui/material";
+import { Button, TextField, Alert, CircularProgress, IconButton } from "@mui/material";
+import { FaEye } from 'react-icons/fa'; // Import biểu tượng mắt
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import Box from "@mui/material/Box";
 import ModalCustom from "../../components/Common/Modal.jsx";
@@ -142,7 +143,7 @@ const RankingGroups = () => {
       handleCloseDeleteModal();
     }
   };
-  const handleBulkDelete = async () => {
+  const handleBulkDeleteRankingGroup = async () => {
     const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
     if (selectedIDs.length === 0) {
       setMessageType("warning");
@@ -181,10 +182,20 @@ const RankingGroups = () => {
     { field: "index", headerName: "ID", width: 70 },
     { field: "groupName", headerName: "Group Name", width: 250 },
     { field: "numEmployees", headerName: "No. of Employees", width: 250 },
-    { field: "currentRankingDecision", headerName: "Current Ranking Decision", width: 400 },
+    { field: "currentRankingDecision", headerName: "Current Ranking Decision", width: 350 },
     {
-      field: "action", headerName: "Action", width: 150, renderCell: (params) => (
+      field: "action", headerName: "Action", width: 200, renderCell: (params) => (
         <>
+          <IconButton
+            color="gray" // Màu sắc cho biểu tượng
+            onClick={() => {
+              console.log(`Viewing group with ID: ${params.row.id}`);
+              // Chuyển hướng đến trang xem nhóm (hoặc hiển thị modal)
+              navigate(`/ranking-group/view/${params.row.id}`);
+            }}
+          >
+            <FaEye />
+          </IconButton>
           <Button
             variant="outlined"
             // size="small"
@@ -199,6 +210,7 @@ const RankingGroups = () => {
           <Button
             variant="outlined"
             color="error"
+            sx={{ marginLeft: 1 }}
             // size="small"
             onClick={() => handleOpenDeleteModal(params.row.id)}
           >
@@ -226,11 +238,10 @@ const RankingGroups = () => {
       <Slider />
       <div>
         <h2>
-          {/* <FaRankingStar />  */}
           Ranking Group List
         </h2>
         {message && <Alert severity={messageType}>{message}</Alert>}
-
+        {/* Table show Ranking Group */}
         <Box sx={{ width: "100%", height: 370 }}>
           {loading ? <CircularProgress /> : (
             <DataGrid
@@ -239,36 +250,33 @@ const RankingGroups = () => {
               rows={rows}
               columns={columns}
               checkboxSelection
-              pagination // Bật tính năng phân trang
-              pageSizeOptions={[5, 10, 25]} // Các tùy chọn số hàng mỗi trang
+              pagination
+              pageSizeOptions={[5, 10, 25]}
               initialState={{
                 pagination: {
                   paginationModel: {
-                    pageSize: 5, // Số hàng mặc định hiển thị trên mỗi trang
-                    page: 0, // Trang mặc định
+                    pageSize: 5,
+                    page: 0,
                   },
                 },
               }}
               disableRowSelectionOnClick
               autoHeight={false}
               sx={{
-                height: '100%', // Đảm bảo DataGrid chiếm toàn bộ chiều cao của Box
-                overflow: 'auto', // Bật thanh cuộn khi vượt quá chiều cao
+                height: '100%',
+                overflow: 'auto',
                 '& .MuiDataGrid-virtualScroller': {
-                  overflowY: 'auto', // Đảm bảo thanh cuộn dọc bên trong DataGrid
+                  overflowY: 'auto',
                 },
               }}
             />
           )}
         </Box>
-
-
-
         <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
           <Button variant="contained" color="success" onClick={handleOpenAddModal}>
             Add New Group
           </Button>
-          <Button variant="contained" color="error" onClick={handleBulkDelete} sx={{ ml: 2 }}>
+          <Button variant="contained" color="error" onClick={handleBulkDeleteRankingGroup} sx={{ ml: 2 }}>
             Delete Selected Groups
           </Button>
         </Box>
@@ -301,7 +309,6 @@ const RankingGroups = () => {
               </Button>
             </Box>
           }
-
         />
         {/* Modal for deleting a group */}
         <ModalCustom
