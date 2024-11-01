@@ -21,7 +21,7 @@ public class Task {
     private String taskName;
 
     @Column(name = "created_by")
-    private Integer createdBy;
+    private int createdBy;
 
     @CreationTimestamp
     @Column(name = "created_at")

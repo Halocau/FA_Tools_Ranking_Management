@@ -72,32 +72,25 @@ const RankingDecision = () => {
         setValidationMessage("");
         let trimmedName = newDecisionName.trim();
 
-        // Validate decision name length and character requirements
+        // Kiểm tra tên quyết định có bị trống không
         if (!trimmedName) {
-            setValidationMessage("Decision name cannot be empty.");
+            setValidationMessage("Tên quyết định không được để trống.");
             return;
         }
 
-        if (trimmedName.length < 3 || trimmedName.length > 20) {
-            setValidationMessage("Decision name must be between 3 and 20 characters.");
-            return;
-        }
+        // Kiểm tra trùng lặp tên quyết định
+        const isDuplicate = decisions.some((decision) => {
+            // Đảm bảo decision.decisionName không phải là null hoặc undefined
+            return decision.decisionName && decision.decisionName.toLowerCase() === trimmedName.toLowerCase();
+        });
 
-        const nameRegex = /^[a-zA-Z0-9 ]+$/;
-        if (!nameRegex.test(trimmedName)) {
-            setValidationMessage("Decision name can only contain letters, numbers, and spaces.");
-            return;
-        }
-        // Capitalize the first letter of each word in the decision name
-        trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
-        // Check for duplicate decision name
-        const isDuplicate = decisions.some(
-            decision => decision.decisionName.toLowerCase() === trimmedName.toLowerCase()
-        );
         if (isDuplicate) {
-            setValidationMessage("Decision name already exists.");
+            setValidationMessage("Tên quyết định đã tồn tại.");
             return;
         }
+
+        // Viết hoa chữ cái đầu của mỗi từ trong tên quyết định
+        trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
 
         try {
             const newdecision = {
@@ -118,9 +111,15 @@ const RankingDecision = () => {
         }
     };
 
+
     // Modal Delete
-    const handleOpenDeleteModal = () => setShowDeleteModal(true);
+    const handleOpenDeleteModal = (decisionId) => {
+        setdecisionToDelete(decisionId); // Đặt decisionToDelete là ID của quyết định đang chọn
+        setShowDeleteModal(true);
+    };
+
     const handleCloseDeleteModal = () => setShowDeleteModal(false);
+
     // Function to delete a selected decision
     const handledeleteRankingDecision = async () => {
         try {
@@ -142,44 +141,46 @@ const RankingDecision = () => {
         }
     };
 
-    // Function to delete multiple selected decisions
-    const handleBulkDelete = async () => {
-        if (selectedRows.length === 0) {
-            setMessageType("warning");
-            setMessage("Please select decisions to delete.");
-            setTimeout(() => setMessage(null), 2000);
-            return;
-        }
-        try {
-            // Xóa từng decision trong danh sách đã chọn
-            await Promise.all(selectedRows.map(id => deleteRankingDecision(id)));
-            setMessageType("success");
-            setMessage("Selected decisions deleted successfully!");
-            setTimeout(() => setMessage(null), 2000);
-            await fetchAllDecisions(); // Refresh danh sách decision
-            setSelectedRows([]); // Xóa các hàng đã chọn
-        } catch (error) {
-            console.error("Failed to delete selected decisions:", error);
-            setMessageType("danger");
-            setMessage("Failed to delete selected decisions. Please try again.");
-            setTimeout(() => setMessage(null), 2000);
-        }
-    };
+    // // Function to delete multiple selected decisions
+    // const handleBulkDelete = async () => {
+    //     if (selectedRows.length === 0) {
+    //         setMessageType("warning");
+    //         setMessage("Please select decisions to delete.");
+    //         setTimeout(() => setMessage(null), 2000);
+    //         return;
+    //     }
+    //     try {
+    //         // Xóa từng decision trong danh sách đã chọn
+    //         await Promise.all(selectedRows.map(id => deleteRankingDecision(id)));
+    //         setMessageType("success");
+    //         setMessage("Selected decisions deleted successfully!");
+    //         setTimeout(() => setMessage(null), 2000);
+    //         await fetchAllDecisions(); // Refresh danh sách decision
+    //         setSelectedRows([]); // Xóa các hàng đã chọn
+    //     } catch (error) {
+    //         console.error("Failed to delete selected decisions:", error);
+    //         setMessageType("danger");
+    //         setMessage("Failed to delete selected decisions. Please try again.");
+    //         setTimeout(() => setMessage(null), 2000);
+    //     }
+    // };
 
 
     // Columns configuration for the DataGrid
     const columns = [
-        { field: "id", headerName: "ID", width: 80 },
-        { field: "name", headerName: "Ranking Decision Name", width: 400 },
+        { field: "index", headerName: "ID", width: 80 },
+        { field: "dicisionname", headerName: "Ranking Decision Name", width: 400 },
         { field: "finalizedAt", headerName: "Finalized At", width: 200 },
         { field: "finalizedBy", headerName: "Finalized By", width: 180 },
         { field: "status", headerName: "Status", width: 159 },
         {
-            field: "action", headerName: "Action", width: 150, renderCell: (params) => (
+            field: "action",
+            headerName: "Action",
+            width: 150,
+            renderCell: (params) => (
                 <>
                     <Button
                         variant="outlined"
-                        // size="small"
                         onClick={() => {
                             console.log(`Navigating to edit decision with ID: ${params.row.id}`);
                             navigate(`/ranking-decision/edit/${params.row.id}`);
@@ -188,28 +189,31 @@ const RankingDecision = () => {
                         <FaEdit />
                     </Button>
 
-                    <Button
-                        variant="outlined"
-                        color="error"
-                        // size="small"
-                        onClick={() => handleOpenDeleteModal(params.row.id)}
-                    >
-                        <MdDeleteForever />
-                    </Button>
+                    {/* Chỉ hiển thị nút xóa nếu status là 'Finalized' */}
+                    {params.row.status !== 'Finalized' && (
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => handleOpenDeleteModal(params.row.id)}
+                        >
+                            <MdDeleteForever />
+                        </Button>
+                    )}
                 </>
             ),
         },
     ];
+
 
     // Map decision data to rows for DataGrid
     const rows = decisions
         ? decisions.map((decision, index) => ({
             id: decision.decisionId,
             index: index + 1,
-            decisionName: decision.decisionName,
-            numEmployees: decision.numEmployees < 1 ? "N/A" : decision.numEmployees,
-            currentRankingDecision:
-                decision.currentRankingDecision == null ? "N/A" : decision.currentRankingDecision,
+            dicisionname: decision.decisionName,
+            finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-', // Hiển thị ngày giờ nếu là 'Finalized', ngược lại hiển thị '-'
+            finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-', // Hiển thị tên người nếu là 'Finalized', ngược lại hiển thị '-'
+            status: decision.status
         }))
         : [];
 
@@ -272,9 +276,9 @@ const RankingDecision = () => {
                     <Button variant="contained" color="success" onClick={handleOpenAddModal}>
                         Add New Decision
                     </Button>
-                    <Button variant="contained" color="error" onClick={handleBulkDelete}>
+                    {/* <Button variant="contained" color="error" onClick={handleBulkDelete}>
                         Delete Selected Decision
-                    </Button>
+                    </Button> */}
                 </div>
 
                 {/* Modal for adding a new decision */}

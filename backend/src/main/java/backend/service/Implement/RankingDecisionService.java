@@ -52,6 +52,17 @@ public class RankingDecisionService implements IRankingDecisionService {
         iRankingDecisionRepository.deleteById(id);
     }
 
+    @Override
+    public RankingDecision findByGroupId(int groupId) {
+        return iRankingDecisionRepository.findByGroupId(groupId);
+    }
+
+    @Override
+    @Transactional
+    public void updateRankingDecisionGroupIdToNull(int groupId) {
+
+        iRankingDecisionRepository.updateRankingDecisionGroupIdToNull(groupId);
+    }
 
     @Override
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions) {
@@ -68,7 +79,6 @@ public class RankingDecisionService implements IRankingDecisionService {
         RankingDecision decision = RankingDecision.builder()
                 .decisionName(form.getDecisionName())
                 .createdBy(form.getCreatedBy())
-                .status("Draft")
                 .build();
         iRankingDecisionRepository.save(decision);
     }
@@ -77,13 +87,4 @@ public class RankingDecisionService implements IRankingDecisionService {
     public boolean isRankingDecisionNameExist(String decisionName) {
         return iRankingDecisionRepository.existsByDecisionName(decisionName);
     }
-
-//    @Override
-//    @Transactional
-//    public RankingDecision updateDecisionName(Integer decisionId, String decisionName) {
-//        RankingDecision decision = iRankingDecisionRepository.findById(decisionId).get();
-//        decision.setDecisionName(decisionName);
-//        return iRankingDecisionRepository.saveAndFlush(decision);
-//    }
-
 }
