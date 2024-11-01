@@ -17,10 +17,6 @@ public interface IRankingDecisionService {
 
     public void deleteRankingDecision(int id);
 
-    public RankingDecision findByGroupId(int groupId);
-
-    public void updateRankingDecisionGroupIdToNull(int groupId);
-
     // response
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions);
 
@@ -30,5 +26,8 @@ public interface IRankingDecisionService {
     // validate
     boolean isRankingDecisionNameExist(String decisionName);
 
-    public List<RankingDecision> getRankingDecisionsByGroupId(int groupId);
+    // apply form updateAddNewGroup
+    // public RankingDecision updateDecisionName(Integer decisionId, String
+    // decisionName);
+
 }
