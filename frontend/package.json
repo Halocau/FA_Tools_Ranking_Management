@@ -19,6 +19,7 @@
     "@typescript-eslint/parser": "^8.9.0",
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
+    "date-fns": "^4.1.0",
     "file-saver": "^2.0.5",
     "frontend": "file:",
     "json-server": "^1.0.0-beta.3",

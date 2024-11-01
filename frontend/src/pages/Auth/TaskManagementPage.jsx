@@ -14,6 +14,7 @@ import { FaEdit } from "react-icons/fa";
 import Slider from "../../layouts/Slider.jsx";
 import Box from "@mui/material/Box";
 import useTask from "../../hooks/useTask.jsx";
+import { format } from "date-fns";
 
 const TaskManagement = () => {
   const navigate = useNavigate();
@@ -116,7 +117,6 @@ const TaskManagement = () => {
   };
 
   const handleUpdateTask = async () => {
-    
     if (!selectedTask || !selectedTask.taskId) {
       console.error("No valid task selected for update.");
       return;
@@ -124,7 +124,7 @@ const TaskManagement = () => {
 
     try {
       const updatedTask = { taskName: editTaskName.trim() };
-      await updateTask(selectedTask.taskId, updatedTask); 
+      await updateTask(selectedTask.taskId, updatedTask);
       setMessageType("success");
       setMessage("Task updated successfully!");
       setTimeout(() => setMessage(null), 2000);
@@ -198,6 +198,11 @@ const TaskManagement = () => {
     }
   };
 
+  //Format Data
+  const formatDate = (dateString) => {
+    return dateString ? format(new Date(dateString), "dd/MM/yyyy ") : "N/A";
+  };
+
   // Columns configuration
   const columns = [
     { field: "index", headerName: "ID", width: 80 },
@@ -235,9 +240,9 @@ const TaskManagement = () => {
         id: item.taskId,
         index: index + 1,
         taskName: item.taskName,
-        createdBy: item.createdBy || "Unknown",
-        createdAt: item.createdAt == null ? "N/A" : item.createdAt,
-        updatedAt: item.updateAt == null ? "N/A" : item.updateAt,
+        createdBy: item.createdByName || "Unknown",
+        createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
+        updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
       }))
     : [];
 
