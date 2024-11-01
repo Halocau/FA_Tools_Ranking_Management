@@ -45,8 +45,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/account/register", "/api/account/login", "/api/account/all","/api/account/generate-and-validate")
                                 .permitAll()
                                 .anyRequest()
-//                                .permitAll()
-                                .authenticated()
+                                .permitAll()
+//                                .authenticated()
                 )
 //                .formLogin().disable() // Disable form login
 //                .httpBasic().disable() // Disable HTTP Basic authentication
