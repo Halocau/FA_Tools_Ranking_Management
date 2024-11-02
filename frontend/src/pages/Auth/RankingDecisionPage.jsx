@@ -18,14 +18,14 @@ import Slider from "../../layouts/Slider.jsx";
 import { useAuth } from "../../contexts/AuthContext";
 
 const RankingDecision = () => {
-    const navigate = useNavigate(); // Khởi tạo hook useNavigate để điều hướng giữa các trang trong ứng dụng
+    const navigate = useNavigate(); //  // Initialize the useNavigate hook to navigate between pages in the application
     const handleTaskManagementClick = () => {
-        navigate('/task_management'); // Điều hướng đến trang Task Management
+        navigate('/task_management'); // Navigate Page Task Management
     };
     const handleCriteriaManagementClick = () => {
-        navigate('/criteria_management'); // Điều hướng đến trang CriteriaManagement
+        navigate('/criteria_management'); // Navigate Page CriteriaManagement
     };
-    // State để quản lý hiển thị của các modal và thông tin người dùng nhập
+    // State 
     // Add
     const [showAddModal, setShowAddModal] = useState(false); // State để xác định xem modal thêm decision có hiển thị hay không
     const [newDecisionName, setnewDecisionName] = useState(""); // State để lưu tên decison mới mà người dùng nhập vào
@@ -97,7 +97,7 @@ const RankingDecision = () => {
         try {
             const newdecision = {
                 decisionName: trimmedName,
-                createdBy: localStorage.getItem('userId'),
+                createdBy: localStorage.getItem('userId'), // Get the account ID as the ID of the user creating the decision
                 status: "Draft",
             };
             await addRankingDecision(newdecision); // Call API to add new decision
@@ -204,7 +204,7 @@ const RankingDecision = () => {
                         <Button
                             variant="outlined"
                             color="error"
-                            sx={{ marginLeft: 1 }} // Thêm khoảng cách bên trái cho nút Xóa
+                            sx={{ marginLeft: 1 }} // 
                             onClick={() => handleOpenDeleteModal(params.row.id)}
                         >
                             <MdDeleteForever />
@@ -222,9 +222,8 @@ const RankingDecision = () => {
             id: decision.decisionId,
             index: index + 1,
             dicisionname: decision.decisionName,
-            finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-', // Hiển thị ngày giờ nếu là 'Finalized', ngược lại hiển thị '-'
-            finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-', // Hiển thị tên người nếu là 'Finalized', ngược lại hiển thị '-'
-            status: decision.status
+            finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
+            finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
         }))
         : [];
 
@@ -261,23 +260,23 @@ const RankingDecision = () => {
                         rows={rows}
                         columns={columns}
                         checkboxSelection
-                        pagination // Bật tính năng phân trang
-                        pageSizeOptions={[5, 10, 25]} // Các tùy chọn số hàng mỗi trang
+                        pagination
+                        pageSizeOptions={[5, 10, 25]}
                         initialState={{
                             pagination: {
                                 paginationModel: {
-                                    pageSize: 5, // Số hàng mặc định hiển thị trên mỗi trang
-                                    page: 0, // Trang mặc định
+                                    pageSize: 5,
+                                    page: 0,
                                 },
                             },
                         }}
                         disableRowSelectionOnClick
                         autoHeight={false}
                         sx={{
-                            height: '100%', // Đảm bảo DataGrid chiếm toàn bộ chiều cao của Box
-                            overflow: 'auto', // Bật thanh cuộn khi vượt quá chiều cao
+                            height: '100%',
+                            overflow: 'auto',
                             '& .MuiDataGrid-virtualScroller': {
-                                overflowY: 'auto', // Đảm bảo thanh cuộn dọc bên trong DataGrid
+                                overflowY: 'auto',
                             },
                         }}
                     />

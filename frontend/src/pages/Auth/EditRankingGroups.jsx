@@ -30,22 +30,22 @@ const EditRankingGroup = () => {
     // Edit
     const [editGroup, setEditGroup] = useState({ groupName: '', currentRankingDecision: '' });
     const [originalGroupName, setOriginalGroupName] = useState('');
-    const [showEditGroupInfoModal, setShowEditGroupInfoModal] = useState(false); // Hiển thị modal sửa nhóm
-    const [newGroupName, setNewGroupName] = useState(""); // Tên nhóm mới
-    const [selectedDecision, setSelectedDecision] = useState(""); // Quyết định xếp hạng hiện tại
-    const [rankingDecisions, setRankingDecisions] = useState([]); // Danh sách các quyết định xếp hạng
+    const [showEditGroupInfoModal, setShowEditGroupInfoModal] = useState(false); // Display group editing modal
+    const [newGroupName, setNewGroupName] = useState(""); // New Group Name
+    const [selectedDecision, setSelectedDecision] = useState(""); // Current rating decision
+    const [rankingDecisions, setRankingDecisions] = useState([]); // List of ranking decisions
     // Add
-    const [showAddModal, setShowAddModal] = useState(false); // Hiển thị modal thêm quyết định
-    const [newDecisionName, setnewDecisionName] = useState(""); // Tên quyết định mới
-    const [clone, setClone] = useState(false); // Trạng thái clone quyết định
-    const [selectedCloneDecision, setSelectedCloneDecision] = useState(""); // Quyết định clone
+    const [showAddModal, setShowAddModal] = useState(false); // Show modal add decision
+    const [newDecisionName, setnewDecisionName] = useState(""); // New decision name
+    const [clone, setClone] = useState(false); // Clone state decides
+    const [selectedCloneDecision, setSelectedCloneDecision] = useState(""); // Decided to clone
     // Delele
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [DecisionToDelete, setDecisionToDelete] = useState(null);
     // Status
-    const [message, setMessage] = useState(""); // Thông báo trạng thái
-    const [messageType, setMessageType] = useState("success"); // Loại thông báo (success/error)
-    const [validationMessage, setValidationMessage] = useState(""); // Thông báo lỗi validate
+    const [message, setMessage] = useState(""); // Status notification
+    const [messageType, setMessageType] = useState("success"); // Message type (success/error)
+    const [validationMessage, setValidationMessage] = useState(""); // Validation error message
     // Destructuring from useRankingGroup custom hook
     const {
         data: groups,
@@ -168,39 +168,29 @@ const EditRankingGroup = () => {
     const handleAddDecision = async () => {
         setValidationMessage("");
         let trimmedName = newDecisionName.trim();
-
-        // Kiểm tra tên quyết định
         if (!trimmedName) {
             setValidationMessage("Ranking Decision Name is required.");
             return;
         }
-
-        // Kiểm tra trùng lặp
         const isDuplicate = decisions.some((decision) => {
             return decision.decisionName && decision.decisionName.toLowerCase() === trimmedName.toLowerCase();
         });
-
         if (isDuplicate) {
             setValidationMessage("Ranking Decision Name already exists.");
             return;
         }
-
         try {
-            // Tạo đối tượng newDecision với decisionName
             const newDecision = {
-                decisionName: trimmedName,  // Thay đổi từ name sang decisionName
-                createdBy: localStorage.getItem('userId'),  // Lấy ID người dùng
+                decisionName: trimmedName,
+                createdBy: localStorage.getItem('userId'), // Get the account ID as the ID of the user creating the decision
                 status: "Draft",
             };
-
-            // Kiểm tra nếu có chọn clone
+            // Check if clone is selected
             if (clone) {
                 await addDecisionWithClone(newDecision, selectedCloneDecision);
             } else {
                 await addRankingDecision(newDecision);
             }
-
-            // Cập nhật danh sách quyết định
             setRankingDecisions([...rankingDecisions, newDecision]);
             setMessageType("success");
             setMessage("Ranking Decision successfully added.");
@@ -287,8 +277,8 @@ const EditRankingGroup = () => {
             id: decision.decisionId,
             index: index + 1,
             dicisionname: decision.decisionName,
-            finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-', // Hiển thị ngày giờ nếu là 'Finalized', ngược lại hiển thị '-'
-            finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-', // Hiển thị tên người nếu là 'Finalized', ngược lại hiển thị '-'
+            finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
+            finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
             status: decision.status
         }))
         : [];

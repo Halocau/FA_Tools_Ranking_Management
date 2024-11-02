@@ -116,7 +116,7 @@ const useRankingDecision = () => {
         fetchAllRankingDecisions,
         fetchDecisionById,
         addRankingDecision,
-        addDecisionWithClone,  // Trả về hàm thêm quyết định với clone
+        addDecisionWithClone,
         updateDecision,
         deleteRankingDecision,
     };
