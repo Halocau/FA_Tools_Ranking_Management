@@ -15,7 +15,7 @@ import ModalCustom from "../../components/Common/Modal.jsx";
 import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 import Slider from "../../layouts/Slider.jsx";
 // acountID
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext.jsx";
 
 const RankingDecision = () => {
     const navigate = useNavigate(); //  // Initialize the useNavigate hook to navigate between pages in the application

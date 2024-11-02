@@ -20,7 +20,7 @@ import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 import Slider from "../../layouts/Slider.jsx";
 // acountID
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext.jsx";
 
 const EditRankingGroup = () => {
     const navigate = useNavigate(); // To navigate between pages
@@ -237,7 +237,7 @@ const EditRankingGroup = () => {
     /// Columns configuration for the DataGrid
     const columns = [
         { field: "index", headerName: "ID", width: 80 },
-        { field: "dicisionname", headerName: "Ranking Decision Name", width: 400 },
+        { field: "dicisionname", headerName: "Ranking Decision Name", width: 350 },
         { field: "finalizedAt", headerName: "Finalized At", width: 200 },
         { field: "finalizedBy", headerName: "Finalized By", width: 180 },
         { field: "status", headerName: "Status", width: 150 },

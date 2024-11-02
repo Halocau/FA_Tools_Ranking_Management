@@ -2,12 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
-import { FaRankingStar } from "react-icons/fa6";
-// Css
+import { FaEye } from 'react-icons/fa';
+import { FaHistory } from 'react-icons/fa';
 import "../../assets/css/RankingGroups.css"
 // Mui
-import { Button, TextField, Alert, CircularProgress, IconButton } from "@mui/material";
-import { FaEye } from 'react-icons/fa';
+import { Button, TextField, Alert, CircularProgress, IconButton, } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import Box from "@mui/material/Box";
 // Source code
@@ -15,7 +14,7 @@ import ModalCustom from "../../components/Common/Modal.jsx";
 import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import Slider from "../../layouts/Slider.jsx";
 // acountID
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext.jsx";
 const RankingGroups = () => {
   const navigate = useNavigate(); // Initialize the useNavigate hook to navigate between pages in the application
   // State
@@ -182,24 +181,29 @@ const RankingGroups = () => {
   // Define columns for DataGrid
   const columns = [
     { field: "index", headerName: "ID", width: 70 },
-    { field: "groupName", headerName: "Group Name", width: 250 },
-    { field: "numEmployees", headerName: "No. of Employees", width: 250 },
+    { field: "groupName", headerName: "Group Name", width: 230 },
+    { field: "numEmployees", headerName: "No. of Employees", width: 230 },
     { field: "currentRankingDecision", headerName: "Current Ranking Decision", width: 350 },
     {
-      field: "action", headerName: "Action", width: 200, renderCell: (params) => (
+      field: "action", headerName: "Action", width: 300, renderCell: (params) => (
         <>
-          <IconButton
+          {/* View */}
+          <Button
+            variant="outlined"
             color="gray"
+            // size="small"
             onClick={() => {
-              console.log(`Viewing group with ID: ${params.row.id}`);
+              console.log(`Navigating to view group with ID: ${params.row.id}`);
               navigate(`/ranking-group/view/${params.row.id}`);
             }}
           >
             <FaEye />
-          </IconButton>
+          </Button>
+          {/* Edit */}
           <Button
             variant="outlined"
             // size="small"
+            sx={{ marginLeft: 1 }}
             onClick={() => {
               console.log(`Navigating to edit group with ID: ${params.row.id}`);
               navigate(`/ranking-group/edit/${params.row.id}`);
@@ -207,15 +211,27 @@ const RankingGroups = () => {
           >
             <FaEdit />
           </Button>
-
+          {/* Delete */}
           <Button
             variant="outlined"
             color="error"
-            sx={{ marginLeft: 1 }}
             // size="small"
+            sx={{ marginLeft: 1 }}
             onClick={() => handleOpenDeleteModal(params.row.id)}
           >
             <MdDeleteForever />
+          </Button>
+          {/* Bulk Ranking History */}
+          <Button
+            variant="outlined"
+            // size="small"
+            sx={{ marginLeft: 1 }}
+            onClick={() => {
+              console.log(`Navigating to bulk group with ID: ${params.row.id}`);
+              navigate(`/ranking-group/bulk/${params.row.id}`);
+            }}
+          >
+            <FaHistory />
           </Button>
         </>
       ),
@@ -228,9 +244,9 @@ const RankingGroups = () => {
       id: group.groupId,
       index: index + 1,
       groupName: group.groupName,
-      numEmployees: group.numEmployees < 1 ? "N/A" : group.numEmployees,
+      numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
       currentRankingDecision:
-        group.currentRankingDecision == null ? "N/A" : group.currentRankingDecision,
+        group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
     }))
     : [];
 
