@@ -29,6 +29,8 @@ const useRankingGroup = () => {
             return response.data;
         } catch (err) {
             handleError(err);
+        }
+        finally {
             setLoading(false);
         }
     };

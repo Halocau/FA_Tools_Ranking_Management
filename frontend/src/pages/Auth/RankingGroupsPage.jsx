@@ -1,30 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../assets/css/RankingGroups.css"
-import { Button, TextField, Alert, CircularProgress, IconButton } from "@mui/material";
-import { FaEye } from 'react-icons/fa'; // Import biểu tượng mắt
-import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
-import Box from "@mui/material/Box";
-import ModalCustom from "../../components/Common/Modal.jsx";
-import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { FaRankingStar } from "react-icons/fa6";
+// Css
+import "../../assets/css/RankingGroups.css"
+// Mui
+import { Button, TextField, Alert, CircularProgress, IconButton } from "@mui/material";
+import { FaEye } from 'react-icons/fa';
+import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
+import Box from "@mui/material/Box";
+// Source code
+import ModalCustom from "../../components/Common/Modal.jsx";
+import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import Slider from "../../layouts/Slider.jsx";
-
+// acountID
+import { useAuth } from "../../contexts/AuthContext";
 const RankingGroups = () => {
-  const navigate = useNavigate(); // Khởi tạo hook useNavigate để điều hướng giữa các trang trong ứng dụng
-
-  // State để quản lý hiển thị của các modal và thông tin người dùng nhập
-  const [showAddModal, setShowAddModal] = useState(false); // State để xác định xem modal thêm nhóm có hiển thị hay không  
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // State để xác định xem modal xóa nhóm có hiển thị hay không
-  const [newGroupName, setNewGroupName] = useState(""); // State để lưu tên nhóm mới mà người dùng nhập vào
-  const [groupToDelete, setGroupToDelete] = useState(null); // State để lưu ID của nhóm sẽ bị xóa
-  const [message, setMessage] = useState(""); // State để lưu thông điệp thông báo cho người dùng
-  const [messageType, setMessageType] = useState("success"); // State để xác định kiểu thông điệp (thành công hoặc lỗi)
-  const [validationMessage, setValidationMessage] = useState(""); // State để lưu thông điệp xác thực cho người dùng
-  const apiRef = useGridApiRef(); // Tạo apiRef để chọn nhiều group để xóa
-
+  const navigate = useNavigate(); // Initialize the useNavigate hook to navigate between pages in the application
+  // State
+  //Add
+  const [showAddModal, setShowAddModal] = useState(false); // State to determine whether the add group modal is visible or not
+  const [newGroupName, setNewGroupName] = useState(""); // State to store the new group name that the user enters
+  // Delete
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // State to determine whether the delete group modal is displayed or not
+  const [groupToDelete, setGroupToDelete] = useState(null); // State to save the ID of the group to be deleted
+  //
+  const [message, setMessage] = useState(""); // State to save notification messages for users
+  const [messageType, setMessageType] = useState("success"); // State to determine the message type (success or error)
+  const [validationMessage, setValidationMessage] = useState(""); // State to store the authentication message for the user
+  const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
   // Destructuring from useRankingGroup custom hook
   const {
     data: groups,
@@ -59,18 +64,15 @@ const RankingGroups = () => {
   const handleAddGroup = async () => {
     setValidationMessage("");
     let trimmedName = newGroupName.trim();
-
     // Validate group name length and character requirements
     if (!trimmedName) {
       setValidationMessage("Group name cannot be empty.");
       return;
     }
-
     if (trimmedName.length < 3 || trimmedName.length > 20) {
       setValidationMessage("Group name must be between 3 and 20 characters.");
       return;
     }
-
     const nameRegex = /^[a-zA-Z0-9 ]+$/;
     if (!nameRegex.test(trimmedName)) {
       setValidationMessage("Group name can only contain letters, numbers, and spaces.");
@@ -90,7 +92,7 @@ const RankingGroups = () => {
     try {
       const newGroup = {
         groupName: trimmedName,
-        createdBy: 1, // Assuming 1 is the ID of the user creating the group
+        createdBy: localStorage.getItem('userId'), // Get the account ID as the ID of the user creating the group
       };
       await addRankingGroup(newGroup); // Call API to add new group
       setMessageType("success");
