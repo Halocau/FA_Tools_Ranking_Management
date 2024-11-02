@@ -96,14 +96,14 @@ const RankingGroups = () => {
       };
       await addRankingGroup(newGroup); // Call API to add new group
       setMessageType("success");
-      setMessage("Group added successfully!");
+      setMessage("Ranking Group successfully added.");
       setTimeout(() => setMessage(null), 2000);
       handleCloseAddModal(); // Close the add modal after successful addition
       await fetchAllRankingGroups(); // Refresh the group list
     } catch (error) {
       console.error("Failed to add group:", error);
       setMessageType("danger");
-      setMessage("Failed to add group. Please try again.");
+      setMessage("Error occurred adding Ranking Group. Please try again");
       setTimeout(() => setMessage(null), 2000);
     }
   };
@@ -129,18 +129,18 @@ const RankingGroups = () => {
   const handleDeleteGroup = async () => {
     try {
       if (groupToDelete) {
-        await deleteRankingGroup(groupToDelete); // Gọi API để xóa nhóm
+        await deleteRankingGroup(groupToDelete); // Call API to delete group
         setMessageType("success");
-        setMessage("Group deleted successfully!");
+        setMessage("Ranking Group successfully removed.");
         setTimeout(() => setMessage(null), 2000);
-        setGroupToDelete(null); // Reset lại groupToDelete
-        handleCloseDeleteModal(); // Đóng modal xóa sau khi xóa thành công
-        await fetchAllRankingGroups(); // Refresh danh sách nhóm
+        setGroupToDelete(null);
+        handleCloseDeleteModal();
+        await fetchAllRankingGroups();
       }
     } catch (error) {
       console.error("Failed to delete group:", error);
       setMessageType("danger");
-      setMessage("Failed to delete group. Please try again.");
+      setMessage("Error occurred removing Ranking Group. Please try again.");
       setTimeout(() => setMessage(null), 2000);
       handleCloseDeleteModal();
     }
@@ -153,10 +153,10 @@ const RankingGroups = () => {
       setTimeout(() => setMessage(null), 2000);
       return;
     }
-    // Lọc các ID của nhóm không phải "Trainer"
+    // Filter for group IDs other than "Trainer"
     const groupsToDelete = selectedIDs.filter((id) => {
       const group = rows.find((row) => row.id === id);
-      return group && group.groupName !== "Trainer"; // Chỉ xóa nếu không phải là "Trainer"
+      return group && group.groupName !== "Trainer";
     });
     if (groupsToDelete.length === 0) {
       setMessageType("warning");
@@ -189,10 +189,9 @@ const RankingGroups = () => {
       field: "action", headerName: "Action", width: 200, renderCell: (params) => (
         <>
           <IconButton
-            color="gray" // Màu sắc cho biểu tượng
+            color="gray"
             onClick={() => {
               console.log(`Viewing group with ID: ${params.row.id}`);
-              // Chuyển hướng đến trang xem nhóm (hoặc hiển thị modal)
               navigate(`/ranking-group/view/${params.row.id}`);
             }}
           >

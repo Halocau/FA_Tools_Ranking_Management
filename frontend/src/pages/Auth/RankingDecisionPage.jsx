@@ -57,7 +57,6 @@ const RankingDecision = () => {
         deleteRankingDecision,
         addRankingDecision,
     } = useRankingDecision();
-
     // Fetch all ranking decisions when component mounts
     useEffect(() => {
         fetchAllRankingDecisions();
@@ -102,14 +101,14 @@ const RankingDecision = () => {
             };
             await addRankingDecision(newdecision); // Call API to add new decision
             setMessageType("success");
-            setMessage("Decision added successfully!");
+            setMessage("Ranking Decision successfully added !");
             setTimeout(() => setMessage(null), 2000);
             handleCloseAddRankingDecisionModal();
             // await fetchAllRankingDecisions();
         } catch (error) {
             console.error("Failed to add decision:", error);
             setMessageType("danger");
-            setMessage("Failed to add decision. Please try again.");
+            setMessage("Error occurred adding Ranking Decision. Please try again.");
             setTimeout(() => setMessage(null), 2000);
         }
     };
@@ -127,7 +126,7 @@ const RankingDecision = () => {
             if (DecisionToDelete) {
                 await deleteRankingDecision(DecisionToDelete);
                 setMessageType("success");
-                setMessage("Decision deleted successfully!");
+                setMessage("Ranking Decision successfully removed!");
                 setTimeout(() => setMessage(null), 2000);
                 setDecisionToDelete(null);
                 handleCloseDeleteModal();
@@ -136,7 +135,7 @@ const RankingDecision = () => {
         } catch (error) {
             console.error("Failed to delete decision:", error);
             setMessageType("danger");
-            setMessage("Failed to delete decision. Please try again.");
+            setMessage("Error occurred removing Ranking Decision. Please try again.");
             setTimeout(() => setMessage(null), 2000);
             handleCloseDeleteModal();
         }

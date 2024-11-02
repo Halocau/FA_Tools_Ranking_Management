@@ -136,13 +136,13 @@ const EditRankingGroup = () => {
             await updateRankingGroup(id, updatedGroup);
             setOriginalGroupName(trimmedName);
             setMessageType("success");
-            setMessage("Group updated successfully!");
+            setMessage("Group Info successfully updated");
             setTimeout(() => setMessage(null), 2000);
             setShowEditGroupInfoModal(false);
         } catch (error) {
             console.error("Error updating group:", error);
             setMessageType("error");
-            setMessage("Failed to update group. Please try again.");
+            setMessage("Error occurred updating Group Info. Please try again.”.");
             setTimeout(() => setMessage(null), 2000);
         }
     };
@@ -193,14 +193,14 @@ const EditRankingGroup = () => {
             }
             setRankingDecisions([...rankingDecisions, newDecision]);
             setMessageType("success");
-            setMessage("Ranking Decision successfully added.");
+            setMessage("Ranking Decision successfully added.”");
             setTimeout(() => setMessage(null), 2000);
             handleCloseAddRankingDecisionModal();
             await fetchAllRankingDecisions()
         } catch (error) {
             console.error("Failed to add decision:", error);
             setMessageType("danger");
-            setMessage("Failed to add Ranking Decision. Please try again.");
+            setMessage("Error occurred adding Ranking Decision. Please try again.”.");
             setTimeout(() => setMessage(null), 2000);
         }
     };

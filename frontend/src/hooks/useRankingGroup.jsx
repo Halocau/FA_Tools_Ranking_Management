@@ -19,7 +19,6 @@ const useRankingGroup = () => {
             setError(err.response?.data || "An error occurred while fetching ranking groups.");
         }
     };
-
     // Fetches all ranking groups from the API
     const fetchAllRankingGroups = async () => {
         setLoading(true);
@@ -34,7 +33,6 @@ const useRankingGroup = () => {
             setLoading(false);
         }
     };
-
     // Fetches a specific ranking group by ID
     const fetchRankingGroupById = async (id) => {
         setLoading(true);
