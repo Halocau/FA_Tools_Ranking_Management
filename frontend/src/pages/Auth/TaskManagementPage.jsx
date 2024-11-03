@@ -15,6 +15,7 @@ import Slider from "../../layouts/Slider.jsx";
 import Box from "@mui/material/Box";
 import useTask from "../../hooks/useTask.jsx";
 import { format } from "date-fns";
+// import { create } from "@mui/material/styles/createTransitions.js";
 
 const TaskManagement = () => {
   const navigate = useNavigate();
@@ -117,34 +118,38 @@ const TaskManagement = () => {
   };
 
   const handleUpdateTask = async () => {
-     if (!editTaskName.trim()) {
-       setValidationMessage("Task name cannot be empty!");
-       return;
-     }
+    if (!editTaskName.trim()) {
+      setValidationMessage("Task name cannot be empty!");
+      return;
+    }
 
-     if (editTaskName.length < 3 || editTaskName.length > 20) {
-       setValidationMessage("Task name must be between 3 and 20 characters.");
-       return;
-     }
+    if (editTaskName.length < 3 || editTaskName.length > 20) {
+      setValidationMessage("Task name must be between 3 and 20 characters.");
+      return;
+    }
 
-     const updatedTask = {
-       ...selectedTask,
-       taskName: editTaskName.trim(),
-     };
+    const updatedTask = {
 
-     try {
-       await updateTask(selectedTask.taskId, updatedTask);
-       setMessageType("success");
-       setMessage("Task updated successfully!");
-       setTimeout(() => setMessage(null), 2000);
-       handleCloseEditModal();
-       await fetchAllTasks();
-     } catch (error) {
-       console.error("Failed to update Task:", error);
-       setMessageType("danger");
-       setMessage("Failed to update task. Please try again.");
-       setTimeout(() => setMessage(null), 2000);
-     }
+      taskName: editTaskName.trim(),
+      createdBy: 1
+    };
+
+
+
+    try {
+      // console.log(updatedTask);
+      await updateTask(selectedTask.id, updatedTask);
+      setMessageType("success");
+      setMessage("Task updated successfully!");
+      setTimeout(() => setMessage(null), 2000);
+      handleCloseEditModal();
+      await fetchAllTasks();
+    } catch (error) {
+      console.error("Failed to update Task:", error);
+      setMessageType("danger");
+      setMessage("Failed to update task. Please try again.");
+      setTimeout(() => setMessage(null), 2000);
+    }
   };
 
   // Modal Delete
@@ -248,13 +253,13 @@ const TaskManagement = () => {
 
   const rows = tasks
     ? tasks.map((item, index) => ({
-        id: item.taskId,
-        index: index + 1,
-        taskName: item.taskName,
-        createdBy: item.createdByName || "Unknown",
-        createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
-        updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
-      }))
+      id: item.taskId,
+      index: index + 1,
+      taskName: item.taskName,
+      createdBy: item.createdByName || "Unknown",
+      createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
+      updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
+    }))
     : [];
 
   return (
