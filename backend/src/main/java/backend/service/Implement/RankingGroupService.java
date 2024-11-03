@@ -168,10 +168,10 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
         RankingGroup group = iRankingGroupRepository.findById(groupId).orElse(null);
         if (group != null) {
             group.setGroupName(form.getGroupName());
-            group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
-            RankingDecision decision = iRankingDecisionRepository.findById(form.getCurrentRankingDecision()).get();
-            decision.setDecisionName(form.getTextDecisionName());
-            group.setCreatedBy(form.getCreatedBy());
+            if (form.getCurrentRankingDecision() != null) {
+                group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
+            }
+            // group.setCreatedBy(form.getCreatedBy());
             iRankingGroupRepository.saveAndFlush(group);
         }
     }
@@ -181,9 +181,14 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     public void updateRankingGroupInfo(Integer groupId, UpdateGroupInfo form) {
         RankingGroup group = iRankingGroupRepository.findById(groupId).orElse(null);
         if (group != null) {
-            group.setGroupName(form.getGroupName());
-            group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
-            group.setCreatedBy(form.getCreatedBy());
+            if (!group.getGroupName().equals(form.getGroupName())) {
+                group.setGroupName(form.getGroupName());
+
+            }
+            if (form.getCurrentRankingDecision() != null) {
+                group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
+            }
+            // group.setCreatedBy(form.getCreatedBy());
             iRankingGroupRepository.saveAndFlush(group);
         }
     }
