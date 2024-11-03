@@ -68,21 +68,14 @@ const useTask = () => {
   // Updates Task
   const updateTask = async (id, updatedTask) => {
     setLoading(true);
-    console.log("Updating task with ID:", id); 
-    console.log("Updated task data:", updatedTask); 
-
     try {
       const response = await authClient.put(`/task/update/${id}`, updatedTask);
-      setData((prevData) =>
-        prevData.map((task) =>
-          task.taskId === id ? { ...task, ...response.data } : task
-        )
-      );
+      await fetchAllTasks(); // Refresh task list to include the updated task
+      return response.data; // Return updated task data to the caller
     } catch (err) {
-      const errorMsg =
-        err.response?.data || "An error occurred while updating the Task.";
-      setError(errorMsg);
-      console.error("Update error:", errorMsg);
+      setError(
+        err.response?.data || "An error occurred while updating the task."
+      );
     } finally {
       setLoading(false);
     }
@@ -113,6 +106,7 @@ const useTask = () => {
     addTask,
     updateTask,
     deleteTask,
+    setLoading,
   };
 };
 

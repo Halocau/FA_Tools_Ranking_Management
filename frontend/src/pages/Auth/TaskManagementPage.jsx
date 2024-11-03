@@ -117,24 +117,34 @@ const TaskManagement = () => {
   };
 
   const handleUpdateTask = async () => {
-    if (!selectedTask || !selectedTask.taskId) {
-      console.error("No valid task selected for update.");
-      return;
-    }
+     if (!editTaskName.trim()) {
+       setValidationMessage("Task name cannot be empty!");
+       return;
+     }
 
-    try {
-      const updatedTask = { taskName: editTaskName.trim() };
-      await updateTask(selectedTask.taskId, updatedTask);
-      setMessageType("success");
-      setMessage("Task updated successfully!");
-      setTimeout(() => setMessage(null), 2000);
-      handleCloseEditModal();
-    } catch (error) {
-      console.error("Failed to update task:", error);
-      setMessageType("danger");
-      setMessage("Failed to update task. Please try again.");
-      setTimeout(() => setMessage(null), 2000);
-    }
+     if (editTaskName.length < 3 || editTaskName.length > 20) {
+       setValidationMessage("Task name must be between 3 and 20 characters.");
+       return;
+     }
+
+     const updatedTask = {
+       ...selectedTask,
+       taskName: editTaskName.trim(),
+     };
+
+     try {
+       await updateTask(selectedTask.taskId, updatedTask);
+       setMessageType("success");
+       setMessage("Task updated successfully!");
+       setTimeout(() => setMessage(null), 2000);
+       handleCloseEditModal();
+       await fetchAllTasks();
+     } catch (error) {
+       console.error("Failed to update Task:", error);
+       setMessageType("danger");
+       setMessage("Failed to update task. Please try again.");
+       setTimeout(() => setMessage(null), 2000);
+     }
   };
 
   // Modal Delete
@@ -165,6 +175,7 @@ const TaskManagement = () => {
     }
   };
 
+  //Delete many task
   const handleBulkDelete = async () => {
     const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
     if (selectedIDs.length === 0) {
