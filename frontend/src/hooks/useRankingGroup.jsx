@@ -60,11 +60,11 @@ const useRankingGroup = () => {
         }
     };
 
-    const updateRankingGroup = async (id, updatedGroup) => {
+    const updateRankingGroup = async (id, newGroup) => {
         setLoading(true);
         try {
-            console.log(updatedGroup);
-            const response = await authClient.put(`/ranking-group/update/${id}`, updatedGroup);
+            console.log(newGroup)
+            const response = await authClient.put(`/ranking-group/update/${id}`, newGroup);
             setData((prevData) =>
                 prevData.map((group) =>
                     group.id === id ? { ...group, ...response.data } : group
@@ -72,13 +72,12 @@ const useRankingGroup = () => {
             );
         } catch (err) {
             const errorMsg = err.response?.data || "An error occurred while updating the ranking group.";
-            setError(errorMsg); // Set error state if update fails
+            setError(errorMsg);
             console.error("Update error:", errorMsg);
         } finally {
             setLoading(false);
         }
     };
-
 
     // Deletes a ranking group and updates the data state
     const deleteRankingGroup = async (id) => {

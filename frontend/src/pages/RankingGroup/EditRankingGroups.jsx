@@ -33,6 +33,7 @@ const EditRankingGroup = () => {
     const [originalGroupName, setOriginalGroupName] = useState('');
     const [showEditGroupInfoModal, setShowEditGroupInfoModal] = useState(false); // Display group editing modal
     const [newGroupName, setNewGroupName] = useState(""); // New Group Name
+    const [originalDecisionName, setOriginalDecisionName] = useState('');
     const [selectedDecision, setSelectedDecision] = useState(""); // Current rating decision
     const [rankingDecisions, setRankingDecisions] = useState([]); // List of ranking decisions
     // Add
@@ -79,6 +80,7 @@ const EditRankingGroup = () => {
                 });
                 setOriginalGroupName(groupData.groupName);
                 setNewGroupName(groupData.groupName);
+                setOriginalDecisionName(groupData.currentRankingDecision)
                 setSelectedDecision(groupData.currentRankingDecision);
                 setRankingDecisions(groupData.rankingDecisions || []);
             } catch (error) {
@@ -132,10 +134,12 @@ const EditRankingGroup = () => {
         try {
             const updatedGroup = {
                 groupName: trimmedName,
-                currentRankingDecision: selectedDecision || editGroup.currentRankingDecision,
+                currentRankingDecision: selectedDecision.decisionId || editGroup.currentRankingDecision,
+                createBy: localStorage.getItem('userId')
             };
             await updateRankingGroup(id, updatedGroup);
             setOriginalGroupName(trimmedName);
+            setOriginalDecisionName(selectedDecision ? selectedDecision.decisionName : editGroup.currentRankingDecision);
             setMessageType("success");
             setMessage("Group Info successfully updated");
             setTimeout(() => setMessage(null), 2000);
@@ -311,7 +315,7 @@ const EditRankingGroup = () => {
                         </Box>
                         <Box sx={{ width: '48%' }}>
                             <Typography>Current Ranking Decision:</Typography>
-                            <TextField variant="outlined" fullWidth value={editGroup.currentRankingDecision} disabled />
+                            <TextField variant="outlined" fullWidth value={originalDecisionName} disabled />
                         </Box>
                     </Box>
                 </Box>
@@ -402,8 +406,9 @@ const EditRankingGroup = () => {
                             disablePortal
                             options={decisions ? decisions.filter(decision => decision.status === 'Finalized') : []}
                             getOptionLabel={(option) => option.decisionName || ''}
+                            value={selectedDecision} // Hiển thị giá trị ban đầu
                             onChange={(event, value) => {
-                                setSelectedDecision(value ? value.id : null);
+                                setSelectedDecision(value || null); // Gán lại khi người dùng chọn quyết định mới
                             }}
                             renderInput={(params) => (
                                 <TextField
@@ -415,6 +420,7 @@ const EditRankingGroup = () => {
                                 />
                             )}
                         />
+
                         <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
                             <Button variant="outlined" onClick={handleCloseEditGroupInfoModal}>Cancel</Button>
                             <Button variant="contained" onClick={handleEditGroupInfo}>Save</Button>
