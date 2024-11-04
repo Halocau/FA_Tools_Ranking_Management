@@ -1,8 +1,9 @@
 // react
 import React, { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaAngleRight } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
+
 // css 
 import "../../assets/css/RankingGroups.css"
 // Mui
@@ -12,7 +13,7 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import EditIcon from '@mui/icons-material/Edit';
-import CloseIcon from '@mui/icons-material/Close';
+// import CloseIcon from '@mui/icons-material/Close';
 import Autocomplete from '@mui/material/Autocomplete';
 // Source code
 import ModalCustom from "../../components/Common/Modal.jsx";
@@ -287,9 +288,10 @@ const EditRankingGroup = () => {
             <Slider />
             {/* Group Info */}
             <Box sx={{ marginTop: 4, padding: 2 }}>
-                <Typography variant="h6">
-                    <a href="/ranking_group">Ranking Group List</a> {'>'} Edit Ranking Group
-                </Typography>
+                <div>
+                    <a href="/ranking_group">Ranking Group List</a> <FaAngleRight />
+                    <a>Edit Ranking Group</a>
+                </div>
                 <Box sx={{
                     border: '1px solid black',
                     borderRadius: '4px',

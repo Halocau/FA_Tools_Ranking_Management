@@ -33,7 +33,7 @@ const useRankingDecision = () => {
     };
 
     // Fetches a specific decision by ID from the API
-    const fetchDecisionById = async (id) => {
+    const fetchRankingDecisionById = async (id) => {
         setLoading(true);
         try {
             const response = await authClient.get(`/ranking-decision/get/${id}`);  // API call to get decision by ID
@@ -49,7 +49,7 @@ const useRankingDecision = () => {
         setLoading(true);
         try {
             const response = await authClient.post(`/ranking-decision/add`, newDecision);
-            // await fetchAllRankingDecisions();  // Refresh the decision list
+            await fetchAllRankingDecisions();  // Refresh the decision list
             return response.data;
         } catch (err) {
             // In ra lỗi chi tiết
@@ -62,7 +62,7 @@ const useRankingDecision = () => {
 
     const addDecisionWithClone = async (newDecision, selectedCloneDecisionId) => {
         if (selectedCloneDecisionId) {
-            const decisionToClone = await fetchDecisionById(selectedCloneDecisionId);
+            const decisionToClone = await fetchRankingDecisionById(selectedCloneDecisionId);
             const clonedDecision = {
                 ...decisionToClone,
                 id: undefined,  // Remove the ID to create a new entry
@@ -78,7 +78,7 @@ const useRankingDecision = () => {
     };
 
     // Updates a specific decision by ID and updates the data state
-    const updateDecision = async (id, updatedDecision) => {
+    const updateRankingDecison = async (id, updatedDecision) => {
         setLoading(true);
         try {
             const response = await authClient.put(`/ranking-decision/update/${id}`, updatedDecision);  // API call to update decision
@@ -114,10 +114,10 @@ const useRankingDecision = () => {
         loading,
         error,
         fetchAllRankingDecisions,
-        fetchDecisionById,
+        fetchRankingDecisionById,
         addRankingDecision,
         addDecisionWithClone,
-        updateDecision,
+        updateRankingDecison,
         deleteRankingDecision,
     };
 };

@@ -27,17 +27,21 @@ const RankingDecision = () => {
     };
     // State 
     // Add
-    const [showAddModal, setShowAddModal] = useState(false); // State để xác định xem modal thêm decision có hiển thị hay không
-    const [newDecisionName, setnewDecisionName] = useState(""); // State để lưu tên decison mới mà người dùng nhập vào
+    const [showAddModal, setShowAddModal] = useState(false); // State to determine whether the additional decision modal is displayed or not
+    const [newDecisionName, setnewDecisionName] = useState(""); // State to store the new decison name that the user enters
     // Delete
-    const [showDeleteModal, setShowDeleteModal] = useState(false); // State để xác định xem modal xóa decision có hiển thị hay không
-    const [DecisionToDelete, setDecisionToDelete] = useState(null); // State để lưu ID của decision sẽ bị xóa
-    const [selectedRows, setSelectedRows] = useState([]); // State để lưu danh sách ID của các hàng đã chọn trong DataGrid
+    const [showDeleteModal, setShowDeleteModal] = useState(false); // State to determine whether the delete decision modal is displayed or not
+    const [DecisionToDelete, setDecisionToDelete] = useState(null); // State to store the ID of the decision to be deleted
+    const [selectedRows, setSelectedRows] = useState([]); // State to save a list of IDs of selected rows in the DataGrid
+    // delete select
+    const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+    const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
+    const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false);
     // Status
-    const [message, setMessage] = useState(""); // State để lưu thông điệp thông báo cho người dùng
-    const [messageType, setMessageType] = useState("success"); // State để xác định kiểu thông điệp (thành công hoặc lỗi)
-    const [validationMessage, setValidationMessage] = useState(""); // State để lưu thông điệp xác thực cho người dùng
-    const apiRef = useGridApiRef(); // Tạo apiRef để chọn nhiều group để xóa
+    const [message, setMessage] = useState(""); // State to save notification messages for users
+    const [messageType, setMessageType] = useState("success"); // State to determine the message type (success or error)
+    const [validationMessage, setValidationMessage] = useState(""); // State to store the authentication message for the user
+    const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
     // Status
     const [anchorEl, setAnchorEl] = useState(null);
     // Function Onclick Menu
@@ -157,11 +161,13 @@ const RankingDecision = () => {
             setTimeout(() => setMessage(null), 2000);
             await fetchAllRankingDecisions();
             setSelectedRows([]);
+            handleCloseBulkDeleteModal();
         } catch (error) {
             console.error("Failed to delete selected decisions:", error);
             setMessageType("error");
             setMessage("Failed to delete selected decisions. Please try again.");
             setTimeout(() => setMessage(null), 2000);
+            handleCloseBulkDeleteModal();
         }
     };
 
@@ -179,10 +185,9 @@ const RankingDecision = () => {
             renderCell: (params) => (
                 <>
                     <IconButton
-                        color="gray" // Màu sắc cho biểu tượng
+                        color="gray"
                         onClick={() => {
                             console.log(`Viewing group with ID: ${params.row.id}`);
-                            // Chuyển hướng đến trang xem nhóm (hoặc hiển thị modal)
                             navigate(`/ranking-group/view/${params.row.id}`);
                         }}
                     >
@@ -197,8 +202,6 @@ const RankingDecision = () => {
                     >
                         <FaEdit />
                     </Button>
-
-                    {/* Chỉ hiển thị nút xóa nếu status là 'Finalized' */}
                     {params.row.status !== 'Finalized' && (
                         <Button
                             variant="outlined"
@@ -223,6 +226,7 @@ const RankingDecision = () => {
             dicisionname: decision.decisionName,
             finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
             finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
+            status: decision.status,
         }))
         : [];
 
@@ -285,7 +289,7 @@ const RankingDecision = () => {
                     <Button variant="contained" color="success" onClick={handleOpenAddRankingDecisionModal}>
                         Add New Decision
                     </Button>
-                    <Button variant="contained" color="error" onClick={handleBulkDeleteRankingDecision}>
+                    <Button variant="contained" color="error" onClick={handleOpenBulkDeleteModal}>
                         Delete Selected Decision
                     </Button>
                 </div>
@@ -336,6 +340,23 @@ const RankingDecision = () => {
                                 Delete
                             </Button>
                         </>
+                    }
+                />
+                {/* Modal for deleting select group */}
+                <ModalCustom
+                    show={showBulkDeleteModal}
+                    handleClose={handleCloseBulkDeleteModal}
+                    title="Delete Selected Groups"
+                    bodyContent="Are you sure you want to delete the selected groups?"
+                    footerContent={
+                        <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+                            <Button variant="outlined" onClick={handleCloseBulkDeleteModal}>
+                                Cancel
+                            </Button>
+                            <Button variant="contained" color="error" onClick={handleBulkDeleteRankingDecision} sx={{ ml: 2 }}>
+                                Delete
+                            </Button>
+                        </Box>
                     }
                 />
             </div>

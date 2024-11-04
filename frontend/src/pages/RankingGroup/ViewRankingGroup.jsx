@@ -138,8 +138,6 @@ const ViewRankingGroup = () => {
                         />
                     )}
                 />
-
-
                 <Typography variant="h5">List of employees</Typography>
                 {/* Table Show list employees */}
                 <Box sx={{ width: "100%", height: 350 }}>

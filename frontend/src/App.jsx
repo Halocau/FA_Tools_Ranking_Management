@@ -11,8 +11,8 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/Auth/LoginPage";
 import SignupPage from "./pages/Auth/SignupPage";
 import ForgetPasswordPage from "./pages/Auth/ForgetPasswordPage";
-import NotFound from "./pages/Auth/404NotFound.jsx";
-import ForbiddenPage from "./pages/Auth/403Forbidden.jsx";
+import NotFound from "./pages/Auth/Page404.jsx";
+import ForbiddenPage from "./pages/Auth/Page403.jsx";
 // Contexts
 import { AuthProvider } from "./contexts/AuthContext";
 // Layouts
@@ -26,10 +26,12 @@ import ViewRankingGroup from './pages/RankingGroup/ViewRankingGroup.jsx';
 import BulkRankingGroup from './pages/RankingGroup/BulkRankingGroup.jsx';
 // Ranking Decisions
 import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
+import EditRankingDecison from "./pages/RankingDecision/EditRankingDecision.jsx";
 // Task Management
 import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx'
 // Criteria Management
 import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx'
+
 
 
 function App() {
@@ -133,6 +135,25 @@ function App() {
                   </Col>
                   <Col md={10}>
                     <RankingDecision className="ml-2" />
+                  </Col>
+                </Row>
+              </>
+            }
+          />
+          {/* Edit Ranking Group */}
+          <Route
+            path="/ranking-decision/edit/:id"
+            element={
+              <>
+                <Row>
+                  <Header />
+                </Row>
+                <Row>
+                  <Col md={2}>
+                    <Sidebar />
+                  </Col>
+                  <Col md={10}>
+                    <EditRankingDecison />
                   </Col>
                 </Row>
               </>

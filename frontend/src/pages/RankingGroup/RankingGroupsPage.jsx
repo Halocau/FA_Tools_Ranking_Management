@@ -24,6 +24,10 @@ const RankingGroups = () => {
   // Delete
   const [showDeleteModal, setShowDeleteModal] = useState(false); // State to determine whether the delete group modal is displayed or not
   const [groupToDelete, setGroupToDelete] = useState(null); // State to save the ID of the group to be deleted
+  // delete select
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
+  const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false);
   //
   const [message, setMessage] = useState(""); // State to save notification messages for users
   const [messageType, setMessageType] = useState("success"); // State to determine the message type (success or error)
@@ -152,9 +156,8 @@ const RankingGroups = () => {
       setTimeout(() => setMessage(null), 2000);
       return;
     }
-    // Filter for group IDs other than "Trainer"
     const groupsToDelete = selectedIDs.filter((id) => {
-      const group = rows.find((row) => row.id === id);
+      const group = groups.find((row) => row.groupId === id);
       return group && group.groupName !== "Trainer";
     });
     if (groupsToDelete.length === 0) {
@@ -164,19 +167,21 @@ const RankingGroups = () => {
       return;
     }
     try {
-      // Xóa từng nhóm không phải "Trainer"
       await Promise.all(groupsToDelete.map((id) => deleteRankingGroup(id)));
       setMessageType("success");
       setMessage("Selected groups deleted successfully!");
       setTimeout(() => setMessage(null), 2000);
-      await fetchAllRankingGroups(); // Cập nhật lại danh sách nhóm sau khi xóa thành công
+      await fetchAllRankingGroups();
+      handleCloseBulkDeleteModal();
     } catch (error) {
       console.error("Failed to delete selected groups:", error);
       setMessageType("danger");
       setMessage("Failed to delete selected groups. Please try again.");
       setTimeout(() => setMessage(null), 2000);
+      handleCloseBulkDeleteModal();
     }
   };
+
 
   // Define columns for DataGrid
   const columns = [
@@ -293,7 +298,7 @@ const RankingGroups = () => {
           <Button variant="contained" color="success" onClick={handleOpenAddModal}>
             Add New Group
           </Button>
-          <Button variant="contained" color="error" onClick={handleBulkDeleteRankingGroup} sx={{ ml: 2 }}>
+          <Button variant="contained" color="error" onClick={handleOpenBulkDeleteModal} sx={{ ml: 2 }}>
             Delete Selected Groups
           </Button>
         </Box>
@@ -339,6 +344,23 @@ const RankingGroups = () => {
                 Cancel
               </Button>
               <Button variant="contained" color="error" onClick={handleDeleteGroup} sx={{ ml: 2 }}>
+                Delete
+              </Button>
+            </Box>
+          }
+        />
+        {/* Modal for deleting select group */}
+        <ModalCustom
+          show={showBulkDeleteModal}
+          handleClose={handleCloseBulkDeleteModal}
+          title="Delete Selected Groups"
+          bodyContent="Are you sure you want to delete the selected groups?"
+          footerContent={
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+              <Button variant="outlined" onClick={handleCloseBulkDeleteModal}>
+                Cancel
+              </Button>
+              <Button variant="contained" color="error" onClick={handleBulkDeleteRankingGroup} sx={{ ml: 2 }}>
                 Delete
               </Button>
             </Box>
