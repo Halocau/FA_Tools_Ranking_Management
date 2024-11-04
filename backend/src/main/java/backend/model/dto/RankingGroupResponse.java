@@ -9,6 +9,7 @@ public class RankingGroupResponse {
     private int groupId;
     private String groupName;
     private int numEmployees;
-    private String currentRankingDecision;//decisionName
-
+    private String currentRankingDecision;// decisionName
+    private String createdBy;
+    private String createdAt;
 }

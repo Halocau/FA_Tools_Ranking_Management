@@ -149,6 +149,10 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     public RankingGroupResponse getRankingGroupResponseById(RankingGroup rankingGroup) {
         RankingGroupResponse response = modelMapper.map(rankingGroup, RankingGroupResponse.class);
         response.setCurrentRankingDecision(rankingGroup.getDecisionName());
+        Account account = iAccount.findById(rankingGroup.getCreatedBy()).orElse(null);
+        if (account != null) {
+            response.setCreatedBy(account.getFullName());
+        }
         return response;
     }
 
