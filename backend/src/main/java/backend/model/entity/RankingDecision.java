@@ -1,23 +1,26 @@
 package backend.model.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "Ranking_Decision")
+@SuperBuilder
 public class RankingDecision {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "decision_id")
-    private int decisionId;
-
-    @Column(name = "group_id")
-    private Integer groupId;
+    private int decisionId; //hihi
 
     @Column(name = "decision_name")
     private String decisionName;
@@ -26,10 +29,10 @@ public class RankingDecision {
     private String status;
 
     @Column(name = "finalized_at")
-    private LocalDateTime finalized_at;
+    private LocalDateTime finalizedAt;
 
     @Column(name = "finalized_by")
-    private Integer finalized_by;
+    private Integer finalizedBy;
 
     @Column(name = "created_by")
     private Integer createdBy;

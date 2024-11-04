@@ -7,18 +7,26 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+
 @Data
 @Entity
-@Table(name = "Task")
+@Table(name = "Criteria")
 @SuperBuilder
-public class Task {
+public class Criteria {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "task_id")
-    private int taskId;
+    @Column(name = "criteria_id")
+    private int criteriaId;
 
-    @Column(name = "task_name")
-    private String taskName;
+    @Column(name = "criteria_name", length = 100)
+    private String criteriaName;
+
+    @Column(name = "max_score")
+    private Integer maxScore;
+
+    @Column(name = "num_options")
+    private Integer numOptions;
 
     @Column(name = "created_by")
     private Integer createdBy;
@@ -31,6 +39,6 @@ public class Task {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public Task() {
+    public Criteria() {
     }
 }

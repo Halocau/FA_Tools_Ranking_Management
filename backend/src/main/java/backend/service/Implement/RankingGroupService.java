@@ -8,6 +8,8 @@ import backend.model.entity.Account;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
+import backend.model.form.RankingGroup.UpdateGroupInfo;
+import backend.model.form.RankingGroup.UpdateNewGroupRequest;
 import backend.service.IRankingGroupService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -15,31 +17,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class RankingGroupService extends BaseService implements IRankingGroupService {
+
     private IRankingGroupRepository iRankingGroupRepository;
     private IAccount iAccount;
     private IRankingDecisionRepository iRankingDecisionRepository;
     private ModelMapper modelMapper;
 
     @Autowired
-    public RankingGroupService(ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository, IAccount iAccount, IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper1) {
+    public RankingGroupService(ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository,
+            IAccount iAccount, IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper1) {
         super(modelMapper);
         this.iRankingGroupRepository = iRankingGroupRepository;
         this.iAccount = iAccount;
         this.iRankingDecisionRepository = iRankingDecisionRepository;
         this.modelMapper = modelMapper1;
     }
-    //    @Override
-//    public List<RankingGroup> getAllRankingGroups() {
-//        return iRankingGroupRepository.findAll();
-//    }
-
 
     @Override
     public List<RankingGroup> getAllRankingGroups() {
@@ -51,29 +49,27 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
         }
 
         for (RankingGroup group : rankingGroups) {
-            // Lấy thông tin tài khoản từ ID
+            // take account via id
             Optional<Account> optionalAccount = iAccount.findById(group.getCreatedBy());
             if (optionalAccount.isPresent()) {
-                Account account = optionalAccount.get(); // Lấy tài khoản
-                group.setUsername(account.getUsername()); // Thiết lập username
+                Account account = optionalAccount.get(); // get account
+                group.setUsername(account.getUsername()); // set username
             }
-
-            // Lấy thông tin RankingDecision theo group_id
-            Optional<RankingDecision> optionalRankingDecision = Optional.ofNullable(iRankingDecisionRepository.findByGroupId(group.getGroupId()));
-            if (optionalRankingDecision.isPresent()) {
-                RankingDecision decision = optionalRankingDecision.get();
-                group.setDecisionName(decision.getDecisionName()); // Thiết lập decisionName
+            if (group.getCurrent_ranking_decision() != null) {
+                RankingDecision decision = iRankingDecisionRepository
+                        .findByDecisionId(group.getCurrent_ranking_decision());
+                group.setDecisionName(decision.getDecisionName());
+            } else {
+                group.setDecisionName(null);
             }
         }
-
         return rankingGroups;
     }
 
-
     @Override
     public RankingGroup findRankingGroupById(int id) {
-        // Lấy nhóm xếp hạng hoặc ném ngoại lệ nếu không tìm thấy
-        RankingGroup group = iRankingGroupRepository.findById(id)
+        RankingGroup group = iRankingGroupRepository
+                .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("RankingGroup not found with id: " + id));
 
         // Lấy tài khoản được tạo bởi 'CreatedBy' của nhóm, nếu có, thiết lập username
@@ -81,9 +77,15 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
                 .ifPresent(account -> group.setUsername(account.getUsername()));
 
         // Lấy quyết định xếp hạng dựa trên groupId, nếu có, thiết lập decisionName
-        RankingDecision decision = iRankingDecisionRepository.findByGroupId(group.getGroupId());
-        if (decision != null) {
-            group.setDecisionName(decision.getDecisionName());
+        if (group.getCurrent_ranking_decision() != null) {
+            RankingDecision decision = iRankingDecisionRepository.findByDecisionId(group.getCurrent_ranking_decision());
+            if (decision != null) {
+                group.setDecisionName(decision.getDecisionName());
+            } else {
+                group.setDecisionName(null);
+            }
+        } else {
+            group.setDecisionName(null);
         }
         return group;
     }
@@ -100,18 +102,17 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
             Account account = optionalAccount.get(); // Lấy tài khoản
             createdGroup.setUsername(account.getUsername()); // Thiết lập username
         }
-        Optional<RankingDecision> optionalRankingDecision = Optional.ofNullable(iRankingDecisionRepository.findByGroupId(createdGroup.getGroupId()));
-        if (optionalRankingDecision.isPresent()) {
-            RankingDecision decision = optionalRankingDecision.get();
-            createdGroup.setDecisionName(decision.getDecisionName()); // Thiết lập decisionName
+        RankingDecision decision = iRankingDecisionRepository
+                .findByDecisionId(rankingGroup.getCurrent_ranking_decision());
+        if (decision != null) {
+            createdGroup.setDecisionName(decision.getDecisionName());
         }
-
-        return createdGroup; // Trả về nhóm xếp hạng đã tạo
+        return createdGroup;
     }
 
     @Override
     @Transactional
-    public RankingGroup updateRankingGroup(RankingGroup rankingGroup) {
+    public RankingGroup editRankingGroup(RankingGroup rankingGroup) {
         return iRankingGroupRepository.saveAndFlush(rankingGroup);
     }
 
@@ -120,7 +121,6 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
         iRankingGroupRepository.deleteById(id);
     }
 
-
     @Override
     public List<RankingGroupResponse> getAllRankingGroupResponses(List<RankingGroup> rankingGroups) {
         List<RankingGroupResponse> responseList = new ArrayList<>();
@@ -128,8 +128,18 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
             // Ánh xạ cơ bản từ RankingGroup sang RankingGroupResponse
             RankingGroupResponse response = modelMapper.map(rankingGroup, RankingGroupResponse.class);
 
-            // Thiết lập giá trị cho currentRankingDecision từ decisionName
-            response.setCurrentRankingDecision(rankingGroup.getDecisionName());
+            if (rankingGroup.getCurrent_ranking_decision() == null) {
+                response.setCurrentRankingDecision(null);
+            } else {
+                RankingDecision decision = iRankingDecisionRepository
+                        .findByDecisionId(rankingGroup.getCurrent_ranking_decision());
+                // Thiết lập giá trị cho currentRankingDecision từ decisionName
+                if (decision != null) {
+                    response.setCurrentRankingDecision(decision.getDecisionName());
+                } else {
+                    response.setCurrentRankingDecision(null);
+                }
+            }
             responseList.add(response);
         }
         return responseList;
@@ -145,22 +155,47 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     @Override
     @Transactional
     public void createRankingGroup(AddNewGroupRequest form) {
-        // Tạo đối tượng RankingGroup từ đối tượng form
         RankingGroup rankingGroup = RankingGroup.builder()
                 .groupName(form.getGroupName())
                 .createdBy(form.getCreatedBy())
                 .build();
-
-        // Lưu đối tượng RankingGroup vào cơ sở dữ liệu
         iRankingGroupRepository.save(rankingGroup);
+    }
 
+    @Override
+    @Transactional
+    public void updateRankingGroup(Integer groupId, UpdateNewGroupRequest form) {
+        RankingGroup group = iRankingGroupRepository.findById(groupId).orElse(null);
+        if (group != null) {
+            group.setGroupName(form.getGroupName());
+            if (form.getCurrentRankingDecision() != null) {
+                group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
+            }
+            // group.setCreatedBy(form.getCreatedBy());
+            iRankingGroupRepository.saveAndFlush(group);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateRankingGroupInfo(Integer groupId, UpdateGroupInfo form) {
+        RankingGroup group = iRankingGroupRepository.findById(groupId).orElse(null);
+        if (group != null) {
+            if (!group.getGroupName().equals(form.getGroupName())) {
+                group.setGroupName(form.getGroupName());
+
+            }
+            if (form.getCurrentRankingDecision() != null) {
+                group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
+            }
+            // group.setCreatedBy(form.getCreatedBy());
+            iRankingGroupRepository.saveAndFlush(group);
+        }
     }
 
     @Override
     public boolean isRankingGroupExitsByGroupName(String groupName) {
         return iRankingGroupRepository.existsByGroupName(groupName);
     }
-
-
 
 }
