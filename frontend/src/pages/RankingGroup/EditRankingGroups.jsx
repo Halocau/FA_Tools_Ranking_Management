@@ -17,6 +17,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import Autocomplete from '@mui/material/Autocomplete';
 // Source code
 import ModalCustom from "../../components/Common/Modal.jsx";
+import ActionButtons from "../../components/Common/ActionButtons.jsx";
 import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 import Slider from "../../layouts/Slider.jsx";
@@ -52,7 +53,6 @@ const EditRankingGroup = () => {
 
     // Destructuring from useRankingGroup custom hook
     const {
-        data: groups,
         fetchAllRankingGroups,
         fetchRankingGroupById,
         updateRankingGroup,
@@ -69,9 +69,6 @@ const EditRankingGroup = () => {
     useEffect(() => {
         fetchAllRankingDecisions();
     }, []);
-    useEffect(() => {
-        console.log('Decisions:', decisions);
-    }, [decisions]);
     useEffect(() => {
         const loadGroup = async () => {
             try {
@@ -169,7 +166,7 @@ const EditRankingGroup = () => {
         setValidationMessage("");
     };
 
-    const handleAddDecision = async () => {
+    const handleAddRankingDecision = async () => {
         setValidationMessage("");
         let trimmedName = newDecisionName.trim();
         if (!trimmedName) {
@@ -196,38 +193,38 @@ const EditRankingGroup = () => {
                 await addRankingDecision(newDecision);
             }
             setRankingDecisions([...rankingDecisions, newDecision]);
-            showSuccessMessage("Ranking Decision successfully added.”");
+            showSuccessMessage("Ranking Decision successfully added.");
 
             handleCloseAddRankingDecisionModal();
             await fetchAllRankingDecisions()
         } catch (error) {
-            console.error("Failed to add decision:", error);
-            showErrorMessage("Error occurred adding Ranking Decision. Please try again.”.");
+            console.error("Failed to add decision:", error)
+            showErrorMessage("Error occurred adding Ranking Decision. Please try again.");
         }
     };
 
     // Handlers to open/close modals for deleting Decision
     // Modal Delete
-    const handleOpenDeleteModal = (decisionId) => {
+    const handleOpenDeleteRankingDecisionModal = (decisionId) => {
         setDecisionToDelete(decisionId); // Set decisionToDelete as the ID of the currently selected decision
         setShowDeleteModal(true);
     };
-    const handleCloseDeleteModal = () => setShowDeleteModal(false);
+    const handleCloseDeleteRankingDecisionModal = () => setShowDeleteModal(false);
     // Function to delete a selected Decision
-    const handledeleteRankingDecision = async () => {
+    const handleDeleteRankingDecision = async () => {
         try {
             if (DecisionToDelete) {
                 await deleteRankingDecision(DecisionToDelete);
                 showSuccessMessage("Ranking Decision successfully removed");
 
                 setDecisionToDelete(null);
-                handleCloseDeleteModal();
+                handleCloseDeleteRankingDecisionModal();
                 await fetchAllRankingDecisions();
             }
         } catch (error) {
             console.error("Failed to delete group:", error);
             showErrorMessage("Error occurred removing Ranking Decision. Please try again.");
-            handleCloseDeleteModal();
+            handleCloseDeleteRankingDecisionModal();
         }
     };
 
@@ -258,7 +255,7 @@ const EditRankingGroup = () => {
                         <Button
                             variant="outlined"
                             color="error"
-                            onClick={() => handleOpenDeleteModal(params.row.id)}
+                            onClick={() => handleOpenDeleteRankingDecisionModal(params.row.id)}
                         >
                             <MdDeleteForever />
                         </Button>
@@ -467,25 +464,24 @@ const EditRankingGroup = () => {
                         )}
                         <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
                             <Button variant="outlined" onClick={handleCloseAddRankingDecisionModal}>Cancel</Button>
-                            <Button variant="contained" onClick={handleAddDecision}>Save</Button>
+                            <Button variant="contained" onClick={handleAddRankingDecision}>Save</Button>
                         </Box>
                     </Box>
                 </Modal>
                 {/* Modal for deleting a Decision */}
                 <ModalCustom
                     show={showDeleteModal}
-                    handleClose={handleCloseDeleteModal}
+                    handleClose={handleCloseDeleteRankingDecisionModal}
                     title="Delete Decision"
                     bodyContent="Are you sure you want to delete this Decision?"
                     footerContent={
-                        <>
-                            <Button variant="outlined" onClick={handleCloseDeleteModal}>
-                                Cancel
-                            </Button>
-                            <Button variant="contained" color="error" onClick={handledeleteRankingDecision}>
-                                Delete
-                            </Button>
-                        </>
+                        <ActionButtons
+                            onCancel={handleCloseDeleteRankingDecisionModal}
+                            onConfirm={handleDeleteRankingDecision}
+                            confirmText="Delete"
+                            cancelText="Cancel"
+                            color="error"
+                        />
                     }
                 />
             </Box>

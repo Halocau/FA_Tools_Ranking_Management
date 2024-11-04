@@ -11,7 +11,10 @@ import { Box, Button, TextField, Menu, MenuItem, IconButton, Alert } from "@mui/
 import MenuIcon from '@mui/icons-material/Menu';
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 // Source code
+// Common
 import ModalCustom from "../../components/Common/Modal.jsx";
+import ActionButtons from "../../components/Common/ActionButtons.jsx";
+// Hooks
 import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 import Slider from "../../layouts/Slider.jsx";
 // acountID
@@ -38,7 +41,7 @@ const RankingDecision = () => {
     // delete select
     const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
     const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
-    const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false);
+    const handleCloseBulk_DeleteRankingModal = () => setShowBulkDeleteModal(false);
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Validation error message
@@ -118,11 +121,11 @@ const RankingDecision = () => {
 
 
     // Modal Delete
-    const handleOpenDeleteModal = (decisionId) => {
+    const handleOpenDeleteRnkingDecisionModal = (decisionId) => {
         setDecisionToDelete(decisionId);
         setShowDeleteModal(true);
     };
-    const handleCloseDeleteModal = () => setShowDeleteModal(false);
+    const handleCloseDeleteRankingDecisionModal = () => setShowDeleteModal(false);
     // Function to delete a row ranking decision
     const handledeleteRankingDecision = async () => {
         try {
@@ -130,13 +133,13 @@ const RankingDecision = () => {
                 await deleteRankingDecision(DecisionToDelete);
                 showSuccessMessage("Ranking Decision successfully removed!");
                 setDecisionToDelete(null);
-                handleCloseDeleteModal();
+                handleCloseDeleteRankingDecisionModal();
                 await fetchAllRankingDecisions();
             }
         } catch (error) {
             console.error("Failed to delete decision:", error);
             showErrorMessage("Error occurred removing Ranking Decision. Please try again.");
-            handleCloseDeleteModal();
+            handleCloseDeleteRankingDecisionModal();
         }
     };
     // Function to delete a selected ranking decisions
@@ -145,6 +148,7 @@ const RankingDecision = () => {
         const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
         if (selectedIDs.length === 0) {
             showErrorMessage("Please select decisions to delete.");
+            handleCloseBulk_DeleteRankingModal()
             return;
         }
         try {
@@ -152,11 +156,11 @@ const RankingDecision = () => {
             showSuccessMessage("Ranking Decision successfully removed.");
             await fetchAllRankingDecisions();
             setSelectedRows([]);
-            handleCloseBulkDeleteModal();
+            handleCloseBulk_DeleteRankingModal();
         } catch (error) {
             console.error("Failed to delete selected decisions:", error);
             showErrorMessage("Error occurred removing Ranking Decision. Please try again.");
-            handleCloseBulkDeleteModal();
+            handleCloseBulk_DeleteRankingModal();
         }
     };
 
@@ -196,7 +200,7 @@ const RankingDecision = () => {
                             variant="outlined"
                             color="error"
                             sx={{ marginLeft: 1 }} // 
-                            onClick={() => handleOpenDeleteModal(params.row.id)}
+                            onClick={() => handleOpenDeleteRnkingDecisionModal(params.row.id)}
                         >
                             <MdDeleteForever />
                         </Button>
@@ -302,49 +306,46 @@ const RankingDecision = () => {
                         />
                     }
                     footerContent={
-                        <>
-                            <Button variant="outlined" onClick={handleCloseAddRankingDecisionModal}>
-                                Cancel
-                            </Button>
-                            <Button variant="contained" color="success" onClick={handleAddRankingDecision}>
-                                Add
-                            </Button>
-                        </>
+                        <ActionButtons
+                            onCancel={handleCloseAddRankingDecisionModal}
+                            onConfirm={handleAddRankingDecision}
+                            confirmText="Add"
+                            cancelText="Cancel"
+                            color="success"
+                        />
                     }
                 />
 
                 {/* Modal for deleting a decision */}
                 <ModalCustom
                     show={showDeleteModal}
-                    handleClose={handleCloseDeleteModal}
+                    handleClose={handleCloseDeleteRankingDecisionModal}
                     title="Delete decision"
                     bodyContent="Are you sure you want to delete this decision?"
                     footerContent={
-                        <>
-                            <Button variant="outlined" onClick={handleCloseDeleteModal}>
-                                Cancel
-                            </Button>
-                            <Button variant="contained" color="error" onClick={handledeleteRankingDecision}>
-                                Delete
-                            </Button>
-                        </>
+                        <ActionButtons
+                            onCancel={handleCloseDeleteRankingDecisionModal}
+                            onConfirm={handledeleteRankingDecision}
+                            confirmText="Delete"
+                            cancelText="Cancel"
+                            color="error"
+                        />
                     }
                 />
                 {/* Modal for deleting select group */}
                 <ModalCustom
                     show={showBulkDeleteModal}
-                    handleClose={handleCloseBulkDeleteModal}
+                    handleClose={handleCloseBulk_DeleteRankingModal}
                     title="Delete Selected Groups"
                     bodyContent="Are you sure you want to delete the selected groups?"
                     footerContent={
-                        <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
-                            <Button variant="outlined" onClick={handleCloseBulkDeleteModal}>
-                                Cancel
-                            </Button>
-                            <Button variant="contained" color="error" onClick={handleBulkDeleteRankingDecision} sx={{ ml: 2 }}>
-                                Delete
-                            </Button>
-                        </Box>
+                        <ActionButtons
+                            onCancel={handleCloseBulk_DeleteRankingModal}
+                            onConfirm={handleBulkDeleteRankingDecision}
+                            confirmText="Delete"
+                            cancelText="Cancel"
+                            color="error"
+                        />
                     }
                 />
             </div>

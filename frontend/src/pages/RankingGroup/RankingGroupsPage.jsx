@@ -10,7 +10,10 @@ import { Button, TextField, Alert, CircularProgress, IconButton, } from "@mui/ma
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import Box from "@mui/material/Box";
 // Source code
+//Common
 import ModalCustom from "../../components/Common/Modal.jsx";
+import ActionButtons from "../../components/Common/ActionButtons.jsx";
+// Hooks
 import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import Slider from "../../layouts/Slider.jsx";
 // acountID
@@ -66,7 +69,7 @@ const RankingGroups = () => {
     setValidationMessage("");
   };
   // Function to add a new group with validation checks
-  const handleAddGroup = async () => {
+  const handleAddRankingGroup = async () => {
     setValidationMessage("");
     let trimmedName = newGroupName.trim();
     // Validate group name length and character requirements
@@ -126,7 +129,7 @@ const RankingGroups = () => {
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
 
   // Function to delete a group
-  const handleDeleteGroup = async () => {
+  const handleDeleteRankingGroup = async () => {
     try {
       if (groupToDelete) {
         await deleteRankingGroup(groupToDelete); // Call API to delete group
@@ -310,14 +313,13 @@ const RankingGroups = () => {
             />
           }
           footerContent={
-            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
-              <Button variant="outlined" onClick={handleCloseAddModal}>
-                Cancel
-              </Button>
-              <Button variant="contained" color="success" onClick={handleAddGroup} sx={{ ml: 2 }}>
-                Add
-              </Button>
-            </Box>
+            <ActionButtons
+              onCancel={handleCloseAddModal}
+              onConfirm={handleAddRankingGroup}
+              confirmText="Add"
+              cancelText="Cancel"
+              color="success"
+            />
           }
         />
         {/* Modal for deleting a group */}
@@ -327,14 +329,13 @@ const RankingGroups = () => {
           title="Delete Group"
           bodyContent="Are you sure you want to delete this group?"
           footerContent={
-            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
-              <Button variant="outlined" onClick={handleCloseDeleteModal}>
-                Cancel
-              </Button>
-              <Button variant="contained" color="error" onClick={handleDeleteGroup} sx={{ ml: 2 }}>
-                Delete
-              </Button>
-            </Box>
+            <ActionButtons
+              onCancel={handleCloseDeleteModal}
+              onConfirm={handleDeleteRankingGroup}
+              confirmText="Delete"
+              cancelText="Cancel"
+              color="error"
+            />
           }
         />
         {/* Modal for deleting select group */}
@@ -344,14 +345,13 @@ const RankingGroups = () => {
           title="Delete Selected Groups"
           bodyContent="Are you sure you want to delete the selected groups?"
           footerContent={
-            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
-              <Button variant="outlined" onClick={handleCloseBulkDeleteModal}>
-                Cancel
-              </Button>
-              <Button variant="contained" color="error" onClick={handleBulkDeleteRankingGroup} sx={{ ml: 2 }}>
-                Delete
-              </Button>
-            </Box>
+            <ActionButtons
+              onCancel={handleCloseDeleteModal}
+              onConfirm={handleBulkDeleteRankingGroup}
+              confirmText="Delete"
+              cancelText="Cancel"
+              color="error"
+            />
           }
         />
       </div>
