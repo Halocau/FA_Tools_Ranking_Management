@@ -16,6 +16,8 @@ import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 import Slider from "../../layouts/Slider.jsx";
 // acountID
 import { useAuth } from "../../contexts/AuthContext.jsx";
+// Import hook Notification
+import useNotification from "../../hooks/useNotification";
 
 const RankingDecision = () => {
     const navigate = useNavigate(); //  // Initialize the useNavigate hook to navigate between pages in the application
@@ -37,10 +39,10 @@ const RankingDecision = () => {
     const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
     const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
     const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false);
-    // Status
-    const [message, setMessage] = useState(""); // State to save notification messages for users
-    const [messageType, setMessageType] = useState("success"); // State to determine the message type (success or error)
-    const [validationMessage, setValidationMessage] = useState(""); // State to store the authentication message for the user
+    // Use hook notification
+    const [showSuccessMessage, showErrorMessage] = useNotification();
+    // Validation error message
+    const [validationMessage, setValidationMessage] = useState("");
     const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
     // Status
     const [anchorEl, setAnchorEl] = useState(null);
@@ -104,16 +106,13 @@ const RankingDecision = () => {
                 status: "Draft",
             };
             await addRankingDecision(newdecision); // Call API to add new decision
-            setMessageType("success");
-            setMessage("Ranking Decision successfully added !");
-            setTimeout(() => setMessage(null), 2000);
+            showSuccessMessage("Ranking Decision successfully added !");
             handleCloseAddRankingDecisionModal();
             // await fetchAllRankingDecisions();
         } catch (error) {
             console.error("Failed to add decision:", error);
-            setMessageType("danger");
-            setMessage("Error occurred adding Ranking Decision. Please try again.");
-            setTimeout(() => setMessage(null), 2000);
+            showErrorMessage("Error occurred adding Ranking Decision. Please try again.");
+
         }
     };
 
@@ -129,18 +128,14 @@ const RankingDecision = () => {
         try {
             if (DecisionToDelete) {
                 await deleteRankingDecision(DecisionToDelete);
-                setMessageType("success");
-                setMessage("Ranking Decision successfully removed!");
-                setTimeout(() => setMessage(null), 2000);
+                showSuccessMessage("Ranking Decision successfully removed!");
                 setDecisionToDelete(null);
                 handleCloseDeleteModal();
                 await fetchAllRankingDecisions();
             }
         } catch (error) {
             console.error("Failed to delete decision:", error);
-            setMessageType("danger");
-            setMessage("Error occurred removing Ranking Decision. Please try again.");
-            setTimeout(() => setMessage(null), 2000);
+            showErrorMessage("Error occurred removing Ranking Decision. Please try again.");
             handleCloseDeleteModal();
         }
     };
@@ -149,24 +144,18 @@ const RankingDecision = () => {
         // List ID of Row choice
         const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
         if (selectedIDs.length === 0) {
-            setMessageType("warning");
-            setMessage("Please select decisions to delete.");
-            setTimeout(() => setMessage(null), 2000);
+            showErrorMessage("Please select decisions to delete.");
             return;
         }
         try {
             await Promise.all(selectedIDs.map(id => deleteRankingDecision(id)));
-            setMessageType("success");
-            setMessage("Selected decisions deleted successfully!");
-            setTimeout(() => setMessage(null), 2000);
+            showSuccessMessage("Ranking Decision successfully removed.");
             await fetchAllRankingDecisions();
             setSelectedRows([]);
             handleCloseBulkDeleteModal();
         } catch (error) {
             console.error("Failed to delete selected decisions:", error);
-            setMessageType("error");
-            setMessage("Failed to delete selected decisions. Please try again.");
-            setTimeout(() => setMessage(null), 2000);
+            showErrorMessage("Error occurred removing Ranking Decision. Please try again.");
             handleCloseBulkDeleteModal();
         }
     };
@@ -240,7 +229,6 @@ const RankingDecision = () => {
                     </IconButton>
                     Ranking Decision List
                 </h2>
-                {message && <Alert severity={messageType}>{message}</Alert>}
                 <Menu
                     anchorEl={anchorEl}
                     open={Boolean(anchorEl)}

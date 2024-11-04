@@ -15,6 +15,9 @@ import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import Slider from "../../layouts/Slider.jsx";
 // acountID
 import { useAuth } from "../../contexts/AuthContext.jsx";
+// Import hook Notification
+import useNotification from "../../hooks/useNotification";
+
 const RankingGroups = () => {
   const navigate = useNavigate(); // Initialize the useNavigate hook to navigate between pages in the application
   // State
@@ -26,12 +29,11 @@ const RankingGroups = () => {
   const [groupToDelete, setGroupToDelete] = useState(null); // State to save the ID of the group to be deleted
   // delete select
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
-  const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
-  const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false);
+  // Use hook notification
+  const [showSuccessMessage, showErrorMessage] = useNotification();
+  // Validation error message
+  const [validationMessage, setValidationMessage] = useState("");
   //
-  const [message, setMessage] = useState(""); // State to save notification messages for users
-  const [messageType, setMessageType] = useState("success"); // State to determine the message type (success or error)
-  const [validationMessage, setValidationMessage] = useState(""); // State to store the authentication message for the user
   const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
   // Destructuring from useRankingGroup custom hook
   const {
@@ -98,16 +100,13 @@ const RankingGroups = () => {
         createdBy: localStorage.getItem('userId'), // Get the account ID as the ID of the user creating the group
       };
       await addRankingGroup(newGroup); // Call API to add new group
-      setMessageType("success");
-      setMessage("Ranking Group successfully added.");
-      setTimeout(() => setMessage(null), 2000);
+      showSuccessMessage("Ranking Group successfully added.");
       handleCloseAddModal(); // Close the add modal after successful addition
       await fetchAllRankingGroups(); // Refresh the group list
     } catch (error) {
       console.error("Failed to add group:", error);
-      setMessageType("danger");
-      setMessage("Error occurred adding Ranking Group. Please try again");
-      setTimeout(() => setMessage(null), 2000);
+      showErrorMessage("Error occurred adding Ranking Group. Please try again");
+
     }
   };
 
@@ -117,9 +116,7 @@ const RankingGroups = () => {
     const selectedGroup = groups.find(group => group.groupId === groupId);
     // If the group is named "Trainer", show a notification and do not open the modal
     if (selectedGroup && selectedGroup.groupName === "Trainer") {
-      setMessageType("warning");
-      setMessage("Cannot delete the 'Trainer' group.");
-      setTimeout(() => setMessage(null), 2000);
+      showErrorMessage("Cannot delete the 'Trainer' group.");
       return;
     }
     // If not "Trainer", open the delete modal
@@ -133,27 +130,24 @@ const RankingGroups = () => {
     try {
       if (groupToDelete) {
         await deleteRankingGroup(groupToDelete); // Call API to delete group
-        setMessageType("success");
-        setMessage("Ranking Group successfully removed.");
-        setTimeout(() => setMessage(null), 2000);
+        showSuccessMessage("Ranking Group successfully removed.");
         setGroupToDelete(null);
         handleCloseDeleteModal();
         await fetchAllRankingGroups();
       }
     } catch (error) {
       console.error("Failed to delete group:", error);
-      setMessageType("danger");
-      setMessage("Error occurred removing Ranking Group. Please try again.");
-      setTimeout(() => setMessage(null), 2000);
+      showErrorMessage("Error occurred removing Ranking Group. Please try again.");
       handleCloseDeleteModal();
     }
   };
+  // Bulk Delete Ranking Group
+  const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
+  const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false);
   const handleBulkDeleteRankingGroup = async () => {
     const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
     if (selectedIDs.length === 0) {
-      setMessageType("warning");
-      setMessage("Please select groups to delete.");
-      setTimeout(() => setMessage(null), 2000);
+      showErrorMessage("Please select groups to delete.");
       return;
     }
     const groupsToDelete = selectedIDs.filter((id) => {
@@ -161,23 +155,17 @@ const RankingGroups = () => {
       return group && group.groupName !== "Trainer";
     });
     if (groupsToDelete.length === 0) {
-      setMessageType("warning");
-      setMessage("Cannot delete the 'Trainer' group.");
-      setTimeout(() => setMessage(null), 2000);
+      showErrorMessage("Cannot delete the 'Trainer' group.");
       return;
     }
     try {
       await Promise.all(groupsToDelete.map((id) => deleteRankingGroup(id)));
-      setMessageType("success");
-      setMessage("Selected groups deleted successfully!");
-      setTimeout(() => setMessage(null), 2000);
+      showSuccessMessage("Selected groups deleted successfully!");
       await fetchAllRankingGroups();
       handleCloseBulkDeleteModal();
     } catch (error) {
       console.error("Failed to delete selected groups:", error);
-      setMessageType("danger");
-      setMessage("Failed to delete selected groups. Please try again.");
-      setTimeout(() => setMessage(null), 2000);
+      showErrorMessage("Failed to delete selected groups. Please try again.");
       handleCloseBulkDeleteModal();
     }
   };
@@ -262,7 +250,7 @@ const RankingGroups = () => {
         <h2>
           Ranking Group List
         </h2>
-        {message && <Alert severity={messageType}>{message}</Alert>}
+
         {/* Table show Ranking Group */}
         <Box sx={{ width: "100%", height: 370 }}>
           {loading ? <CircularProgress /> : (

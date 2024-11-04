@@ -22,12 +22,13 @@ import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 import Slider from "../../layouts/Slider.jsx";
 // acountID
 import { useAuth } from "../../contexts/AuthContext.jsx";
+// Import hook Notification
+import useNotification from "../../hooks/useNotification";
 
 const EditRankingGroup = () => {
     const navigate = useNavigate(); // To navigate between pages
     const { id } = useParams(); // Get the ID from the URL
 
-    // State 
     // Edit
     const [editGroup, setEditGroup] = useState({ groupName: '', currentRankingDecision: '' });
     const [originalGroupName, setOriginalGroupName] = useState('');
@@ -44,10 +45,11 @@ const EditRankingGroup = () => {
     // Delele
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [DecisionToDelete, setDecisionToDelete] = useState(null);
-    // Status
-    const [message, setMessage] = useState(""); // Status notification
-    const [messageType, setMessageType] = useState("success"); // Message type (success/error)
-    const [validationMessage, setValidationMessage] = useState(""); // Validation error message
+    // Use hook notification
+    const [showSuccessMessage, showErrorMessage] = useNotification();
+    // Validation error message
+    const [validationMessage, setValidationMessage] = useState("");
+
     // Destructuring from useRankingGroup custom hook
     const {
         data: groups,
@@ -140,15 +142,12 @@ const EditRankingGroup = () => {
             await updateRankingGroup(id, updatedGroup);
             setOriginalGroupName(trimmedName);
             setOriginalDecisionName(selectedDecision ? selectedDecision.decisionName : editGroup.currentRankingDecision);
-            setMessageType("success");
-            setMessage("Group Info successfully updated");
-            setTimeout(() => setMessage(null), 2000);
+            showSuccessMessage("Group Info successfully updated");
+
             setShowEditGroupInfoModal(false);
         } catch (error) {
             console.error("Error updating group:", error);
-            setMessageType("error");
-            setMessage("Error occurred updating Group Info. Please try again.”.");
-            setTimeout(() => setMessage(null), 2000);
+            showErrorMessage("Error occurred updating Group Info. Please try again.”.");
         }
     };
     const handleCloseEditGroupInfoModal = () => {
@@ -197,19 +196,15 @@ const EditRankingGroup = () => {
                 await addRankingDecision(newDecision);
             }
             setRankingDecisions([...rankingDecisions, newDecision]);
-            setMessageType("success");
-            setMessage("Ranking Decision successfully added.”");
-            setTimeout(() => setMessage(null), 2000);
+            showSuccessMessage("Ranking Decision successfully added.”");
+
             handleCloseAddRankingDecisionModal();
             await fetchAllRankingDecisions()
         } catch (error) {
             console.error("Failed to add decision:", error);
-            setMessageType("danger");
-            setMessage("Error occurred adding Ranking Decision. Please try again.”.");
-            setTimeout(() => setMessage(null), 2000);
+            showErrorMessage("Error occurred adding Ranking Decision. Please try again.”.");
         }
     };
-
 
     // Handlers to open/close modals for deleting Decision
     // Modal Delete
@@ -223,18 +218,15 @@ const EditRankingGroup = () => {
         try {
             if (DecisionToDelete) {
                 await deleteRankingDecision(DecisionToDelete);
-                setMessageType("success");
-                setMessage("Decision deleted successfully!");
-                setTimeout(() => setMessage(null), 2000);
+                showSuccessMessage("Ranking Decision successfully removed");
+
                 setDecisionToDelete(null);
                 handleCloseDeleteModal();
                 await fetchAllRankingDecisions();
             }
         } catch (error) {
             console.error("Failed to delete group:", error);
-            setMessageType("danger");
-            setMessage("Failed to delete group. Please try again.");
-            setTimeout(() => setMessage(null), 2000);
+            showErrorMessage("Error occurred removing Ranking Decision. Please try again.");
             handleCloseDeleteModal();
         }
     };
@@ -319,12 +311,6 @@ const EditRankingGroup = () => {
                         </Box>
                     </Box>
                 </Box>
-                {/* Displaying messages after when add/delete decision*/}
-                {message && (
-                    <Alert severity={messageType} sx={{ marginTop: 2 }}>
-                        {message}
-                    </Alert>
-                )}
 
                 <Box sx={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                     <Typography variant="h5">Ranking Decision List</Typography>
