@@ -16,7 +16,7 @@ import HomePage from "./pages/HomePage";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Col, Row } from "react-bootstrap";
 import NotFound from "./pages/404NotFound.jsx";
-import ForbiddenPage from "./pages/403Forbidden.jsx"; // Thêm import cho trang 403
+import ForbiddenPage from "./pages/403Forbidden.jsx"; 
 
 function App() {
   return (
@@ -46,7 +46,7 @@ function App() {
               </>
             }
           />
-          {/* Thêm route cho trang chỉnh sửa */}
+         
           <Route
             path="/ranking-group/edit/:id"
             element={
@@ -59,7 +59,7 @@ function App() {
                     <Sidebar />
                   </Col>
                   <Col md={10}>
-                    <EditRankingGroup /> {/* Chuyển sang sử dụng EditRankingGroup */}
+                    <EditRankingGroup /> 
                   </Col>
                 </Row>
               </>
@@ -122,7 +122,7 @@ function App() {
               </>
             }
           />
-          <Route path="403" element={<ForbiddenPage />} /> {/* Route cho trang 403 */}
+          <Route path="403" element={<ForbiddenPage />} /> 
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

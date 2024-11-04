@@ -15,7 +15,7 @@ import Slider from "../../layouts/Slider.jsx";
 import Box from "@mui/material/Box";
 import useTask from "../../hooks/useTask.jsx";
 import { format } from "date-fns";
-// import { create } from "@mui/material/styles/createTransitions.js";
+import { VscTriangleRight } from "react-icons/vsc";
 
 const TaskManagement = () => {
   const navigate = useNavigate();
@@ -129,12 +129,9 @@ const TaskManagement = () => {
     }
 
     const updatedTask = {
-
       taskName: editTaskName.trim(),
-      createdBy: 1
+      createdBy: 1,
     };
-
-
 
     try {
       // console.log(updatedTask);
@@ -253,13 +250,13 @@ const TaskManagement = () => {
 
   const rows = tasks
     ? tasks.map((item, index) => ({
-      id: item.taskId,
-      index: index + 1,
-      taskName: item.taskName,
-      createdBy: item.createdByName || "Unknown",
-      createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
-      updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
-    }))
+        id: item.taskId,
+        index: index + 1,
+        taskName: item.taskName,
+        createdBy: item.createdByName || "Unknown",
+        createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
+        updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
+      }))
     : [];
 
   return (
@@ -267,8 +264,9 @@ const TaskManagement = () => {
       <Slider />
       <Box sx={{ marginTop: 4, padding: 2 }}>
         <Typography variant="h6">
-          <a href="/ranking_decision">Ranking Decision List</a> {">"} Task
-          Management
+          <a href="/ranking_decision">Ranking Decision List</a>{" "}
+          {<VscTriangleRight />}
+          Task Management
         </Typography>
         {message && <Alert severity={messageType}>{message}</Alert>}
         {loading ? (

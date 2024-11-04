@@ -12,17 +12,15 @@ import Slider from "../../layouts/Slider.jsx";
 import Box from "@mui/material/Box";
 
 const RankingGroups = () => {
-  const navigate = useNavigate(); // Khởi tạo hook useNavigate để điều hướng giữa các trang trong ứng dụng
-
-  // State để quản lý hiển thị của các modal và thông tin người dùng nhập
-  const [showAddModal, setShowAddModal] = useState(false); // State để xác định xem modal thêm nhóm có hiển thị hay không  
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // State để xác định xem modal xóa nhóm có hiển thị hay không
-  const [newGroupName, setNewGroupName] = useState(""); // State để lưu tên nhóm mới mà người dùng nhập vào
-  const [groupToDelete, setGroupToDelete] = useState(null); // State để lưu ID của nhóm sẽ bị xóa
-  const [message, setMessage] = useState(""); // State để lưu thông điệp thông báo cho người dùng
-  const [messageType, setMessageType] = useState("success"); // State để xác định kiểu thông điệp (thành công hoặc lỗi)
-  const [validationMessage, setValidationMessage] = useState(""); // State để lưu thông điệp xác thực cho người dùng
-  const apiRef = useGridApiRef(); // Tạo apiRef để chọn nhiều group để xóa
+  const navigate = useNavigate(); 
+  const [showAddModal, setShowAddModal] = useState(false); 
+  const [showDeleteModal, setShowDeleteModal] = useState(false); 
+  const [newGroupName, setNewGroupName] = useState(""); 
+  const [groupToDelete, setGroupToDelete] = useState(null); 
+  const [message, setMessage] = useState(""); 
+  const [messageType, setMessageType] = useState("success"); 
+  const [validationMessage, setValidationMessage] = useState(""); 
+  const apiRef = useGridApiRef(); 
 
   // Destructuring from useRankingGroup custom hook
   const {
