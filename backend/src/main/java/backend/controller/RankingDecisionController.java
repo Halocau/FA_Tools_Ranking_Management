@@ -3,6 +3,7 @@ package backend.controller;
 import backend.model.dto.RankingDecisionResponse;
 import backend.model.entity.RankingDecision;
 import backend.model.form.RankingDecision.CreateRankingDecision;
+import backend.model.form.RankingDecision.UpdateRankingDecision;
 import backend.service.IRankingDecisionService;
 
 import jakarta.validation.Valid;
@@ -37,6 +38,11 @@ public class RankingDecisionController {
     public String addRankingDecision(@RequestBody @Valid CreateRankingDecision form) {
         iRankingDecisionService.createRankingDecision(form);
         return "Ranking Decision Added Successfully";
+    }
+    @PutMapping("/update/{id}")
+    public String updateRankingDecision(@RequestBody @Valid UpdateRankingDecision form, @PathVariable(name = "id") int decisionId) {
+        iRankingDecisionService.updateRankingDecision(form,decisionId);
+        return "Ranking Decision update Successfully";
     }
 
     @DeleteMapping("/delete/{id}")
