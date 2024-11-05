@@ -63,6 +63,12 @@ public class RankingDecisionService implements IRankingDecisionService {
     }
 
     @Override
+    public RankingDecisionResponse findRankingDecisionResponseById(int id) {
+        RankingDecision rankingDecision = iRankingDecisionRepository.findById(id).orElse(null);
+        return modelMapper.map(rankingDecision, RankingDecisionResponse.class);
+    }
+
+    @Override
     @Transactional
     public void createRankingDecision(CreateRankingDecision form) {
         RankingDecision decision = RankingDecision.builder()
