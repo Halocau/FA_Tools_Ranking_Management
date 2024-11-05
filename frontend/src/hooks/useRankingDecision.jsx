@@ -19,49 +19,66 @@ const useRankingDecision = () => {
     };
 
     // Fetches all decisions from the API and updates the data state
-    const fetchAllDecisions = async () => {
-        setLoading(true);  // Sets loading state to true during the request
+    const fetchAllRankingDecisions = async () => {
+        setLoading(true);
         try {
             const response = await authClient.get('/ranking-decision');  // API call to get all decisions
-            setData(response.data);  // Updates the data state with fetched decisions
-            return response.data;  // Returns fetched data to the caller
+            setData(response.data);
+            return response.data;
         } catch (err) {
-            handleError(err);  // Handles any errors that occur
+            handleError(err);
         } finally {
-            setLoading(false);  // Resets loading state after the request
+            setLoading(false);
         }
     };
 
     // Fetches a specific decision by ID from the API
-    const fetchDecisionById = async (id) => {
+    const fetchRankingDecisionById = async (id) => {
         setLoading(true);
         try {
             const response = await authClient.get(`/ranking-decision/get/${id}`);  // API call to get decision by ID
             return response.data;  // Returns fetched decision data to the caller
         } catch (err) {
-            setError(err.response?.data || "An error occurred while fetching the ranking decision."); // Set error state
-
+            handleError(err);
         } finally {
             setLoading(false);
         }
     };
 
-    // Adds a new decision to the API and refreshes the list
     const addRankingDecision = async (newDecision) => {
         setLoading(true);
         try {
-            const response = await authClient.post(`/ranking-decision/add`, newDecision);  // API call to add new decision
-            await fetchAllDecisions();  // Refreshes decision list after adding new entry
-            return response.data;  // Returns the added decision data to the caller
+            const response = await authClient.post(`/ranking-decision/add`, newDecision);
+            await fetchAllRankingDecisions();  // Refresh the decision list
+            return response.data;
         } catch (err) {
-            setError(err.response?.data || "An error occurred while adding the ranking decision."); // Set error state
+            // In ra lỗi chi tiết
+            console.error("Error adding ranking decision:", err.response.data);
+            setError(err.response?.data || "An error occurred while adding the ranking decision.");
         } finally {
             setLoading(false);
         }
     };
 
+    const addDecisionWithClone = async (newDecision, selectedCloneDecisionId) => {
+        if (selectedCloneDecisionId) {
+            const decisionToClone = await fetchRankingDecisionById(selectedCloneDecisionId);
+            const clonedDecision = {
+                ...decisionToClone,
+                id: undefined,  // Remove the ID to create a new entry
+                name: newDecision.name,  // Set the name to the new decision's name
+                status: "Draft"  // Set the status as needed
+            };
+            return await addRankingDecision(clonedDecision);
+        } else {
+            return await addRankingDecision(newDecision);
+
+        }
+
+    };
+
     // Updates a specific decision by ID and updates the data state
-    const updateDecision = async (id, updatedDecision) => {
+    const updateRankingDecison = async (id, updatedDecision) => {
         setLoading(true);
         try {
             const response = await authClient.put(`/ranking-decision/update/${id}`, updatedDecision);  // API call to update decision
@@ -93,14 +110,15 @@ const useRankingDecision = () => {
     };
 
     return {
-        data,  // Fetched decision data
-        loading,  // Indicates if a request is in progress
-        error,  // Holds error messages if any error occurs
-        fetchAllDecisions,  // Function to fetch all decisions
-        fetchDecisionById,  // Function to fetch a decision by ID
-        addRankingDecision,  // Function to add a new decision
-        updateDecision,  // Function to update a decision
-        deleteRankingDecision,  // Function to delete a decision
+        data,
+        loading,
+        error,
+        fetchAllRankingDecisions,
+        fetchRankingDecisionById,
+        addRankingDecision,
+        addDecisionWithClone,
+        updateRankingDecison,
+        deleteRankingDecision,
     };
 };
 
