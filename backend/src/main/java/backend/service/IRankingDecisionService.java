@@ -19,7 +19,7 @@ public interface IRankingDecisionService {
 
     // response
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions);
-
+    public RankingDecisionResponse findRankingDecisionResponseById(int id);
     // form
     public void createRankingDecision(CreateRankingDecision form);
 

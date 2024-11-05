@@ -28,6 +28,10 @@ public class RankingDecisionController {
         List<RankingDecision> decisionList = iRankingDecisionService.getRankingDecisions();
         return iRankingDecisionService.getRankingDecisionResponses(decisionList);
     }
+    @GetMapping("/get/{id}")
+    public  RankingDecisionResponse findRankingDecisionResponse(@PathVariable int id){
+        return iRankingDecisionService.findRankingDecisionResponseById(id);
+    }
 
     @PostMapping("/add")
     public String addRankingDecision(@RequestBody @Valid CreateRankingDecision form) {
