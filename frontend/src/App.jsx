@@ -1,22 +1,38 @@
 import "./App.css";
 import React from "react";
+import { Col, Row } from "react-bootstrap";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+// Css
 import "bootstrap/dist/css/bootstrap.min.css";
+// Home
+import HomePage from "./pages/HomePage";
+// Auth
 import LoginPage from "./pages/Auth/LoginPage";
 import SignupPage from "./pages/Auth/SignupPage";
 import ForgetPasswordPage from "./pages/Auth/ForgetPasswordPage";
+import NotFound from "./pages/Auth/Page404.jsx";
+import ForbiddenPage from "./pages/Auth/Page403.jsx";
+// Contexts
+import { AuthProvider } from "./contexts/AuthContext";
+// Layouts
 import Sidebar from "./layouts/Sidebar";
 import Header from "./layouts/Header";
-import RankingGroups from "./pages/Auth/RankingGroupsPage.jsx";
-import RankingDecision from "./pages/Auth/RankingDecisionPage.jsx";
-import EditRankingGroup from './pages/Auth/EditRankingGroups.jsx'; // Import EditRankingGroup
-import TaskManagement from './pages/Auth/TaskManagementPage.jsx'
-import CriteriaManagement from './pages/Auth/CriteriaManagementPage.jsx'
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import { AuthProvider } from "./contexts/AuthContext";
-import { Col, Row } from "react-bootstrap";
-import NotFound from "./pages/404NotFound.jsx";
-import ForbiddenPage from "./pages/403Forbidden.jsx"; 
+//// ages
+// Ranking Groups
+import RankingGroups from "./pages/RankingGroup/RankingGroupsPage.jsx";
+import EditRankingGroup from './pages/RankingGroup/EditRankingGroups.jsx';
+import ViewRankingGroup from './pages/RankingGroup/ViewRankingGroup.jsx';
+import BulkRankingGroup from './pages/RankingGroup/BulkRankingGroup.jsx';
+// Ranking Decisions
+import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
+import EditRankingDecison from "./pages/RankingDecision/EditRankingDecision.jsx";
+// Task Management
+import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx'
+// Criteria Management
+import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx'
+
+
 
 function App() {
   return (
@@ -27,6 +43,7 @@ function App() {
           <Route path="/homepage" element={<HomePage />} />
           <Route path="/register" element={<SignupPage />} />
           <Route path="/forgetpassword" element={<ForgetPasswordPage />} />
+          {/* Ranking Group */}
           <Route
             path="/ranking_group"
             element={
@@ -46,7 +63,26 @@ function App() {
               </>
             }
           />
-         
+          {/* View Ranking Group */}
+          <Route
+            path="/ranking-group/view/:id"
+            element={
+              <>
+                <Row>
+                  <Header />
+                </Row>
+                <Row>
+                  <Col md={2}>
+                    <Sidebar />
+                  </Col>
+                  <Col md={10}>
+                    <ViewRankingGroup />
+                  </Col>
+                </Row>
+              </>
+            }
+          />
+          {/* Edit Ranking Group */}
           <Route
             path="/ranking-group/edit/:id"
             element={
@@ -59,12 +95,32 @@ function App() {
                     <Sidebar />
                   </Col>
                   <Col md={10}>
-                    <EditRankingGroup /> 
+                    <EditRankingGroup />
                   </Col>
                 </Row>
               </>
             }
           />
+          {/* View Ranking Group */}
+          <Route
+            path="/ranking-group/bulk/:id"
+            element={
+              <>
+                <Row>
+                  <Header />
+                </Row>
+                <Row>
+                  <Col md={2}>
+                    <Sidebar />
+                  </Col>
+                  <Col md={10}>
+                    <BulkRankingGroup />
+                  </Col>
+                </Row>
+              </>
+            }
+          />
+          {/*Ranking Decision */}
           <Route
             path="/ranking_decision"
             element={
@@ -84,6 +140,26 @@ function App() {
               </>
             }
           />
+          {/* Edit Ranking Group */}
+          <Route
+            path="/ranking-decision/edit/:id"
+            element={
+              <>
+                <Row>
+                  <Header />
+                </Row>
+                <Row>
+                  <Col md={2}>
+                    <Sidebar />
+                  </Col>
+                  <Col md={10}>
+                    <EditRankingDecison />
+                  </Col>
+                </Row>
+              </>
+            }
+          />
+          {/* Task management */}
           <Route
             path="/task_management"
             element={
@@ -103,6 +179,7 @@ function App() {
               </>
             }
           />
+          {/* Criteria management */}
           <Route
             path="/criteria_management"
             element={
@@ -122,7 +199,7 @@ function App() {
               </>
             }
           />
-          <Route path="403" element={<ForbiddenPage />} /> 
+          <Route path="403" element={<ForbiddenPage />} /> {/* Route cho trang 403 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
