@@ -18,21 +18,17 @@ import { AuthProvider } from "./contexts/AuthContext";
 // Layouts
 import Sidebar from "./layouts/Sidebar";
 import Header from "./layouts/Header";
-//// ages
-// Ranking Groups
-import RankingGroups from "./pages/RankingGroup/RankingGroupsPage.jsx";
-import EditRankingGroup from './pages/RankingGroup/EditRankingGroups.jsx';
-import ViewRankingGroup from './pages/RankingGroup/ViewRankingGroup.jsx';
-import BulkRankingGroup from './pages/RankingGroup/BulkRankingGroup.jsx';
-// Ranking Decisions
-import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
-import EditRankingDecison from "./pages/RankingDecision/EditRankingDecision.jsx";
-// Task Management
-import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx'
-// Criteria Management
-import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx'
-
-
+import RankingGroups from "./pages/Auth/RankingGroupsPage.jsx";
+import RankingDecision from "./pages/Auth/RankingDecisionPage.jsx";
+import EditRankingGroup from './pages/Auth/EditRankingGroups.jsx'; // Import EditRankingGroup
+import TaskManagement from './pages/Auth/TaskManagementPage.jsx'
+import CriteriaManagement from './pages/Auth/CriteriaManagementPage.jsx'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import { AuthProvider } from "./contexts/AuthContext";
+import { Col, Row } from "react-bootstrap";
+import NotFound from "./pages/404NotFound.jsx";
+import ForbiddenPage from "./pages/403Forbidden.jsx"; // Thêm import cho trang 403
 
 function App() {
   return (
@@ -63,26 +59,7 @@ function App() {
               </>
             }
           />
-          {/* View Ranking Group */}
-          <Route
-            path="/ranking-group/view/:id"
-            element={
-              <>
-                <Row>
-                  <Header />
-                </Row>
-                <Row>
-                  <Col md={2}>
-                    <Sidebar />
-                  </Col>
-                  <Col md={10}>
-                    <ViewRankingGroup />
-                  </Col>
-                </Row>
-              </>
-            }
-          />
-          {/* Edit Ranking Group */}
+          {/* Thêm route cho trang chỉnh sửa */}
           <Route
             path="/ranking-group/edit/:id"
             element={
@@ -95,7 +72,7 @@ function App() {
                     <Sidebar />
                   </Col>
                   <Col md={10}>
-                    <EditRankingGroup />
+                    <EditRankingGroup /> {/* Chuyển sang sử dụng EditRankingGroup */}
                   </Col>
                 </Row>
               </>
