@@ -147,6 +147,7 @@ const RankingGroups = () => {
   // Bulk Delete Ranking Group
   const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
   const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false);
+
   const handleBulkDeleteRankingGroup = async () => {
     const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
     if (selectedIDs.length === 0) {

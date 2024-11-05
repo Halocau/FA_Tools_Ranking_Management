@@ -13,16 +13,16 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import EditIcon from '@mui/icons-material/Edit';
-// import CloseIcon from '@mui/icons-material/Close';
 import Autocomplete from '@mui/material/Autocomplete';
 // Source code
 import ModalCustom from "../../components/Common/Modal.jsx";
 import ActionButtons from "../../components/Common/ActionButtons.jsx";
+// acountID
+import { useAuth } from "../../contexts/AuthContext.jsx";
 import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 import Slider from "../../layouts/Slider.jsx";
-// acountID
-import { useAuth } from "../../contexts/AuthContext.jsx";
+
 // Import hook Notification
 import useNotification from "../../hooks/useNotification";
 
@@ -36,7 +36,7 @@ const EditRankingGroup = () => {
     const [showEditGroupInfoModal, setShowEditGroupInfoModal] = useState(false); // Display group editing modal
     const [newGroupName, setNewGroupName] = useState(""); // New Group Name
     const [originalDecisionName, setOriginalDecisionName] = useState('');
-    const [selectedDecision, setSelectedDecision] = useState(""); // Current rating decision
+    const [selectedCurrentDecision, setselectedCurrentDecision] = useState(""); // Current rating decision
     const [rankingDecisions, setRankingDecisions] = useState([]); // List of ranking decisions
     // Add
     const [showAddModal, setShowAddModal] = useState(false); // Show modal add decision
@@ -80,7 +80,7 @@ const EditRankingGroup = () => {
                 setOriginalGroupName(groupData.groupName);
                 setNewGroupName(groupData.groupName);
                 setOriginalDecisionName(groupData.currentRankingDecision)
-                setSelectedDecision(groupData.currentRankingDecision);
+                setselectedCurrentDecision(groupData.currentRankingDecision);
                 setRankingDecisions(groupData.rankingDecisions || []);
             } catch (error) {
                 console.error("Error fetching group:", error);
@@ -133,12 +133,12 @@ const EditRankingGroup = () => {
         try {
             const updatedGroup = {
                 groupName: trimmedName,
-                currentRankingDecision: selectedDecision.decisionId || editGroup.currentRankingDecision,
+                currentRankingDecision: selectedCurrentDecision.decisionId || editGroup.currentRankingDecision,
                 createBy: localStorage.getItem('userId')
             };
             await updateRankingGroup(id, updatedGroup);
             setOriginalGroupName(trimmedName);
-            setOriginalDecisionName(selectedDecision ? selectedDecision.decisionName : editGroup.currentRankingDecision);
+            setOriginalDecisionName(selectedCurrentDecision ? selectedCurrentDecision.decisionName : editGroup.currentRankingDecision);
             showSuccessMessage("Group Info successfully updated");
 
             setShowEditGroupInfoModal(false);
@@ -264,18 +264,33 @@ const EditRankingGroup = () => {
             ),
         },
     ];
+    const [rows, setRows] = useState([]); // Khởi tạo với mảng rỗng
+    const [filteredRows, setFilteredRows] = useState([]); // Khởi tạo với mảng rỗng
+    const [searchValue, setSearchValue] = useState(''); // Trạng thái để lưu trữ giá trị tìm kiếm
 
-    // Map decision data to rows for DataGrid
-    const rows = decisions
-        ? decisions.map((decision, index) => ({
-            id: decision.decisionId,
-            index: index + 1,
-            dicisionname: decision.decisionName,
-            finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
-            finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
-            status: decision.status
-        }))
-        : [];
+    // Map decision data to rows for DataGrid when decisions are fetched
+    useEffect(() => {
+        if (decisions) {
+            const mappedRows = decisions.map((decision, index) => ({
+                id: decision.decisionId,
+                index: index + 1,
+                dicisionname: decision.decisionName,
+                finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
+                finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
+                status: decision.status
+            }));
+            setRows(mappedRows); // Cập nhật rows với dữ liệu từ decisions
+            setFilteredRows(mappedRows); // Cập nhật filteredRows với dữ liệu ban đầu
+        }
+    }, [decisions]);
+    const handleInputChange = (event, value) => {
+        setSearchValue(value);
+        const filtered = value
+            ? rows.filter(row => row.dicisionname.toLowerCase().includes(value.toLowerCase()))
+            : rows;
+        setFilteredRows(filtered);
+    };
+
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
@@ -308,18 +323,54 @@ const EditRankingGroup = () => {
                         </Box>
                     </Box>
                 </Box>
-
                 <Box sx={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                    <Typography variant="h5">Ranking Decision List</Typography>
-                    <Button variant="contained" color="primary" onClick={handleOpenAddRankingDecisionModal}>
+                    <Typography variant="h5" sx={{ flexShrink: 0, marginRight: '16px' }}>Ranking Decision List</Typography>
+                    {/* Nút Thêm Mới */}
+                    <Button variant="contained" color="primary" onClick={handleOpenAddRankingDecisionModal} sx={{ marginLeft: '8px' }}>
                         Add New Ranking Decision
                     </Button>
                 </Box>
-                {/* Table Show Ranking Decision List */}
-                <Box sx={{ width: "100%", height: 350 }}>
+                {/* Search Decision */}
+                <Autocomplete
+                    disablePortal
+                    options={decisions}
+                    getOptionLabel={option => option.decisionName || ''}
+                    onInputChange={handleInputChange}
+                    value={{ decisionName: searchValue }}
+                    renderInput={params => (
+                        <TextField
+                            {...params}
+                            label="Search Decision" // Đã sửa lại từ "Sreach" thành "Search"
+                            variant="outlined"
+                            fullWidth
+                            sx={{ marginTop: 2, height: '30px' }} // Đặt chiều cao cho TextField
+                            InputProps={{
+                                ...params.InputProps,
+                                endAdornment: (
+                                    <InputAdornment position="end" sx={{ marginRight: '-50px' }}>
+                                        <IconButton
+                                            onClick={() => {
+                                                setFilteredRows(rows);
+                                                setSearchValue('');
+                                                params.inputProps.onChange({ target: { value: '' } });
+                                            }}
+                                            size="small"
+                                            sx={{ padding: '0' }} // Giảm khoảng cách padding của icon
+                                        >
+                                            <ClearIcon />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                    )}
+                    sx={{ flexGrow: 1, marginRight: '16px', maxWidth: '600px', marginTop: '-10px' }} // Đặt maxWidth cho Autocomplete để giảm chiều rộng
+                />
+                {/* Bảng hiển thị danh sách quyết định */}
+                <Box sx={{ width: "100%", height: 350, marginTop: '44px' }}>
                     <DataGrid
                         className="custom-data-grid"
-                        rows={rows}
+                        rows={filteredRows} // Sử dụng filteredRows để hiển thị dữ liệu đã lọc
                         columns={columns}
                         checkboxSelection
                         pagination
@@ -343,6 +394,7 @@ const EditRankingGroup = () => {
                         }}
                     />
                 </Box>
+
                 {/* Modal for editing group info */}
                 <Modal open={showEditGroupInfoModal} onClose={handleCloseEditGroupInfoModal}>
                     <Box sx={{
@@ -389,9 +441,9 @@ const EditRankingGroup = () => {
                             disablePortal
                             options={decisions ? decisions.filter(decision => decision.status === 'Finalized') : []}
                             getOptionLabel={(option) => option.decisionName || ''}
-                            value={selectedDecision} // Hiển thị giá trị ban đầu
+                            value={selectedCurrentDecision} // Hiển thị giá trị ban đầu
                             onChange={(event, value) => {
-                                setSelectedDecision(value || null); // Gán lại khi người dùng chọn quyết định mới
+                                setselectedCurrentDecision(value || null); // Gán lại khi người dùng chọn quyết định mới
                             }}
                             renderInput={(params) => (
                                 <TextField
@@ -449,7 +501,7 @@ const EditRankingGroup = () => {
                                 options={decisions}
                                 getOptionLabel={(option) => option.decisionName || ''}
                                 onChange={(event, value) => {
-                                    setSelectedDecision(value ? value.id : null);
+                                    setselectedCurrentDecision(value ? value.id : null);
                                 }}
                                 renderInput={(params) => (
                                     <TextField

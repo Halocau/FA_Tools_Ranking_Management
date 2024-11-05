@@ -7,9 +7,12 @@ import { FaEye } from 'react-icons/fa';
 // css 
 import "../../assets/css/RankingGroups.css"
 // Mui
-import { Box, Button, TextField, Menu, MenuItem, IconButton, Alert } from "@mui/material";
+import { Box, Button, Menu, MenuItem, InputAdornment, Typography, TextField, FormControl, InputLabel, Select, Modal, IconButton, Switch, FormControlLabel, Alert, FormHelperText } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
+import ClearIcon from '@mui/icons-material/Clear';
+import EditIcon from '@mui/icons-material/Edit';
+import Autocomplete from '@mui/material/Autocomplete';
 // Source code
 // Common
 import ModalCustom from "../../components/Common/Modal.jsx";
@@ -211,17 +214,33 @@ const RankingDecision = () => {
     ];
 
 
-    // Map decision data to rows for DataGrid
-    const rows = decisions
-        ? decisions.map((decision, index) => ({
-            id: decision.decisionId,
-            index: index + 1,
-            dicisionname: decision.decisionName,
-            finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
-            finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
-            status: decision.status,
-        }))
-        : [];
+    const [rows, setRows] = useState([]); // Khởi tạo với mảng rỗng
+    const [filteredRows, setFilteredRows] = useState([]); // Khởi tạo với mảng rỗng
+    const [searchValue, setSearchValue] = useState(''); // Trạng thái để lưu trữ giá trị tìm kiếm
+
+    // Map decision data to rows for DataGrid when decisions are fetched
+    useEffect(() => {
+        if (decisions) {
+            const mappedRows = decisions.map((decision, index) => ({
+                id: decision.decisionId,
+                index: index + 1,
+                dicisionname: decision.decisionName,
+                finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
+                finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
+                status: decision.status
+            }));
+            setRows(mappedRows); // Cập nhật rows với dữ liệu từ decisions
+            setFilteredRows(mappedRows); // Cập nhật filteredRows với dữ liệu ban đầu
+        }
+    }, [decisions]);
+    const handleInputChange = (event, value) => {
+        setSearchValue(value);
+        const filtered = value
+            ? rows.filter(row => row.dicisionname.toLowerCase().includes(value.toLowerCase()))
+            : rows;
+        setFilteredRows(filtered);
+    };
+
 
     return (
         <div style={{ marginTop: "60px" }}>
@@ -247,12 +266,47 @@ const RankingDecision = () => {
                         Criteria Management
                     </MenuItem>
                 </Menu>
-
-                <Box sx={{ width: "100%", height: 370 }}>
+                {/* Search Decision */}
+                <Autocomplete
+                    disablePortal
+                    options={decisions}
+                    getOptionLabel={option => option.decisionName || ''}
+                    onInputChange={handleInputChange}
+                    value={{ decisionName: searchValue }}
+                    renderInput={params => (
+                        <TextField
+                            {...params}
+                            label="Search Decision" // Đã sửa lại từ "Sreach" thành "Search"
+                            variant="outlined"
+                            fullWidth
+                            sx={{ marginTop: 2, height: '30px' }} // Đặt chiều cao cho TextField
+                            InputProps={{
+                                ...params.InputProps,
+                                endAdornment: (
+                                    <InputAdornment position="end" sx={{ marginRight: '-50px' }}>
+                                        <IconButton
+                                            onClick={() => {
+                                                setFilteredRows(rows);
+                                                setSearchValue('');
+                                                params.inputProps.onChange({ target: { value: '' } });
+                                            }}
+                                            size="small"
+                                            sx={{ padding: '0' }} // Giảm khoảng cách padding của icon
+                                        >
+                                            <ClearIcon />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                    )}
+                    sx={{ flexGrow: 1, marginRight: '16px', maxWidth: '600px', marginTop: '-10px' }} // Đặt maxWidth cho Autocomplete để giảm chiều rộng
+                />
+                <Box sx={{ width: "100%", height: 370, marginTop: '44px' }}>
                     <DataGrid
                         className="custom-data-grid"
                         apiRef={apiRef}
-                        rows={rows}
+                        rows={filteredRows.length > 0 ? filteredRows : rows} // Hiển thị hàng đã lọc hoặc tất cả hàng nếu không có gì được tìm thấy
                         columns={columns}
                         checkboxSelection
                         pagination
@@ -276,6 +330,7 @@ const RankingDecision = () => {
                         }}
                     />
                 </Box>
+
 
                 <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
                     <Button variant="contained" color="success" onClick={handleOpenAddRankingDecisionModal}>

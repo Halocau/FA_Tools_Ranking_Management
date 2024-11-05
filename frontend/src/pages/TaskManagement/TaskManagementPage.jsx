@@ -1,5 +1,11 @@
+//React
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { VscTriangleRight } from "react-icons/vsc";
+import { format } from "date-fns";
+import { FaEdit } from "react-icons/fa";
+// Mui
+import { MdDeleteForever } from "react-icons/md";
 import {
   Button,
   TextField,
@@ -8,16 +14,18 @@ import {
   Typography,
 } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
+// Source Code
 import ModalCustom from "../../components/Common/Modal.jsx";
-import { MdDeleteForever } from "react-icons/md";
-import { FaEdit } from "react-icons/fa";
+import ActionButtons from "../../components/Common/ActionButtons.jsx";
+// acountID
+import { useAuth } from "../../contexts/AuthContext.jsx";
 import Slider from "../../layouts/Slider.jsx";
 import Box from "@mui/material/Box";
-import useTaskManagement from "../../hooks/useTaskManagement.jsx";
-import { format } from "date-fns";
-// acountID
-import { useAuth } from "../../contexts/AuthContext";
+// Hooks
+import useTask from "../../hooks/useTask.jsx";
 
+// Import hook Notification
+import useNotification from "../../hooks/useNotification";
 const TaskManagement = () => {
   const navigate = useNavigate();
 
@@ -28,8 +36,8 @@ const TaskManagement = () => {
   const [editTaskName, setEditTaskName] = useState(""); // State for edited task name
   const [selectedTask, setSelectedTask] = useState(null); // State to store selected task for editing
   const [groupToDelete, setGroupToDelete] = useState(null);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("success");
+  // Use hook notification
+  const [showSuccessMessage, showErrorMessage] = useNotification();
   const [validationMessage, setValidationMessage] = useState("");
   const apiRef = useGridApiRef();
 
@@ -41,26 +49,30 @@ const TaskManagement = () => {
     addTask,
     deleteTask,
     updateTask, // Assuming you have an updateTask function in your useTask hook
-  } = useTaskManagement();
+  } = useTask();
 
   useEffect(() => {
     fetchAllTasks();
   }, []);
 
   // Modal Add
-  const handleOpenAddModal = () => setShowAddModal(true);
+  const handleOpenAddModal = () => {
+    setValidationMessage("");
+    setShowAddModal(true);
+  }
   const handleCloseAddModal = () => {
     setShowAddModal(false);
     setNewTaskName("");
     setValidationMessage("");
   };
 
+  // Function to add a new task with validation checks
   const handleAddTask = async () => {
     setValidationMessage("");
     let trimmedName = newTaskName.trim();
 
     if (!trimmedName) {
-      setValidationMessage("Task name cannot be empty!");
+      setValidationMessage("Task name cannot be empty !");
       return;
     }
 
@@ -68,24 +80,17 @@ const TaskManagement = () => {
       setValidationMessage("Task name must be between 3 and 20 characters.");
       return;
     }
-
-    // Capitalize the first letter of the task name
     trimmedName = trimmedName.charAt(0).toUpperCase() + trimmedName.slice(1);
-
-    // Adjusted nameRegex to allow letters (including Vietnamese diacritics), numbers, and spaces
-    const nameRegex = /^[\p{L}\p{N}\s.,!?"'()-]+$/u;
-    if (!nameRegex.test(trimmedName)) {
-      setValidationMessage(
-        "Task name can only contain letters, numbers, spaces, and certain punctuation marks."
-      );
-      return;
-    }
-
-    const isDuplicate = tasks.some(
-      (task) => task.taskName.toLowerCase() === trimmedName.toLowerCase()
+    // Kiểm tra xem tên đã tồn tại hay chưa
+    const existingTasks = await fetchAllTasks();
+    const isDuplicate = existingTasks.some(
+      (task) =>
+        task.taskName.toLowerCase() === trimmedName.toLowerCase()
     );
+    console.log("isDuplicate:", isDuplicate);
+
     if (isDuplicate) {
-      setValidationMessage("Task name already exists!");
+      setValidationMessage("Task name already exists !");
       return;
     }
 
@@ -95,19 +100,14 @@ const TaskManagement = () => {
         createdBy: localStorage.getItem('userId'),
       };
       await addTask(newTask);
-      setMessageType("success");
-      setMessage("Task successfully added !");
-      setTimeout(() => setMessage(null), 2000);
+      showSuccessMessage("Task added successfully!");
       handleCloseAddModal();
       await fetchAllTasks();
     } catch (error) {
       console.error("Failed to add Task:", error);
-      setMessageType("danger");
-      setMessage("Error occurred adding new Task. Please try again !");
-      setTimeout(() => setMessage(null), 2000);
+      showErrorMessage("Failed to add task. Please try again !");
     }
   };
-
 
   // Modal Edit
   const handleOpenEditModal = (task) => {
@@ -119,26 +119,48 @@ const TaskManagement = () => {
   const handleCloseEditModal = () => {
     setShowEditModal(false);
     setEditTaskName("");
+    setValidationMessage("");
   };
 
   const handleUpdateTask = async () => {
-    if (!selectedTask || !selectedTask.taskId) {
-      console.error("No valid task selected for update.");
+    const trimmedName = editTaskName.trim();
+    setValidationMessage("")
+    if (!trimmedName) {
+      setValidationMessage("Task name cannot be empty!");
       return;
     }
 
+    if (trimmedName.length < 3 || trimmedName.length > 20) {
+      setValidationMessage("Task name must be between 3 and 20 characters.");
+      return;
+    }
+
+    // Kiểm tra xem tên nhiệm vụ đã tồn tại hay chưa, ngoại trừ nhiệm vụ đang được chỉnh sửa
+    const existingTasks = await fetchAllTasks();
+    const isDuplicate = existingTasks.some(
+      (task) =>
+        task.taskName.toLowerCase() === trimmedName.toLowerCase() &&
+        task.id == selectedTask.id
+    );
+
+    if (isDuplicate) {
+      setValidationMessage("Task name already exists. Please choose another name.");
+      return;
+    }
+
+    const updatedTask = {
+      taskName: trimmedName,
+      createdBy: localStorage.getItem('userId'),
+    };
+
     try {
-      const updatedTask = { taskName: editTaskName.trim() };
-      await updateTask(selectedTask.taskId, updatedTask);
-      setMessageType("success");
-      setMessage("Task successfully updated !");
-      setTimeout(() => setMessage(null), 2000);
+      await updateTask(selectedTask.id, updatedTask);
+      showSuccessMessage("Task updated successfully!");
       handleCloseEditModal();
+      await fetchAllTasks(); // Cập nhật lại danh sách nhiệm vụ
     } catch (error) {
-      console.error("Failed to update task:", error);
-      setMessageType("danger");
-      setMessage("Error occurred updating Task. Please try again !");
-      setTimeout(() => setMessage(null), 2000);
+      console.error("Failed to update Task:", error);
+      showErrorMessage("Failed to update task. Please try again.");
     }
   };
 
@@ -154,52 +176,43 @@ const TaskManagement = () => {
     try {
       if (groupToDelete) {
         await deleteTask(groupToDelete);
-        setMessageType("success");
-        setMessage("Task successfully deleted !");
-        setTimeout(() => setMessage(null), 2000);
+        showSuccessMessage("Task deleted successfully!");
         setGroupToDelete(null);
         handleCloseDeleteModal();
         await fetchAllTasks();
       }
     } catch (error) {
       console.error("Failed to delete Task:", error);
-      setMessageType("danger");
-      setMessage("Error occurred removing Task. Please try again !");
-      setTimeout(() => setMessage(null), 2000);
+      showErrorMessage("Failed to delete Task. Please try again.");
       handleCloseDeleteModal();
     }
   };
 
+  // Delete many tasks
   const handleBulkDelete = async () => {
     const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
     if (selectedIDs.length === 0) {
-      setMessageType("warning");
-      setMessage("Please select groups to delete.");
-      setTimeout(() => setMessage(null), 2000);
+      showErrorMessage("Please select tasks to delete.");
       return;
     }
 
-    const groupsToDelete = selectedIDs.filter((id) => {
+    const tasksToDelete = selectedIDs.filter((id) => {
       const group = rows.find((row) => row.id === id);
-      return group && group.taskName !== "";
+      return group && group.taskName.trim() !== ""; // Kiểm tra nếu tên nhiệm vụ không rỗng
     });
-    if (groupsToDelete.length === 0) {
-      setMessageType("warning");
-      setMessage("Cannot delete the '' group.");
-      setTimeout(() => setMessage(null), 2000);
+
+    if (tasksToDelete.length === 0) {
+      showErrorMessage("Cannot delete the group.");
       return;
     }
+
     try {
-      await Promise.all(groupsToDelete.map((id) => deleteTask(id)));
-      setMessageType("success");
-      setMessage("Selected groups deleted successfully!");
-      setTimeout(() => setMessage(null), 2000);
+      await Promise.all(tasksToDelete.map((id) => deleteTask(id)));
+      showSuccessMessage("Selected tasks deleted successfully!");
       await fetchAllTasks();
     } catch (error) {
-      console.error("Failed to delete selected groups:", error);
-      setMessageType("danger");
-      setMessage("Failed to delete selected groups. Please try again.");
-      setTimeout(() => setMessage(null), 2000);
+      console.error("Failed to delete selected tasks:", error);
+      showErrorMessage("Failed to delete selected tasks. Please try again.");
     }
   };
 
@@ -223,7 +236,6 @@ const TaskManagement = () => {
         <>
           <Button
             variant="outlined"
-            // size="small"
             onClick={() => handleOpenEditModal(params.row)}
           >
             <FaEdit />
@@ -257,10 +269,10 @@ const TaskManagement = () => {
       <Slider />
       <Box sx={{ marginTop: 4, padding: 2 }}>
         <Typography variant="h6">
-          <a href="/ranking_decision">Ranking Decision List</a> {">"} Task
-          Management
+          <a href="/ranking_decision">Ranking Decision List</a>{" "}
+          {<VscTriangleRight />}
+          Task Management
         </Typography>
-        {message && <Alert severity={messageType}>{message}</Alert>}
         {loading ? (
           <CircularProgress />
         ) : (
@@ -340,13 +352,20 @@ const TaskManagement = () => {
           handleClose={handleCloseEditModal}
           title="Edit Task"
           bodyContent={
-            <TextField
-              label="Task Name"
-              variant="outlined"
-              fullWidth
-              value={editTaskName}
-              onChange={(e) => setEditTaskName(e.target.value)}
-            />
+            <Box>
+              <TextField
+                label="Task Name"
+                variant="outlined"
+                fullWidth
+                value={editTaskName}
+                onChange={(e) => {
+                  setEditTaskName(e.target.value);
+                  setValidationMessage(""); // Xóa thông báo khi người dùng nhập tên mới
+                }}
+                error={!!validationMessage}
+                helperText={validationMessage}
+              />
+            </Box>
           }
           footerContent={
             <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
