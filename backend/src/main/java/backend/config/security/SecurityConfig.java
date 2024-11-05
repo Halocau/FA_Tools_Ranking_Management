@@ -42,14 +42,20 @@ public class SecurityConfig {
                 .csrf().disable() // Disable CSRF if needed
                 .authorizeHttpRequests(
                         request -> request
-                                .requestMatchers("/api/account/register", "/api/account/login", "/api/account/all",
-                                        "/api/account/generate-and-validate")
+                                .requestMatchers("/api/account/register", "/api/account/login", "/api/account/all","/api/account/generate-and-validate")
                                 .permitAll()
                                 .anyRequest()
-                                // .authenticated()
-                                .permitAll())
-                // .formLogin().disable() // Disable form login
-                // .httpBasic().disable() // Disable HTTP Basic authentication
+<<<<<<< HEAD
+//                                .permitAll()
+                                .authenticated()
+                )
+=======
+                                .authenticated()
+                                // .permitAll()
+                                )
+>>>>>>> parent of da6b20d (Merge remote-tracking branch 'origin/DuyPQ18' into DuongLBQ)
+//                .formLogin().disable() // Disable form login
+//                .httpBasic().disable() // Disable HTTP Basic authentication
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
