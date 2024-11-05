@@ -93,16 +93,10 @@ const EditRankingDecision = () => {
             setValidationMessage("Decision name must be between 3 and 20 characters.");
             return;
         }
-        const nameRegex = /^[a-zA-Z0-9 ]+$/;
-        if (!nameRegex.test(trimmedName)) {
-            setValidationMessage("Decision name can only contain letters, numbers, and spaces.");
-            return;
-        }
-
         // Check if the decision name already exists, excluding the current decision name
         const existingDecisions = await fetchAllRankingDecisions();
         const decisionExists = existingDecisions.some(decision =>
-            decision.decisionName.toLowerCase() === trimmedName.toLowerCase() && decision.decisionName.toLowerCase() !== originalDecisionName.toLowerCase()
+            decision.decisionName.toLowerCase() === trimmedName.toLowerCase() && decision.decisionName !== editDecision.decisionName
         );
         if (decisionExists) {
             setValidationMessage("Decision name already exists. Please choose a different name.");

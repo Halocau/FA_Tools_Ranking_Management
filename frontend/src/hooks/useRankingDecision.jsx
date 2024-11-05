@@ -78,7 +78,7 @@ const useRankingDecision = () => {
     };
 
     // Updates a specific decision by ID and updates the data state
-    const updateRankingDecison = async (id, updatedDecision) => {
+    const updateRankingDecision = async (id, updatedDecision) => {
         setLoading(true);
         try {
             const response = await authClient.put(`/ranking-decision/update/${id}`, updatedDecision);  // API call to update decision
@@ -117,7 +117,7 @@ const useRankingDecision = () => {
         fetchRankingDecisionById,
         addRankingDecision,
         addDecisionWithClone,
-        updateRankingDecison,
+        updateRankingDecision,
         deleteRankingDecision,
     };
 };
