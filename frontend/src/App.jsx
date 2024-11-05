@@ -19,10 +19,12 @@ import { NotyfProvider } from "./contexts/NotyfContext";
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
 // Pages
+//RankingGroups
 import RankingGroups from "./pages/RankingGroup/RankingGroupsPage.jsx";
 import EditRankingGroup from './pages/RankingGroup/EditRankingGroups.jsx';
 import ViewRankingGroup from './pages/RankingGroup/ViewRankingGroup.jsx';
 import BulkRankingGroup from './pages/RankingGroup/BulkRankingGroup.jsx';
+//RankingDecision
 import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
 import EditRankingDecision from "./pages/RankingDecision/EditRankingDecision.jsx";
 import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx';
