@@ -13,7 +13,10 @@ import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import Slider from "../../layouts/Slider.jsx";
 import Box from "@mui/material/Box";
-import useTask from "../../hooks/useTask.jsx";
+import useTaskManagement from "../../hooks/useTaskManagement.jsx";
+import { format } from "date-fns";
+// acountID
+import { useAuth } from "../../contexts/AuthContext";
 
 const TaskManagement = () => {
   const navigate = useNavigate();
@@ -38,7 +41,7 @@ const TaskManagement = () => {
     addTask,
     deleteTask,
     updateTask, // Assuming you have an updateTask function in your useTask hook
-  } = useTask();
+  } = useTaskManagement();
 
   useEffect(() => {
     fetchAllTasks();
@@ -52,13 +55,12 @@ const TaskManagement = () => {
     setValidationMessage("");
   };
 
-  // Function to add a new task with validation checks
   const handleAddTask = async () => {
     setValidationMessage("");
     let trimmedName = newTaskName.trim();
 
     if (!trimmedName) {
-      setValidationMessage("Task name cannot be empty !");
+      setValidationMessage("Task name cannot be empty!");
       return;
     }
 
@@ -67,38 +69,41 @@ const TaskManagement = () => {
       return;
     }
 
-    const nameRegex = /^[a-zA-Z0-9 ]+$/;
+    // Capitalize the first letter of the task name
+    trimmedName = trimmedName.charAt(0).toUpperCase() + trimmedName.slice(1);
+
+    // Adjusted nameRegex to allow letters (including Vietnamese diacritics), numbers, and spaces
+    const nameRegex = /^[\p{L}\p{N}\s.,!?"'()-]+$/u;
     if (!nameRegex.test(trimmedName)) {
       setValidationMessage(
-        "Task name can only contain letters, numbers, and spaces."
+        "Task name can only contain letters, numbers, spaces, and certain punctuation marks."
       );
       return;
     }
 
-    trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
     const isDuplicate = tasks.some(
       (task) => task.taskName.toLowerCase() === trimmedName.toLowerCase()
     );
     if (isDuplicate) {
-      setValidationMessage("Task name already exists !");
+      setValidationMessage("Task name already exists!");
       return;
     }
 
     try {
       const newTask = {
         taskName: trimmedName,
-        createdBy: 1,
+        createdBy: localStorage.getItem("userId"),
       };
       await addTask(newTask);
       setMessageType("success");
-      setMessage("Task added successfully!");
+      setMessage("Task successfully added !");
       setTimeout(() => setMessage(null), 2000);
       handleCloseAddModal();
       await fetchAllTasks();
     } catch (error) {
       console.error("Failed to add Task:", error);
       setMessageType("danger");
-      setMessage("Failed to add task. Please try again !");
+      setMessage("Error occurred adding new Task. Please try again !");
       setTimeout(() => setMessage(null), 2000);
     }
   };
@@ -116,7 +121,6 @@ const TaskManagement = () => {
   };
 
   const handleUpdateTask = async () => {
-    
     if (!selectedTask || !selectedTask.taskId) {
       console.error("No valid task selected for update.");
       return;
@@ -124,15 +128,15 @@ const TaskManagement = () => {
 
     try {
       const updatedTask = { taskName: editTaskName.trim() };
-      await updateTask(selectedTask.taskId, updatedTask); 
+      await updateTask(selectedTask.taskId, updatedTask);
       setMessageType("success");
-      setMessage("Task updated successfully!");
+      setMessage("Task successfully updated !");
       setTimeout(() => setMessage(null), 2000);
       handleCloseEditModal();
     } catch (error) {
       console.error("Failed to update task:", error);
       setMessageType("danger");
-      setMessage("Failed to update task. Please try again.");
+      setMessage("Error occurred updating Task. Please try again !");
       setTimeout(() => setMessage(null), 2000);
     }
   };
@@ -150,7 +154,7 @@ const TaskManagement = () => {
       if (groupToDelete) {
         await deleteTask(groupToDelete);
         setMessageType("success");
-        setMessage("Task deleted successfully!");
+        setMessage("Task successfully deleted !");
         setTimeout(() => setMessage(null), 2000);
         setGroupToDelete(null);
         handleCloseDeleteModal();
@@ -159,7 +163,7 @@ const TaskManagement = () => {
     } catch (error) {
       console.error("Failed to delete Task:", error);
       setMessageType("danger");
-      setMessage("Failed to delete Task. Please try again.");
+      setMessage("Error occurred removing Task. Please try again !");
       setTimeout(() => setMessage(null), 2000);
       handleCloseDeleteModal();
     }
@@ -198,6 +202,11 @@ const TaskManagement = () => {
     }
   };
 
+  //Format Data
+  const formatDate = (dateString) => {
+    return dateString ? format(new Date(dateString), "dd/MM/yyyy ") : "N/A";
+  };
+
   // Columns configuration
   const columns = [
     { field: "index", headerName: "ID", width: 80 },
@@ -213,6 +222,7 @@ const TaskManagement = () => {
         <>
           <Button
             variant="outlined"
+            // size="small"
             onClick={() => handleOpenEditModal(params.row)}
           >
             <FaEdit />
@@ -220,7 +230,7 @@ const TaskManagement = () => {
           <Button
             variant="outlined"
             color="error"
-            size="small"
+            // size="small"
             onClick={() => handleOpenDeleteModal(params.row.id)}
           >
             <MdDeleteForever />
@@ -235,9 +245,9 @@ const TaskManagement = () => {
         id: item.taskId,
         index: index + 1,
         taskName: item.taskName,
-        createdBy: item.createdBy || "Unknown",
-        createdAt: item.createdAt == null ? "N/A" : item.createdAt,
-        updatedAt: item.updateAt == null ? "N/A" : item.updateAt,
+        createdBy: item.createdByName || "Unknown",
+        createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
+        updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
       }))
     : [];
 
@@ -246,6 +256,8 @@ const TaskManagement = () => {
       <Slider />
       <Box sx={{ marginTop: 4, padding: 2 }}>
         <Typography variant="h6">
+          <a href="/ranking_decision">Ranking Decision List</a> {">"} Task
+          Management
           <a href="/ranking_decision">Ranking Decision List</a> {">"} Task
           Management
         </Typography>

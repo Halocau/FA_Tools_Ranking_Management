@@ -4,7 +4,9 @@ import backend.dao.IRankingDecisionRepository;
 import backend.model.dto.RankingDecisionResponse;
 import backend.model.entity.RankingDecision;
 import backend.model.form.RankingDecision.CreateRankingDecision;
+import backend.model.form.RankingDecision.UpdateRankingDecision;
 import backend.service.IRankingDecisionService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +65,12 @@ public class RankingDecisionService implements IRankingDecisionService {
     }
 
     @Override
+    public RankingDecisionResponse findRankingDecisionResponseById(int id) {
+        RankingDecision rankingDecision = iRankingDecisionRepository.findById(id).orElse(null);
+        return modelMapper.map(rankingDecision, RankingDecisionResponse.class);
+    }
+
+    @Override
     @Transactional
     public void createRankingDecision(CreateRankingDecision form) {
         RankingDecision decision = RankingDecision.builder()
@@ -71,6 +79,15 @@ public class RankingDecisionService implements IRankingDecisionService {
                 .status("Draft")
                 .build();
         iRankingDecisionRepository.save(decision);
+    }
+
+    @Override
+    @Transactional
+    public void updateRankingDecision(UpdateRankingDecision form, int decisionId) {
+        RankingDecision decision = iRankingDecisionRepository.findById(decisionId).orElseThrow(() ->
+                new EntityNotFoundException("Option not found with id: " + decisionId));
+        decision.setDecisionName(form.getDecisionName());
+        iRankingDecisionRepository.saveAndFlush(decision);
     }
 
     @Override

@@ -26,7 +26,7 @@ public class RankingGroupController {
 
     @Autowired
     public RankingGroupController(IRankingGroupService iRankingGroupService,
-            IRankingDecisionService iRankingDecisionService) {
+                                  IRankingDecisionService iRankingDecisionService) {
         this.iRankingGroupService = iRankingGroupService;
         this.iRankingDecisionService = iRankingDecisionService;
     }
@@ -56,7 +56,7 @@ public class RankingGroupController {
             // Tự động đi vào CatchException (RankingGroupException handler)
             throw new RankingGroupException("Ranking group not found");
         }
-        // RG convert Response
+        //RG convert Response
         RankingGroupResponse response = iRankingGroupService.getRankingGroupResponseById(rankingGroup);
         return ResponseEntity.ok(response);
     }
@@ -67,24 +67,22 @@ public class RankingGroupController {
         return "create successfully!";
     }
 
-    // @PutMapping("/update/{id}")
-    // public ResponseEntity<String> updateRankingGroup(@RequestBody @Valid
-    // UpdateNewGroupRequest form,
-    // @PathVariable(name = "id") Integer groupId) {
-    // RankingGroup rankingGroup =
-    // iRankingGroupService.findRankingGroupById(groupId);
-    // if (rankingGroup == null) {
-    // throw new RankingGroupException("RankingGroup not found id: " + groupId);
-    // } else {
-    // iRankingGroupService.updateRankingGroup(groupId, form);
-    // return ResponseEntity.ok("update successfully!");
-    // }
-    // }
-
-    // @PutMapping("/update-group-info/{id}")
     @PutMapping("/update/{id}")
+    public ResponseEntity<String> updateRankingGroup(@RequestBody @Valid UpdateNewGroupRequest form,
+                                                     @PathVariable(name = "id") Integer groupId) {
+        RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(groupId);
+        if (rankingGroup == null) {
+            throw new RankingGroupException("RankingGroup not found id: " + groupId);
+        } else {
+            iRankingGroupService.updateRankingGroup(groupId, form);
+            return ResponseEntity.ok("update successfully!");
+        }
+    }
+
+
+    @PutMapping("/update-group-info/{id}")
     public ResponseEntity<String> updateRankingGroup(@RequestBody @Valid UpdateGroupInfo form,
-            @PathVariable(name = "id") Integer groupId) {
+                                                     @PathVariable(name = "id") Integer groupId) {
         RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(groupId);
         if (rankingGroup == null) {
             throw new RankingGroupException("RankingGroup not found id: " + groupId);
@@ -93,6 +91,7 @@ public class RankingGroupController {
             return ResponseEntity.ok("update group info successfully!");
         }
     }
+
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteRankingGroup(@PathVariable int id) {

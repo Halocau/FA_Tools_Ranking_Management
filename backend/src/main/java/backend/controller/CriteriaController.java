@@ -1,13 +1,18 @@
 package backend.controller;
 
 import backend.model.entity.Criteria;
+import backend.model.form.Criteria.AddCriteriaRequest;
+import backend.model.form.Criteria.UpdateCriteriaRequest;
 import backend.service.ICriteriaService;
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/criteria")
@@ -32,20 +37,24 @@ public class CriteriaController {
         return new ResponseEntity<>(criteria, HttpStatus.OK);
     }
 
-    @PostMapping
-    public ResponseEntity<Criteria> addCriteria(@RequestBody Criteria criteria) {
-        Criteria createdCriteria = criteriaService.addCriteria(criteria);
+    @PostMapping("/add")
+    public ResponseEntity<Criteria> createCriteria(@Valid @RequestBody AddCriteriaRequest request) {
+        Criteria createdCriteria = criteriaService.createCriteria(request);
         return new ResponseEntity<>(createdCriteria, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Criteria> updateCriteria(@PathVariable("id") int criteriaId, @RequestBody Criteria criteria) {
-        criteria.setCriteriaId(criteriaId); // Ensure the ID is set for the update
-        Criteria updatedCriteria = criteriaService.updateCriteria(criteria);
-        return new ResponseEntity<>(updatedCriteria, HttpStatus.OK);
+    @PutMapping("update/{id}")
+    public ResponseEntity<Criteria> updateCriteria(
+            @PathVariable int id,
+            @Valid @RequestBody UpdateCriteriaRequest request) {
+
+        Optional<Criteria> updatedCriteria = criteriaService.updateCriteria(id, request);
+        return updatedCriteria
+                .map(criteria -> new ResponseEntity<>(criteria, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("delete/{id}")
     public ResponseEntity<Void> deleteCriteria(@PathVariable("id") int criteriaId) {
         criteriaService.deleteCriteria(criteriaId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
