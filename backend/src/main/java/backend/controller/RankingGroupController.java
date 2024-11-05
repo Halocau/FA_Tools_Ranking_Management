@@ -5,13 +5,16 @@ import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
+import backend.model.form.RankingGroup.UpdateGroupInfo;
+import backend.model.form.RankingGroup.UpdateNewGroupRequest;
 import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import backend.model.form.RankingGroup.EditRankingGroupRequest;
+
 import java.util.List;
 
 @RestController
@@ -23,7 +26,7 @@ public class RankingGroupController {
 
     @Autowired
     public RankingGroupController(IRankingGroupService iRankingGroupService,
-            IRankingDecisionService iRankingDecisionService) {
+                                  IRankingDecisionService iRankingDecisionService) {
         this.iRankingGroupService = iRankingGroupService;
         this.iRankingDecisionService = iRankingDecisionService;
     }
@@ -53,6 +56,7 @@ public class RankingGroupController {
             // Tự động đi vào CatchException (RankingGroupException handler)
             throw new RankingGroupException("Ranking group not found");
         }
+        //RG convert Response
         RankingGroupResponse response = iRankingGroupService.getRankingGroupResponseById(rankingGroup);
         return ResponseEntity.ok(response);
     }
@@ -64,30 +68,36 @@ public class RankingGroupController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<RankingGroup> updateRankingGroup(@RequestBody EditRankingGroupRequest rankingGroup,
-            @PathVariable int id) {
-        RankingGroup exists = iRankingGroupService.findRankingGroupById(id);
-        if (exists == null) {
-            throw new RankingGroupException("Ranking group not found for update");
+    public ResponseEntity<String> updateRankingGroup(@RequestBody @Valid UpdateNewGroupRequest form,
+                                                     @PathVariable(name = "id") Integer groupId) {
+        RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(groupId);
+        if (rankingGroup == null) {
+            throw new RankingGroupException("RankingGroup not found id: " + groupId);
+        } else {
+            iRankingGroupService.updateRankingGroup(groupId, form);
+            return ResponseEntity.ok("update successfully!");
         }
-
-        exists.setGroupName(rankingGroup.getGroupName());
-        exists.setCurrent_ranking_decision(rankingGroup.getDecisionId());
-        // exists.setCurrentRankingDecision(rankingGroup.getDecisionId());
-
-        iRankingGroupService.updateRankingGroup(exists);
-        return ResponseEntity.ok(exists);
     }
+
+
+    @PutMapping("/update-group-info/{id}")
+    public ResponseEntity<String> updateRankingGroup(@RequestBody @Valid UpdateGroupInfo form,
+                                                     @PathVariable(name = "id") Integer groupId) {
+        RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(groupId);
+        if (rankingGroup == null) {
+            throw new RankingGroupException("RankingGroup not found id: " + groupId);
+        } else {
+            iRankingGroupService.updateRankingGroupInfo(groupId, form);
+            return ResponseEntity.ok("update group info successfully!");
+        }
+    }
+
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteRankingGroup(@PathVariable int id) {
         RankingGroup exists = iRankingGroupService.findRankingGroupById(id);
         if (exists == null) {
             throw new RankingGroupException("Ranking group not found for deletion");
-        }
-        RankingDecision checkNullGroupId = iRankingDecisionService.findByGroupId(id);
-        if (checkNullGroupId != null) {
-            iRankingDecisionService.updateRankingDecisionGroupIdToNull(id);
         }
         if ("Trainer".equals(exists.getGroupName())) {
             throw new RankingGroupException("Cannot delete the group name \"Trainer.\"");

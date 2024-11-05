@@ -3,6 +3,7 @@ package backend.service;
 import backend.model.dto.RankingDecisionResponse;
 import backend.model.entity.RankingDecision;
 import backend.model.form.RankingDecision.CreateRankingDecision;
+import backend.model.form.RankingDecision.UpdateRankingDecision;
 
 import java.util.List;
 
@@ -17,18 +18,18 @@ public interface IRankingDecisionService {
 
     public void deleteRankingDecision(int id);
 
-    public RankingDecision findByGroupId(int groupId);
-
-    public void updateRankingDecisionGroupIdToNull(int groupId);
-
     // response
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions);
-
+    public RankingDecisionResponse findRankingDecisionResponseById(int id);
     // form
     public void createRankingDecision(CreateRankingDecision form);
+    public void updateRankingDecision(UpdateRankingDecision form, int decisionId);
 
     // validate
     boolean isRankingDecisionNameExist(String decisionName);
 
-    public List<RankingDecision> getRankingDecisionsByGroupId(int groupId);
+    // apply form updateAddNewGroup
+    // public RankingDecision updateDecisionName(Integer decisionId, String
+    // decisionName);
+
 }

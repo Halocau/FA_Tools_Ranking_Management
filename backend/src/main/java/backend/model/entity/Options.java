@@ -9,40 +9,38 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Ranking_Decision")
+@Table(name = "Options")
 @SuperBuilder
-public class RankingDecision {
+public class Options {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "decision_id")
-    private int decisionId; //hihi
+    @Column(name = "option_id")
+    private int optionId;
 
-    @Column(name = "decision_name")
-    private String decisionName;
+    @Column(name = "criteria_id")
+    private Integer criteriaId;
 
-    @Column(name = "status")
-    private String status;
+    @Column(name = "option_name")
+    private String optionName;
 
-    @Column(name = "finalized_at")
-    private LocalDateTime finalizedAt;
+    @Column(name = "score")
+    private int score;
 
-    @Column(name = "finalized_by")
-    private Integer finalizedBy;
+    @Column(name = "description")
+    private String description;
 
     @Column(name = "created_by")
-    private Integer createdBy;
+    private int createdBy;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
 }

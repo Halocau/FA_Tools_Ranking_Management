@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import http from '../api/apiClient';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation on error responses
+import { useNavigate } from 'react-router-dom';
 import authClient from '../api/baseapi/AuthorAPI';
 
 // Custom hook to manage Ranking Group API interactions
 const useRankingGroup = () => {
     const navigate = useNavigate(); // Initialize navigation
-
     // State variables for data, loading status, and error handling
     const [data, setData] = useState(null); // Holds ranking group data
     const [loading, setLoading] = useState(false); // Tracks loading state
@@ -17,34 +16,33 @@ const useRankingGroup = () => {
         if (err.response && err.response.status === 403) {
             navigate('/403'); // Redirect to 403 error page if access is forbidden
         } else {
-            setError(err.response?.data || "An error occurred while fetching ranking groups."); // Set error message
+            setError(err.response?.data || "An error occurred while fetching ranking groups.");
         }
     };
-
     // Fetches all ranking groups from the API
     const fetchAllRankingGroups = async () => {
         setLoading(true);
         try {
             const response = await authClient.get('/ranking-group');
-            setData(response.data); // Update data state with fetched groups
-            return response.data; // Return data for validation check
+            setData(response.data);
+            return response.data;
         } catch (err) {
-            handleError(err); // Handle and log errors
-        } finally {
-            setLoading(false); // Stop loading after response
+            handleError(err);
+        }
+        finally {
+            setLoading(false);
         }
     };
-
     // Fetches a specific ranking group by ID
     const fetchRankingGroupById = async (id) => {
         setLoading(true);
         try {
             const response = await authClient.get(`/ranking-group/get/${id}`);
-            return response.data; // Returns data directly to calling component
+            return response.data;
         } catch (err) {
-            setError(err.response?.data || "An error occurred while fetching the ranking group."); // Set error state
+            setError(err.response?.data || "An error occurred while fetching the ranking group.");
         } finally {
-            setLoading(false); // Stop loading after response
+            setLoading(false);
         }
     };
 
@@ -53,30 +51,31 @@ const useRankingGroup = () => {
         setLoading(true);
         try {
             const response = await authClient.post(`/ranking-group/add`, newGroup);
-            await fetchAllRankingGroups(); // Refresh list to include new group
-            return response.data; // Returns new group data to the caller
+            await fetchAllRankingGroups();
+            return response.data;
         } catch (err) {
-            setError(err.response?.data || "An error occurred while adding the ranking group."); // Set error state
+            setError(err.response?.data || "An error occurred while adding the ranking group.");
         } finally {
             setLoading(false);
         }
     };
 
-    // Updates a specific ranking group and updates the data state
-    const updateRankingGroup = async (id, updatedGroup) => {
+    const updateRankingGroup = async (id, newGroup) => {
         setLoading(true);
         try {
-            const response = await authClient.put(`/ranking-group/update/${id}`, updatedGroup);
+            console.log(newGroup)
+            const response = await authClient.put(`/ranking-group/update/${id}`, newGroup);
             setData((prevData) =>
-                prevData.map(group => (group.id === id ? response.data : group)) // Update specific group in state
+                prevData.map((group) =>
+                    group.id === id ? { ...group, ...response.data } : group
+                )
             );
-            setData(response.data); // Sets updated data directly
         } catch (err) {
             const errorMsg = err.response?.data || "An error occurred while updating the ranking group.";
-            setError(errorMsg); // Set error state if update fails
+            setError(errorMsg);
             console.error("Update error:", errorMsg);
         } finally {
-            setLoading(false); // Stop loading after response
+            setLoading(false);
         }
     };
 
