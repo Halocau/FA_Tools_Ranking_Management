@@ -33,7 +33,7 @@ const RankingDecision = () => {
     const handleCriteriaManagementClick = () => {
         navigate('/criteria_management'); // Navigate Page CriteriaManagement
     };
-    // State 
+
     // Add
     const [showAddModal, setShowAddModal] = useState(false); // State to determine whether the additional decision modal is displayed or not
     const [newDecisionName, setnewDecisionName] = useState(""); // State to store the new decison name that the user enters
@@ -45,6 +45,10 @@ const RankingDecision = () => {
     const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
     const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
     const handleCloseBulk_DeleteRankingModal = () => setShowBulkDeleteModal(false);
+    // Search Decision
+    const [rows, setRows] = useState([]); // Initialize with empty array
+    const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
+    const [searchValue, setSearchValue] = useState(''); // State to store search value
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Validation error message
@@ -212,12 +216,7 @@ const RankingDecision = () => {
             ),
         },
     ];
-
-
-    const [rows, setRows] = useState([]); // Khởi tạo với mảng rỗng
-    const [filteredRows, setFilteredRows] = useState([]); // Khởi tạo với mảng rỗng
-    const [searchValue, setSearchValue] = useState(''); // Trạng thái để lưu trữ giá trị tìm kiếm
-
+    /////////////////////////////////////////////////////////// Search Decision ///////////////////////////////////////////////////////////
     // Map decision data to rows for DataGrid when decisions are fetched
     useEffect(() => {
         if (decisions) {
@@ -229,8 +228,8 @@ const RankingDecision = () => {
                 finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
                 status: decision.status
             }));
-            setRows(mappedRows); // Cập nhật rows với dữ liệu từ decisions
-            setFilteredRows(mappedRows); // Cập nhật filteredRows với dữ liệu ban đầu
+            setRows(mappedRows); // Update rows with data from decisions
+            setFilteredRows(mappedRows); // Update filteredRows with original data
         }
     }, [decisions]);
     const handleInputChange = (event, value) => {
@@ -267,42 +266,46 @@ const RankingDecision = () => {
                     </MenuItem>
                 </Menu>
                 {/* Search Decision */}
-                <Autocomplete
-                    disablePortal
-                    options={decisions}
-                    getOptionLabel={option => option.decisionName || ''}
-                    onInputChange={handleInputChange}
-                    value={{ decisionName: searchValue }}
-                    renderInput={params => (
-                        <TextField
-                            {...params}
-                            label="Search Decision" // Đã sửa lại từ "Sreach" thành "Search"
-                            variant="outlined"
-                            fullWidth
-                            sx={{ marginTop: 2, height: '30px' }} // Đặt chiều cao cho TextField
-                            InputProps={{
-                                ...params.InputProps,
-                                endAdornment: (
-                                    <InputAdornment position="end" sx={{ marginRight: '-50px' }}>
-                                        <IconButton
-                                            onClick={() => {
-                                                setFilteredRows(rows);
-                                                setSearchValue('');
-                                                params.inputProps.onChange({ target: { value: '' } });
-                                            }}
-                                            size="small"
-                                            sx={{ padding: '0' }} // Giảm khoảng cách padding của icon
-                                        >
-                                            <ClearIcon />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
-                    )}
-                    sx={{ flexGrow: 1, marginRight: '16px', maxWidth: '600px', marginTop: '-10px' }} // Đặt maxWidth cho Autocomplete để giảm chiều rộng
-                />
-                <Box sx={{ width: "100%", height: 370, marginTop: '44px' }}>
+                <Box sx={{ display: "flex", alignItems: "center", marginTop: 2 }}>
+                    <Typography sx={{ marginRight: 2, fontSize: '1.3rem', marginTop: 0 }}>Search Decision Name:</Typography>
+                    <Autocomplete
+                        disablePortal
+                        options={decisions}
+                        getOptionLabel={option => option.decisionName || ''}
+                        onInputChange={handleInputChange}
+                        value={{ decisionName: searchValue }}
+                        renderInput={params => (
+                            <TextField
+                                {...params}
+                                label="Search Decision" // Đã sửa lại từ "Search" thành "Search"
+                                variant="outlined"
+                                fullWidth
+                                InputLabelProps={{ shrink: true, sx: { fontSize: '1rem', display: 'flex', alignItems: 'center', height: '100%' } }}
+                                sx={{ '& .MuiOutlinedInput-root': { height: '30px' }, marginTop: 1 }}
+                                InputProps={{
+                                    ...params.InputProps,
+                                    endAdornment: (
+                                        <InputAdornment position="end" sx={{ marginRight: '-50px' }}>
+                                            <IconButton
+                                                onClick={() => {
+                                                    setFilteredRows(rows);
+                                                    setSearchValue('');
+                                                    params.inputProps.onChange({ target: { value: '' } });
+                                                }}
+                                                size="small"
+                                                sx={{ padding: '0' }} // Giảm khoảng cách padding của icon
+                                            >
+                                                <ClearIcon />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        )}
+                        sx={{ flexGrow: 1, marginRight: '16px', maxWidth: '600px', marginTop: '-10px' }} // Đặt maxWidth cho Autocomplete để giảm chiều rộng
+                    />
+                </Box>
+                <Box sx={{ width: "100%", height: 370, marginTop: '20px' }}>
                     <DataGrid
                         className="custom-data-grid"
                         apiRef={apiRef}

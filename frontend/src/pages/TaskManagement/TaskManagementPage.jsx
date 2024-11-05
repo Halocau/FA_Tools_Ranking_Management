@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { VscTriangleRight } from "react-icons/vsc";
 import { format } from "date-fns";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaAngleRight } from "react-icons/fa";
 // Mui
 import { MdDeleteForever } from "react-icons/md";
 import {
@@ -270,7 +270,7 @@ const TaskManagement = () => {
       <Box sx={{ marginTop: 4, padding: 2 }}>
         <Typography variant="h6">
           <a href="/ranking_decision">Ranking Decision List</a>{" "}
-          {<VscTriangleRight />}
+          {<FaAngleRight />}
           Task Management
         </Typography>
         {loading ? (

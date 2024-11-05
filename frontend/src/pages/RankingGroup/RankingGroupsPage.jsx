@@ -6,9 +6,10 @@ import { FaEye } from 'react-icons/fa';
 import { FaHistory } from 'react-icons/fa';
 import "../../assets/css/RankingGroups.css"
 // Mui
-import { Button, TextField, Alert, CircularProgress, IconButton, } from "@mui/material";
+import { Box, Button, Typography, TextField, Alert, CircularProgress, InputAdornment, IconButton, } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
-import Box from "@mui/material/Box";
+import Autocomplete from '@mui/material/Autocomplete';
+import ClearIcon from '@mui/icons-material/Clear';
 // Source code
 //Common
 import ModalCustom from "../../components/Common/Modal.jsx";
@@ -32,6 +33,10 @@ const RankingGroups = () => {
   const [groupToDelete, setGroupToDelete] = useState(null); // State to save the ID of the group to be deleted
   // delete select
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  // Search Decision
+  const [rows, setRows] = useState([]); // Initialize with empty array
+  const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
+  const [searchValue, setSearchValue] = useState(''); // State to store search value
   // Use hook notification
   const [showSuccessMessage, showErrorMessage] = useNotification();
   // Validation error message
@@ -236,17 +241,39 @@ const RankingGroups = () => {
   ];
 
   // Map group data to rows for DataGrid
-  const rows = groups
-    ? groups.map((group, index) => ({
-      id: group.groupId,
-      index: index + 1,
-      groupName: group.groupName,
-      numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
-      currentRankingDecision:
-        group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
-    }))
-    : [];
-
+  // const rows = groups
+  //   ? groups.map((group, index) => ({
+  //     id: group.groupId,
+  //     index: index + 1,
+  //     groupName: group.groupName,
+  //     numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
+  //     currentRankingDecision:
+  //       group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
+  //   }))
+  //   : [];
+  /////////////////////////////////////////////////////////// Search Decision ///////////////////////////////////////////////////////////
+  // Map decision data to rows for DataGrid when rows are fetched
+  useEffect(() => {
+    if (groups) {
+      const mappedRows = groups.map((group, index) => ({
+        id: group.groupId,
+        index: index + 1,
+        groupName: group.groupName,
+        numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
+        currentRankingDecision:
+          group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
+      }));
+      setRows(mappedRows);
+      setFilteredRows(mappedRows);
+    }
+  }, [groups]);
+  const handleInputChange = (event, value) => {
+    setSearchValue(value);
+    const filtered = value
+      ? filteredRows.filter(row => row.groupName.toLowerCase().includes(value.toLowerCase()))
+      : rows; // If no value, use original rows
+    setFilteredRows(filtered);
+  };
   return (
     <div style={{ marginTop: "60px" }}>
       <Slider />
@@ -254,14 +281,52 @@ const RankingGroups = () => {
         <h2>
           Ranking Group List
         </h2>
-
+        <Box sx={{ display: "flex", alignItems: "center", marginTop: 2 }}>
+          <Typography sx={{ marginRight: 2, fontSize: '1.3rem', marginTop: 0 }}>Search Group Name:</Typography>
+          <Autocomplete
+            disablePortal
+            options={rows}
+            getOptionLabel={option => option.groupName || ''}
+            onInputChange={handleInputChange}
+            value={{ groupName: searchValue }} // Giữ nguyên nếu bạn cần
+            renderInput={params => (
+              <TextField
+                {...params}
+                label="Search Group"
+                variant="outlined"
+                fullWidth
+                InputLabelProps={{ shrink: true, sx: { fontSize: '1rem', display: 'flex', alignItems: 'center', height: '100%' } }}
+                sx={{ '& .MuiOutlinedInput-root': { height: '30px' }, marginTop: 1 }}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <InputAdornment position="end" sx={{ marginRight: '-50px' }}>
+                      <IconButton
+                        onClick={() => {
+                          setFilteredRows(rows);
+                          setSearchValue('');
+                          params.inputProps.onChange({ target: { value: '' } });
+                        }}
+                        size="small"
+                        sx={{ padding: '0' }}
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
+            sx={{ flexGrow: 1, marginRight: '16px', maxWidth: '500px' }} // Bỏ marginTop vì đã có trong Box
+          />
+        </Box>
         {/* Table show Ranking Group */}
-        <Box sx={{ width: "100%", height: 370 }}>
+        <Box sx={{ width: "100%", height: 370, marginTop: '20px' }}>
           {loading ? <CircularProgress /> : (
             <DataGrid
               className="custom-data-grid"
               apiRef={apiRef}
-              rows={rows}
+              rows={filteredRows}
               columns={columns}
               checkboxSelection
               pagination
@@ -356,7 +421,7 @@ const RankingGroups = () => {
           }
         />
       </div>
-    </div>
+    </div >
   );
 };
 

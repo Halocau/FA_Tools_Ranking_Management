@@ -2,10 +2,8 @@ import React, { useEffect, useState } from "react";
 import { FaEdit, FaAngleRight } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
-
 // CSS
 import "../../assets/css/RankingGroups.css";
-
 // MUI
 import {
     InputAdornment, Box, Button, Typography, TextField, Modal, IconButton, Select, MenuItem, Table, TableHead, TableBody, TableCell, TableRow
@@ -13,7 +11,6 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
-
 // Source code
 import ModalCustom from "../../components/Common/Modal.jsx";
 import ActionButtons from "../../components/Common/ActionButtons.jsx";
@@ -155,10 +152,11 @@ const EditRankingDecision = () => {
     return (
         <div style={{ marginTop: "60px" }}>
             <Box sx={{ marginTop: 4, padding: 2 }}>
-                <div sx={{ marginBottom: 2 }}>
-                    <a href="/ranking_decision">Ranking decision List</a> <FaAngleRight />
-                    <a>Edit Ranking decision</a>
-                </div>
+                <Typography variant="h6">
+                    <a href="/ranking_decision">Ranking Decision List</a>{" "}
+                    {<FaAngleRight />}
+                    Edit Ranking Decision
+                </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', width: '48%' }}>
                         <Typography sx={{ marginRight: 1 }}>Ranking Decision Name:</Typography>

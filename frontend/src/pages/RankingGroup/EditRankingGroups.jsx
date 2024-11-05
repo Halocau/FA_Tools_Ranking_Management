@@ -36,7 +36,7 @@ const EditRankingGroup = () => {
     const [showEditGroupInfoModal, setShowEditGroupInfoModal] = useState(false); // Display group editing modal
     const [newGroupName, setNewGroupName] = useState(""); // New Group Name
     const [originalDecisionName, setOriginalDecisionName] = useState('');
-    const [selectedCurrentDecision, setselectedCurrentDecision] = useState(""); // Current rating decision
+    const [selectedCurrentDecision, setselectedCurrentDecision] = useState(''); // Current rating decision
     const [rankingDecisions, setRankingDecisions] = useState([]); // List of ranking decisions
     // Add
     const [showAddModal, setShowAddModal] = useState(false); // Show modal add decision
@@ -46,6 +46,10 @@ const EditRankingGroup = () => {
     // Delele
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [DecisionToDelete, setDecisionToDelete] = useState(null);
+    // Search Decision
+    const [rows, setRows] = useState([]); // Initialize with empty array
+    const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
+    const [searchValue, setSearchValue] = useState(''); // State to store search value
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Validation error message
@@ -91,7 +95,7 @@ const EditRankingGroup = () => {
 
 
 
-    //// Handlers to open/close modals for editing of the group info
+    /////////////////////////////////////////////////////////// Handlers to open/close modals for editing of the group info ///////////////////////////////////////////////////////////
     const handleOpenEditGroupInfoModal = () => {
         setShowEditGroupInfoModal(true);
         setValidationMessage("");
@@ -151,7 +155,7 @@ const EditRankingGroup = () => {
         setShowEditGroupInfoModal(false);
         setValidationMessage("");
     };
-    // Handlers to open/close modals for adding Decision
+    //////////////////////////////////////////////////////////// Handlers to open/close modals for adding Decision ///////////////////////////////////////////////////////////
     // Open the modal
     const handleOpenAddRankingDecisionModal = () => {
         setShowAddModal(true);
@@ -203,7 +207,7 @@ const EditRankingGroup = () => {
         }
     };
 
-    // Handlers to open/close modals for deleting Decision
+    /////////////////////////////////////////////////////////// Handlers to open/close modals for deleting Decision ///////////////////////////////////////////////////////////
     // Modal Delete
     const handleOpenDeleteRankingDecisionModal = (decisionId) => {
         setDecisionToDelete(decisionId); // Set decisionToDelete as the ID of the currently selected decision
@@ -264,10 +268,7 @@ const EditRankingGroup = () => {
             ),
         },
     ];
-    const [rows, setRows] = useState([]); // Khởi tạo với mảng rỗng
-    const [filteredRows, setFilteredRows] = useState([]); // Khởi tạo với mảng rỗng
-    const [searchValue, setSearchValue] = useState(''); // Trạng thái để lưu trữ giá trị tìm kiếm
-
+    /////////////////////////////////////////////////////////// Search Decision ///////////////////////////////////////////////////////////
     // Map decision data to rows for DataGrid when decisions are fetched
     useEffect(() => {
         if (decisions) {
@@ -279,8 +280,8 @@ const EditRankingGroup = () => {
                 finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
                 status: decision.status
             }));
-            setRows(mappedRows); // Cập nhật rows với dữ liệu từ decisions
-            setFilteredRows(mappedRows); // Cập nhật filteredRows với dữ liệu ban đầu
+            setRows(mappedRows); // Update rows with data from decisions
+            setFilteredRows(mappedRows); // Update filteredRows with original data
         }
     }, [decisions]);
     const handleInputChange = (event, value) => {
@@ -296,10 +297,12 @@ const EditRankingGroup = () => {
             <Slider />
             {/* Group Info */}
             <Box sx={{ marginTop: 4, padding: 2 }}>
-                <div>
-                    <a href="/ranking_group">Ranking Group List</a> <FaAngleRight />
-                    <a>Edit Ranking Group</a>
-                </div>
+                <Typography variant="h6">
+                    <a href="/ranking_group">Ranking Group List</a>{" "}
+                    {<FaAngleRight />}
+                    Edit Ranking Group
+                </Typography>
+
                 <Box sx={{
                     border: '1px solid black',
                     borderRadius: '4px',
@@ -340,10 +343,10 @@ const EditRankingGroup = () => {
                     renderInput={params => (
                         <TextField
                             {...params}
-                            label="Search Decision" // Đã sửa lại từ "Sreach" thành "Search"
+                            label="Search Decision"
                             variant="outlined"
                             fullWidth
-                            sx={{ marginTop: 2, height: '30px' }} // Đặt chiều cao cho TextField
+                            sx={{ marginTop: 2, height: '30px' }}
                             InputProps={{
                                 ...params.InputProps,
                                 endAdornment: (
@@ -355,7 +358,7 @@ const EditRankingGroup = () => {
                                                 params.inputProps.onChange({ target: { value: '' } });
                                             }}
                                             size="small"
-                                            sx={{ padding: '0' }} // Giảm khoảng cách padding của icon
+                                            sx={{ padding: '0' }}
                                         >
                                             <ClearIcon />
                                         </IconButton>
@@ -364,13 +367,13 @@ const EditRankingGroup = () => {
                             }}
                         />
                     )}
-                    sx={{ flexGrow: 1, marginRight: '16px', maxWidth: '600px', marginTop: '-10px' }} // Đặt maxWidth cho Autocomplete để giảm chiều rộng
+                    sx={{ flexGrow: 1, marginRight: '16px', maxWidth: '600px', marginTop: '-10px' }}
                 />
-                {/* Bảng hiển thị danh sách quyết định */}
+                {/* The table displays the Decision List */}
                 <Box sx={{ width: "100%", height: 350, marginTop: '44px' }}>
                     <DataGrid
                         className="custom-data-grid"
-                        rows={filteredRows} // Sử dụng filteredRows để hiển thị dữ liệu đã lọc
+                        rows={filteredRows}
                         columns={columns}
                         checkboxSelection
                         pagination
@@ -441,9 +444,9 @@ const EditRankingGroup = () => {
                             disablePortal
                             options={decisions ? decisions.filter(decision => decision.status === 'Finalized') : []}
                             getOptionLabel={(option) => option.decisionName || ''}
-                            value={selectedCurrentDecision} // Hiển thị giá trị ban đầu
+                            value={selectedCurrentDecision}
                             onChange={(event, value) => {
-                                setselectedCurrentDecision(value || null); // Gán lại khi người dùng chọn quyết định mới
+                                setselectedCurrentDecision(value || null);
                             }}
                             renderInput={(params) => (
                                 <TextField
@@ -536,8 +539,8 @@ const EditRankingGroup = () => {
                         />
                     }
                 />
-            </Box>
-        </div>
+            </Box >
+        </div >
     );
 };
 
