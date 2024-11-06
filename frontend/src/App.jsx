@@ -1,34 +1,40 @@
 import "./App.css";
 import React from "react";
-import { Col, Row } from "react-bootstrap";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-// Cssss
+// Css
 import "bootstrap/dist/css/bootstrap.min.css";
+
 // Home
 import HomePage from "./pages/HomePage";
+
 // Auth
 import LoginPage from "./pages/Auth/LoginPage";
 import SignupPage from "./pages/Auth/SignupPage";
 import ForgetPasswordPage from "./pages/Auth/ForgetPasswordPage";
 import NotFound from "./pages/Auth/Page404.jsx";
 import ForbiddenPage from "./pages/Auth/Page403.jsx";
+
+// Ranking Group
+import RankingGroups from "./pages/RankingGroup/RankingGroupsPage.jsx";
+import EditRankingGroup from './pages/RankingGroup/EditRankingGroups.jsx';
+
+// Ranking Decision
+import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
+
+// Task Management
+import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx'
+
+// Criteria Management
+import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx'
+
 // Contexts
 import { AuthProvider } from "./contexts/AuthContext";
+
 // Layouts
 import Sidebar from "./layouts/Sidebar";
 import Header from "./layouts/Header";
-import RankingGroups from "./pages/Auth/RankingGroupsPage.jsx";
-import RankingDecision from "./pages/Auth/RankingDecisionPage.jsx";
-import EditRankingGroup from "./pages/Auth/EditRankingGroups.jsx"; // Import EditRankingGroup
-import TaskManagement from "./pages/Auth/TaskManagementPage.jsx";
-import CriteriaManagement from "./pages/Auth/CriteriaManagementPage.jsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import { AuthProvider } from "./contexts/AuthContext";
 import { Col, Row } from "react-bootstrap";
-import NotFound from "./pages/404NotFound.jsx";
-import ForbiddenPage from "./pages/403Forbidden.jsx"; // Thêm import cho trang 403
 
 function App() {
   return (
@@ -72,14 +78,13 @@ function App() {
                     <Sidebar />
                   </Col>
                   <Col md={10}>
-                    <EditRankingGroup />{" "}
-                    {/* Chuyển sang sử dụng EditRankingGroup */}
+                    <EditRankingGroup /> {/* Chuyển sang sử dụng EditRankingGroup */}
                   </Col>
                 </Row>
               </>
             }
           />
-          {/* View Ranking Group */}
+          {/* View Ranking Group
           <Route
             path="/ranking-group/bulk/:id"
             element={
@@ -97,7 +102,7 @@ function App() {
                 </Row>
               </>
             }
-          />
+          /> */}
           {/*Ranking Decision */}
           <Route
             path="/ranking_decision"
@@ -118,7 +123,7 @@ function App() {
               </>
             }
           />
-          {/* Edit Ranking Group */}
+          {/* Edit Ranking Group
           <Route
             path="/ranking-decision/edit/:id"
             element={
@@ -136,7 +141,7 @@ function App() {
                 </Row>
               </>
             }
-          />
+          /> */}
           {/* Task management */}
           <Route
             path="/task_management"
@@ -177,8 +182,7 @@ function App() {
               </>
             }
           />
-          <Route path="403" element={<ForbiddenPage />} />{" "}
-          {/* Route cho trang 403 */}
+          <Route path="403" element={<ForbiddenPage />} /> {/* Route cho trang 403 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
