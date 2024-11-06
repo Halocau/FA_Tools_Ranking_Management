@@ -31,6 +31,9 @@ import EditRankingDecison from "./pages/RankingDecision/EditRankingDecision.jsx"
 import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx'
 // Criteria Management
 import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx'
+// EditCriteria
+import EditCriteria from './pages/CriteriaManagement/EditCriterial.jsx';
+
 
 
 
@@ -199,6 +202,26 @@ function App() {
               </>
             }
           />
+          <Route
+            path="/criteria/edit/:id"
+            element={
+              <>
+                <Row>
+                  <Header />
+                </Row>
+                <Row></Row>
+                <Row>
+                  <Col md={2}>
+                    <Sidebar />
+                  </Col>
+                  <Col md={10}>
+                    <EditCriteria className="ml-2" />
+                  </Col>
+                </Row>
+              </>
+            }
+          />
+
           <Route path="403" element={<ForbiddenPage />} /> {/* Route cho trang 403 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
