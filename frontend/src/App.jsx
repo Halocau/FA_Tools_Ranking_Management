@@ -1,10 +1,10 @@
-import "./App.css";
-import React from "react";
-import { Col, Row } from "react-bootstrap";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Css
+import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import 'notyf/notyf.min.css';
 // Home
 import HomePage from "./pages/HomePage";
 // Auth
@@ -15,195 +15,110 @@ import NotFound from "./pages/Auth/Page404.jsx";
 import ForbiddenPage from "./pages/Auth/Page403.jsx";
 // Contexts
 import { AuthProvider } from "./contexts/AuthContext";
+import { NotyfProvider } from "./contexts/NotyfContext";
 // Layouts
-import Sidebar from "./layouts/Sidebar";
-import Header from "./layouts/Header";
-//// ages
-// Ranking Groups
+import DashboardLayout from "./layouts/DashboardLayout";
+// Pages
+//RankingGroups
 import RankingGroups from "./pages/RankingGroup/RankingGroupsPage.jsx";
 import EditRankingGroup from './pages/RankingGroup/EditRankingGroups.jsx';
 import ViewRankingGroup from './pages/RankingGroup/ViewRankingGroup.jsx';
 import BulkRankingGroup from './pages/RankingGroup/BulkRankingGroup.jsx';
-// Ranking Decisions
+//RankingDecision
 import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
-import EditRankingDecison from "./pages/RankingDecision/EditRankingDecision.jsx";
-// Task Management
-import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx'
-// Criteria Management
-import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx'
-
-
+import EditRankingDecision from "./pages/RankingDecision/EditRankingDecision.jsx";
+import EditDecision from "./pages/RankingDecision/EditDecision.jsx";
+import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx';
+import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx';
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/homepage" element={<HomePage />} />
-          <Route path="/register" element={<SignupPage />} />
-          <Route path="/forgetpassword" element={<ForgetPasswordPage />} />
-          {/* Ranking Group */}
-          <Route
-            path="/ranking_group"
-            element={
-              <>
-                <Row>
-                  <Header />
-                </Row>
-                <Row></Row>
-                <Row>
-                  <Col md={2}>
-                    <Sidebar />
-                  </Col>
-                  <Col md={10}>
-                    <RankingGroups className="ml-2" />
-                  </Col>
-                </Row>
-              </>
-            }
-          />
-          {/* View Ranking Group */}
-          <Route
-            path="/ranking-group/view/:id"
-            element={
-              <>
-                <Row>
-                  <Header />
-                </Row>
-                <Row>
-                  <Col md={2}>
-                    <Sidebar />
-                  </Col>
-                  <Col md={10}>
-                    <ViewRankingGroup />
-                  </Col>
-                </Row>
-              </>
-            }
-          />
-          {/* Edit Ranking Group */}
-          <Route
-            path="/ranking-group/edit/:id"
-            element={
-              <>
-                <Row>
-                  <Header />
-                </Row>
-                <Row>
-                  <Col md={2}>
-                    <Sidebar />
-                  </Col>
-                  <Col md={10}>
-                    <EditRankingGroup />
-                  </Col>
-                </Row>
-              </>
-            }
-          />
-          {/* View Ranking Group */}
-          <Route
-            path="/ranking-group/bulk/:id"
-            element={
-              <>
-                <Row>
-                  <Header />
-                </Row>
-                <Row>
-                  <Col md={2}>
-                    <Sidebar />
-                  </Col>
-                  <Col md={10}>
-                    <BulkRankingGroup />
-                  </Col>
-                </Row>
-              </>
-            }
-          />
-          {/*Ranking Decision */}
-          <Route
-            path="/ranking_decision"
-            element={
-              <>
-                <Row>
-                  <Header />
-                </Row>
-                <Row></Row>
-                <Row>
-                  <Col md={2}>
-                    <Sidebar />
-                  </Col>
-                  <Col md={10}>
-                    <RankingDecision className="ml-2" />
-                  </Col>
-                </Row>
-              </>
-            }
-          />
-          {/* Edit Ranking Group */}
-          <Route
-            path="/ranking-decision/edit/:id"
-            element={
-              <>
-                <Row>
-                  <Header />
-                </Row>
-                <Row>
-                  <Col md={2}>
-                    <Sidebar />
-                  </Col>
-                  <Col md={10}>
-                    <EditRankingDecison />
-                  </Col>
-                </Row>
-              </>
-            }
-          />
-          {/* Task management */}
-          <Route
-            path="/task_management"
-            element={
-              <>
-                <Row>
-                  <Header />
-                </Row>
-                <Row></Row>
-                <Row>
-                  <Col md={2}>
-                    <Sidebar />
-                  </Col>
-                  <Col md={10}>
-                    <TaskManagement className="ml-2" />
-                  </Col>
-                </Row>
-              </>
-            }
-          />
-          {/* Criteria management */}
-          <Route
-            path="/criteria_management"
-            element={
-              <>
-                <Row>
-                  <Header />
-                </Row>
-                <Row></Row>
-                <Row>
-                  <Col md={2}>
-                    <Sidebar />
-                  </Col>
-                  <Col md={10}>
-                    <CriteriaManagement className="ml-2" />
-                  </Col>
-                </Row>
-              </>
-            }
-          />
-          <Route path="403" element={<ForbiddenPage />} /> {/* Route cho trang 403 */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <NotyfProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/homepage" element={<HomePage />} />
+            <Route path="/register" element={<SignupPage />} />
+            <Route path="/forgetpassword" element={<ForgetPasswordPage />} />
+
+            {/* Ranking Group Routes */}
+            <Route
+              path="/ranking_group"
+              element={
+                <DashboardLayout>
+                  <RankingGroups />
+                </DashboardLayout>
+              }
+            />
+            <Route
+              path="/ranking-group/view/:id"
+              element={
+                <DashboardLayout>
+                  <ViewRankingGroup />
+                </DashboardLayout>
+              }
+            />
+            <Route
+              path="/ranking-group/edit/:id"
+              element={
+                <DashboardLayout>
+                  <EditRankingGroup />
+                </DashboardLayout>
+              }
+            />
+            <Route
+              path="/ranking-group/bulk/:id"
+              element={
+                <DashboardLayout>
+                  <BulkRankingGroup />
+                </DashboardLayout>
+              }
+            />
+
+            {/* Ranking Decision Routes */}
+            <Route
+              path="/ranking_decision"
+              element={
+                <DashboardLayout>
+                  <RankingDecision />
+                </DashboardLayout>
+              }
+            />
+            <Route
+              path="/ranking-decision/edit/:id"
+              element={
+                <DashboardLayout>
+                  <EditDecision />
+                </DashboardLayout>
+              }
+            />
+
+            {/* Task and Criteria Management Routes */}
+            <Route
+              path="/task_management"
+              element={
+                <DashboardLayout>
+                  <TaskManagement />
+                </DashboardLayout>
+              }
+            />
+            <Route
+              path="/criteria_management"
+              element={
+                <DashboardLayout>
+                  <CriteriaManagement />
+                </DashboardLayout>
+              }
+            />
+
+            {/* Error Routes */}
+            <Route path="403" element={<ForbiddenPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </NotyfProvider>
   );
 }
 
