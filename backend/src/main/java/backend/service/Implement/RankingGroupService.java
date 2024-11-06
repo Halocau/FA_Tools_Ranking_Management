@@ -172,7 +172,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
         RankingGroup group = iRankingGroupRepository.findById(groupId).orElse(null);
         if (group != null) {
             group.setGroupName(form.getGroupName());
-            if (form.getCurrentRankingDecision() != null) {
+            if (form.getCurrentRankingDecision() != null)  {
                 group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
             }
 //            boolean isVaild = ValidationUtils.validateNameForUpdate(groupId,group.getGroupName(), form.getGroupName(),)
