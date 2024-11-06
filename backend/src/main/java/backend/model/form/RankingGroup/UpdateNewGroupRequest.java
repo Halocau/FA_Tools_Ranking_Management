@@ -12,12 +12,8 @@ public class UpdateNewGroupRequest {
     @RankingGroupNameNotExits
     private String groupName;
 
-    @NotNull
+
     private Integer currentRankingDecision;
 
-    @NotNull
-    private String textDecisionName;
-
-    @NotNull
     private int createdBy;
 }
