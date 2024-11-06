@@ -19,18 +19,17 @@ public interface IRankingGroupService {
 
     public void deleteRankingGroup(int id);
 
-    // response
+    //response
     public List<RankingGroupResponse> getAllRankingGroupResponses(List<RankingGroup> rankingGroups);
 
     public RankingGroupResponse getRankingGroupResponseById(RankingGroup rankingGroup);
 
-    // form
+    //form
     public void createRankingGroup(AddNewGroupRequest form);
 
     public void updateRankingGroup(Integer groupId, UpdateNewGroupRequest form);
-
     public void updateRankingGroupInfo(Integer groupId, UpdateGroupInfo form);
 
-    // validate
+    //validate
     boolean isRankingGroupExitsByGroupName(String groupName);
 }
