@@ -139,7 +139,7 @@ const TaskManagement = () => {
     const isDuplicate = existingTasks.some(
       (task) =>
         task.taskName.toLowerCase() === trimmedName.toLowerCase() &&
-        task.id == selectedTask.id
+        task.id !== selectedTask.id
     );
 
     if (isDuplicate) {

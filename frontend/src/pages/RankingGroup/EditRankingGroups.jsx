@@ -147,7 +147,7 @@ const EditRankingGroup = () => {
         try {
             const updatedGroup = {
                 groupName: trimmedName,
-                currentRankingDecision: selectedCurrentDecision.decisionId || editGroup.currentRankingDecision,
+                currentRankingDecision: selectedCurrentDecision.decisionId || null,
                 createBy: localStorage.getItem('userId')
             };
             await updateRankingGroup(id, updatedGroup);
