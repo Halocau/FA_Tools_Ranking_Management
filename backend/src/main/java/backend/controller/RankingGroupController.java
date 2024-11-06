@@ -2,16 +2,12 @@ package backend.controller;
 
 import backend.config.exception.RankingGroupException;
 import backend.model.dto.RankingGroupResponse;
-import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
-import backend.model.form.RankingGroup.UpdateGroupInfo;
-import backend.model.form.RankingGroup.UpdateNewGroupRequest;
 import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

@@ -37,7 +37,8 @@ public class RankingDecisionController {
     @PostMapping("/add")
     public String addRankingDecision(@RequestBody @Valid CreateRankingDecision form) {
         iRankingDecisionService.createRankingDecision(form);
-        return "Ranking Decision Added Successfully";
+        String s = form.toString();
+        return s;
     }
     @PutMapping("/update/{id}")
     public String updateRankingDecision(@RequestBody @Valid UpdateRankingDecision form, @PathVariable(name = "id") int decisionId) {
