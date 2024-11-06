@@ -3,7 +3,7 @@ import React from "react";
 import { Col, Row } from "react-bootstrap";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-// Css
+// Cssss
 import "bootstrap/dist/css/bootstrap.min.css";
 // Home
 import HomePage from "./pages/HomePage";
@@ -20,9 +20,9 @@ import Sidebar from "./layouts/Sidebar";
 import Header from "./layouts/Header";
 import RankingGroups from "./pages/Auth/RankingGroupsPage.jsx";
 import RankingDecision from "./pages/Auth/RankingDecisionPage.jsx";
-import EditRankingGroup from './pages/Auth/EditRankingGroups.jsx'; // Import EditRankingGroup
-import TaskManagement from './pages/Auth/TaskManagementPage.jsx'
-import CriteriaManagement from './pages/Auth/CriteriaManagementPage.jsx'
+import EditRankingGroup from "./pages/Auth/EditRankingGroups.jsx"; // Import EditRankingGroup
+import TaskManagement from "./pages/Auth/TaskManagementPage.jsx";
+import CriteriaManagement from "./pages/Auth/CriteriaManagementPage.jsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -72,7 +72,8 @@ function App() {
                     <Sidebar />
                   </Col>
                   <Col md={10}>
-                    <EditRankingGroup /> {/* Chuyển sang sử dụng EditRankingGroup */}
+                    <EditRankingGroup />{" "}
+                    {/* Chuyển sang sử dụng EditRankingGroup */}
                   </Col>
                 </Row>
               </>
@@ -176,7 +177,8 @@ function App() {
               </>
             }
           />
-          <Route path="403" element={<ForbiddenPage />} /> {/* Route cho trang 403 */}
+          <Route path="403" element={<ForbiddenPage />} />{" "}
+          {/* Route cho trang 403 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
