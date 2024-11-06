@@ -7,6 +7,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import useRankingDecision from "../../hooks/useRankingDecision";
 import ModalCustom from "../../components/Common/Modal.jsx";
 import "../../assets/css/RankingGroups.css";
+import Slider from "../../layouts/Slider.jsx";
 
 const EditCriteria = () => {
     const { id } = useParams(); // Lấy ID của tiêu chí từ URL
@@ -100,7 +101,8 @@ const EditCriteria = () => {
     };
 
     return (
-        <Box sx={{ marginTop: "60px", padding: 2 }}>
+        <Box sx={{ marginTop: "60px" }}>
+            <Slider />
             <Typography variant="h6">
                 <a href="/ranking_decision">Ranking Decision List</a> {'>'} <a href="/criteria_list">Criteria List</a> {'>'} Edit Criteria
             </Typography>
