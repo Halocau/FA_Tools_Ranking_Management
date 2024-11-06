@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
+
 @Data
 public class UpdateNewGroupRequest {
     @NotBlank
@@ -12,12 +13,7 @@ public class UpdateNewGroupRequest {
     @RankingGroupNameNotExits
     private String groupName;
 
-    @NotNull
     private Integer currentRankingDecision;
 
-    @NotNull
-    private String textDecisionName;
-
-    @NotNull
     private int createdBy;
 }
