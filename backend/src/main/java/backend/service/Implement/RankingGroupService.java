@@ -8,9 +8,9 @@ import backend.model.entity.Account;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
-import backend.model.form.RankingGroup.UpdateGroupInfo;
 import backend.model.form.RankingGroup.UpdateNewGroupRequest;
 import backend.service.IRankingGroupService;
+import backend.service.ValidationUtils;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -175,27 +175,11 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
             if (form.getCurrentRankingDecision() != null) {
                 group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
             }
-            // group.setCreatedBy(form.getCreatedBy());
+//            boolean isVaild = ValidationUtils.validateNameForUpdate(groupId,group.getGroupName(), form.getGroupName(),)
             iRankingGroupRepository.saveAndFlush(group);
         }
     }
 
-    @Override
-    @Transactional
-    public void updateRankingGroupInfo(Integer groupId, UpdateGroupInfo form) {
-        RankingGroup group = iRankingGroupRepository.findById(groupId).orElse(null);
-        if (group != null) {
-            if (!group.getGroupName().equals(form.getGroupName())) {
-                group.setGroupName(form.getGroupName());
-
-            }
-            if (form.getCurrentRankingDecision() != null) {
-                group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
-            }
-            // group.setCreatedBy(form.getCreatedBy());
-            iRankingGroupRepository.saveAndFlush(group);
-        }
-    }
 
     @Override
     public boolean isRankingGroupExitsByGroupName(String groupName) {

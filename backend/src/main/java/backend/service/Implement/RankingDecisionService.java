@@ -74,12 +74,15 @@ public class RankingDecisionService implements IRankingDecisionService {
     @Transactional
     public void createRankingDecision(CreateRankingDecision form) {
         RankingDecision decision = RankingDecision.builder()
+//                .decisionId(form.getDecisionId())
                 .decisionName(form.getDecisionName())
                 .createdBy(form.getCreatedBy())
                 .status("Draft")
                 .build();
         iRankingDecisionRepository.save(decision);
     }
+
+
 
     @Override
     @Transactional
@@ -94,6 +97,8 @@ public class RankingDecisionService implements IRankingDecisionService {
     public boolean isRankingDecisionNameExist(String decisionName) {
         return iRankingDecisionRepository.existsByDecisionName(decisionName);
     }
+
+
 
 //    @Override
 //    @Transactional
