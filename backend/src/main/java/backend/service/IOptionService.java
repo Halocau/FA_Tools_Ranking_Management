@@ -21,4 +21,6 @@ public interface IOptionService {
     //request
     public void createOption(CreateOptionRequest form);
     public void updateOption(UpdateOptionRequest form, int optionId);
+    //validate
+    boolean existsByOptionName(String optionName);
 }

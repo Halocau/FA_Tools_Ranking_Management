@@ -108,4 +108,9 @@ public class OptionService implements IOptionService {
         iOptionRepository.saveAndFlush(findOptionId);
     }
 
+    @Override
+    public boolean existsByOptionName(String optionName) {
+        return iOptionRepository.existsByOptionName(optionName);
+    }
+
 }

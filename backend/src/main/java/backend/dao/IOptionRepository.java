@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface IOptionRepository extends JpaRepository<Options, Integer> {
     public List<Options> findByCriteriaId(Integer criteriaId);
+    boolean existsByOptionName(String optionName);
 }
