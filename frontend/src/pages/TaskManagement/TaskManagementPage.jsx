@@ -258,8 +258,6 @@ const TaskManagement = () => {
         <Typography variant="h6">
           <a href="/ranking_decision">Ranking Decision List</a> {">"} Task
           Management
-          <a href="/ranking_decision">Ranking Decision List</a> {">"} Task
-          Management
         </Typography>
         {message && <Alert severity={messageType}>{message}</Alert>}
         {loading ? (
