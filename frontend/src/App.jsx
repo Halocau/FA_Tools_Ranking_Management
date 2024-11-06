@@ -1,8 +1,8 @@
-import "./App.css";
+
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
 // Css
+import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import 'notyf/notyf.min.css';
 // Home
@@ -27,6 +27,7 @@ import BulkRankingGroup from './pages/RankingGroup/BulkRankingGroup.jsx';
 //RankingDecision
 import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
 import EditRankingDecision from "./pages/RankingDecision/EditRankingDecision.jsx";
+import EditDecision from "./pages/RankingDecision/EditDecision.jsx";
 import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx';
 import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx';
 
@@ -88,7 +89,7 @@ function App() {
               path="/ranking-decision/edit/:id"
               element={
                 <DashboardLayout>
-                  <EditRankingDecision />
+                  <EditDecision />
                 </DashboardLayout>
               }
             />

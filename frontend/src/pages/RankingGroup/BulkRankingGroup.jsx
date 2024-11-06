@@ -1,6 +1,6 @@
 // react
 import React, { useEffect, useState } from "react";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaAngleRight } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
 // css 
@@ -261,7 +261,9 @@ const BulkRankingGroup = () => {
             {/* Group Info */}
             <Box sx={{ marginTop: 4, padding: 2 }}>
                 <Typography variant="h6">
-                    <a href="/ranking_group">Ranking Group List</a> {'>'} Bulk Ranking history
+                    <a href="/ranking_group">Ranking Group List</a>{" "}
+                    {<FaAngleRight />}
+                    Bulk Ranking Group
                 </Typography>
                 <Box sx={{
                     border: '1px solid black',

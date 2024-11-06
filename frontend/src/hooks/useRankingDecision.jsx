@@ -47,6 +47,7 @@ const useRankingDecision = () => {
 
     const addRankingDecision = async (newDecision) => {
         setLoading(true);
+        // console.log(newDecision)
         try {
             const response = await authClient.post(`/ranking-decision/add`, newDecision);
             await fetchAllRankingDecisions();  // Refresh the decision list
@@ -60,22 +61,6 @@ const useRankingDecision = () => {
         }
     };
 
-    const addDecisionWithClone = async (newDecision, selectedCloneDecisionId) => {
-        if (selectedCloneDecisionId) {
-            const decisionToClone = await fetchRankingDecisionById(selectedCloneDecisionId);
-            const clonedDecision = {
-                ...decisionToClone,
-                id: undefined,  // Remove the ID to create a new entry
-                name: newDecision.name,  // Set the name to the new decision's name
-                status: "Draft"  // Set the status as needed
-            };
-            return await addRankingDecision(clonedDecision);
-        } else {
-            return await addRankingDecision(newDecision);
-
-        }
-
-    };
 
     // Updates a specific decision by ID and updates the data state
     const updateRankingDecision = async (id, updatedDecision) => {
@@ -116,7 +101,6 @@ const useRankingDecision = () => {
         fetchAllRankingDecisions,
         fetchRankingDecisionById,
         addRankingDecision,
-        addDecisionWithClone,
         updateRankingDecision,
         deleteRankingDecision,
     };

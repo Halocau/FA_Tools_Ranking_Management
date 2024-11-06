@@ -37,6 +37,9 @@ const RankingDecision = () => {
     // Add
     const [showAddModal, setShowAddModal] = useState(false); // State to determine whether the additional decision modal is displayed or not
     const [newDecisionName, setnewDecisionName] = useState(""); // State to store the new decison name that the user enters
+    const [clone, setClone] = useState(false); // Clone state decides
+    const [selectedCloneDecision, setSelectedCloneDecision] = useState(null);
+    const [rankingDecisions, setRankingDecisions] = useState([]); // List of ranking decisions
     // Delete
     const [showDeleteModal, setShowDeleteModal] = useState(false); // State to determine whether the delete decision modal is displayed or not
     const [DecisionToDelete, setDecisionToDelete] = useState(null); // State to store the ID of the decision to be deleted
@@ -87,14 +90,15 @@ const RankingDecision = () => {
     }, [decisions, loading, error]);
 
     //// Handlers to open/close modals for adding or deleting decisions
-    // Modal Add
+    // Open the modal
     const handleOpenAddRankingDecisionModal = () => setShowAddModal(true);
+    // Close the modal
     const handleCloseAddRankingDecisionModal = () => {
         setShowAddModal(false);
         setnewDecisionName("");
         setValidationMessage("");
     };
-    // Function to add a new decision with validation checks
+    // Function to adding Ranking Decision
     const handleAddRankingDecision = async () => {
         setValidationMessage("");
         let trimmedName = newDecisionName.trim();
@@ -110,28 +114,42 @@ const RankingDecision = () => {
             return;
         }
         try {
-            const newdecision = {
+            let newDecision = {
                 decisionName: trimmedName,
-                createdBy: localStorage.getItem('userId'), // Get the account ID as the ID of the user creating the decision
-                status: "Draft",
+                createdBy: localStorage.getItem('userId'), // ID của người tạo
             };
-            await addRankingDecision(newdecision); // Call API to add new decision
-            showSuccessMessage("Ranking Decision successfully added !");
+            // Check condision Clone
+            if (clone && selectedCloneDecision) {
+                newDecision = {
+                    ...newDecision,
+                    CloneDecision: selectedCloneDecision.decisionId
+                };
+                await addRankingDecision(newDecision);
+            } else {
+                newDecision = {
+                    ...newDecision,
+                    CloneDecision: null
+                };
+                await addRankingDecision(newDecision);
+            }
+            setRankingDecisions([...rankingDecisions, newDecision]);
+            showSuccessMessage("Ranking Decision successfully added.");
+
             handleCloseAddRankingDecisionModal();
-            // await fetchAllRankingDecisions();
+            await fetchAllRankingDecisions();
         } catch (error) {
             console.error("Failed to add decision:", error);
             showErrorMessage("Error occurred adding Ranking Decision. Please try again.");
-
         }
     };
 
-
-    // Modal Delete
+    //////////////////////////////////////////////////////////// Handlers to open/close modals for Delete Ranking Decision ///////////////////////////////////////////////////////////
+    // Open the modal
     const handleOpenDeleteRnkingDecisionModal = (decisionId) => {
         setDecisionToDelete(decisionId);
         setShowDeleteModal(true);
     };
+    // Close the modal
     const handleCloseDeleteRankingDecisionModal = () => setShowDeleteModal(false);
     // Function to delete a row ranking decision
     const handledeleteRankingDecision = async () => {
@@ -170,7 +188,8 @@ const RankingDecision = () => {
             handleCloseBulk_DeleteRankingModal();
         }
     };
-
+    /////////////////////////////////////////////////////////// Search Decision ///////////////////////////////////////////////////////////
+    // Map decision data to rows for DataGrid when decisions are fetched
     // Columns configuration for the DataGrid
     const columns = [
         { field: "index", headerName: "ID", width: 80 },
@@ -216,8 +235,7 @@ const RankingDecision = () => {
             ),
         },
     ];
-    /////////////////////////////////////////////////////////// Search Decision ///////////////////////////////////////////////////////////
-    // Map decision data to rows for DataGrid when decisions are fetched
+    // Load data table ranking decision list
     useEffect(() => {
         if (decisions) {
             const mappedRows = decisions.map((decision, index) => ({
@@ -232,6 +250,7 @@ const RankingDecision = () => {
             setFilteredRows(mappedRows); // Update filteredRows with original data
         }
     }, [decisions]);
+    //
     const handleInputChange = (event, value) => {
         setSearchValue(value);
         const filtered = value
@@ -239,7 +258,6 @@ const RankingDecision = () => {
             : rows;
         setFilteredRows(filtered);
     };
-
 
     return (
         <div style={{ marginTop: "60px" }}>
@@ -305,7 +323,7 @@ const RankingDecision = () => {
                         sx={{ flexGrow: 1, marginRight: '16px', maxWidth: '600px', marginTop: '-10px' }} // Đặt maxWidth cho Autocomplete để giảm chiều rộng
                     />
                 </Box>
-                <Box sx={{ width: "100%", height: 370, marginTop: '20px' }}>
+                <Box sx={{ width: "100%", height: 400, marginTop: '20px' }}>
                     <DataGrid
                         className="custom-data-grid"
                         apiRef={apiRef}
@@ -344,12 +362,22 @@ const RankingDecision = () => {
                     </Button>
                 </div>
 
-                {/* Modal for adding a new decision */}
-                <ModalCustom
-                    show={showAddModal}
-                    handleClose={handleCloseAddRankingDecisionModal}
-                    title="Add New decision"
-                    bodyContent={
+                {/* Modal for adding new ranking decision */}
+                <Modal open={showAddModal} onClose={handleCloseAddRankingDecisionModal}>
+                    <Box sx={{
+                        padding: 2,
+                        backgroundColor: 'white',
+                        borderRadius: 1,
+                        maxWidth: 400,
+                        margin: 'auto',
+                        marginTop: '100px'
+                    }}>
+
+                        <Typography variant="h6" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            Add New Ranking Decision
+                            <button type="button" className="btn-close" aria-label="Close" onClick={handleCloseAddRankingDecisionModal}></button>
+                        </Typography>
+
                         <TextField
                             label="Decision Name"
                             variant="outlined"
@@ -361,19 +389,40 @@ const RankingDecision = () => {
                             }}
                             error={!!validationMessage}
                             helperText={validationMessage}
+                            sx={{ marginTop: 2 }}
                         />
-                    }
-                    footerContent={
-                        <ActionButtons
-                            onCancel={handleCloseAddRankingDecisionModal}
-                            onConfirm={handleAddRankingDecision}
-                            confirmText="Add"
-                            cancelText="Cancel"
-                            color="success"
+                        <FormControlLabel
+                            control={<Switch checked={clone} onChange={() => setClone(!clone)} />}
+                            label="Clone from other decision"
                         />
-                    }
-                />
+                        {clone && (
+                            <Autocomplete
+                                disablePortal
+                                options={decisions}
+                                getOptionLabel={(option) => option.decisionName || ''}
+                                value={selectedCloneDecision}  // Tìm đối tượng quyết định
+                                onChange={(event, value) => {
+                                    setSelectedCloneDecision(value || null);
+                                    console.log(selectedCloneDecision)
 
+                                }}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Choice Decision"
+                                        variant="outlined"
+                                        fullWidth
+                                        sx={{ marginTop: 2 }}
+                                    />
+                                )}
+                            />
+                        )}
+                        <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
+                            <Button variant="outlined" onClick={handleCloseAddRankingDecisionModal}>Cancel</Button>
+                            <Button variant="contained" onClick={handleAddRankingDecision}>Save</Button>
+                        </Box>
+                    </Box>
+                </Modal>
                 {/* Modal for deleting a decision */}
                 <ModalCustom
                     show={showDeleteModal}

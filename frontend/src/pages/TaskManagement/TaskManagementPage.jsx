@@ -28,7 +28,6 @@ import useTask from "../../hooks/useTask.jsx";
 import useNotification from "../../hooks/useNotification";
 const TaskManagement = () => {
   const navigate = useNavigate();
-
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false); // State for Edit Modal
