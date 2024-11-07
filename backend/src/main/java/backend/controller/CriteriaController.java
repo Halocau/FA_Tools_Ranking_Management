@@ -31,7 +31,7 @@ public class CriteriaController {
         return new ResponseEntity<>(criteriaList, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<Criteria> getCriteriaById(@PathVariable("id") int criteriaId) {
         Criteria criteria = criteriaService.getCriteriabyId(criteriaId);
         return new ResponseEntity<>(criteria, HttpStatus.OK);

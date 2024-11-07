@@ -163,10 +163,10 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
         RankingGroup group = iRankingGroupRepository.findById(groupId).orElse(null);
         if (group != null) {
             group.setGroupName(form.getGroupName());
-            group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
-            RankingDecision decision = iRankingDecisionRepository.findById(form.getCurrentRankingDecision()).get();
-            decision.setDecisionName(form.getTextDecisionName());
-            group.setCreatedBy(form.getCreatedBy());
+            if (form.getCurrentRankingDecision() != null) {
+                group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
+
+            }
             iRankingGroupRepository.saveAndFlush(group);
         }
     }
