@@ -1,6 +1,6 @@
 /* src/layouts/Sidebar.css */
 .sidebar {
-  width: 250px;
+  width: 260px;
   height: 100vh;
   background-color: #003366;
   /* Màu nền xanh đậm */
@@ -33,7 +33,6 @@
   background-color: #005599;
   /* Đổi màu khi hover */
   color: black;
-
 }
 
 .nav-link.active {
