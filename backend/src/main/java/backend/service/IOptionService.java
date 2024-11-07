@@ -23,4 +23,5 @@ public interface IOptionService {
     public void updateOption(UpdateOptionRequest form, int optionId);
     //validate
     boolean existsByOptionName(String optionName);
+    boolean existsByOptionNameAndOptionIdNot(String optionName, Integer optionId);
 }
