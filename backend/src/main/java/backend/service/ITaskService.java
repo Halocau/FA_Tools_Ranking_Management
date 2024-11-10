@@ -23,13 +23,16 @@ public interface ITaskService {
     public Task findTaskByCreatedBy(int createdBy);
 
     // response
-//    public List<TaskResponse> getAllTaskResponse(List<Task> tasks);
-    public List<TaskResponse> getAllTaskResponse(Pageable pageable);
+    // public List<TaskResponse> getAllTaskResponse(List<Task> tasks);
+    public List<TaskResponse> getAllTaskResponse(List<Task> tasks);
+
     public TaskResponse getTaskResponseById(Task task);
 
     // form
     public void createTaskByForm(AddTaskRequest form);
 
     public void updateTaskByForm(int taskId, UpdateTaskRequest form);
+
+    public List<Task> searchByTaskName(String taskName, Pageable pageable);
 
 }

@@ -131,10 +131,10 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     }
 
     @Override
-    public List<RankingGroupResponse> getAllRankingGroupResponses(Pageable pageable) {
-        Page<RankingGroup> rankingGroups = iRankingGroupRepository.findAll(pageable);
+    public List<RankingGroupResponse> getAllRankingGroupResponses(List<RankingGroup> rankingGroups) {
+        // Page<RankingGroup> rankingGroups = iRankingGroupRepository.findAll(pageable);
         List<RankingGroupResponse> responseList = new ArrayList<>();
-        for (RankingGroup rankingGroup : rankingGroups.getContent()) {
+        for (RankingGroup rankingGroup : rankingGroups) {
             // Ánh xạ cơ bản từ RankingGroup sang RankingGroupResponse
             RankingGroupResponse response = modelMapper.map(rankingGroup, RankingGroupResponse.class);
 
@@ -200,15 +200,12 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
         return iRankingGroupRepository.existsByGroupName(groupName);
     }
 
-    // @Override
-    // public List<RankingGroup> searchByGroupName(String groupName, int page, int
-    // limit) {
-    // PageRequest pageRequest = PageRequest.of(page, limit);
+    @Override
+    public List<RankingGroup> searchByGroupName(String groupName, Pageable pageable) {
 
-    // List<RankingGroup> rankingGroups = iRankingGroupRepository
-    // .findByGroupNameContainingIgnoreCase(groupName, pageRequest); // Get list of
-    // content from Page
+        List<RankingGroup> rankingGroups = iRankingGroupRepository.findByGroupNameContainingIgnoreCase(groupName,
+                pageable); // Get list of content from Page
 
-    // return rankingGroups;
-    // }
+        return rankingGroups;
+    }
 }

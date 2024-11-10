@@ -33,20 +33,18 @@ public class TaskController {
     @GetMapping
     public ResponseEntity<List<TaskResponse>> getAllTasks(
             @RequestParam("page") Optional<String> page,
-            @RequestParam("size") Optional<String> size
-    ) {
+            @RequestParam("size") Optional<String> size) {
         Pageable pageable = PaginationUtils.createPageable(page, size);
-        List<TaskResponse> taskResponses = iTaskService.getAllTaskResponse(pageable);
+        List<Task> tasks = iTaskService.getTask(pageable);
+        List<TaskResponse> taskResponses = iTaskService.getAllTaskResponse(tasks);
         return ResponseEntity.status(HttpStatus.OK).body(taskResponses);
     }
 
-
-    //test pagination
+    // test pagination
     @GetMapping("/full")
     public ResponseEntity<List<Task>> getTaskList(
             @RequestParam("page") Optional<String> page,
-            @RequestParam("size") Optional<String> size
-    ) {
+            @RequestParam("size") Optional<String> size) {
         String pageRaw = page.isPresent() ? page.get() : "";
         String sizeRaw = size.isPresent() ? size.get() : "";
         int pageCurrent = Integer.parseInt(pageRaw);
@@ -85,5 +83,16 @@ public class TaskController {
         }
         iTaskService.deleteTaskById(id);
         return ResponseEntity.ok("Task successfully deleted id " + id);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<TaskResponse>> searchByTaskName(
+            @RequestParam(value = "name", defaultValue = "") String taskName,
+            @RequestParam(value = "page", defaultValue = "0") Optional<String> page,
+            @RequestParam(value = "size", defaultValue = "5") Optional<String> limit) {
+        Pageable pageable = PaginationUtils.createPageable(page, limit);
+        List<Task> tasks = iTaskService.searchByTaskName(taskName, pageable);
+        List<TaskResponse> taskResponses = iTaskService.getAllTaskResponse(tasks);
+        return ResponseEntity.ok(taskResponses);
     }
 }

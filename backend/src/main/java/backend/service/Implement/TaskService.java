@@ -67,10 +67,9 @@ public class TaskService implements ITaskService {
     }
 
     @Override
-    public List<TaskResponse> getAllTaskResponse(Pageable pageable) {
-        Page<Task> pageTask = iTaskRepository.findAll(pageable);
+    public List<TaskResponse> getAllTaskResponse(List<Task> pageTask) {
         List<TaskResponse> taskResponses = new ArrayList<>();
-        for (Task task : pageTask.getContent()) {
+        for (Task task : pageTask) {
             TaskResponse response = modelMapper.map(task, TaskResponse.class);
             if (task.getCreatedBy() == null) {
                 response.setCreatedByName(null);
@@ -85,26 +84,25 @@ public class TaskService implements ITaskService {
     }
 
     // Response
-//    @Override
-//    public List<TaskResponse> getAllTaskResponse(List<Task> tasks) {
-//        List<TaskResponse> taskResponses = new ArrayList<>();
-//
-//        for (Task task : tasks) {
-//            TaskResponse response = modelMapper.map(task, TaskResponse.class);
-//
-//            if (task.getCreatedBy() == null) {
-//                response.setCreatedByName(null);
-//            } else {
-//                Account account = iAccount.findById(task.getCreatedBy()).orElse(null);
-//                response.setCreatedByName(account != null ? account.getUsername() : null);
-//            }
-//
-//            taskResponses.add(response);
-//        }
-//
-//        return taskResponses;
-//    }
-
+    // @Override
+    // public List<TaskResponse> getAllTaskResponse(List<Task> tasks) {
+    // List<TaskResponse> taskResponses = new ArrayList<>();
+    //
+    // for (Task task : tasks) {
+    // TaskResponse response = modelMapper.map(task, TaskResponse.class);
+    //
+    // if (task.getCreatedBy() == null) {
+    // response.setCreatedByName(null);
+    // } else {
+    // Account account = iAccount.findById(task.getCreatedBy()).orElse(null);
+    // response.setCreatedByName(account != null ? account.getUsername() : null);
+    // }
+    //
+    // taskResponses.add(response);
+    // }
+    //
+    // return taskResponses;
+    // }
 
     @Override
     public TaskResponse getTaskResponseById(Task task) {
@@ -140,6 +138,11 @@ public class TaskService implements ITaskService {
         task.setTaskName(form.getTaskName());
         task.setCreatedBy(form.getCreatedBy());
         iTaskRepository.saveAndFlush(task);
+    }
+
+    @Override
+    public List<Task> searchByTaskName(String taskName, Pageable pageable) {
+        return iTaskRepository.findByTaskNameContainingIgnoreCase(taskName, pageable);
     }
 
 }

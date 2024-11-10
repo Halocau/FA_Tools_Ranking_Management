@@ -9,6 +9,8 @@ import backend.model.form.RankingGroup.UpdateNewGroupRequest;
 import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupService;
 import jakarta.validation.Valid;
+
+import org.hibernate.query.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +28,7 @@ public class RankingGroupController {
 
     @Autowired
     public RankingGroupController(IRankingGroupService iRankingGroupService,
-                                  IRankingDecisionService iRankingDecisionService) {
+            IRankingDecisionService iRankingDecisionService) {
         this.iRankingGroupService = iRankingGroupService;
         this.iRankingDecisionService = iRankingDecisionService;
     }
@@ -46,11 +48,10 @@ public class RankingGroupController {
     @GetMapping
     public List<RankingGroupResponse> getAllRankingGroups(
             @RequestParam("page") Optional<String> page,
-            @RequestParam("size") Optional<String> size
-    ) {
+            @RequestParam("size") Optional<String> size) {
         Pageable pageable = PaginationUtils.createPageable(page, size);
         List<RankingGroup> rankingGroups = iRankingGroupService.getAllRankingGroups(pageable);
-        return iRankingGroupService.getAllRankingGroupResponses(pageable);
+        return iRankingGroupService.getAllRankingGroupResponses(rankingGroups);
     }
 
     @GetMapping("/all")
@@ -79,7 +80,7 @@ public class RankingGroupController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<String> updateRankingGroup(@RequestBody @Valid UpdateNewGroupRequest form,
-                                                     @PathVariable(name = "id") Integer groupId) {
+            @PathVariable(name = "id") Integer groupId) {
         RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(groupId);
         if (rankingGroup == null) {
             throw new RankingGroupException("RankingGroup not found id: " + groupId);
@@ -114,5 +115,17 @@ public class RankingGroupController {
         }
         iRankingGroupService.deleteRankingGroup(id);
         return ResponseEntity.ok("deleted successfully " + id);
+    }
+
+    // Search
+    @GetMapping("/search")
+    public List<RankingGroupResponse> searchRankingGroups(
+            @RequestParam(value = "name", defaultValue = "") String groupName,
+            @RequestParam(value = "page", defaultValue = "0") Optional<String> page,
+            @RequestParam(value = "size", defaultValue = "5") Optional<String> limit) {
+        Pageable pageable = PaginationUtils.createPageable(page, limit);
+        List<RankingGroup> rankingGroups = iRankingGroupService.searchByGroupName(groupName, pageable);
+        List<RankingGroupResponse> responses = iRankingGroupService.getAllRankingGroupResponses(rankingGroups);
+        return responses;
     }
 }
