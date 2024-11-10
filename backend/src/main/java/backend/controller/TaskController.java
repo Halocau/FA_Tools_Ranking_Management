@@ -9,11 +9,15 @@ import backend.model.form.Task.AddTaskRequest;
 import backend.model.form.Task.UpdateTaskRequest;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.ITaskService;
+
+import com.turkraft.springfilter.boot.Filter;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,15 +49,9 @@ public class TaskController {
     //test pagination
     @GetMapping("/full")
     public ResponseEntity<ResultPaginationDTO> getTaskList(
-            @RequestParam("page") Optional<String> page,
-            @RequestParam("size") Optional<String> size
-    ) {
-        String pageRaw = page.isPresent() ? page.get() : "";
-        String sizeRaw = size.isPresent() ? size.get() : "";
-        int pageCurrent = Integer.parseInt(pageRaw);
-        int pageSize = Integer.parseInt(sizeRaw);
-        Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
-        return ResponseEntity.status(HttpStatus.OK).body(iTaskService.getTask(pageable));
+            @Filter Specification<Task> spec,
+             Pageable pageable) {
+        return ResponseEntity.status(HttpStatus.OK).body(this.iTaskService.getTask(spec, pageable));
     }
 
     @GetMapping("/get/{id}")

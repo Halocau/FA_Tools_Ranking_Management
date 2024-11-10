@@ -1,5 +1,6 @@
 package backend.service.Implement;
 
+import backend.config.exception.exceptionEntity.RankingGroupException;
 import backend.dao.IAccount;
 import backend.dao.IRankingDecisionRepository;
 import backend.dao.IRankingGroupRepository;
@@ -14,7 +15,7 @@ import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+
 import org.springframework.stereotype.Service;
 
 
@@ -48,7 +49,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
 
         // Kiểm tra nếu không có nhóm nào
         if (rankingGroups.isEmpty()) {
-            throw new ResourceNotFoundException("No Ranking Groups found.");
+            throw new RankingGroupException("No Ranking Groups found.");
         }
 
         for (RankingGroup group : rankingGroups) {
@@ -73,7 +74,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     public RankingGroup findRankingGroupById(int id) {
         RankingGroup group = iRankingGroupRepository
                 .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("RankingGroup not found with id: " + id));
+                .orElseThrow(() -> new RankingGroupException("RankingGroup not found with id: " + id));
 
         // Lấy tài khoản được tạo bởi 'CreatedBy' của nhóm, nếu có, thiết lập username
         iAccount.findById(group.getCreatedBy())
