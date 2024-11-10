@@ -1,6 +1,7 @@
 package backend.controller;
 
-import backend.config.exception.RankingGroupException;
+import backend.config.common.PaginationUtils;
+import backend.config.exception.exceptionEntity.RankingGroupException;
 import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingGroup;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
@@ -9,10 +10,12 @@ import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/ranking-group")
@@ -23,7 +26,7 @@ public class RankingGroupController {
 
     @Autowired
     public RankingGroupController(IRankingGroupService iRankingGroupService,
-            IRankingDecisionService iRankingDecisionService) {
+                                  IRankingDecisionService iRankingDecisionService) {
         this.iRankingGroupService = iRankingGroupService;
         this.iRankingDecisionService = iRankingDecisionService;
     }
@@ -41,14 +44,18 @@ public class RankingGroupController {
     // }
 
     @GetMapping
-    public List<RankingGroupResponse> getAllRankingGroups() {
-        List<RankingGroup> rankingGroups = iRankingGroupService.getAllRankingGroups();
-        return iRankingGroupService.getAllRankingGroupResponses(rankingGroups);
+    public List<RankingGroupResponse> getAllRankingGroups(
+            @RequestParam("page") Optional<String> page,
+            @RequestParam("size") Optional<String> size
+    ) {
+        Pageable pageable = PaginationUtils.createPageable(page, size);
+        List<RankingGroup> rankingGroups = iRankingGroupService.getAllRankingGroups(pageable);
+        return iRankingGroupService.getAllRankingGroupResponses(pageable);
     }
 
     @GetMapping("/all")
-    public List<RankingGroup> getAllRankingGroup() {
-        List<RankingGroup> rankingGroups = iRankingGroupService.getAllRankingGroups();
+    public List<RankingGroup> getAllRankingGroup(Pageable pageable) {
+        List<RankingGroup> rankingGroups = iRankingGroupService.getAllRankingGroups(pageable);
         return rankingGroups;
     }
 
@@ -72,7 +79,7 @@ public class RankingGroupController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<String> updateRankingGroup(@RequestBody @Valid UpdateNewGroupRequest form,
-            @PathVariable(name = "id") Integer groupId) {
+                                                     @PathVariable(name = "id") Integer groupId) {
         RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(groupId);
         if (rankingGroup == null) {
             throw new RankingGroupException("RankingGroup not found id: " + groupId);

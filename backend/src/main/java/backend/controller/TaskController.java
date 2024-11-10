@@ -1,6 +1,8 @@
 package backend.controller;
 
-import backend.config.exception.TaskException;
+import backend.config.common.PaginationUtils;
+
+import backend.config.exception.exceptionEntity.TaskException;
 import backend.model.dto.TaskResponse;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
@@ -29,17 +31,13 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskResponse> getAllTasks(
+    public ResponseEntity<List<TaskResponse>> getAllTasks(
             @RequestParam("page") Optional<String> page,
             @RequestParam("size") Optional<String> size
     ) {
-        String pageRaw = page.isPresent() ? page.get() : "";
-        String sizeRaw = size.isPresent() ? size.get() : "";
-        int pageCurrent = Integer.parseInt(pageRaw);
-        int pageSize = Integer.parseInt(sizeRaw);
-        Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
+        Pageable pageable = PaginationUtils.createPageable(page, size);
         List<TaskResponse> taskResponses = iTaskService.getAllTaskResponse(pageable);
-        return taskResponses;
+        return ResponseEntity.status(HttpStatus.OK).body(taskResponses);
     }
 
 
