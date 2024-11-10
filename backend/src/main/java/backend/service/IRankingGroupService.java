@@ -4,11 +4,11 @@ import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingGroup;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
 import backend.model.form.RankingGroup.UpdateNewGroupRequest;
-
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface IRankingGroupService {
-    public List<RankingGroup> getAllRankingGroups();
+    public List<RankingGroup> getAllRankingGroups(Pageable pageable);
 
     public RankingGroup findRankingGroupById(int id);
 
@@ -19,7 +19,7 @@ public interface IRankingGroupService {
     public void deleteRankingGroup(int id);
 
     // response
-    public List<RankingGroupResponse> getAllRankingGroupResponses(List<RankingGroup> rankingGroups);
+    public List<RankingGroupResponse> getAllRankingGroupResponses(Pageable pageable);
 
     public RankingGroupResponse getRankingGroupResponseById(RankingGroup rankingGroup);
 

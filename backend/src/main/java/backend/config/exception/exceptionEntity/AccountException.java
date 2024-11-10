@@ -1,4 +1,4 @@
-package backend.config.exception;
+package backend.config.exception.exceptionEntity;
 
 public class AccountException extends RuntimeException {
     public AccountException(String message) {
