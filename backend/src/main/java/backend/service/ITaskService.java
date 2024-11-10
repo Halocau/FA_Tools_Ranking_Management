@@ -4,12 +4,13 @@ import backend.model.dto.TaskResponse;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
 import backend.model.form.Task.UpdateTaskRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface ITaskService {
     // crud task
-    public List<Task> getTask();
+    public List<Task> getTask(Pageable pageable);
 
     public Task getTaskById(int id);
 
@@ -22,8 +23,8 @@ public interface ITaskService {
     public Task findTaskByCreatedBy(int createdBy);
 
     // response
-    public List<TaskResponse> getAllTaskResponse(List<Task> tasks);
-
+//    public List<TaskResponse> getAllTaskResponse(List<Task> tasks);
+    public List<TaskResponse> getAllTaskResponse(Pageable pageable);
     public TaskResponse getTaskResponseById(Task task);
 
     // form
