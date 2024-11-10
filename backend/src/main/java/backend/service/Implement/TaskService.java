@@ -7,6 +7,8 @@ import backend.model.entity.Account;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
 import backend.model.form.Task.UpdateTaskRequest;
+import backend.model.page.PageInfo;
+import backend.model.page.ResultPaginationDTO;
 import backend.service.ITaskService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -33,9 +35,20 @@ public class TaskService implements ITaskService {
     }
 
     @Override
-    public List<Task> getTask(Pageable pageable) {
+    public ResultPaginationDTO getTask(Pageable pageable) {
         Page<Task> pageTask = iTaskRepository.findAll(pageable);
-        return pageTask.getContent();
+        ResultPaginationDTO dto = new ResultPaginationDTO();
+        PageInfo info = new PageInfo();
+
+        info.setPage(pageTask.getNumber()+1);
+        info.setSize(pageTask.getSize());
+        info.setTotal(pageTask.getTotalPages());
+        info.setElement(pageTask.getTotalElements());
+
+        dto.setPageInfo(info);
+        dto.setResult(pageTask.getContent());
+
+        return dto;
     }
 
     @Override

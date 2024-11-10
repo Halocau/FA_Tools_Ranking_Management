@@ -7,6 +7,7 @@ import backend.model.dto.TaskResponse;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
 import backend.model.form.Task.UpdateTaskRequest;
+import backend.model.page.ResultPaginationDTO;
 import backend.service.ITaskService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class TaskController {
 
     //test pagination
     @GetMapping("/full")
-    public ResponseEntity<List<Task>> getTaskList(
+    public ResponseEntity<ResultPaginationDTO> getTaskList(
             @RequestParam("page") Optional<String> page,
             @RequestParam("size") Optional<String> size
     ) {
