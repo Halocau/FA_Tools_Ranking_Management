@@ -9,7 +9,6 @@ import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,26 +50,6 @@ public class RankingGroupController {
     public List<RankingGroup> getAllRankingGroup() {
         List<RankingGroup> rankingGroups = iRankingGroupService.getAllRankingGroups();
         return rankingGroups;
-    }
-
-    @GetMapping("/pagination")
-    public ResponseEntity<List<RankingGroupResponse>> getAllRankingGroups(
-            @RequestParam(defaultValue = "10") int limit,
-            @RequestParam(defaultValue = "0") int page) {
-
-        List<RankingGroup> rankingGroups = iRankingGroupService.getRankingGroupsWithPagination(limit, page);
-        List<RankingGroupResponse> responses = iRankingGroupService.getAllRankingGroupResponses(rankingGroups);
-
-        return new ResponseEntity<>(responses, HttpStatus.OK);
-    }
-
-    @GetMapping("/search")
-    public List<RankingGroupResponse> searchRankingGroups(@RequestParam("name") String groupName,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "limit", defaultValue = "5") int limit) {
-        List<RankingGroup> rankingGroups = iRankingGroupService.searchByGroupName(groupName, page, limit);
-        List<RankingGroupResponse> responses = iRankingGroupService.getAllRankingGroupResponses(rankingGroups);
-        return responses;
     }
 
     @GetMapping("/get/{id}")

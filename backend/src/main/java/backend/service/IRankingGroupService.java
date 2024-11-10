@@ -8,7 +8,6 @@ import backend.model.form.RankingGroup.UpdateNewGroupRequest;
 import java.util.List;
 
 public interface IRankingGroupService {
-
     public List<RankingGroup> getAllRankingGroups();
 
     public RankingGroup findRankingGroupById(int id);
@@ -18,9 +17,6 @@ public interface IRankingGroupService {
     public RankingGroup editRankingGroup(RankingGroup rankingGroup);
 
     public void deleteRankingGroup(int id);
-
-    // pagination
-    public List<RankingGroup> getRankingGroupsWithPagination(int limit, int page);
 
     // response
     public List<RankingGroupResponse> getAllRankingGroupResponses(List<RankingGroup> rankingGroups);
@@ -34,6 +30,4 @@ public interface IRankingGroupService {
 
     // validate
     boolean isRankingGroupExitsByGroupName(String groupName);
-
-    public List<RankingGroup> searchByGroupName(String groupName, int page, int limit);
 }

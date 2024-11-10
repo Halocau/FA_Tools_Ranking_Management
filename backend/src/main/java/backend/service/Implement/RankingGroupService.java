@@ -13,7 +13,6 @@ import backend.service.IRankingGroupService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -64,13 +63,6 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
             }
         }
         return rankingGroups;
-    }
-
-    // Pagination
-    @Override
-    public List<RankingGroup> getRankingGroupsWithPagination(int limit, int page) {
-        PageRequest pageRequest = PageRequest.of(page, limit);
-        return iRankingGroupRepository.findAll(pageRequest).getContent();
     }
 
     @Override
@@ -185,37 +177,17 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
             }
 
             group.setGroupName(form.getGroupName());
-            if (form.getCurrentRankingDecision() != null) {
+            if (form.getCurrentRankingDecision() != null)  {
                 group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
             }
             iRankingGroupRepository.saveAndFlush(group);
         }
     }
 
+
     @Override
     public boolean isRankingGroupExitsByGroupName(String groupName) {
         return iRankingGroupRepository.existsByGroupName(groupName);
     }
 
-    @Override
-    public List<RankingGroup> searchRankingGroupsWithPagination(String searchTerm, int limit, int page) {
-        PageRequest pageRequest = PageRequest.of(page, limit);
-
-        if (searchTerm == null || searchTerm.isEmpty()) {
-            return iRankingGroupRepository.findAll(pageRequest).getContent();
-        }
-
-        // Assuming your repository has a method to search by groupName or other fields
-        return iRankingGroupRepository.findAll();
-    }
-
-    @Override
-    public List<RankingGroup> searchByGroupName(String groupName, int page, int limit) {
-        PageRequest pageRequest = PageRequest.of(page, limit);
-
-        List<RankingGroup> rankingGroups = iRankingGroupRepository
-                .findByGroupNameContainingIgnoreCase(groupName, pageRequest); // Get list of content from Page
-
-        return rankingGroups;
-    }
 }
