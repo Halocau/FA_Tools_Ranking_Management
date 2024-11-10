@@ -14,11 +14,10 @@ import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-
-
-import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +33,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
 
     @Autowired
     public RankingGroupService(ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository,
-                               IAccount iAccount, IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper1) {
+            IAccount iAccount, IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper1) {
         super(modelMapper);
         this.iRankingGroupRepository = iRankingGroupRepository;
         this.iAccount = iAccount;
@@ -45,7 +44,6 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     @Override
     public List<RankingGroup> getAllRankingGroups(Pageable pageable) {
         Page<RankingGroup> rankingGroups = iRankingGroupRepository.findAll(pageable);
-
         // Kiểm tra nếu không có nhóm nào
         if (rankingGroups.isEmpty()) {
             throw new ResourceNotFoundException("No Ranking Groups found.");
@@ -68,6 +66,14 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
         }
         return rankingGroups.getContent();
     }
+
+    // // Pagination
+    // @Override
+    // public List<RankingGroup> getRankingGroupsWithPagination(int limit, int page)
+    // {
+    // PageRequest pageRequest = PageRequest.of(page, limit);
+    // return iRankingGroupRepository.findAll(pageRequest).getContent();
+    // }
 
     @Override
     public RankingGroup findRankingGroupById(int id) {
@@ -189,10 +195,20 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
         }
     }
 
-
     @Override
     public boolean isRankingGroupExitsByGroupName(String groupName) {
         return iRankingGroupRepository.existsByGroupName(groupName);
     }
 
+    // @Override
+    // public List<RankingGroup> searchByGroupName(String groupName, int page, int
+    // limit) {
+    // PageRequest pageRequest = PageRequest.of(page, limit);
+
+    // List<RankingGroup> rankingGroups = iRankingGroupRepository
+    // .findByGroupNameContainingIgnoreCase(groupName, pageRequest); // Get list of
+    // content from Page
+
+    // return rankingGroups;
+    // }
 }
