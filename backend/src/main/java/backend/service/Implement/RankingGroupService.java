@@ -13,8 +13,12 @@ import backend.service.IRankingGroupService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+
+
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +34,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
 
     @Autowired
     public RankingGroupService(ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository,
-            IAccount iAccount, IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper1) {
+                               IAccount iAccount, IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper1) {
         super(modelMapper);
         this.iRankingGroupRepository = iRankingGroupRepository;
         this.iAccount = iAccount;
@@ -39,8 +43,8 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     }
 
     @Override
-    public List<RankingGroup> getAllRankingGroups() {
-        List<RankingGroup> rankingGroups = iRankingGroupRepository.findAll();
+    public List<RankingGroup> getAllRankingGroups(Pageable pageable) {
+        Page<RankingGroup> rankingGroups = iRankingGroupRepository.findAll(pageable);
 
         // Kiểm tra nếu không có nhóm nào
         if (rankingGroups.isEmpty()) {
@@ -62,7 +66,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
                 group.setDecisionName(null);
             }
         }
-        return rankingGroups;
+        return rankingGroups.getContent();
     }
 
     @Override
@@ -121,9 +125,10 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     }
 
     @Override
-    public List<RankingGroupResponse> getAllRankingGroupResponses(List<RankingGroup> rankingGroups) {
+    public List<RankingGroupResponse> getAllRankingGroupResponses(Pageable pageable) {
+        Page<RankingGroup> rankingGroups = iRankingGroupRepository.findAll(pageable);
         List<RankingGroupResponse> responseList = new ArrayList<>();
-        for (RankingGroup rankingGroup : rankingGroups) {
+        for (RankingGroup rankingGroup : rankingGroups.getContent()) {
             // Ánh xạ cơ bản từ RankingGroup sang RankingGroupResponse
             RankingGroupResponse response = modelMapper.map(rankingGroup, RankingGroupResponse.class);
 
@@ -177,7 +182,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
             }
 
             group.setGroupName(form.getGroupName());
-            if (form.getCurrentRankingDecision() != null)  {
+            if (form.getCurrentRankingDecision() != null) {
                 group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
             }
             iRankingGroupRepository.saveAndFlush(group);
