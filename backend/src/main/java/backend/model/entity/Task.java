@@ -1,12 +1,14 @@
 package backend.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "Task")
@@ -18,6 +20,7 @@ public class Task {
     private int taskId;
 
     @Column(name = "task_name")
+    @Size(min = 3, max = 255)
     private String taskName;
 
     @Column(name = "created_by")

@@ -10,7 +10,7 @@ import org.hibernate.validator.constraints.Length;
 public class UpdateNewGroupRequest {
     @NotBlank
     @Length(max = 100)
-    @RankingGroupNameNotExits
+//    @RankingGroupNameNotExits
     private String groupName;
 
     private Integer currentRankingDecision;
