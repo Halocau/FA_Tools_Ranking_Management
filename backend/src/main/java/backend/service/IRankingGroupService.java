@@ -4,13 +4,14 @@ import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingGroup;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
 import backend.model.form.RankingGroup.UpdateNewGroupRequest;
+import backend.model.page.ResultPaginationDTO;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.method.P;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 
 public interface IRankingGroupService {
-    public List<RankingGroup> getAllRankingGroups(Pageable pageable);
+    public ResultPaginationDTO getAllRankingGroups(Specification<RankingGroup> spec, Pageable pageable);
 
     public RankingGroup findRankingGroupById(int id);
 
@@ -32,8 +33,4 @@ public interface IRankingGroupService {
 
     // validate
     boolean isRankingGroupExitsByGroupName(String groupName);
-
-    // search
-    public List<RankingGroup> searchByGroupName(String groupName, Pageable pageable);
-
 }

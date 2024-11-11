@@ -7,12 +7,17 @@ import backend.model.dto.TaskResponse;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
 import backend.model.form.Task.UpdateTaskRequest;
+import backend.model.page.ResultPaginationDTO;
 import backend.service.ITaskService;
+
+import com.turkraft.springfilter.boot.Filter;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,26 +36,30 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TaskResponse>> getAllTasks(
-            @RequestParam("page") Optional<String> page,
-            @RequestParam("size") Optional<String> size) {
-        Pageable pageable = PaginationUtils.createPageable(page, size);
-        List<Task> tasks = iTaskService.getTask(pageable);
-        List<TaskResponse> taskResponses = iTaskService.getAllTaskResponse(tasks);
-        return ResponseEntity.status(HttpStatus.OK).body(taskResponses);
+    public ResponseEntity<ResultPaginationDTO> getAllTasks(
+            @Filter Specification<Task> spec,
+            Pageable pageable
+    ) {
+        // Lấy đối tượng phân trang
+        ResultPaginationDTO allTask = iTaskService.getTask(spec, pageable);
+
+        // Ép kiểu kết quả về danh sách Task trước khi truyền vào getAllTaskResponse
+        List<TaskResponse> taskResponses = iTaskService.getAllTaskResponse((List<Task>) allTask.getResult());
+
+        // Cập nhật lại kết quả trong ResultPaginationDTO với danh sách TaskResponse
+        allTask.setResult(taskResponses);
+
+        // Trả về ResponseEntity với ResultPaginationDTO
+        return ResponseEntity.status(HttpStatus.OK).body(allTask);
     }
 
-    // test pagination
+
+    //test pagination
     @GetMapping("/full")
-    public ResponseEntity<List<Task>> getTaskList(
-            @RequestParam("page") Optional<String> page,
-            @RequestParam("size") Optional<String> size) {
-        String pageRaw = page.isPresent() ? page.get() : "";
-        String sizeRaw = size.isPresent() ? size.get() : "";
-        int pageCurrent = Integer.parseInt(pageRaw);
-        int pageSize = Integer.parseInt(sizeRaw);
-        Pageable pageable = PageRequest.of(pageCurrent - 1, pageSize);
-        return ResponseEntity.status(HttpStatus.OK).body(iTaskService.getTask(pageable));
+    public ResponseEntity<ResultPaginationDTO> getTaskList(
+            @Filter Specification<Task> spec,
+            Pageable pageable) {
+        return ResponseEntity.status(HttpStatus.OK).body(this.iTaskService.getTask(spec, pageable));
     }
 
     @GetMapping("/get/{id}")
@@ -83,16 +92,5 @@ public class TaskController {
         }
         iTaskService.deleteTaskById(id);
         return ResponseEntity.ok("Task successfully deleted id " + id);
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<List<TaskResponse>> searchByTaskName(
-            @RequestParam(value = "name", defaultValue = "") String taskName,
-            @RequestParam(value = "page", defaultValue = "0") Optional<String> page,
-            @RequestParam(value = "size", defaultValue = "5") Optional<String> limit) {
-        Pageable pageable = PaginationUtils.createPageable(page, limit);
-        List<Task> tasks = iTaskService.searchByTaskName(taskName, pageable);
-        List<TaskResponse> taskResponses = iTaskService.getAllTaskResponse(tasks);
-        return ResponseEntity.ok(taskResponses);
     }
 }
