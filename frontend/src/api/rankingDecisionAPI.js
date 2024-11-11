@@ -8,7 +8,7 @@ const rankingDecisionApi = {
     getRankingDecisions: async (page = 0, size = 5) => {
         try {
             const response = await authClient.get(`${RANKING_DECISION_API}`, {
-                params: { page, size },
+                params: { page: page, size: size },
             });
             return response.data;
         } catch (error) {
@@ -65,7 +65,7 @@ const rankingDecisionApi = {
     searchByDecisionName: async (decisionName = '', page = 0, size = 5) => {
         try {
             const response = await authClient.get(`${RANKING_DECISION_API}/search`, {
-                params: { name: decisionName, page, size },
+                params: { name: decisionName, page: page, size: size },
             });
             return response.data;
         } catch (error) {

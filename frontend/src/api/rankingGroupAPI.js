@@ -9,7 +9,7 @@ const rankingGroupApi = {
     getAllRankingGroups: async (page = 0, size = 5) => {
         try {
             const response = await authClient.get(`${RANKING_GROUP_API}`, {
-                params: { page, size },
+                params: { page: page, size: size },
             });
             return response.data;
         } catch (error) {
@@ -66,7 +66,7 @@ const rankingGroupApi = {
     searchRankingGroups: async (groupName = '', page = 0, size = 5) => {
         try {
             const response = await authClient.get(`${RANKING_GROUP_API}/search`, {
-                params: { name: groupName, page, size },
+                params: { name: groupName, page: page, size: size },
             });
             return response.data;
         } catch (error) {

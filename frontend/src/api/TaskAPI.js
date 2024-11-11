@@ -8,7 +8,7 @@ const taskApi = {
     getAllTasks: async (page = 0, size = 5) => {
         try {
             const response = await authClient.get(`${TASK_API}`, {
-                params: { page, size },
+                params: { page: page, size: size },
             });
             return response.data;
         } catch (error) {
@@ -65,7 +65,7 @@ const taskApi = {
     searchByTaskName: async (taskName = '', page = 0, size = 5) => {
         try {
             const response = await authClient.get(`${TASK_API}/search`, {
-                params: { name: taskName, page, size },
+                params: { name: taskName, page: page, size: size },
             });
             return response.data;
         } catch (error) {
