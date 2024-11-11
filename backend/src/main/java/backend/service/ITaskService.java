@@ -25,9 +25,7 @@ public interface ITaskService {
     public Task findTaskByCreatedBy(int createdBy);
 
     // response
-//    public List<TaskResponse> getAllTaskResponse(List<Task> tasks);
-    public List<TaskResponse> getAllTaskResponse(Pageable pageable);
-
+    public List<TaskResponse> getAllTaskResponse(List<Task> tasks);
 
     public TaskResponse getTaskResponseById(Task task);
 

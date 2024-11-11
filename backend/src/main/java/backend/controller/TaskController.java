@@ -36,13 +36,21 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TaskResponse>> getAllTasks(
-            @RequestParam("page") Optional<String> page,
-            @RequestParam("size") Optional<String> size
+    public ResponseEntity<ResultPaginationDTO> getAllTasks(
+            @Filter Specification<Task> spec,
+            Pageable pageable
     ) {
-        Pageable pageable = PaginationUtils.createPageable(page, size);
-        List<TaskResponse> taskResponses = iTaskService.getAllTaskResponse(pageable);
-        return ResponseEntity.status(HttpStatus.OK).body(taskResponses);
+        // Lấy đối tượng phân trang
+        ResultPaginationDTO allTask = iTaskService.getTask(spec, pageable);
+
+        // Ép kiểu kết quả về danh sách Task trước khi truyền vào getAllTaskResponse
+        List<TaskResponse> taskResponses = iTaskService.getAllTaskResponse((List<Task>) allTask.getResult());
+
+        // Cập nhật lại kết quả trong ResultPaginationDTO với danh sách TaskResponse
+        allTask.setResult(taskResponses);
+
+        // Trả về ResponseEntity với ResultPaginationDTO
+        return ResponseEntity.status(HttpStatus.OK).body(allTask);
     }
 
 
@@ -50,7 +58,7 @@ public class TaskController {
     @GetMapping("/full")
     public ResponseEntity<ResultPaginationDTO> getTaskList(
             @Filter Specification<Task> spec,
-             Pageable pageable) {
+            Pageable pageable) {
         return ResponseEntity.status(HttpStatus.OK).body(this.iTaskService.getTask(spec, pageable));
     }
 

@@ -1,5 +1,6 @@
 package backend.service.Implement;
 
+import backend.config.common.PaginationUtils;
 import backend.config.exception.exceptionEntity.RankingGroupException;
 import backend.dao.IAccount;
 import backend.dao.IRankingDecisionRepository;
@@ -8,14 +9,17 @@ import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.Account;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
+import backend.model.entity.Task;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
 import backend.model.form.RankingGroup.UpdateNewGroupRequest;
+import backend.model.page.ResultPaginationDTO;
 import backend.service.IRankingGroupService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 
@@ -44,8 +48,8 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     }
 
     @Override
-    public List<RankingGroup> getAllRankingGroups(Pageable pageable) {
-        Page<RankingGroup> rankingGroups = iRankingGroupRepository.findAll(pageable);
+    public ResultPaginationDTO getAllRankingGroups(Specification<RankingGroup> spec, Pageable pageable) {
+        Page<RankingGroup> rankingGroups = iRankingGroupRepository.findAll(spec, pageable);
 
         // Kiểm tra nếu không có nhóm nào
         if (rankingGroups.isEmpty()) {
@@ -67,7 +71,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
                 group.setDecisionName(null);
             }
         }
-        return rankingGroups.getContent();
+        return new PaginationUtils().buildPaginationDTO(rankingGroups);
     }
 
     @Override
@@ -126,10 +130,9 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     }
 
     @Override
-    public List<RankingGroupResponse> getAllRankingGroupResponses(Pageable pageable) {
-        Page<RankingGroup> rankingGroups = iRankingGroupRepository.findAll(pageable);
+    public List<RankingGroupResponse> getAllRankingGroupResponses(List<RankingGroup> rankingGroups) {
         List<RankingGroupResponse> responseList = new ArrayList<>();
-        for (RankingGroup rankingGroup : rankingGroups.getContent()) {
+        for (RankingGroup rankingGroup : rankingGroups) {
             // Ánh xạ cơ bản từ RankingGroup sang RankingGroupResponse
             RankingGroupResponse response = modelMapper.map(rankingGroup, RankingGroupResponse.class);
 

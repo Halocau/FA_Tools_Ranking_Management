@@ -1,5 +1,6 @@
 package backend.service.Implement;
 
+import backend.config.common.PaginationUtils;
 import backend.dao.IAccount;
 import backend.dao.ITaskRepository;
 import backend.model.dto.TaskResponse;
@@ -37,19 +38,8 @@ public class TaskService implements ITaskService {
 
     @Override
     public ResultPaginationDTO getTask(Specification<Task> spec, Pageable pageable) {
-        Page<Task> pageTask = iTaskRepository.findAll(spec,pageable);
-        ResultPaginationDTO dto = new ResultPaginationDTO();
-        PageInfo info = new PageInfo();
-
-        info.setPage(pageTask.getNumber()+1);
-        info.setSize(pageTask.getSize());
-        info.setTotal(pageTask.getTotalPages());
-        info.setElement(pageTask.getTotalElements());
-
-        dto.setPageInfo(info);
-        dto.setResult(pageTask.getContent());
-
-        return dto;
+        Page<Task> pageTask = iTaskRepository.findAll(spec, pageable);
+        return new PaginationUtils().buildPaginationDTO(pageTask);
     }
 
     @Override
@@ -81,11 +71,13 @@ public class TaskService implements ITaskService {
     }
 
     @Override
-    public List<TaskResponse> getAllTaskResponse(Pageable pageable) {
-        Page<Task> pageTask = iTaskRepository.findAll(pageable);
+    public List<TaskResponse> getAllTaskResponse(List<Task> allTask) {
         List<TaskResponse> taskResponses = new ArrayList<>();
-        for (Task task : pageTask.getContent()) {
+
+        for (Task task : allTask) {
+
             TaskResponse response = modelMapper.map(task, TaskResponse.class);
+
             if (task.getCreatedBy() == null) {
                 response.setCreatedByName(null);
             } else {
@@ -94,7 +86,6 @@ public class TaskService implements ITaskService {
             }
             taskResponses.add(response);
         }
-
         return taskResponses;
     }
 
