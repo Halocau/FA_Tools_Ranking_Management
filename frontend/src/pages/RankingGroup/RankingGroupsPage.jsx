@@ -240,19 +240,7 @@ const RankingGroups = () => {
     },
   ];
 
-  // Map group data to rows for DataGrid
-  // const rows = groups
-  //   ? groups.map((group, index) => ({
-  //     id: group.groupId,
-  //     index: index + 1,
-  //     groupName: group.groupName,
-  //     numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
-  //     currentRankingDecision:
-  //       group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
-  //   }))
-  //   : [];
-  /////////////////////////////////////////////////////////// Search Decision ///////////////////////////////////////////////////////////
-  // Map decision data to rows for DataGrid when rows are fetched
+  
   useEffect(() => {
     if (groups) {
       const mappedRows = groups.map((group, index) => ({
