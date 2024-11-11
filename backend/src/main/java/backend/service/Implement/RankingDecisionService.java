@@ -1,20 +1,24 @@
 package backend.service.Implement;
 
+import backend.config.common.PaginationUtils;
 import backend.dao.IRankingDecisionRepository;
 import backend.model.dto.RankingDecisionResponse;
 import backend.model.entity.RankingDecision;
 import backend.model.form.RankingDecision.CreateRankingDecision;
 import backend.model.form.RankingDecision.UpdateRankingDecision;
+import backend.model.page.ResultPaginationDTO;
 import backend.service.IRankingDecisionService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-
-import org.hibernate.query.Page;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+
+import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,8 +34,9 @@ public class RankingDecisionService implements IRankingDecisionService {
     }
 
     @Override
-    public List<RankingDecision> getRankingDecisions(Pageable pageable) {
-        return iRankingDecisionRepository.findAll(pageable).getContent();
+    public ResultPaginationDTO getRankingDecisions(Specification<RankingDecision> spec, Pageable pageable) {
+         Page<RankingDecision> pageRankingDecision = iRankingDecisionRepository.findAll(spec,pageable);
+         return new PaginationUtils().buildPaginationDTO(pageRankingDecision);
     }
 
     @Override
@@ -57,6 +62,7 @@ public class RankingDecisionService implements IRankingDecisionService {
         iRankingDecisionRepository.deleteById(id);
     }
 
+
     @Override
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions) {
         List<RankingDecisionResponse> rankingDecisionResponses = new ArrayList<>();
@@ -76,7 +82,7 @@ public class RankingDecisionService implements IRankingDecisionService {
     @Transactional
     public void createRankingDecision(CreateRankingDecision form) {
         RankingDecision decision = RankingDecision.builder()
-                // .decisionId(form.getDecisionId())
+//                .decisionId(form.getDecisionId())
                 .decisionName(form.getDecisionName())
                 .createdBy(form.getCreatedBy())
                 .status("Draft")
@@ -84,11 +90,13 @@ public class RankingDecisionService implements IRankingDecisionService {
         iRankingDecisionRepository.save(decision);
     }
 
+
+
     @Override
     @Transactional
     public void updateRankingDecision(UpdateRankingDecision form, int decisionId) {
-        RankingDecision decision = iRankingDecisionRepository.findById(decisionId)
-                .orElseThrow(() -> new EntityNotFoundException("Option not found with id: " + decisionId));
+        RankingDecision decision = iRankingDecisionRepository.findById(decisionId).orElseThrow(() ->
+                new EntityNotFoundException("Option not found with id: " + decisionId));
         decision.setDecisionName(form.getDecisionName());
         iRankingDecisionRepository.saveAndFlush(decision);
     }
@@ -98,9 +106,14 @@ public class RankingDecisionService implements IRankingDecisionService {
         return iRankingDecisionRepository.existsByDecisionName(decisionName);
     }
 
-    @Override
-    public List<RankingDecision> searchByDecisionName(String decisionName, Pageable pageable) {
-        return iRankingDecisionRepository.findByDecisionNameContainingIgnoreCase(decisionName, pageable);
-    }
+
+
+//    @Override
+//    @Transactional
+//    public RankingDecision updateDecisionName(Integer decisionId, String decisionName) {
+//        RankingDecision decision = iRankingDecisionRepository.findById(decisionId).get();
+//        decision.setDecisionName(decisionName);
+//        return iRankingDecisionRepository.saveAndFlush(decision);
+//    }
 
 }

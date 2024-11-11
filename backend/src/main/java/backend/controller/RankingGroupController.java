@@ -6,13 +6,15 @@ import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingGroup;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
 import backend.model.form.RankingGroup.UpdateNewGroupRequest;
+import backend.model.page.ResultPaginationDTO;
 import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupService;
+import com.turkraft.springfilter.boot.Filter;
 import jakarta.validation.Valid;
-
-import org.hibernate.query.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,36 +30,23 @@ public class RankingGroupController {
 
     @Autowired
     public RankingGroupController(IRankingGroupService iRankingGroupService,
-            IRankingDecisionService iRankingDecisionService) {
+                                  IRankingDecisionService iRankingDecisionService) {
         this.iRankingGroupService = iRankingGroupService;
         this.iRankingDecisionService = iRankingDecisionService;
     }
 
-    // // Covert data RankingGroup -> RankingGroupResponse
-    // public RankingGroupResponse convertToDTO(RankingGroup group, String
-    // decisionName) {
-    // RankingGroupResponse dto = new RankingGroupResponse();
-    // dto.setGroupId(group.getGroupId());
-    // dto.setGroupName(group.getGroupName());
-    // dto.setNumEmployees(group.getNumEmployees());
-    // dto.setCurrentRankingDecision(decisionName); // Gán giá trị quyết định xếp
-    // hạng
-    // return dto;
-    // }
-
     @GetMapping
-    public List<RankingGroupResponse> getAllRankingGroups(
-            @RequestParam("page") Optional<String> page,
-            @RequestParam("size") Optional<String> size) {
-        Pageable pageable = PaginationUtils.createPageable(page, size);
-        List<RankingGroup> rankingGroups = iRankingGroupService.getAllRankingGroups(pageable);
-        return iRankingGroupService.getAllRankingGroupResponses(rankingGroups);
-    }
+    public ResponseEntity<ResultPaginationDTO> getAllRankingGroups(
+            @Filter Specification<RankingGroup> spec,
+            Pageable pageable
+    ) {
+        ResultPaginationDTO paginationDTO = iRankingGroupService.getAllRankingGroups(spec, pageable);
 
-    @GetMapping("/all")
-    public List<RankingGroup> getAllRankingGroup(Pageable pageable) {
-        List<RankingGroup> rankingGroups = iRankingGroupService.getAllRankingGroups(pageable);
-        return rankingGroups;
+        List<RankingGroup> rankingGroups = (List<RankingGroup>) paginationDTO.getResult();
+        List<RankingGroupResponse> rankingGroupResponses = iRankingGroupService.getAllRankingGroupResponses(rankingGroups);
+
+        paginationDTO.setResult(rankingGroupResponses);
+        return ResponseEntity.status(HttpStatus.OK).body(paginationDTO);
     }
 
     @GetMapping("/get/{id}")
@@ -80,7 +69,7 @@ public class RankingGroupController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<String> updateRankingGroup(@RequestBody @Valid UpdateNewGroupRequest form,
-            @PathVariable(name = "id") Integer groupId) {
+                                                     @PathVariable(name = "id") Integer groupId) {
         RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(groupId);
         if (rankingGroup == null) {
             throw new RankingGroupException("RankingGroup not found id: " + groupId);
@@ -115,17 +104,5 @@ public class RankingGroupController {
         }
         iRankingGroupService.deleteRankingGroup(id);
         return ResponseEntity.ok("deleted successfully " + id);
-    }
-
-    // Search
-    @GetMapping("/search")
-    public List<RankingGroupResponse> searchRankingGroups(
-            @RequestParam(value = "name", defaultValue = "") String groupName,
-            @RequestParam(value = "page", defaultValue = "0") Optional<String> page,
-            @RequestParam(value = "size", defaultValue = "5") Optional<String> limit) {
-        Pageable pageable = PaginationUtils.createPageable(page, limit);
-        List<RankingGroup> rankingGroups = iRankingGroupService.searchByGroupName(groupName, pageable);
-        List<RankingGroupResponse> responses = iRankingGroupService.getAllRankingGroupResponses(rankingGroups);
-        return responses;
     }
 }
