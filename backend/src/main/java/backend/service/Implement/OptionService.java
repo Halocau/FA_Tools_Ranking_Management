@@ -99,13 +99,28 @@ public class OptionService implements IOptionService {
         Options findOptionId = iOptionRepository.findById(optionId).orElseThrow(() ->
                 new EntityNotFoundException("Option not found with id: " + optionId));
 
-        // Cập nhật trực tiếp các thuộc tính của đối tượng tìm thấy
+        // Kiểm tra trùng tên với các Options khác (không phải chính nó)
+        if (!findOptionId.getOptionName().equals(form.getOptionName())
+                && iOptionRepository.existsByOptionNameAndOptionIdNot(form.getOptionName(), optionId)) {
+            throw new IllegalArgumentException("Option name already exists.");
+        }
+
         findOptionId.setOptionName(form.getOptionName());
         findOptionId.setScore(form.getScore());
         findOptionId.setDescription(form.getDescription());
         findOptionId.setCriteriaId(form.getCriteriaId());
-        // Lưu lại đối tượng đã cập nhật (không cần gọi lại saveAndFlush vì JPA sẽ tự động đồng bộ)
         iOptionRepository.saveAndFlush(findOptionId);
     }
+
+    @Override
+    public boolean existsByOptionName(String optionName) {
+        return iOptionRepository.existsByOptionName(optionName);
+    }
+
+    @Override
+    public boolean existsByOptionNameAndOptionIdNot(String optionName, Integer optionId) {
+        return iOptionRepository.existsByOptionNameAndOptionIdNot(optionName, optionId);
+    }
+
 
 }
