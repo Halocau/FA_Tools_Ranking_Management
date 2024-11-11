@@ -281,8 +281,8 @@ const RankingGroups = () => {
         <h2>
           Ranking Group List
         </h2>
-        <Box sx={{ display: "flex", alignItems: "center", marginTop: 2 }}>
-          <Typography sx={{ marginRight: 2, fontSize: '1.3rem', marginTop: 0 }}>Search Group Name:</Typography>
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 1 }}>
+          {/* <Typography sx={{ marginRight: 2, fontSize: '1.3rem', marginTop: 0 }}>Search Group Name:</Typography> */}
           <Autocomplete
             disablePortal
             options={rows}
@@ -295,9 +295,12 @@ const RankingGroups = () => {
                 label="Search Group"
                 variant="outlined"
                 fullWidth
-                InputLabelProps={{ shrink: true, sx: { fontSize: '1rem', display: 'flex', alignItems: 'center', height: '100%' } }}
-                sx={{ '& .MuiOutlinedInput-root': { height: '30px' }, marginTop: 1 }}
-                InputProps={{
+                // InputLabelProps={{ shrink: true, sx: { fontSize: '1rem', display: 'flex', alignItems: 'center', height: '100%' } }}
+                sx={{
+                  marginTop: 2,
+                  height: '40px',
+                  '& .MuiInputBase-root': { height: '130%', borderRadius: '20px' },
+                }} InputProps={{
                   ...params.InputProps,
                   endAdornment: (
                     <InputAdornment position="end" sx={{ marginRight: '-50px' }}>
@@ -317,11 +320,17 @@ const RankingGroups = () => {
                 }}
               />
             )}
-            sx={{ flexGrow: 1, marginRight: '16px', maxWidth: '500px' }} // Bỏ marginTop vì đã có trong Box
+            sx={{
+              flexGrow: 1,
+              marginRight: '16px',
+              maxWidth: '600px',
+              marginTop: '-10px',
+              borderRadius: '20px' // Bo tròn góc cho Autocomplete
+            }}
           />
         </Box>
         {/* Table show Ranking Group */}
-        <Box sx={{ width: "100%", height: 370, marginTop: '20px' }}>
+        <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
           {loading ? <CircularProgress /> : (
             <DataGrid
               className="custom-data-grid"

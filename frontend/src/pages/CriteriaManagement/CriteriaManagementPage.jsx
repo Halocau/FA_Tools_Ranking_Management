@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import {
-    Box, Button, Typography, TextField, Alert, Modal
+    Box, Button, Typography, TextField, Alert, CircularProgress, Modal
 } from "@mui/material";
+import { format } from "date-fns";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import Slider from "../../layouts/Slider.jsx";
@@ -12,7 +13,6 @@ import "../../assets/css/RankingGroups.css";
 
 const CriteriaManagement = () => {
     const navigate = useNavigate();
-    const { criteriaList, addCriteria, fetchAllCriteria, deleteCriteria, loading, error } = useCriteria(); // Sử dụng hook useCriteria
     const apiRef = useGridApiRef();
     const [showAddCriteriaModal, setShowAddCriteriaModal] = useState(false);
     const [criteriaName, setCriteriaName] = useState("");
@@ -20,20 +20,24 @@ const CriteriaManagement = () => {
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState("success");
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                await fetchAllRankingGroups(); // Gọi API lấy danh sách nhóm xếp hạng
-                await fetchAllCriteria(); // Gọi API lấy danh sách tiêu chí
-            } catch (error) {
-                console.error("Failed to fetch data:", error);
-                setMessageType("error");
-                setMessage("Failed to load ranking groups. Please check the server.");
-            }
-        };
-        fetchData();
-    }, []);
+    const { criteria,
+        loading,
+        error,
+        addCriteria,
+        fetchAllCriteria,
+        deleteCriteria } = useCriteria(); // Sử dụng hook useCriteria
 
+    // Fetch all ranking groups when component mounts
+    useEffect(() => {
+        fetchAllCriteria();
+    }, []);
+    // Log state changes for debugging purposes
+    useEffect(() => {
+        console.log("Criteria:", criteria);
+        console.log("Loading:", loading);
+        console.log("Error:", error);
+
+    }, [criteria, loading, error]);
 
     const handleOpenAddCriteriaModal = () => {
         setShowAddCriteriaModal(true);
@@ -74,7 +78,6 @@ const CriteriaManagement = () => {
         trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
 
         try {
-            setLoading(true);
             const newCriteria = {
                 criteriaName: trimmedName,
                 createdBy: 1, // Thay thế bằng ID người dùng nếu cần
@@ -92,7 +95,6 @@ const CriteriaManagement = () => {
             setMessage("Failed to add criteria. Please try again.");
             setTimeout(() => setMessage(null), 2000);
         } finally {
-            setLoading(false);
         }
     };
 
@@ -115,7 +117,7 @@ const CriteriaManagement = () => {
     const columns = [
         { field: "id", headerName: "ID", width: 80 },
         { field: "criteriaName", headerName: "Criteria Name", width: 300 },
-        { field: "noOfOption", headerName: "No Of Option", width: 150 },
+        { field: "noOfOption", headerName: "No Of Option", width: 250 },
         { field: "maxScore", headerName: "Max Score", width: 150 },
         {
             field: "action", headerName: "Action", width: 200, renderCell: (params) => (
@@ -141,7 +143,15 @@ const CriteriaManagement = () => {
             ),
         },
     ];
-
+    const rows = criteria
+        ? criteria.map((criteria, index) => ({
+            id: criteria.criteriaId,
+            index: index + 1,
+            criteriaName: criteria.criteriaName,
+            noOfOption: criteria.numOptions,
+            maxScore: criteria.maxScore
+        }))
+        : [];
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
@@ -156,17 +166,35 @@ const CriteriaManagement = () => {
                     </Button>
                 </Box>
 
-                <Box sx={{ width: "100%" }}>
-                    <DataGrid
-                        apiRef={apiRef}
-                        rows={group?.rankingDecisions || []}
-                        columns={columns}
-                        checkboxSelection
-                        pageSizeOptions={[5]}
-                        loading={loading}
-                        getRowId={(row) => row.criteriaId} // Sử dụng criteriaId làm ID duy nhất
-                    />
-
+                <Box sx={{ width: "100%", height: 370, marginTop: '20px' }}>
+                    {loading ? <CircularProgress /> : (
+                        <DataGrid
+                            className="custom-data-grid"
+                            // apiRef={apiRef}
+                            rows={rows}
+                            columns={columns}
+                            checkboxSelection
+                            pagination
+                            pageSizeOptions={[5, 10, 25]}
+                            initialState={{
+                                pagination: {
+                                    paginationModel: {
+                                        pageSize: 5,
+                                        page: 0,
+                                    },
+                                },
+                            }}
+                            disableRowSelectionOnClick
+                            autoHeight={false}
+                            sx={{
+                                height: '100%',
+                                overflow: 'auto',
+                                '& .MuiDataGrid-virtualScroller': {
+                                    overflowY: 'auto',
+                                },
+                            }}
+                        />
+                    )}
                 </Box>
 
                 <Modal

@@ -284,8 +284,8 @@ const RankingDecision = () => {
                     </MenuItem>
                 </Menu>
                 {/* Search Decision */}
-                <Box sx={{ display: "flex", alignItems: "center", marginTop: 2 }}>
-                    <Typography sx={{ marginRight: 2, fontSize: '1.3rem', marginTop: 0 }}>Search Decision Name:</Typography>
+                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 2 }}>
+                    {/* <Typography sx={{ marginRight: 2, fontSize: '1.3rem', marginTop: 0 }}>Search Decision Name:</Typography> */}
                     <Autocomplete
                         disablePortal
                         options={decisions}
@@ -295,11 +295,14 @@ const RankingDecision = () => {
                         renderInput={params => (
                             <TextField
                                 {...params}
-                                label="Search Decision" // Đã sửa lại từ "Search" thành "Search"
+                                label="Search Decision"
                                 variant="outlined"
                                 fullWidth
-                                InputLabelProps={{ shrink: true, sx: { fontSize: '1rem', display: 'flex', alignItems: 'center', height: '100%' } }}
-                                sx={{ '& .MuiOutlinedInput-root': { height: '30px' }, marginTop: 1 }}
+                                sx={{
+                                    marginTop: 2,
+                                    height: '40px',
+                                    '& .MuiOutlinedInput-root': { height: '130%', borderRadius: '20px' },
+                                }}
                                 InputProps={{
                                     ...params.InputProps,
                                     endAdornment: (
@@ -320,10 +323,17 @@ const RankingDecision = () => {
                                 }}
                             />
                         )}
-                        sx={{ flexGrow: 1, marginRight: '16px', maxWidth: '600px', marginTop: '-10px' }} // Đặt maxWidth cho Autocomplete để giảm chiều rộng
+                        sx={{
+                            flexGrow: 1,
+                            marginRight: '16px',
+                            maxWidth: '600px',
+                            marginTop: '-10px',
+                            borderRadius: '20px' // Bo tròn góc cho Autocomplete
+                        }}
                     />
+
                 </Box>
-                <Box sx={{ width: "100%", height: 400, marginTop: '20px' }}>
+                <Box sx={{ width: "100%", height: 400, marginTop: '60px' }}>
                     <DataGrid
                         className="custom-data-grid"
                         apiRef={apiRef}

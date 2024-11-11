@@ -53,7 +53,13 @@ const TaskManagement = () => {
   useEffect(() => {
     fetchAllTasks();
   }, []);
+  // Log state changes for debugging purposes
+  useEffect(() => {
+    console.log("Task:", tasks);
+    console.log("Loading:", loading);
+    console.log("Error:", error);
 
+  }, [tasks, loading, error]);
   // Modal Add
   const handleOpenAddModal = () => {
     setValidationMessage("");
@@ -253,13 +259,13 @@ const TaskManagement = () => {
   ];
 
   const rows = tasks
-    ? tasks.map((item, index) => ({
-      id: item.taskId,
+    ? tasks.map((task, index) => ({
+      id: task.taskId,
       index: index + 1,
-      taskName: item.taskName,
-      createdBy: item.createdByName || "Unknown",
-      createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
-      updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
+      taskName: task.taskName,
+      createdBy: task.createdByName || "Unknown",
+      createdAt: task.createdAt ? formatDate(task.createdAt) : "N/A",
+      updatedAt: task.updatedAt ? formatDate(task.updatedAt) : "N/A",
     }))
     : [];
 
