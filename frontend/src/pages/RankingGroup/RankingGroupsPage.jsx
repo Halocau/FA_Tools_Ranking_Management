@@ -43,11 +43,16 @@ const RankingGroups = () => {
   const [validationMessage, setValidationMessage] = useState("");
   //
   const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
+  // Table page, size 
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(5);
+
   // Destructuring from useRankingGroup custom hook
   const {
     data: groups,
     error,
     loading,
+    fetchRankingGroups,
     fetchAllRankingGroups,
     deleteRankingGroup,
     addRankingGroup,
@@ -57,6 +62,11 @@ const RankingGroups = () => {
   useEffect(() => {
     fetchAllRankingGroups();
   }, []);
+
+  // Gọi API lần đầu khi component mount
+  useEffect(() => {
+    fetchRankingGroups(page, pageSize);
+  }, [page, pageSize]);
 
   // Log state changes for debugging purposes
   useEffect(() => {
@@ -274,6 +284,7 @@ const RankingGroups = () => {
       : rows; // If no value, use original rows
     setFilteredRows(filtered);
   };
+
   return (
     <div style={{ marginTop: "60px" }}>
       <Slider />
@@ -329,7 +340,6 @@ const RankingGroups = () => {
             }}
           />
         </Box>
-        {/* Table show Ranking Group */}
         <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
           {loading ? <CircularProgress /> : (
             <DataGrid
@@ -340,6 +350,19 @@ const RankingGroups = () => {
               checkboxSelection
               pagination
               pageSizeOptions={[5, 10, 25]}
+              pageSize={pageSize}
+              page={page}
+              onPageChange={(newPage) => {
+                setPage(newPage);
+                // Gọi hàm API mới với `newPage` và `pageSize` hiện tại
+                fetchRankingGroups(newPage, pageSize);
+              }}
+              onPageSizeChange={(newPageSize) => {
+                setPageSize(newPageSize);
+                setPage(0); // Reset lại `page` khi thay đổi `pageSize`
+                // Gọi hàm API mới với `page` là 0 và `newPageSize`
+                fetchRankingGroups(0, newPageSize);
+              }}
               initialState={{
                 pagination: {
                   paginationModel: {
