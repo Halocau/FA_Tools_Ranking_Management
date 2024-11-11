@@ -17,7 +17,7 @@ public class RankingDecisionNameNotExitsValidator implements ConstraintValidator
     @Override
     public boolean isValid(String decisionName, ConstraintValidatorContext constraintValidatorContext) {
         if(StringUtils.isEmpty(decisionName)) {
-            return true;// Tên trống được coi là hợp lệ, nên bỏ qua kiểm tra
+            return true;
         }
         return !iRankingDecisionService.isRankingDecisionNameExist(decisionName);
     }

@@ -1,11 +1,9 @@
 package backend.config.exception;
 
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
 import backend.config.exception.ErrorResponse;
-import backend.config.exception.exceptionEntity.PageException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -27,6 +25,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 
+
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.log4j.Log4j2;
@@ -36,7 +35,7 @@ import lombok.extern.log4j.Log4j2;
 public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
 
     // Default exception
-    @ExceptionHandler({Exception.class})
+    @ExceptionHandler({ Exception.class })
     public ResponseEntity<Object> handleAll(Exception exception) {
         String message = "Unexpected error";
         String detailMessage = exception.getLocalizedMessage();
@@ -168,7 +167,7 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
     }
 
     // Wrong parameter type
-    @ExceptionHandler({MethodArgumentTypeMismatchException.class})
+    @ExceptionHandler({ MethodArgumentTypeMismatchException.class })
     public ResponseEntity<Object> handleMethodArgumentTypeMismatch(
             MethodArgumentTypeMismatchException exception) {
 
@@ -272,30 +271,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
         log.error(detailMessage, exception);
 
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(PageException.class)
-    public ResponseEntity<Object> handleInvalidPaginationParameterException(PageException exception) {
-        String message = "Invalid pagination parameters!";
-        String detailMessage = exception.getLocalizedMessage();
-        int code = 10;  // Mã lỗi tùy chỉnh cho ngoại lệ phân trang
-
-        // Tạo đối tượng ErrorResponse để trả về cho client
-        ErrorResponse response = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                message,
-                detailMessage,
-                code,
-                exception,
-                null,
-                null
-        );
-
-        // Log lỗi chi tiết
-        log.error(detailMessage, exception);
-
-        // Trả về phản hồi với mã lỗi 400 (Bad Request)
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
 //    // Account blocked exception

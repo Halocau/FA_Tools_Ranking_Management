@@ -7,9 +7,9 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 @Data
-public class UpdateNewGroupRequest {
+public class UpdateGroupInfo {
     @NotBlank
-    @Length(max = 100)
+    @Length(max = 30)
     @RankingGroupNameNotExits
     private String groupName;
 
