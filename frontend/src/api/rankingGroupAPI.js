@@ -6,17 +6,17 @@ const RANKING_GROUP_API = '/ranking-group';
 
 const rankingGroupApi = {
     // Get all ranking groups with pagination
-    getAllRankingGroups: async (page = 0, size = 5) => {
-        try {
-            const response = await authClient.get(`${RANKING_GROUP_API}`, {
-                params: { page: page, size: size },
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Error fetching ranking groups:', error);
-            throw error;
-        }
-    },
+    getAllRankingGroups: async (filter = "", page = 0, size = 5) => {
+    try {
+      const response = await authClient.get(`${RANKING_GROUP_API}`, {
+        params: { filter, page, size },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching ranking groups:', error);
+      throw error;
+    }
+  },
 
     // Get ranking group by ID
     getRankingGroupById: async (id) => {
