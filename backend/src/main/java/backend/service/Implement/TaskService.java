@@ -11,13 +11,11 @@ import backend.service.ITaskService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TaskService implements ITaskService {
@@ -33,9 +31,8 @@ public class TaskService implements ITaskService {
     }
 
     @Override
-    public List<Task> getTask(Pageable pageable) {
-        Page<Task> pageTask = iTaskRepository.findAll(pageable);
-        return pageTask.getContent();
+    public List<Task> getTask() {
+        return iTaskRepository.findAll();
     }
 
     @Override
@@ -66,43 +63,27 @@ public class TaskService implements ITaskService {
         return iTaskRepository.findByCreatedBy(createdBy);
     }
 
+    // Response
     @Override
-    public List<TaskResponse> getAllTaskResponse(List<Task> pageTask) {
+    public List<TaskResponse> getAllTaskResponse(List<Task> tasks) {
         List<TaskResponse> taskResponses = new ArrayList<>();
-        for (Task task : pageTask) {
+        for (Task task : tasks) {
             TaskResponse response = modelMapper.map(task, TaskResponse.class);
+
             if (task.getCreatedBy() == null) {
                 response.setCreatedByName(null);
             } else {
-                Account account = iAccount.findById(task.getCreatedBy()).orElse(null);
-                response.setCreatedByName(account != null ? account.getUsername() : null);
+                Account account = iAccount.findById(task.getCreatedBy()).get();
+                if (account == null) {
+                    response.setCreatedByName(null);
+                } else {
+                    response.setCreatedByName(account.getUsername());
+                }
             }
             taskResponses.add(response);
         }
-
         return taskResponses;
     }
-
-    // Response
-    // @Override
-    // public List<TaskResponse> getAllTaskResponse(List<Task> tasks) {
-    // List<TaskResponse> taskResponses = new ArrayList<>();
-    //
-    // for (Task task : tasks) {
-    // TaskResponse response = modelMapper.map(task, TaskResponse.class);
-    //
-    // if (task.getCreatedBy() == null) {
-    // response.setCreatedByName(null);
-    // } else {
-    // Account account = iAccount.findById(task.getCreatedBy()).orElse(null);
-    // response.setCreatedByName(account != null ? account.getUsername() : null);
-    // }
-    //
-    // taskResponses.add(response);
-    // }
-    //
-    // return taskResponses;
-    // }
 
     @Override
     public TaskResponse getTaskResponseById(Task task) {
@@ -138,11 +119,6 @@ public class TaskService implements ITaskService {
         task.setTaskName(form.getTaskName());
         task.setCreatedBy(form.getCreatedBy());
         iTaskRepository.saveAndFlush(task);
-    }
-
-    @Override
-    public List<Task> searchByTaskName(String taskName, Pageable pageable) {
-        return iTaskRepository.findByTaskNameContainingIgnoreCase(taskName, pageable);
     }
 
 }

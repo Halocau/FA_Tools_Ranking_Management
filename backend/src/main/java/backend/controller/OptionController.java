@@ -1,7 +1,6 @@
 package backend.controller;
 
-
-import backend.config.exception.exceptionEntity.TaskException;
+import backend.config.exception.TaskException;
 import backend.model.dto.OptionResponse;
 import backend.model.entity.Options;
 import backend.model.form.Options.CreateOptionRequest;
