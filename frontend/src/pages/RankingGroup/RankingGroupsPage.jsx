@@ -278,7 +278,7 @@ const handleFilter = (event) => {
     if (groups) {
       const mappedRows = groups.map((group, index) => ({
         id: group.groupId,
-        index: index + 1 + page * pageSize,
+        index: index + 1 + page * size,
         groupName: group.groupName,
         numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
         currentRankingDecision:

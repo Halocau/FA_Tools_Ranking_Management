@@ -25,7 +25,7 @@ const useRankingGroup = () => {
     }
   };
   // Fetches all ranking groups from the API
-  const fetchAllRankingGroups = async (page = 0, size = 10, filter = "") => {
+  const fetchAllRankingGroups = async (page = 0, size = 5, filter = "") => {
     setLoading(true);
     try {
       const response = await authClient.get("/ranking-group", {
