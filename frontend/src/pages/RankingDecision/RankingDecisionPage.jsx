@@ -238,7 +238,7 @@ const RankingDecision = () => {
     // Load data table ranking decision list
     useEffect(() => {
         if (decisions) {
-            const mappedRows = decisions.map((decision, index) => ({
+            const mappedRows = decisions.result.map((decision, index) => ({
                 id: decision.decisionId,
                 index: index + 1,
                 dicisionname: decision.decisionName,
