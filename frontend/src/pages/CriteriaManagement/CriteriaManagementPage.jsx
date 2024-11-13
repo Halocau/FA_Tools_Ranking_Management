@@ -159,7 +159,7 @@ const CriteriaManagement = () => {
                 <Box sx={{ width: "100%" }}>
                     <DataGrid
                         apiRef={apiRef}
-                        rows={group?.rankingDecisions || []}
+                        rows={groups?.rankingDecisions || []}
                         columns={columns}
                         checkboxSelection
                         pageSizeOptions={[5]}

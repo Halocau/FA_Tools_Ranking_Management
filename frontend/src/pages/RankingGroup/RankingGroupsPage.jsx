@@ -50,8 +50,7 @@ const RankingGroups = () => {
   const [showSuccessMessage, showErrorMessage] = useNotification();
   // Validation error message
   const [validationMessage, setValidationMessage] = useState("");
-  //Paging 
-   
+  //Paging
 
   const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
   // Destructuring from useRankingGroup custom hook
@@ -69,9 +68,6 @@ const RankingGroups = () => {
     deleteRankingGroup,
     addRankingGroup,
   } = useRankingGroup();
-
-
-  
 
   // Log state changes for debugging purposes
   useEffect(() => {
@@ -202,10 +198,10 @@ const RankingGroups = () => {
   };
 
   //
-const handleFilter = (event) => {
-  setFilter(event.target.value);
-  setPage(0); // Reset 
-};
+  const handleFilter = (event) => {
+    setFilter(event.target.value);
+    setPage(0); // Reset
+  };
 
   // Define columns for DataGrid
   const columns = [
@@ -276,7 +272,7 @@ const handleFilter = (event) => {
 
   useEffect(() => {
     if (groups) {
-      const mappedRows = groups.map((group, index) => ({
+      const mappedRows = groups.result.map((group, index) => ({
         id: group.groupId,
         index: index + 1 + page * size,
         groupName: group.groupName,
@@ -290,6 +286,10 @@ const handleFilter = (event) => {
       setFilteredRows(mappedRows);
     }
   }, [groups, page, size]);
+
+  console.log(groups);
+
+  //Search
   const handleInputChange = (event, value) => {
     setSearchValue(value);
     const filtered = value
@@ -299,7 +299,6 @@ const handleFilter = (event) => {
       : rows; // If no value, use original rows
     setFilteredRows(filtered);
   };
-
 
   return (
     <div style={{ marginTop: "60px" }}>
@@ -358,7 +357,7 @@ const handleFilter = (event) => {
                 }}
               />
             )}
-            sx={{ flexGrow: 1, marginRight: "16px", maxWidth: "500px" }} 
+            sx={{ flexGrow: 1, marginRight: "16px", maxWidth: "500px" }}
           />
         </Box>
         {/* Table show Ranking Group */}
@@ -375,12 +374,11 @@ const handleFilter = (event) => {
               pageSize={size}
               onPageChange={(newPage) => setPage(newPage)}
               onPageSizeChange={(newSize) => setSize(newSize)}
-              paginationMode="server" // Enable server-side pagination
+              paginationMode="server"
               rowCount={rows.length} // Use the total count from API response
               loading={loading}
               checkboxSelection
               disableRowSelectionOnClick
-              autoHeight={false}
               sx={{
                 height: "100%",
                 overflow: "auto",

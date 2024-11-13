@@ -11,7 +11,7 @@ const useRankingGroup = () => {
   const [error, setError] = useState(null);
   const [total, setTotal] = useState(0); // All records
   const [page, setPage] = useState(0);
-  const [size, setSize] = useState(10);
+  const [size, setSize] = useState(5);
   const [filter, setFilter] = useState("");
 
   // Function to handle errors, including redirects if unauthorized
@@ -35,8 +35,9 @@ const useRankingGroup = () => {
           filter,
         },
       });
-      setData(response.data.items);
-      setTotal(response.data.total);
+      console.log(response);
+      setData(response.data);
+      setTotal(response.data);
     } catch (err) {
       handleError(err);
     } finally {
