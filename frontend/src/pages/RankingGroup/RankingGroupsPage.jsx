@@ -52,7 +52,7 @@ const RankingGroups = () => {
     data: groups,
     error,
     loading,
-    fetchRankingGroups,
+    // fetchRankingGroups,
     fetchAllRankingGroups,
     deleteRankingGroup,
     addRankingGroup,
@@ -340,6 +340,50 @@ const RankingGroups = () => {
             }}
           />
         </Box>
+        {/* <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
+          {loading ? <CircularProgress /> : (
+            <DataGrid
+              className="custom-data-grid"
+              apiRef={apiRef}
+              rows={filteredRows}
+              columns={columns}
+              checkboxSelection
+              pagination
+              pageSizeOptions={[5, 10, 25]}
+              // pageSize={pageSize}
+              // page={page}
+              // onPageChange={(newPage) => {
+              //   setPage(newPage);
+              //   // Gọi hàm API mới với `newPage` và `pageSize` hiện tại
+              //   // fetchRankingGroups(newPage, pageSize);
+              // }}
+              // onPageSizeChange={(newPageSize) => {
+              //   setPageSize(newPageSize);
+              //   setPage(0); // Reset lại `page` khi thay đổi `pageSize`
+              //   // Gọi hàm API mới với `page` là 0 và `newPageSize`
+              //   // fetchRankingGroups(0, newPageSize);
+              // }}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 5,
+                    page: 0,
+                  },
+                },
+              }}
+              disableRowSelectionOnClick
+              autoHeight={false}
+              sx={{
+                height: '100%',
+                overflow: 'auto',
+                '& .MuiDataGrid-virtualScroller': {
+                  overflowY: 'auto',
+                },
+              }}
+            />
+          )}
+        </Box> */}
+        {/* Table show Ranking Group */}
         <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
           {loading ? <CircularProgress /> : (
             <DataGrid
