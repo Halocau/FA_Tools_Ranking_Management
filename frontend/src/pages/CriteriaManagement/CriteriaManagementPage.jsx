@@ -95,13 +95,19 @@ const CriteriaManagement = () => {
         trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
 
         try {
-            await CriteriaAPI.createCriteria({ criteriaName: trimmedName, createdBy: 1 });
+            const newCriteria = await CriteriaAPI.createCriteria({ criteriaName: trimmedName, createdBy: localStorage.getItem("userId") });
             setMessageType("success");
             setMessage("Criteria added successfully!");
             setTimeout(() => setMessage(null), 2000);
             handleCloseAddCriteriaModal();
-            const updatedCriteria = await fetchAllCriteria();
-            setCriteriaList(updatedCriteria);
+            setTotalElements(totalElements + 1);
+            if (criteria.length < 5) {
+                setCriteria(prevCriteria => [...prevCriteria, newCriteria]);
+
+            } else {
+                setTotalPages(totalPages + 1);
+            }
+            // setCriteriaList(updatedCriteria);
         } catch (error) {
             console.error("Failed to add criteria:", error);
             setMessageType("error");
@@ -112,14 +118,19 @@ const CriteriaManagement = () => {
 
     const handleDeleteCriteria = async (criteriaId) => {
         try {
-            await deleteCriteria(criteriaId);
+            const response = await CriteriaAPI.deleteCriteria(criteriaId);
+            console.log("Response:", response);
+            setCriteria(criteria.filter((criteria) => criteria.criteriaId !== criteriaId));
+
+            if (criteria.length === 1) {
+                setPage(page - 1);
+            }
             setMessageType("success");
             setMessage("Criteria deleted successfully!");
             setTimeout(() => setMessage(null), 2000);
-            const updatedCriteria = await fetchAllCriteria();
-            setCriteriaList(updatedCriteria);
         } catch (error) {
-            console.error("Failed to delete criteria:", error);
+            // console.log("Error:", error.response.data.detailMessage);
+            // console.error("Failed to delete criteria message: ", error);
             setMessageType("error");
             setMessage("Failed to delete criteria. Please try again.");
             setTimeout(() => setMessage(null), 2000);
