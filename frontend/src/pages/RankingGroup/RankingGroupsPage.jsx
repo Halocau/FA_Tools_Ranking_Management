@@ -63,10 +63,10 @@ const RankingGroups = () => {
     fetchAllRankingGroups();
   }, []);
 
-  // Gọi API lần đầu khi component mount
-  useEffect(() => {
-    fetchRankingGroups(page, pageSize);
-  }, [page, pageSize]);
+  // // Gọi API lần đầu khi component mount
+  // useEffect(() => {
+  //   fetchRankingGroups(page, pageSize);
+  // }, [page, pageSize]);
 
   // Log state changes for debugging purposes
   useEffect(() => {
@@ -350,19 +350,6 @@ const RankingGroups = () => {
               checkboxSelection
               pagination
               pageSizeOptions={[5, 10, 25]}
-              pageSize={pageSize}
-              page={page}
-              onPageChange={(newPage) => {
-                setPage(newPage);
-                // Gọi hàm API mới với `newPage` và `pageSize` hiện tại
-                fetchRankingGroups(newPage, pageSize);
-              }}
-              onPageSizeChange={(newPageSize) => {
-                setPageSize(newPageSize);
-                setPage(0); // Reset lại `page` khi thay đổi `pageSize`
-                // Gọi hàm API mới với `page` là 0 và `newPageSize`
-                fetchRankingGroups(0, newPageSize);
-              }}
               initialState={{
                 pagination: {
                   paginationModel: {

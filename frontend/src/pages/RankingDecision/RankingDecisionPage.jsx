@@ -28,10 +28,10 @@ import useNotification from "../../hooks/useNotification";
 const RankingDecision = () => {
     const navigate = useNavigate(); //  // Initialize the useNavigate hook to navigate between pages in the application
     const handleTaskManagementClick = () => {
-        navigate('/task_management'); // Navigate Page Task Management
+        navigate('/task-management'); // Navigate Page Task Management
     };
     const handleCriteriaManagementClick = () => {
-        navigate('/criteria_management'); // Navigate Page CriteriaManagement
+        navigate('/criteria-management'); // Navigate Page CriteriaManagement
     };
 
     // Add

@@ -29,10 +29,10 @@ const Sidebar = () => {
         </Nav.Link>
         {openLogWork && (
           <div className="submenu ms-4">
-            <Nav.Link href="/ranking_group">Ranking Group List</Nav.Link>
-            <Nav.Link href="/ranking_decision">Ranking Decision List</Nav.Link>
-            <Nav.Link href="/task_management">Task Managerment</Nav.Link>
-            <Nav.Link href="/criteria_management">Criteria Managerment</Nav.Link>
+            <Nav.Link href="/ranking-group">Ranking Group List</Nav.Link>
+            <Nav.Link href="/ranking-decision">Ranking Decision List</Nav.Link>
+            <Nav.Link href="/task-management">Task Managerment</Nav.Link>
+            <Nav.Link href="/criteria-management">Criteria Managerment</Nav.Link>
           </div>
         )}
 

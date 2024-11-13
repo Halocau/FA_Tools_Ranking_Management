@@ -44,7 +44,9 @@ const EditDecision = () => {
     const [criteriaData, setCriteriaData] = useState(initialCriteria);
     const [titles, setTitles] = useState(initialTitles);
     const [taskRows, setTaskRows] = useState(initialTasks);
+    const [tasks, setTasks] = useState(initialTasks);
     const [decisionStatus, setDecisionStatus] = useState('Draft'); // Trạng thái quyết định
+    const [criteria, setCriteria] = useState(initialCriteria);
 
     const handleStepChange = (step) => setActiveStep(step);
 
@@ -90,10 +92,49 @@ const EditDecision = () => {
         return totalScore;
     };
 
-    const handleScoreChange = (titleIndex, criterionIndex, value) => {
-        const updatedTitles = [...titles];
-        updatedTitles[titleIndex].scores[criterionIndex] = value;
-        setTitles(updatedTitles);
+    const hasChanges = (partIndex) => JSON.stringify(parts[partIndex]) !== JSON.stringify(originalParts[partIndex]);
+
+    // Hàm xử lý khi bấm nút "Quay lại" cho từng phần
+    const handleRevertChanges = (partIndex) => {
+        const newParts = [...parts];
+        newParts[partIndex] = originalParts[partIndex]; // Trả lại dữ liệu gốc cho phần đó
+        setParts(newParts);
+    };
+    const handleScoreChange = (taskIndex, titleName, value) => {
+        setTasks((prevTasks) => {
+            const updatedTasks = [...prevTasks];
+            updatedTasks[taskIndex] = {
+                ...updatedTasks[taskIndex],
+                scores: {
+                    ...updatedTasks[taskIndex].scores,
+                    [titleName]: value, // Update the score for the specific title
+                },
+            };
+            return updatedTasks;
+        });
+    };
+
+
+    // Hàm xử lý khi thay đổi điểm số
+    const handleChangeScore = (partIndex, taskIndex, title, value) => {
+        const newParts = [...parts];
+        newParts[partIndex][taskIndex].scores[title] = value;
+        setParts(newParts);
+        const handleScoreChange = (titleIndex, criterionIndex, value) => {
+            const updatedTitles = [...titles];
+            updatedTitles[titleIndex].scores[criterionIndex] = value;
+            setTitles(updatedTitles);
+        };
+    };
+    const handleAddCriteria = () => {
+        const newCriteria = {
+            criteria_name: 'New Criteria',
+            weight: 0,
+            max_score: 1,
+            num_options: 1,
+        };
+        console.log(newCriteria)
+        setCriteria([...criteria, newCriteria]);
     };
     return (
         <div style={{ marginTop: "60px" }}>
@@ -118,75 +159,81 @@ const EditDecision = () => {
                 </Box>
 
                 {/* Step 1 - Criteria Configuration */}
-                <Box sx={{ overflowX: 'auto', marginTop: 2 }}>
-                    {activeStep === 1 && (
-                        <Box sx={{ overflowX: 'auto', marginTop: 2 }}>
-                            <Table>
-                                <TableHead sx={{ backgroundColor: '#FFFAF0', color: '#fff' }}>
-                                    <TableRow>
-                                        <TableCell>#</TableCell>
-                                        <TableCell>Criteria Name</TableCell>
-                                        <TableCell>Weight (%)</TableCell>
-                                        <TableCell>Max Score</TableCell>
-                                        <TableCell>Num Options</TableCell>
-                                        {decisionStatus === 'Draft' && <TableCell>Action</TableCell>}
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {criteriaData.map((row, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell>{index + 1}</TableCell>
-                                            <TableCell>
-                                                <TextField
-                                                    value={row.criteria_name}
-                                                    onChange={(e) => handleInputChange(index, 'criteria_name', e.target.value)}
-                                                    sx={{ width: '200px' }}
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <TextField
-                                                    type="number"
-                                                    value={row.weight || ''}
-                                                    onChange={(e) => handleNumberInput(e.target.value, index, 'weight', setCriteriaData, criteriaData)}
-                                                    sx={{ width: '120px' }}
-                                                    InputProps={{ endAdornment: <Typography>%</Typography> }}
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <TextField
-                                                    type="number"
-                                                    value={row.max_score || ''}
-                                                    onChange={(e) => handleNumberInput(e.target.value, index, 'max_score', setCriteriaData, criteriaData)}
-                                                    sx={{ width: '100px' }}
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <TextField
-                                                    type="number"
-                                                    value={row.num_options || ''}
-                                                    onChange={(e) => handleNumberInput(e.target.value, index, 'num_options', setCriteriaData, criteriaData)}
-                                                    sx={{ width: '100px' }}
-                                                />
-                                            </TableCell>
-                                            {decisionStatus === 'Draft' && (
-                                                <TableCell>
-                                                    <Button
-                                                        variant="contained"
-                                                        color="secondary"
-                                                        onClick={() => handleDeleteRowData(index)}
-                                                    >
-                                                        Xóa
-                                                    </Button>
-                                                </TableCell>
-                                            )}
+                {/* Tạo viền xung quanh */}
+                {/* <Box sx={{ border: '2px solid black', borderRadius: '8px', padding: 2, maxWidth: '1300px', margin: 'auto', maxHeight: '800px' }}> */}
+                <Box sx={{ overflowX: 'auto' }}>
+                    {
+                        activeStep === 1 && (
+                            <Box sx={{ overflowX: 'auto', marginTop: 2 }}>
+                                <Table>
+                                    <TableHead sx={{ backgroundColor: 'blue', color: '#fff' }}>
+                                        <TableRow sx={{ '& > th': { backgroundColor: 'gray', color: '#fff' } }}>
+                                            <TableCell>#</TableCell>
+                                            <TableCell>Criteria Name</TableCell>
+                                            <TableCell>Weight (%)</TableCell>
+                                            <TableCell>Max Score</TableCell>
+                                            <TableCell>Num Options</TableCell>
+                                            {decisionStatus === 'Draft' && <TableCell>Action</TableCell>}
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </Box>
-                    )}
+                                    </TableHead>
+                                    <TableBody>
+                                        {criteriaData.map((row, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>{index + 1}</TableCell>
+                                                <TableCell>
+                                                    <TextField
+                                                        value={row.criteria_name}
+                                                        onChange={(e) => handleInputChange(index, 'criteria_name', e.target.value)}
+                                                        sx={{ width: '200px' }}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TextField
+                                                        type="number"
+                                                        value={row.weight || ''}
+                                                        onChange={(e) => handleNumberInput(e.target.value, index, 'weight', setCriteriaData, criteriaData)}
+                                                        sx={{ width: '120px' }}
+                                                        InputProps={{ endAdornment: <Typography>%</Typography> }}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TextField
+                                                        type="number"
+                                                        value={row.max_score || ''}
+                                                        onChange={(e) => handleNumberInput(e.target.value, index, 'max_score', setCriteriaData, criteriaData)}
+                                                        sx={{ width: '100px' }}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TextField
+                                                        type="number"
+                                                        value={row.num_options || ''}
+                                                        onChange={(e) => handleNumberInput(e.target.value, index, 'num_options', setCriteriaData, criteriaData)}
+                                                        sx={{ width: '100px' }}
+                                                    />
+                                                </TableCell>
+                                                {decisionStatus === 'Draft' && (
+                                                    <TableCell>
+                                                        <Button
+                                                            variant="contained"
+                                                            color="secondary"
+                                                            onClick={() => handleDeleteRowData(index)}
+                                                        >
+                                                            Xóa
+                                                        </Button>
+                                                    </TableCell>
+                                                )}
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                                <Button variant="contained" color="primary" onClick={handleAddCriteria}>
+                                    Add Criteria
+                                </Button>
+                            </Box>
+                        )
+                    }
                 </Box>
-                {/* Step 2 - Title Configuration */}
                 {/* Step 2 - Title Configuration */}
                 {
                     activeStep === 2 && (
@@ -324,8 +371,9 @@ const EditDecision = () => {
                     </Box>
                 </Box>
             </Box >
+            {/* </Box> */}
         </div >
+
     );
 };
-
 export default EditDecision;
