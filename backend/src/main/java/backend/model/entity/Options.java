@@ -9,7 +9,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,10 +23,6 @@ public class Options {
 
     @Column(name = "criteria_id")
     private Integer criteriaId;
-
-    @ManyToOne
-    @JoinColumn(name = "criteria_id", referencedColumnName = "criteria_id", insertable = false, updatable = false)
-    private Criteria criteria;
 
     @Column(name = "option_name")
     private String optionName;

@@ -1,7 +1,5 @@
 package backend.service.Implement;
 
-import backend.config.common.PaginationUtils;
-import backend.config.exception.exceptionEntity.RankingGroupException;
 import backend.dao.IAccount;
 import backend.dao.IRankingDecisionRepository;
 import backend.dao.IRankingGroupRepository;
@@ -9,21 +7,15 @@ import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.Account;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
-import backend.model.entity.Task;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
+import backend.model.form.RankingGroup.UpdateGroupInfo;
 import backend.model.form.RankingGroup.UpdateNewGroupRequest;
-import backend.model.page.ResultPaginationDTO;
 import backend.service.IRankingGroupService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-
-
-import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +31,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
 
     @Autowired
     public RankingGroupService(ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository,
-                               IAccount iAccount, IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper1) {
+            IAccount iAccount, IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper1) {
         super(modelMapper);
         this.iRankingGroupRepository = iRankingGroupRepository;
         this.iAccount = iAccount;
@@ -48,12 +40,12 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     }
 
     @Override
-    public ResultPaginationDTO getAllRankingGroups(Specification<RankingGroup> spec, Pageable pageable) {
-        Page<RankingGroup> rankingGroups = iRankingGroupRepository.findAll(spec, pageable);
+    public List<RankingGroup> getAllRankingGroups() {
+        List<RankingGroup> rankingGroups = iRankingGroupRepository.findAll();
 
         // Kiểm tra nếu không có nhóm nào
         if (rankingGroups.isEmpty()) {
-            throw new RankingGroupException("No Ranking Groups found.");
+            throw new ResourceNotFoundException("No Ranking Groups found.");
         }
 
         for (RankingGroup group : rankingGroups) {
@@ -63,22 +55,15 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
                 Account account = optionalAccount.get(); // get account
                 group.setUsername(account.getUsername()); // set username
             }
-            if (group.getCurrent_ranking_decision() != null) {
-                RankingDecision decision = iRankingDecisionRepository
-                        .findByDecisionId(group.getCurrent_ranking_decision());
-                group.setDecisionName(decision.getDecisionName());
-            } else {
-                group.setDecisionName(null);
-            }
         }
-        return new PaginationUtils().buildPaginationDTO(rankingGroups);
+        return rankingGroups;
     }
 
     @Override
     public RankingGroup findRankingGroupById(int id) {
         RankingGroup group = iRankingGroupRepository
                 .findById(id)
-                .orElseThrow(() -> new RankingGroupException("RankingGroup not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("RankingGroup not found with id: " + id));
 
         // Lấy tài khoản được tạo bởi 'CreatedBy' của nhóm, nếu có, thiết lập username
         iAccount.findById(group.getCreatedBy())
@@ -89,11 +74,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
             RankingDecision decision = iRankingDecisionRepository.findByDecisionId(group.getCurrent_ranking_decision());
             if (decision != null) {
                 group.setDecisionName(decision.getDecisionName());
-            } else {
-                group.setDecisionName(null);
             }
-        } else {
-            group.setDecisionName(null);
         }
         return group;
     }
@@ -148,6 +129,11 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
                     response.setCurrentRankingDecision(null);
                 }
             }
+
+            // Thêm username cho nhóm
+            iAccount.findById(rankingGroup.getCreatedBy())
+                    .ifPresent(account -> response.setCreatedBy(account.getUsername()));
+
             responseList.add(response);
         }
         return responseList;
@@ -157,10 +143,6 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     public RankingGroupResponse getRankingGroupResponseById(RankingGroup rankingGroup) {
         RankingGroupResponse response = modelMapper.map(rankingGroup, RankingGroupResponse.class);
         response.setCurrentRankingDecision(rankingGroup.getDecisionName());
-        Account account = iAccount.findById(rankingGroup.getCreatedBy()).orElse(null);
-        if (account != null) {
-            response.setCreatedBy(account.getFullName());
-        }
         return response;
     }
 
@@ -172,6 +154,7 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
                 .createdBy(form.getCreatedBy())
                 .build();
         iRankingGroupRepository.save(rankingGroup);
+
     }
 
     @Override
@@ -179,20 +162,26 @@ public class RankingGroupService extends BaseService implements IRankingGroupSer
     public void updateRankingGroup(Integer groupId, UpdateNewGroupRequest form) {
         RankingGroup group = iRankingGroupRepository.findById(groupId).orElse(null);
         if (group != null) {
-
-            if (!group.getGroupName().equals(form.getGroupName()) &&
-                    iRankingGroupRepository.existsByGroupNameAndGroupIdNot(form.getGroupName(), groupId)) {
-                throw new IllegalArgumentException("Group name already exists.");
-            }
-
             group.setGroupName(form.getGroupName());
             if (form.getCurrentRankingDecision() != null) {
                 group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
+
             }
             iRankingGroupRepository.saveAndFlush(group);
         }
     }
 
+    @Override
+    @Transactional
+    public void updateRankingGroupInfo(Integer groupId, UpdateGroupInfo form) {
+        RankingGroup group = iRankingGroupRepository.findById(groupId).orElse(null);
+        if (group != null) {
+            group.setGroupName(form.getGroupName());
+            group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
+            group.setCreatedBy(form.getCreatedBy());
+            iRankingGroupRepository.saveAndFlush(group);
+        }
+    }
 
     @Override
     public boolean isRankingGroupExitsByGroupName(String groupName) {

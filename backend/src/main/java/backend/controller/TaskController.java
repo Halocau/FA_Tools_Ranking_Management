@@ -1,29 +1,17 @@
 package backend.controller;
 
-import backend.config.common.PaginationUtils;
-
-import backend.config.exception.exceptionEntity.TaskException;
+import backend.config.exception.TaskException;
 import backend.model.dto.TaskResponse;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
 import backend.model.form.Task.UpdateTaskRequest;
-import backend.model.page.ResultPaginationDTO;
 import backend.service.ITaskService;
-
-import com.turkraft.springfilter.boot.Filter;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("api/task")
@@ -36,30 +24,9 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<ResultPaginationDTO> getAllTasks(
-            @Filter Specification<Task> spec,
-            Pageable pageable
-    ) {
-        // Lấy đối tượng phân trang
-        ResultPaginationDTO allTask = iTaskService.getTask(spec, pageable);
-
-        // Ép kiểu kết quả về danh sách Task trước khi truyền vào getAllTaskResponse
-        List<TaskResponse> taskResponses = iTaskService.getAllTaskResponse((List<Task>) allTask.getResult());
-
-        // Cập nhật lại kết quả trong ResultPaginationDTO với danh sách TaskResponse
-        allTask.setResult(taskResponses);
-
-        // Trả về ResponseEntity với ResultPaginationDTO
-        return ResponseEntity.status(HttpStatus.OK).body(allTask);
-    }
-
-
-    //test pagination
-    @GetMapping("/full")
-    public ResponseEntity<ResultPaginationDTO> getTaskList(
-            @Filter Specification<Task> spec,
-            Pageable pageable) {
-        return ResponseEntity.status(HttpStatus.OK).body(this.iTaskService.getTask(spec, pageable));
+    public List<TaskResponse> getAllTasks() {
+        List<Task> taskList = iTaskService.getTask();
+        return iTaskService.getAllTaskResponse(taskList);
     }
 
     @GetMapping("/get/{id}")
