@@ -274,7 +274,7 @@ const TaskManagement = () => {
       <Slider />
       <Box sx={{ marginTop: 4, padding: 2 }}>
         <Typography variant="h6">
-          <a href="/ranking_decision">Ranking Decision List</a>{" "}
+          <a href="/ranking-decision">Ranking Decision List</a>{" "}
           {<FaAngleRight />}
           Task Management
         </Typography>

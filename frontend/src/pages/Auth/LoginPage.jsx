@@ -26,7 +26,7 @@ const LoginPage = () => {
   useEffect(() => {
     if (user) {
       console.log("User:", user);
-      navigate("/ranking_group");
+      navigate("/ranking-group");
     }
   }, [user, navigate]);
 
@@ -99,7 +99,7 @@ const LoginPage = () => {
                 <button type="button" onClick={() => handleLogin()}>
                   Log In
                 </button>
-                
+
               </div>
             </form>
           </div>

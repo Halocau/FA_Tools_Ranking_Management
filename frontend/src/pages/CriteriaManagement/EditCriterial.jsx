@@ -104,7 +104,7 @@ const EditCriteria = () => {
         <Box sx={{ marginTop: "60px" }}>
             <Slider />
             <Typography variant="h6">
-                <a href="/ranking_decision">Ranking Decision List</a> {'>'} <a href="/criteria_list">Criteria List</a> {'>'} Edit Criteria
+                <a href="/ranking-decision">Ranking Decision List</a> {'>'} <a href="/criteria_list">Criteria List</a> {'>'} Edit Criteria
             </Typography>
 
             <Box sx={{ marginTop: 4, display: "flex", alignItems: "center", justifyContent: "space-between" }}>

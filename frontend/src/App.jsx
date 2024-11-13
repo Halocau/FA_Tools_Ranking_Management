@@ -44,7 +44,7 @@ function App() {
 
             {/* Ranking Group Routes */}
             <Route
-              path="/ranking_group"
+              path="/ranking-group"
               element={
                 <DashboardLayout>
                   <RankingGroups />
@@ -78,7 +78,7 @@ function App() {
 
             {/* Ranking Decision Routes */}
             <Route
-              path="/ranking_decision"
+              path="/ranking-decision"
               element={
                 <DashboardLayout>
                   <RankingDecision />
@@ -96,7 +96,7 @@ function App() {
 
             {/* Task and Criteria Management Routes */}
             <Route
-              path="/task_management"
+              path="/task-management"
               element={
                 <DashboardLayout>
                   <TaskManagement />
@@ -104,7 +104,7 @@ function App() {
               }
             />
             <Route
-              path="/criteria_management"
+              path="/criteria-management"
               element={
                 <DashboardLayout>
                   <CriteriaManagement />

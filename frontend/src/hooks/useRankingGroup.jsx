@@ -23,7 +23,7 @@ const useRankingGroup = () => {
     const fetchRankingGroups = async (page, size) => {
         setLoading(true); // Set loading state to true before making the request
         try {
-            const response = await http.get(`/rankinggroups?page=${page}&size=${size}`)
+            const response = await http.get(`/ranking-group?page=${page}&size=${size}`)
                 setData(response.data); // Update data state with the response data
         } catch (err) {
             handleError(err); 

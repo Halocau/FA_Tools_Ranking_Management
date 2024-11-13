@@ -152,12 +152,13 @@ const CriteriaManagement = () => {
             maxScore: criteria.maxScore
         }))
         : [];
+    console.log(criteria);
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
             <Box sx={{ marginTop: 4, padding: 2 }}>
                 <Typography variant="h6">
-                    <a href="/ranking_decision">Ranking Decision List</a> {'>'} Criteria List
+                    <a href="/ranking-decision">Ranking Decision List</a> {'>'} Criteria List
                 </Typography>
                 <Box sx={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                     <Typography variant="h5">Criteria List</Typography>
