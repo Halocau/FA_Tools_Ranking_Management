@@ -52,6 +52,7 @@ const RankingGroups = () => {
     data: groups,
     error,
     loading,
+    pageInfo,
     // fetchRankingGroups,
     fetchAllRankingGroups,
     deleteRankingGroup,
@@ -59,14 +60,14 @@ const RankingGroups = () => {
   } = useRankingGroup();
 
   // Fetch all ranking groups when component mounts
-  useEffect(() => {
-    fetchAllRankingGroups();
-  }, []);
-
-  // // Gọi API lần đầu khi component mount
   // useEffect(() => {
-  //   fetchRankingGroups(page, pageSize);
-  // }, [page, pageSize]);
+  //   fetchAllRankingGroups();
+  // }, []);
+  // Fetch dữ liệu khi component mount và khi thay đổi trang hoặc pageSize
+  useEffect(() => {
+    fetchAllRankingGroups(pageInfo.page, pageInfo.size);
+  }, [pageInfo.page, pageInfo.size]);
+  console.log((pageInfo.page, pageInfo.size))
 
   // Log state changes for debugging purposes
   useEffect(() => {
@@ -104,13 +105,13 @@ const RankingGroups = () => {
     // Capitalize the first letter of each word in the group name
     trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
     // Check for duplicate group name
-    const isDuplicate = groups.some(
-      group => group.groupName.toLowerCase() === trimmedName.toLowerCase()
-    );
-    if (isDuplicate) {
-      setValidationMessage("Group name already exists.");
-      return;
-    }
+    // const isDuplicate = groups.some(
+    //   group => group.groupName.toLowerCase() === trimmedName.toLowerCase()
+    // );
+    // if (isDuplicate) {
+    //   setValidationMessage("Group name already exists.");
+    //   return;
+    // }
 
     try {
       const newGroup = {
@@ -264,8 +265,8 @@ const RankingGroups = () => {
   /////////////////////////////////////////////////////////// Search Decision ///////////////////////////////////////////////////////////
   // Map decision data to rows for DataGrid when rows are fetched
   useEffect(() => {
-    if (groups) {
-      const mappedRows = groups.map((group, index) => ({
+    if (Array.isArray(groups?.result)) {
+      const mappedRows = groups.result.map((group, index) => ({
         id: group.groupId,
         index: index + 1,
         groupName: group.groupName,
@@ -275,9 +276,17 @@ const RankingGroups = () => {
       }));
       setRows(mappedRows);
       setFilteredRows(mappedRows);
+    } else {
+      console.warn('groups không phải là một mảng:', groups);
+      setRows([]);
+      setFilteredRows([]);
     }
   }, [groups]);
+  console.log(groups?.result)
+
   const handleInputChange = (event, value) => {
+    const safeGroups = Array.isArray(groups) ? groups : [];
+
     setSearchValue(value);
     const filtered = value
       ? filteredRows.filter(row => row.groupName.toLowerCase().includes(value.toLowerCase()))
@@ -389,18 +398,20 @@ const RankingGroups = () => {
             <DataGrid
               className="custom-data-grid"
               apiRef={apiRef}
-              rows={filteredRows}
-              columns={columns}
+              rows={filteredRows} // Dữ liệu hiển thị trong bảng
+              columns={columns} // Cấu hình cột của bảng
               checkboxSelection
               pagination
-              pageSizeOptions={[5, 10, 25]}
-              initialState={{
-                pagination: {
-                  paginationModel: {
-                    pageSize: 5,
-                    page: 0,
-                  },
-                },
+              pageSizeOptions={[5, 10, 25]} // Các tùy chọn kích thước trang
+              rowCount={groups?.pageInfo?.total * groups?.pageInfo?.size || 0} // Tổng số bản ghi tính từ total (số trang) và size (số bản ghi mỗi trang)
+              paginationMode="server" // Kích hoạt phân trang phía server
+              paginationModel={{
+                page: groups?.pageInfo?.page - 1 || 0, // Chuyển đổi chỉ số trang thành 0-based (DataGrid yêu cầu)
+                pageSize: groups?.pageInfo?.size || 5, // Kích thước trang từ pageInfo hoặc mặc định 5
+              }}
+              onPaginationModelChange={(model) => {
+                // Khi thay đổi trang, gọi hàm fetch dữ liệu mới với trang mới và kích thước trang
+                fetchAllRankingGroups(model.page + 1, model.pageSize); // Chuyển đổi chỉ số trang 0-based thành 1-based
               }}
               disableRowSelectionOnClick
               autoHeight={false}
@@ -414,6 +425,11 @@ const RankingGroups = () => {
             />
           )}
         </Box>
+
+
+
+
+
         <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
           <Button variant="contained" color="success" onClick={handleOpenAddModal}>
             Add New Group
