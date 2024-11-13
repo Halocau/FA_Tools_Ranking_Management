@@ -54,7 +54,13 @@ const TaskManagement = () => {
   useEffect(() => {
     fetchAllTasks();
   }, []);
+  // Log state changes for debugging purposes
+  useEffect(() => {
+    console.log("Task:", tasks);
+    console.log("Loading:", loading);
+    console.log("Error:", error);
 
+  }, [tasks, loading, error]);
   // Modal Add
   const handleOpenAddModal = () => {
     setValidationMessage("");
@@ -255,6 +261,7 @@ const TaskManagement = () => {
   ];
 
   const rows = tasks
+<<<<<<< HEAD
     ? tasks.map((item, index) => ({
         id: item.taskId,
         index: index + 1,
@@ -263,6 +270,16 @@ const TaskManagement = () => {
         createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
         updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
       }))
+=======
+    ? tasks.map((task, index) => ({
+      id: task.taskId,
+      index: index + 1,
+      taskName: task.taskName,
+      createdBy: task.createdByName || "Unknown",
+      createdAt: task.createdAt ? formatDate(task.createdAt) : "N/A",
+      updatedAt: task.updatedAt ? formatDate(task.updatedAt) : "N/A",
+    }))
+>>>>>>> quatbt
     : [];
 
   return (
@@ -270,7 +287,7 @@ const TaskManagement = () => {
       <Slider />
       <Box sx={{ marginTop: 4, padding: 2 }}>
         <Typography variant="h6">
-          <a href="/ranking_decision">Ranking Decision List</a>{" "}
+          <a href="/ranking-decision">Ranking Decision List</a>{" "}
           {<FaAngleRight />}
           Task Management
         </Typography>

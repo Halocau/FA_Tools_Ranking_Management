@@ -30,6 +30,7 @@ const Sidebar = () => {
         </Nav.Link>
         {openLogWork && (
           <div className="submenu ms-4">
+<<<<<<< HEAD
             <Nav.Link href="/ranking_group">
               <FaRankingStar />
               Ranking Group List
@@ -47,6 +48,12 @@ const Sidebar = () => {
               <FaMedal />
               Criteria Management
             </Nav.Link>
+=======
+            <Nav.Link href="/ranking-group">Ranking Group List</Nav.Link>
+            <Nav.Link href="/ranking-decision">Ranking Decision List</Nav.Link>
+            <Nav.Link href="/task-management">Task Managerment</Nav.Link>
+            <Nav.Link href="/criteria-management">Criteria Managerment</Nav.Link>
+>>>>>>> quatbt
           </div>
         )}
 

@@ -50,14 +50,24 @@ const RankingGroups = () => {
   const [showSuccessMessage, showErrorMessage] = useNotification();
   // Validation error message
   const [validationMessage, setValidationMessage] = useState("");
+<<<<<<< HEAD
   //Paging
 
   const apiRef = useGridApiRef();
+=======
+  //
+  const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
+  // Table page, size 
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(5);
+
+>>>>>>> quatbt
   // Destructuring from useRankingGroup custom hook
   const {
     data: groups,
     error,
     loading,
+<<<<<<< HEAD
     page,
     size,
     filter,
@@ -66,11 +76,27 @@ const RankingGroups = () => {
     setPage,
     setSize,
     setFilter,
+=======
+    fetchRankingGroups,
+>>>>>>> quatbt
     fetchAllRankingGroups,
     deleteRankingGroup,
     addRankingGroup,
   } = useRankingGroup();
 
+<<<<<<< HEAD
+=======
+  // Fetch all ranking groups when component mounts
+  useEffect(() => {
+    fetchAllRankingGroups();
+  }, []);
+
+  // Gọi API lần đầu khi component mount
+  useEffect(() => {
+    fetchRankingGroups(page, pageSize);
+  }, [page, pageSize]);
+
+>>>>>>> quatbt
   // Log state changes for debugging purposes
   useEffect(() => {
     console.log("Groups:", groups);
@@ -308,11 +334,19 @@ const RankingGroups = () => {
     <div style={{ marginTop: "60px" }}>
       <Slider />
       <div>
+<<<<<<< HEAD
         <h2>Ranking Group List</h2>
         <Box sx={{ display: "flex", alignItems: "center", marginTop: 2 }}>
           <Typography sx={{ marginRight: 2, fontSize: "1.3rem", marginTop: 0 }}>
             Search Group Name:
           </Typography>
+=======
+        <h2>
+          Ranking Group List
+        </h2>
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 1 }}>
+          {/* <Typography sx={{ marginRight: 2, fontSize: '1.3rem', marginTop: 0 }}>Search Group Name:</Typography> */}
+>>>>>>> quatbt
           <Autocomplete
             disablePortal
             options={rows}
@@ -325,6 +359,7 @@ const RankingGroups = () => {
                 label="Search Group"
                 variant="outlined"
                 fullWidth
+<<<<<<< HEAD
                 InputLabelProps={{
                   shrink: true,
                   sx: {
@@ -339,6 +374,14 @@ const RankingGroups = () => {
                   marginTop: 1,
                 }}
                 InputProps={{
+=======
+                // InputLabelProps={{ shrink: true, sx: { fontSize: '1rem', display: 'flex', alignItems: 'center', height: '100%' } }}
+                sx={{
+                  marginTop: 2,
+                  height: '40px',
+                  '& .MuiInputBase-root': { height: '130%', borderRadius: '20px' },
+                }} InputProps={{
+>>>>>>> quatbt
                   ...params.InputProps,
                   endAdornment: (
                     <InputAdornment
@@ -361,6 +404,7 @@ const RankingGroups = () => {
                 }}
               />
             )}
+<<<<<<< HEAD
             sx={{ flexGrow: 1, marginRight: "16px", maxWidth: "500px" }}
           />
         </Box>
@@ -369,12 +413,26 @@ const RankingGroups = () => {
           {loading ? (
             <CircularProgress />
           ) : (
+=======
+            sx={{
+              flexGrow: 1,
+              marginRight: '16px',
+              maxWidth: '600px',
+              marginTop: '-10px',
+              borderRadius: '20px' // Bo tròn góc cho Autocomplete
+            }}
+          />
+        </Box>
+        <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
+          {loading ? <CircularProgress /> : (
+>>>>>>> quatbt
             <DataGrid
               className="custom-data-grid"
               apiRef={apiRef}
               rows={filteredRows}
               columns={columns}
               pagination
+<<<<<<< HEAD
               pageSize={size}
               onPageChange={(newPage) => setPage(newPage)}
               onPageSizeChange={(newSize) => setSize(newSize)}
@@ -382,6 +440,30 @@ const RankingGroups = () => {
               rowCount={rows.length} // Use the total count from API response
               loading={loading}
               checkboxSelection
+=======
+              pageSizeOptions={[5, 10, 25]}
+              pageSize={pageSize}
+              page={page}
+              onPageChange={(newPage) => {
+                setPage(newPage);
+                // Gọi hàm API mới với `newPage` và `pageSize` hiện tại
+                fetchRankingGroups(newPage, pageSize);
+              }}
+              onPageSizeChange={(newPageSize) => {
+                setPageSize(newPageSize);
+                setPage(0); // Reset lại `page` khi thay đổi `pageSize`
+                // Gọi hàm API mới với `page` là 0 và `newPageSize`
+                fetchRankingGroups(0, newPageSize);
+              }}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 5,
+                    page: 0,
+                  },
+                },
+              }}
+>>>>>>> quatbt
               disableRowSelectionOnClick
               sx={{
                 height: "100%",

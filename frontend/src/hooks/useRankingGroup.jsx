@@ -15,6 +15,7 @@ const useRankingGroup = () => {
   const [size, setSize] = useState(7);
   const [filter, setFilter] = useState("");
 
+<<<<<<< HEAD
   // Function to handle errors, including redirects if unauthorized
   const handleError = (err) => {
     if (err.response && err.response.status === 403) {
@@ -36,6 +37,54 @@ const useRankingGroup = () => {
           filter,
         },
       });
+=======
+    // Function to handle errors, including redirects if unauthorized
+    const handleError = (err) => {
+        if (err.response && err.response.status === 403) {
+            navigate('/403'); // Redirect to 403 error page if access is forbidden
+        } else {
+            setError(err.response?.data || "An error occurred while fetching ranking groups.");
+        }
+    };
+    // Fetches list ranking groups with page and size from the API 
+    const fetchRankingGroups = async (page, size) => {
+        setLoading(true); // Set loading state to true before making the request
+        try {
+            const response = await http.get(`/ranking-group?page=${page}&size=${size}`)
+                setData(response.data); // Update data state with the response data
+        } catch (err) {
+            handleError(err); 
+        }finally {
+            setLoading(false);
+            }       
+        };
+    //  Fetches all ranking groups from the API
+    const fetchAllRankingGroups = async () => {
+        setLoading(true);
+        try {
+            const response = await authClient.get('/ranking-group');
+            setData(response.data);
+            return response.data;
+        } catch (err) {
+            handleError(err);
+        }
+        finally {
+            setLoading(false);
+        }
+    };
+    // Fetches a specific ranking group by ID
+    const fetchRankingGroupById = async (id) => {
+        setLoading(true);
+        try {
+            const response = await authClient.get(`/ranking-group/get/${id}`);
+            return response.data;
+        } catch (err) {
+            setError(err.response?.data || "An error occurred while fetching the ranking group.");
+        } finally {
+            setLoading(false);
+        }
+    };
+>>>>>>> quatbt
 
       setData(response.data);
       setTotal(response.data);
@@ -103,6 +152,7 @@ const useRankingGroup = () => {
     }
   };
 
+<<<<<<< HEAD
   // Deletes a ranking group and updates the data state
   const deleteRankingGroup = async (id) => {
     setLoading(true);
@@ -139,6 +189,19 @@ const useRankingGroup = () => {
     updateRankingGroup,
     deleteRankingGroup,
   };
+=======
+    return {
+        data, // Contains fetched ranking group data
+        loading, // Indicates loading state
+        error, // Contains error messages
+        fetchRankingGroups,
+        fetchAllRankingGroups, // Fetches all ranking groups
+        fetchRankingGroupById, // Fetches a specific ranking group by ID
+        addRankingGroup, // Adds a new ranking group
+        updateRankingGroup, // Updates an existing ranking group
+        deleteRankingGroup, // Deletes a ranking group
+    };
+>>>>>>> quatbt
 };
 
 export default useRankingGroup;
