@@ -1,8 +1,9 @@
 package backend.model.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -10,30 +11,33 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "Task")
+@Table(name = "Ranking_Title")
 @SuperBuilder
-public class Task {
+public class RankingTitle {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "task_id")
-    private int taskId;
+    @Column(name = "ranking_title_id")
+    private Integer rankingTitleId;
 
-    @Column(name = "task_name")
-    @Size(min = 3, max = 255)
-    private String taskName;
+    @Column(name = "decision_id")
+    private Integer decisionId;
 
-    @Column(name = "created_by")
-    private Integer createdBy;
+    @Column(name = "title_name", length = 100)
+    private String titleName;
+
+    @Column(name = "total_score")
+    private Float totalScore;
 
     @CreationTimestamp
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public Task() {
-    }
 }

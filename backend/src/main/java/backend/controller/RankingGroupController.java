@@ -1,21 +1,25 @@
 package backend.controller;
 
-import backend.config.exception.RankingGroupException;
+import backend.config.common.PaginationUtils;
+import backend.config.exception.exceptionEntity.RankingGroupException;
 import backend.model.dto.RankingGroupResponse;
-import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
 import backend.model.form.RankingGroup.AddNewGroupRequest;
-import backend.model.form.RankingGroup.UpdateGroupInfo;
 import backend.model.form.RankingGroup.UpdateNewGroupRequest;
+import backend.model.page.ResultPaginationDTO;
 import backend.service.IRankingDecisionService;
 import backend.service.IRankingGroupService;
+import com.turkraft.springfilter.boot.Filter;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/ranking-group")
@@ -26,33 +30,23 @@ public class RankingGroupController {
 
     @Autowired
     public RankingGroupController(IRankingGroupService iRankingGroupService,
-            IRankingDecisionService iRankingDecisionService) {
+                                  IRankingDecisionService iRankingDecisionService) {
         this.iRankingGroupService = iRankingGroupService;
         this.iRankingDecisionService = iRankingDecisionService;
     }
 
-    // // Covert data RankingGroup -> RankingGroupResponse
-    // public RankingGroupResponse convertToDTO(RankingGroup group, String
-    // decisionName) {
-    // RankingGroupResponse dto = new RankingGroupResponse();
-    // dto.setGroupId(group.getGroupId());
-    // dto.setGroupName(group.getGroupName());
-    // dto.setNumEmployees(group.getNumEmployees());
-    // dto.setCurrentRankingDecision(decisionName); // Gán giá trị quyết định xếp
-    // hạng
-    // return dto;
-    // }
-
     @GetMapping
-    public List<RankingGroupResponse> getAllRankingGroups() {
-        List<RankingGroup> rankingGroups = iRankingGroupService.getAllRankingGroups();
-        return iRankingGroupService.getAllRankingGroupResponses(rankingGroups);
-    }
+    public ResponseEntity<ResultPaginationDTO> getAllRankingGroups(
+            @Filter Specification<RankingGroup> spec,
+            Pageable pageable
+    ) {
+        ResultPaginationDTO paginationDTO = iRankingGroupService.getAllRankingGroups(spec, pageable);
 
-    @GetMapping("/all")
-    public List<RankingGroup> getAllRankingGroup() {
-        List<RankingGroup> rankingGroups = iRankingGroupService.getAllRankingGroups();
-        return rankingGroups;
+        List<RankingGroup> rankingGroups = (List<RankingGroup>) paginationDTO.getResult();
+        List<RankingGroupResponse> rankingGroupResponses = iRankingGroupService.getAllRankingGroupResponses(rankingGroups);
+
+        paginationDTO.setResult(rankingGroupResponses);
+        return ResponseEntity.status(HttpStatus.OK).body(paginationDTO);
     }
 
     @GetMapping("/get/{id}")
@@ -75,7 +69,7 @@ public class RankingGroupController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<String> updateRankingGroup(@RequestBody @Valid UpdateNewGroupRequest form,
-            @PathVariable(name = "id") Integer groupId) {
+                                                     @PathVariable(name = "id") Integer groupId) {
         RankingGroup rankingGroup = iRankingGroupService.findRankingGroupById(groupId);
         if (rankingGroup == null) {
             throw new RankingGroupException("RankingGroup not found id: " + groupId);
