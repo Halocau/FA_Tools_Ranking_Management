@@ -9,9 +9,10 @@ const useRankingGroup = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [total, setTotal] = useState(0); // All records
+  const [total, setTotal] = useState(0); // All Pages
+  const [element, setElements] = useState(0); //All records
   const [page, setPage] = useState(0);
-  const [size, setSize] = useState(5);
+  const [size, setSize] = useState(7);
   const [filter, setFilter] = useState("");
 
   // Function to handle errors, including redirects if unauthorized
@@ -25,7 +26,7 @@ const useRankingGroup = () => {
     }
   };
   // Fetches all ranking groups from the API
-  const fetchAllRankingGroups = async (page = 0, size = 5, filter = "") => {
+  const fetchAllRankingGroups = async (page = 0, size = 7, filter = "") => {
     setLoading(true);
     try {
       const response = await authClient.get("/ranking-group", {
@@ -35,9 +36,10 @@ const useRankingGroup = () => {
           filter,
         },
       });
-      console.log(response);
+
       setData(response.data);
       setTotal(response.data);
+      console.log(response);
     } catch (err) {
       handleError(err);
     } finally {
@@ -118,8 +120,6 @@ const useRankingGroup = () => {
     }
   };
 
-  
-
   return {
     data,
     loading,
@@ -127,7 +127,9 @@ const useRankingGroup = () => {
     total,
     page,
     size,
+    total,
     filter,
+    setTotal,
     setPage,
     setSize,
     setFilter,

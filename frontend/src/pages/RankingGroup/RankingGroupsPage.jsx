@@ -52,7 +52,7 @@ const RankingGroups = () => {
   const [validationMessage, setValidationMessage] = useState("");
   //Paging
 
-  const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
+  const apiRef = useGridApiRef();
   // Destructuring from useRankingGroup custom hook
   const {
     data: groups,
@@ -61,6 +61,8 @@ const RankingGroups = () => {
     page,
     size,
     filter,
+    total,
+    setTotal,
     setPage,
     setSize,
     setFilter,
@@ -122,12 +124,12 @@ const RankingGroups = () => {
     try {
       const newGroup = {
         groupName: trimmedName,
-        createdBy: localStorage.getItem("userId"), // Get the account ID as the ID of the user creating the group
+        createdBy: localStorage.getItem("userId"),
       };
-      await addRankingGroup(newGroup); // Call API to add new group
+      await addRankingGroup(newGroup);
       showSuccessMessage("Ranking Group successfully added.");
-      handleCloseAddModal(); // Close the add modal after successful addition
-      await fetchAllRankingGroups(); // Refresh the group list
+      handleCloseAddModal();
+      await fetchAllRankingGroups();
     } catch (error) {
       console.error("Failed to add group:", error);
       showErrorMessage("Error occurred adding Ranking Group. Please try again");
@@ -137,7 +139,9 @@ const RankingGroups = () => {
   // Modal Delete
   const handleOpenDeleteModal = (groupId) => {
     // Find groups by ID to check names
-    const selectedGroup = groups.find((group) => group.groupId === groupId);
+    const selectedGroup = groups.result.find(
+      (group) => group.groupId === groupId
+    );
     // If the group is named "Trainer", show a notification and do not open the modal
     if (selectedGroup && selectedGroup.groupName === "Trainer") {
       showErrorMessage("Cannot delete the 'Trainer' group.");
