@@ -1,6 +1,5 @@
 package backend.model.entity;
 
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,7 +26,6 @@ public class RankingGroup {
     private int groupId;
 
     @Column(name = "group_name", length = 100, nullable = false)
-    @Size(min = 3, max = 150)
     private String groupName;
 
     @Column(name = "num_employees")

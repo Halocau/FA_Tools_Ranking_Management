@@ -7,7 +7,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Entity
@@ -39,10 +38,6 @@ public class Criteria {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    // Add the OneToMany relationship to Options with cascading delete
-    @OneToMany(mappedBy = "criteriaId", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Options> options;
 
     public Criteria() {
     }

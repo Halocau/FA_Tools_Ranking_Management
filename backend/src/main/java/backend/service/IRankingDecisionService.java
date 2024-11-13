@@ -4,14 +4,11 @@ import backend.model.dto.RankingDecisionResponse;
 import backend.model.entity.RankingDecision;
 import backend.model.form.RankingDecision.CreateRankingDecision;
 import backend.model.form.RankingDecision.UpdateRankingDecision;
-import backend.model.page.ResultPaginationDTO;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface IRankingDecisionService {
-    public ResultPaginationDTO getRankingDecisions(Specification<RankingDecision> spec, Pageable pageable);
+    public List<RankingDecision> getRankingDecisions();
 
     public RankingDecision getRankingDecisionById(int id);
 
