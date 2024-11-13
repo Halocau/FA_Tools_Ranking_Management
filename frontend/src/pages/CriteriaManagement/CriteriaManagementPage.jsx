@@ -101,7 +101,7 @@ const CriteriaManagement = () => {
             setTimeout(() => setMessage(null), 2000);
             handleCloseAddCriteriaModal();
             setTotalElements(totalElements + 1);
-            if (criteria.length < 5) {
+            if (criteria.length < pageSize) {
                 setCriteria(prevCriteria => [...prevCriteria, newCriteria]);
 
             } else {
