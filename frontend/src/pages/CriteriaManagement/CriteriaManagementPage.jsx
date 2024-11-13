@@ -40,6 +40,7 @@ const CriteriaManagement = () => {
         }
     }
 
+
     useEffect(() => {
         getAllCriteria();
     }, [page, pageSize, filter]);
@@ -94,7 +95,7 @@ const CriteriaManagement = () => {
         trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
 
         try {
-            await addCriteria({ criteriaName: trimmedName, createdBy: 1 });
+            await CriteriaAPI.createCriteria({ criteriaName: trimmedName, createdBy: 1 });
             setMessageType("success");
             setMessage("Criteria added successfully!");
             setTimeout(() => setMessage(null), 2000);
