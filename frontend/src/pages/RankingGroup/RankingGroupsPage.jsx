@@ -129,7 +129,7 @@ const RankingGroups = () => {
     // Capitalize the first letter of each word in the group name
     trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
     // Check for duplicate group name
-    const isDuplicate = groups.some(
+    const isDuplicate = group.some(
       (group) => group.groupName.toLowerCase() === trimmedName.toLowerCase()
     );
     if (isDuplicate) {
@@ -155,7 +155,7 @@ const RankingGroups = () => {
   // Modal Delete
   const handleOpenDeleteModal = (groupId) => {
     // Find groups by ID to check names
-    const selectedGroup = groups.find((group) => group.groupId === groupId);
+    const selectedGroup = group.find((group) => group.groupId === groupId);
     // If the group is named "Trainer", show a notification and do not open the modal
     if (selectedGroup && selectedGroup.groupName === "Trainer") {
       showErrorMessage("Cannot delete the 'Trainer' group.");

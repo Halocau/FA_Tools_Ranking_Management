@@ -26,6 +26,9 @@ import useTask from "../../hooks/useTask.jsx";
 
 // Import hook Notification
 import useNotification from "../../hooks/useNotification";
+
+import taskApi from "../../api/TaskAPI.js";
+
 const TaskManagement = () => {
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
@@ -38,6 +41,14 @@ const TaskManagement = () => {
   // Use hook notification
   const [showSuccessMessage, showErrorMessage] = useNotification();
   const [validationMessage, setValidationMessage] = useState("");
+  // Paging
+  const [task, setTask] = useState([]);
+   const [pageSize, setpageSize] = useState(5);
+   const [page, setPage] = useState(1);
+   const [filter, setFilter] = useState("");
+   const [totalPages, setTotalPages] = useState(0);
+   const [totalElements, setTotalElements] = useState(0);
+   
   const apiRef = useGridApiRef();
 
   const {
@@ -50,9 +61,20 @@ const TaskManagement = () => {
     updateTask, // Assuming you have an updateTask function in your useTask hook
   } = useTask();
 
+  const getAllTask = async () => {
+    try {
+      const data = await taskApi.searchByTaskName(filter, page, pageSize);
+      setTask(data.result);
+      setTotalPages(data.pageInfo.total);
+      setTotalElements(data.pageInfo.element);
+    } catch (error) {
+      console.error("Failed to fetch criteria:", error);
+    }
+  };
+
   useEffect(() => {
-    fetchAllTasks();
-  }, []);
+    getAllTask();
+  }, [page, pageSize, filter]);
 
   // Modal Add
   const handleOpenAddModal = () => {
@@ -252,8 +274,8 @@ const TaskManagement = () => {
     },
   ];
 
-  const rows = tasks
-    ? tasks.result.map((item, index) => ({
+  const rows = task
+    ? task.map((item, index) => ({
       id: item.taskId,
       index: index + 1,
       taskName: item.taskName,
@@ -281,12 +303,22 @@ const TaskManagement = () => {
             rows={rows}
             columns={columns}
             checkboxSelection
-            initialState={{
-              pagination: {
-                paginationModel: { pageSize: 5 },
-              },
+            pagination
+            pageSizeOptions={[5, 10, 20]}
+            loading={loading}
+            getRowId={(row) => row.id}
+            rowCount={totalElements}
+            paginationMode="server" // Kích hoạt phân trang phía server
+            paginationModel={{
+              page: page - 1, // Adjusted for 0-based index
+              pageSize: pageSize,
             }}
-            pageSizeOptions={[5]}
+            onPaginationModelChange={(model) => {
+              setPage(model.page + 1); // Set 1-based page for backend
+              setpageSize(model.pageSize);
+            }}
+            disableNextButton={page >= totalPages}
+            disablePrevButton={page <= 1}
             disableRowSelectionOnClick
           />
         )}
