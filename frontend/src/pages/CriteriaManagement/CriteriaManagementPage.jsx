@@ -180,14 +180,15 @@ const CriteriaManagement = () => {
                         rowCount={totalElements}
                         paginationMode="server" // Kích hoạt phân trang phía server
                         paginationModel={{
-                            page: page || 0, // Chuyển đổi chỉ số trang thành 0-based (DataGrid yêu cầu)
-                            pageSize: pageSize || 5, // Kích thước trang từ pageInfo hoặc mặc định 5
+                            page: page - 1,  // Adjusted for 0-based index
+                            pageSize: pageSize,
                         }}
                         onPaginationModelChange={(model) => {
-                            // Khi thay đổi trang, gọi hàm fetch dữ liệu mới với trang mới và kích thước trang
-                            setPage(model.page + 1);
-
+                            setPage(model.page + 1);  // Set 1-based page for backend
+                            setpageSize(model.pageSize);
                         }}
+                        disableNextButton={page >= totalPages}
+                        disablePrevButton={page <= 1}
                         disableRowSelectionOnClick
                     />
                 </Box>
