@@ -255,7 +255,7 @@ const RankingGroups = () => {
   // Map decision data to rows for DataGrid when rows are fetched
   useEffect(() => {
     if (groups) {
-      const mappedRows = groups.map((group, index) => ({
+      const mappedRows = groups.result.map((group, index) => ({
         id: group.groupId,
         index: index + 1,
         groupName: group.groupName,

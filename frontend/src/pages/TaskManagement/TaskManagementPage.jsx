@@ -253,7 +253,7 @@ const TaskManagement = () => {
   ];
 
   const rows = tasks
-    ? tasks.map((item, index) => ({
+    ? tasks.result.map((item, index) => ({
       id: item.taskId,
       index: index + 1,
       taskName: item.taskName,

@@ -31,16 +31,6 @@ public class CriteriaController {
         this.criteriaService = criteriaService;
     }
 
-    // @GetMapping
-    // public ResponseEntity<List<CriteriaResponse>> getAllCriteria(
-    // @Filter Specification<Criteria> spec,
-    // Pageable pageable) {
-    // List<Criteria> criteriaList = criteriaService.getAllCriteria();
-    // List<CriteriaResponse> criteriaResponses =
-    // criteriaService.convertToCriteriaResponseList(criteriaList);
-    // return new ResponseEntity<>(criteriaResponses, HttpStatus.OK);
-    // }
-
     @GetMapping
     public ResponseEntity<ResultPaginationDTO> searchCriteria(
             @Filter Specification<Criteria> spec,

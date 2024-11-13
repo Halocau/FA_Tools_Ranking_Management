@@ -3,37 +3,59 @@ import { Box, Button, Typography, TextField, Modal } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import useCriteria from "../../hooks/useCriteria"; // Import useCriteria hook
 import Slider from "../../layouts/Slider.jsx";
-import useRankingGroup from "../../hooks/useRankingGroup.jsx"; 
+import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import "../../assets/css/RankingGroups.css";
-
+import { useNavigate } from "react-router-dom";
+import CriteriaAPI from "../../api/CriteriaAPI.js";
 const CriteriaManagement = () => {
     const navigate = useNavigate();
-    const { fetchAllRankingGroups, data: group } = useRankingGroup();
     const { addCriteria, fetchAllCriteria, deleteCriteria, loading, error } = useCriteria(); // Sử dụng hook
-
     const apiRef = useGridApiRef();
-
+    const [criteria, setCriteria] = useState([]);
     const [showAddCriteriaModal, setShowAddCriteriaModal] = useState(false);
     const [criteriaName, setCriteriaName] = useState("");
     const [validationMessage, setValidationMessage] = useState("");
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState("success");
-    const [criteriaList, setCriteriaList] = useState([]);
+    const [pageSize, setpageSize] = useState(5);
+    const [page, setPage] = useState(1);
+    const [filter, setFilter] = useState("");
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
+    const [rows, setRows] = useState([]);
+    const getAllCriteria = async () => {
+        try {
+            const data = await CriteriaAPI.searchCriteria(
+                filter,
+                page,
+                pageSize
+            );
+            setCriteria(data.result);
+            setTotalPages(data.pageInfo.total);
+            setTotalElements(data.pageInfo.element);
+        } catch (error) {
+            console.error("Failed to fetch criteria:", error);
+        }
+    }
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                await fetchAllRankingGroups(); 
-                const criteriaData = await fetchAllCriteria();
-                setCriteriaList(criteriaData);
-            } catch (error) {
-                console.error("Failed to fetch data:", error);
-                setMessageType("error");
-                setMessage("Failed to load ranking groups. Please check the server.");
-            }
-        };
-        fetchData();
-    }, [fetchAllCriteria, fetchAllRankingGroups]);
+        getAllCriteria();
+    }, [page, pageSize, filter]);
+
+    console.log(criteria, totalPages, totalElements, page, pageSize);
+
+    useEffect(() => {
+        if (criteria) {
+            const mappedRows = criteria.map((criteria, index) => ({
+                id: criteria.criteriaId,
+                index: index + 1,
+                criteriaName: criteria.criteriaName,
+                noOfOption: criteria.numOptions ? criteria.numOptions : 0,
+                maxScore: criteria.maxScore ? criteria.maxScore : 0,
+            }));
+            setRows(mappedRows);
+        }
+    }, [criteria]);
 
     const handleOpenAddCriteriaModal = () => {
         setShowAddCriteriaModal(true);
@@ -102,7 +124,7 @@ const CriteriaManagement = () => {
     };
 
     const columns = [
-        { field: "id", headerName: "ID", width: 80 },
+        { field: "index", headerName: "ID", width: 80 },
         { field: "criteriaName", headerName: "Criteria Name", width: 300 },
         { field: "noOfOption", headerName: "No Of Option", width: 150 },
         { field: "maxScore", headerName: "Max Score", width: 150 },
@@ -130,7 +152,7 @@ const CriteriaManagement = () => {
             ),
         },
     ];
-
+    console.log(rows);
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
@@ -148,12 +170,25 @@ const CriteriaManagement = () => {
                 <Box sx={{ width: "100%" }}>
                     <DataGrid
                         apiRef={apiRef}
-                        rows={criteriaList}
+                        rows={rows}
                         columns={columns}
                         checkboxSelection
-                        pageSizeOptions={[5]}
+                        pagination
+                        pageSizeOptions={[5, 10, 20]}
                         loading={loading}
-                        getRowId={(row) => row.criteriaId}
+                        getRowId={(row) => row.id}
+                        rowCount={totalElements}
+                        paginationMode="server" // Kích hoạt phân trang phía server
+                        paginationModel={{
+                            page: page || 0, // Chuyển đổi chỉ số trang thành 0-based (DataGrid yêu cầu)
+                            pageSize: pageSize || 5, // Kích thước trang từ pageInfo hoặc mặc định 5
+                        }}
+                        onPaginationModelChange={(model) => {
+                            // Khi thay đổi trang, gọi hàm fetch dữ liệu mới với trang mới và kích thước trang
+                            setPage(model.page + 1);
+
+                        }}
+                        disableRowSelectionOnClick
                     />
                 </Box>
 
