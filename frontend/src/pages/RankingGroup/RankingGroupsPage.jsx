@@ -2,14 +2,23 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
-import { FaEye } from 'react-icons/fa';
-import { FaHistory } from 'react-icons/fa';
-import "../../assets/css/RankingGroups.css"
+import { FaEye } from "react-icons/fa";
+import { FaHistory } from "react-icons/fa";
+import "../../assets/css/RankingGroups.css";
 // Mui
-import { Box, Button, Typography, TextField, Alert, CircularProgress, InputAdornment, IconButton, } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  TextField,
+  Alert,
+  CircularProgress,
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
-import Autocomplete from '@mui/material/Autocomplete';
-import ClearIcon from '@mui/icons-material/Clear';
+import Autocomplete from "@mui/material/Autocomplete";
+import ClearIcon from "@mui/icons-material/Clear";
 // Source code
 //Common
 import ModalCustom from "../../components/Common/Modal.jsx";
@@ -23,40 +32,50 @@ import { useAuth } from "../../contexts/AuthContext.jsx";
 import useNotification from "../../hooks/useNotification";
 
 const RankingGroups = () => {
-  const navigate = useNavigate(); // Initialize the useNavigate hook to navigate between pages in the application
-  // State
+  const navigate = useNavigate();
   //Add
-  const [showAddModal, setShowAddModal] = useState(false); // State to determine whether the add group modal is visible or not
-  const [newGroupName, setNewGroupName] = useState(""); // State to store the new group name that the user enters
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
   // Delete
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // State to determine whether the delete group modal is displayed or not
-  const [groupToDelete, setGroupToDelete] = useState(null); // State to save the ID of the group to be deleted
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState(null);
   // delete select
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   // Search Decision
-  const [rows, setRows] = useState([]); // Initialize with empty array
-  const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
-  const [searchValue, setSearchValue] = useState(''); // State to store search value
+  const [rows, setRows] = useState([]);
+  const [filteredRows, setFilteredRows] = useState([]);
+  const [searchValue, setSearchValue] = useState("");
   // Use hook notification
   const [showSuccessMessage, showErrorMessage] = useNotification();
   // Validation error message
   const [validationMessage, setValidationMessage] = useState("");
   //
-  const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
-  // Table page, size 
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
+  const apiRef = useGridApiRef();
 
   // Destructuring from useRankingGroup custom hook
   const {
     data: groups,
     error,
     loading,
-    fetchRankingGroups,
+    page,
+    size,
+    totalPage,
+    totalElement,
+    setPage,
+    setSize,
+    fetchRankingGroupPaging,
     fetchAllRankingGroups,
     deleteRankingGroup,
     addRankingGroup,
   } = useRankingGroup();
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+
+  const handlePageSizeChange = (newSize) => {
+    setSize(newSize);
+  };
 
   // Fetch all ranking groups when component mounts
   useEffect(() => {
@@ -65,15 +84,14 @@ const RankingGroups = () => {
 
   // Gọi API lần đầu khi component mount
   useEffect(() => {
-    fetchRankingGroups(page, pageSize);
-  }, [page, pageSize]);
+    fetchRankingGroupPaging(page, size);
+  }, [page, size]);
 
   // Log state changes for debugging purposes
   useEffect(() => {
     console.log("Groups:", groups);
     console.log("Loading:", loading);
     console.log("Error:", error);
-
   }, [groups, loading, error]);
   //// Handlers to open/close modals for adding or deleting groups
   // Modal Add
@@ -98,14 +116,16 @@ const RankingGroups = () => {
     }
     const nameRegex = /^[a-zA-Z0-9 ]+$/;
     if (!nameRegex.test(trimmedName)) {
-      setValidationMessage("Group name can only contain letters, numbers, and spaces.");
+      setValidationMessage(
+        "Group name can only contain letters, numbers, and spaces."
+      );
       return;
     }
     // Capitalize the first letter of each word in the group name
     trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
     // Check for duplicate group name
     const isDuplicate = groups.some(
-      group => group.groupName.toLowerCase() === trimmedName.toLowerCase()
+      (group) => group.groupName.toLowerCase() === trimmedName.toLowerCase()
     );
     if (isDuplicate) {
       setValidationMessage("Group name already exists.");
@@ -115,7 +135,7 @@ const RankingGroups = () => {
     try {
       const newGroup = {
         groupName: trimmedName,
-        createdBy: localStorage.getItem('userId'), // Get the account ID as the ID of the user creating the group
+        createdBy: localStorage.getItem("userId"), // Get the account ID as the ID of the user creating the group
       };
       await addRankingGroup(newGroup); // Call API to add new group
       showSuccessMessage("Ranking Group successfully added.");
@@ -124,14 +144,13 @@ const RankingGroups = () => {
     } catch (error) {
       console.error("Failed to add group:", error);
       showErrorMessage("Error occurred adding Ranking Group. Please try again");
-
     }
   };
 
   // Modal Delete
   const handleOpenDeleteModal = (groupId) => {
     // Find groups by ID to check names
-    const selectedGroup = groups.find(group => group.groupId === groupId);
+    const selectedGroup = groups.find((group) => group.groupId === groupId);
     // If the group is named "Trainer", show a notification and do not open the modal
     if (selectedGroup && selectedGroup.groupName === "Trainer") {
       showErrorMessage("Cannot delete the 'Trainer' group.");
@@ -155,7 +174,9 @@ const RankingGroups = () => {
       }
     } catch (error) {
       console.error("Failed to delete group:", error);
-      showErrorMessage("Error occurred removing Ranking Group. Please try again.");
+      showErrorMessage(
+        "Error occurred removing Ranking Group. Please try again."
+      );
       handleCloseDeleteModal();
     }
   };
@@ -189,15 +210,21 @@ const RankingGroups = () => {
     }
   };
 
-
   // Define columns for DataGrid
   const columns = [
     { field: "index", headerName: "ID", width: 70 },
     { field: "groupName", headerName: "Group Name", width: 230 },
     { field: "numEmployees", headerName: "No. of Employees", width: 230 },
-    { field: "currentRankingDecision", headerName: "Current Ranking Decision", width: 350 },
     {
-      field: "action", headerName: "Action", width: 300, renderCell: (params) => (
+      field: "currentRankingDecision",
+      headerName: "Current Ranking Decision",
+      width: 350,
+    },
+    {
+      field: "action",
+      headerName: "Action",
+      width: 300,
+      renderCell: (params) => (
         <>
           {/* View */}
           <Button
@@ -250,28 +277,18 @@ const RankingGroups = () => {
     },
   ];
 
-  // Map group data to rows for DataGrid
-  // const rows = groups
-  //   ? groups.map((group, index) => ({
-  //     id: group.groupId,
-  //     index: index + 1,
-  //     groupName: group.groupName,
-  //     numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
-  //     currentRankingDecision:
-  //       group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
-  //   }))
-  //   : [];
-  /////////////////////////////////////////////////////////// Search Decision ///////////////////////////////////////////////////////////
   // Map decision data to rows for DataGrid when rows are fetched
   useEffect(() => {
     if (groups) {
-      const mappedRows = groups.map((group, index) => ({
+      const mappedRows = groups.result.map((group, index) => ({
         id: group.groupId,
         index: index + 1,
         groupName: group.groupName,
         numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
         currentRankingDecision:
-          group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
+          group.currentRankingDecision == null
+            ? "No decision applies"
+            : group.currentRankingDecision,
       }));
       setRows(mappedRows);
       setFilteredRows(mappedRows);
@@ -280,7 +297,9 @@ const RankingGroups = () => {
   const handleInputChange = (event, value) => {
     setSearchValue(value);
     const filtered = value
-      ? filteredRows.filter(row => row.groupName.toLowerCase().includes(value.toLowerCase()))
+      ? filteredRows.filter((row) =>
+          row.groupName.toLowerCase().includes(value.toLowerCase())
+        )
       : rows; // If no value, use original rows
     setFilteredRows(filtered);
   };
@@ -289,18 +308,23 @@ const RankingGroups = () => {
     <div style={{ marginTop: "60px" }}>
       <Slider />
       <div>
-        <h2>
-          Ranking Group List
-        </h2>
-        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 1 }}>
+        <h2>Ranking Group List</h2>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 1,
+          }}
+        >
           {/* <Typography sx={{ marginRight: 2, fontSize: '1.3rem', marginTop: 0 }}>Search Group Name:</Typography> */}
           <Autocomplete
             disablePortal
             options={rows}
-            getOptionLabel={option => option.groupName || ''}
+            getOptionLabel={(option) => option.groupName || ""}
             onInputChange={handleInputChange}
             value={{ groupName: searchValue }} // Giữ nguyên nếu bạn cần
-            renderInput={params => (
+            renderInput={(params) => (
               <TextField
                 {...params}
                 label="Search Group"
@@ -309,20 +333,27 @@ const RankingGroups = () => {
                 // InputLabelProps={{ shrink: true, sx: { fontSize: '1rem', display: 'flex', alignItems: 'center', height: '100%' } }}
                 sx={{
                   marginTop: 2,
-                  height: '40px',
-                  '& .MuiInputBase-root': { height: '130%', borderRadius: '20px' },
-                }} InputProps={{
+                  height: "40px",
+                  "& .MuiInputBase-root": {
+                    height: "130%",
+                    borderRadius: "20px",
+                  },
+                }}
+                InputProps={{
                   ...params.InputProps,
                   endAdornment: (
-                    <InputAdornment position="end" sx={{ marginRight: '-50px' }}>
+                    <InputAdornment
+                      position="end"
+                      sx={{ marginRight: "-50px" }}
+                    >
                       <IconButton
                         onClick={() => {
                           setFilteredRows(rows);
-                          setSearchValue('');
-                          params.inputProps.onChange({ target: { value: '' } });
+                          setSearchValue("");
+                          params.inputProps.onChange({ target: { value: "" } });
                         }}
                         size="small"
-                        sx={{ padding: '0' }}
+                        sx={{ padding: "0" }}
                       >
                         <ClearIcon />
                       </IconButton>
@@ -333,15 +364,17 @@ const RankingGroups = () => {
             )}
             sx={{
               flexGrow: 1,
-              marginRight: '16px',
-              maxWidth: '600px',
-              marginTop: '-10px',
-              borderRadius: '20px' // Bo tròn góc cho Autocomplete
+              marginRight: "16px",
+              maxWidth: "600px",
+              marginTop: "-10px",
+              borderRadius: "20px",
             }}
           />
         </Box>
-        <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
-          {loading ? <CircularProgress /> : (
+        <Box sx={{ width: "100%", height: 370, marginTop: "60px" }}>
+          {loading ? (
+            <CircularProgress />
+          ) : (
             <DataGrid
               className="custom-data-grid"
               apiRef={apiRef}
@@ -349,20 +382,14 @@ const RankingGroups = () => {
               columns={columns}
               checkboxSelection
               pagination
-              pageSizeOptions={[5, 10, 25]}
-              pageSize={pageSize}
+              pageSize={size}
               page={page}
-              onPageChange={(newPage) => {
-                setPage(newPage);
-                // Gọi hàm API mới với `newPage` và `pageSize` hiện tại
-                fetchRankingGroups(newPage, pageSize);
-              }}
-              onPageSizeChange={(newPageSize) => {
-                setPageSize(newPageSize);
-                setPage(0); // Reset lại `page` khi thay đổi `pageSize`
-                // Gọi hàm API mới với `page` là 0 và `newPageSize`
-                fetchRankingGroups(0, newPageSize);
-              }}
+              rowCount={totalElement}
+              paginationMode="server"
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              loading={loading}
+              pageSizeOptions={[5, 10, 25]}
               initialState={{
                 pagination: {
                   paginationModel: {
@@ -374,20 +401,29 @@ const RankingGroups = () => {
               disableRowSelectionOnClick
               autoHeight={false}
               sx={{
-                height: '100%',
-                overflow: 'auto',
-                '& .MuiDataGrid-virtualScroller': {
-                  overflowY: 'auto',
+                height: "100%",
+                overflow: "auto",
+                "& .MuiDataGrid-virtualScroller": {
+                  overflowY: "auto",
                 },
               }}
             />
           )}
         </Box>
         <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
-          <Button variant="contained" color="success" onClick={handleOpenAddModal}>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleOpenAddModal}
+          >
             Add New Group
           </Button>
-          <Button variant="contained" color="error" onClick={handleOpenBulkDeleteModal} sx={{ ml: 2 }}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleOpenBulkDeleteModal}
+            sx={{ ml: 2 }}
+          >
             Delete Selected Groups
           </Button>
         </Box>
@@ -453,7 +489,7 @@ const RankingGroups = () => {
           }
         />
       </div>
-    </div >
+    </div>
   );
 };
 
