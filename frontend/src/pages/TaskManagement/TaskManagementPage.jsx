@@ -26,7 +26,6 @@ import useTask from "../../hooks/useTask.jsx";
 
 // Import hook Notification
 import useNotification from "../../hooks/useNotification";
-
 const TaskManagement = () => {
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
@@ -48,24 +47,18 @@ const TaskManagement = () => {
     fetchAllTasks,
     addTask,
     deleteTask,
-    updateTask,
+    updateTask, // Assuming you have an updateTask function in your useTask hook
   } = useTask();
 
   useEffect(() => {
     fetchAllTasks();
   }, []);
-  // Log state changes for debugging purposes
-  useEffect(() => {
-    console.log("Task:", tasks);
-    console.log("Loading:", loading);
-    console.log("Error:", error);
 
-  }, [tasks, loading, error]);
   // Modal Add
   const handleOpenAddModal = () => {
     setValidationMessage("");
     setShowAddModal(true);
-  };
+  }
   const handleCloseAddModal = () => {
     setShowAddModal(false);
     setNewTaskName("");
@@ -87,10 +80,11 @@ const TaskManagement = () => {
       return;
     }
     trimmedName = trimmedName.charAt(0).toUpperCase() + trimmedName.slice(1);
-
+    // Kiểm tra xem tên đã tồn tại hay chưa
     const existingTasks = await fetchAllTasks();
     const isDuplicate = existingTasks.some(
-      (task) => task.taskName.toLowerCase() === trimmedName.toLowerCase()
+      (task) =>
+        task.taskName.toLowerCase() === trimmedName.toLowerCase()
     );
     console.log("isDuplicate:", isDuplicate);
 
@@ -102,7 +96,7 @@ const TaskManagement = () => {
     try {
       const newTask = {
         taskName: trimmedName,
-        createdBy: localStorage.getItem("userId"),
+        createdBy: localStorage.getItem('userId'),
       };
       await addTask(newTask);
       showSuccessMessage("Task added successfully!");
@@ -129,7 +123,7 @@ const TaskManagement = () => {
 
   const handleUpdateTask = async () => {
     const trimmedName = editTaskName.trim();
-    setValidationMessage("");
+    setValidationMessage("")
     if (!trimmedName) {
       setValidationMessage("Task name cannot be empty!");
       return;
@@ -145,26 +139,24 @@ const TaskManagement = () => {
     const isDuplicate = existingTasks.some(
       (task) =>
         task.taskName.toLowerCase() === trimmedName.toLowerCase() &&
-        task.id !== selectedTask.id
+        task.id == selectedTask.id
     );
 
     if (isDuplicate) {
-      setValidationMessage(
-        "Task name already exists. Please choose another name."
-      );
+      setValidationMessage("Task name already exists. Please choose another name.");
       return;
     }
 
     const updatedTask = {
       taskName: trimmedName,
-      createdBy: localStorage.getItem("userId"),
+      createdBy: localStorage.getItem('userId'),
     };
 
     try {
       await updateTask(selectedTask.id, updatedTask);
       showSuccessMessage("Task updated successfully!");
       handleCloseEditModal();
-      await fetchAllTasks();
+      await fetchAllTasks(); // Cập nhật lại danh sách nhiệm vụ
     } catch (error) {
       console.error("Failed to update Task:", error);
       showErrorMessage("Failed to update task. Please try again.");
@@ -261,25 +253,14 @@ const TaskManagement = () => {
   ];
 
   const rows = tasks
-<<<<<<< HEAD
-    ? tasks.map((item, index) => ({
-        id: item.taskId,
-        index: index + 1,
-        taskName: item.taskName,
-        createdBy: item.createdByName || "Unknown",
-        createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
-        updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
-      }))
-=======
-    ? tasks.map((task, index) => ({
-      id: task.taskId,
+    ? tasks.result.map((item, index) => ({
+      id: item.taskId,
       index: index + 1,
-      taskName: task.taskName,
-      createdBy: task.createdByName || "Unknown",
-      createdAt: task.createdAt ? formatDate(task.createdAt) : "N/A",
-      updatedAt: task.updatedAt ? formatDate(task.updatedAt) : "N/A",
+      taskName: item.taskName,
+      createdBy: item.createdByName || "Unknown",
+      createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
+      updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
     }))
->>>>>>> quatbt
     : [];
 
   return (
@@ -287,7 +268,7 @@ const TaskManagement = () => {
       <Slider />
       <Box sx={{ marginTop: 4, padding: 2 }}>
         <Typography variant="h6">
-          <a href="/ranking-decision">Ranking Decision List</a>{" "}
+          <a href="/ranking_decision">Ranking Decision List</a>{" "}
           {<FaAngleRight />}
           Task Management
         </Typography>
