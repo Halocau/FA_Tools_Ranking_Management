@@ -106,3 +106,112 @@ const useRankingGroup = () => {
 };
 
 export default useRankingGroup;
+
+
+// import { useState } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import authClient from '../api/baseapi/AuthorAPI';
+
+// const useRankingGroup = () => {
+//     const navigate = useNavigate();
+//     const [data, setData] = useState(null);
+//     const [loading, setLoading] = useState(false);
+//     const [error, setError] = useState(null);
+
+//     // Function to handle errors with optional redirection if unauthorized
+//     const handleError = (err, defaultMessage) => {
+//         if (err.response?.status === 403) {
+//             navigate('/403');
+//         } else {
+//             setError(err.response?.data || defaultMessage);
+//         }
+//     };
+
+//     // Fetches all ranking groups from the API
+//     const fetchAllRankingGroups = async () => {
+//         setLoading(true);
+//         setError(null);  // Reset previous errors
+//         try {
+//             const response = await authClient.get('/ranking-group');
+//             setData(response.data);
+//             return response.data;
+//         } catch (err) {
+//             handleError(err, "An error occurred while fetching ranking groups.");
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     // Fetches a specific ranking group by ID
+//     const fetchRankingGroupById = async (id) => {
+//         setLoading(true);
+//         setError(null);
+//         try {
+//             const response = await authClient.get(`/ranking-group/get/${id}`);
+//             return response.data;
+//         } catch (err) {
+//             handleError(err, "An error occurred while fetching the ranking group.");
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     // Adds a new ranking group
+//     const addRankingGroup = async (newGroup) => {
+//         setLoading(true);
+//         setError(null);
+//         try {
+//             const response = await authClient.post(`/ranking-group/add`, newGroup);
+//             await fetchAllRankingGroups();  // Refresh group list after adding new group
+//             return response.data;
+//         } catch (err) {
+//             handleError(err, "An error occurred while adding the ranking group.");
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     // Updates a specific ranking group by ID
+//     const updateRankingGroup = async (id, updatedGroup) => {
+//         setLoading(true);
+//         setError(null);
+//         try {
+//             const response = await authClient.put(`/ranking-group/update/${id}`, updatedGroup);
+//             setData((prevData) =>
+//                 prevData.map((group) => group.id === id ? { ...group, ...response.data } : group)
+//             );
+//             return response.data;
+//         } catch (err) {
+//             handleError(err, "An error occurred while updating the ranking group.");
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     // Deletes a specific ranking group by ID
+//     const deleteRankingGroup = async (id) => {
+//         setLoading(true);
+//         setError(null);
+//         try {
+//             await authClient.delete(`/ranking-group/delete/${id}`);
+//             setData((prevData) => prevData.filter((group) => group.id !== id));
+//         } catch (err) {
+//             handleError(err, "An error occurred while deleting the ranking group.");
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     return {
+//         data,
+//         loading,
+//         error,
+//         fetchAllRankingGroups,
+//         fetchRankingGroupById,
+//         addRankingGroup,
+//         updateRankingGroup,
+//         deleteRankingGroup,
+//     };
+// };
+    
+// export default useRankingGroup;

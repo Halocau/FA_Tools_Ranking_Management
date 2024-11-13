@@ -11,3 +11,4 @@ public class ComponentConfiguration {
         return new ModelMapper();
     }
 }
+
