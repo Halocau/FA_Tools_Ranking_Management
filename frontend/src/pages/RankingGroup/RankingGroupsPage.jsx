@@ -159,7 +159,7 @@ const RankingGroups = () => {
       handleCloseDeleteModal();
     }
   };
-  // Bulk Delete Ranking Group
+  // Bulk Delete Ranking Groupss
   const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
   const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false);
 
