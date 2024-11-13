@@ -4,13 +4,16 @@ import backend.model.dto.TaskResponse;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
 import backend.model.form.Task.UpdateTaskRequest;
+import backend.model.page.ResultPaginationDTO;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 
 public interface ITaskService {
     // crud task
-    public List<Task> getTask();
-
+//    public ResultPaginationDTO getTask(Pageable pageable);
+    public ResultPaginationDTO getTask(Specification<Task> spec, Pageable pageable);
     public Task getTaskById(int id);
 
     public Task addTask(Task task);
