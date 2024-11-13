@@ -10,7 +10,7 @@ import "../../assets/css/RankingGroups.css";
 import Slider from "../../layouts/Slider.jsx";
 
 const EditCriteria = () => {
-    const { id } = useParams(); // Lấy ID của tiêu chí từ URL
+    const { id } = useParams(); 
     const navigate = useNavigate();
     const { fetchCriteriaById, updateCriteria, addOptionToCriteria, updateOption, deleteOption } = useRankingDecision();
     
@@ -23,7 +23,7 @@ const EditCriteria = () => {
     const [messageType, setMessageType] = useState("success");
 
     useEffect(() => {
-        // Lấy dữ liệu tiêu chí theo ID
+        // Fetch criteria data by ID
         const fetchCriteria = async () => {
             const criteriaData = await fetchCriteriaById(id);
             setCriteria(criteriaData);
@@ -39,7 +39,7 @@ const EditCriteria = () => {
     const handleSaveNewCriteriaName = async () => {
         try {
             await updateCriteria(id, { name: newCriteriaName });
-            setCriteria((prev) => ({ ...prev, name: newCriteriaName }));
+            setCriteria(prev => ({ ...prev, name: newCriteriaName }));
             setMessage("Criteria name updated successfully!");
             setMessageType("success");
         } catch (error) {
@@ -57,7 +57,7 @@ const EditCriteria = () => {
     const handleAddOption = async () => {
         try {
             await addOptionToCriteria(id, newOption);
-            setCriteria((prev) => ({
+            setCriteria(prev => ({
                 ...prev,
                 options: [...prev.options, { ...newOption, id: Date.now() }]
             }));
@@ -73,7 +73,7 @@ const EditCriteria = () => {
     const handleDeleteOption = async (optionId) => {
         try {
             await deleteOption(optionId);
-            setCriteria((prev) => ({
+            setCriteria(prev => ({
                 ...prev,
                 options: prev.options.filter(option => option.id !== optionId)
             }));
@@ -88,7 +88,7 @@ const EditCriteria = () => {
     const handleEditOption = async (option) => {
         try {
             await updateOption(option.id, option);
-            setCriteria((prev) => ({
+            setCriteria(prev => ({
                 ...prev,
                 options: prev.options.map(opt => opt.id === option.id ? option : opt)
             }));
@@ -108,9 +108,7 @@ const EditCriteria = () => {
             </Typography>
 
             <Box sx={{ marginTop: 4, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Typography variant="h5">
-                    Criteria Name: {criteria?.name}
-                </Typography>
+                <Typography variant="h5">Criteria Name: {criteria?.name}</Typography>
                 <IconButton onClick={handleOpenEditNameModal}>
                     <EditIcon />
                 </IconButton>
@@ -158,9 +156,7 @@ const EditCriteria = () => {
 
             {/* Modal for editing criteria name */}
             <Modal open={showEditNameModal} onClose={() => setShowEditNameModal(false)}>
-                <Box sx={{
-                    padding: 2, backgroundColor: "white", borderRadius: 1, maxWidth: 400, margin: "auto", marginTop: "20vh"
-                }}>
+                <Box sx={{ padding: 2, backgroundColor: "white", borderRadius: 1, maxWidth: 400, margin: "auto", marginTop: "20vh" }}>
                     <Typography variant="h6">Edit Criteria Name</Typography>
                     <TextField
                         label="Criteria Name"
@@ -220,6 +216,7 @@ const EditCriteria = () => {
                 }
             />
 
+            {/* Display success or error message */}
             {message && (
                 <Alert severity={messageType} sx={{ marginTop: 2 }}>
                     {message}
