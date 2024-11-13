@@ -11,18 +11,20 @@ const CriteriaManagement = () => {
     const navigate = useNavigate();
     const { addCriteria, fetchAllCriteria, deleteCriteria, loading, error } = useCriteria(); // Sử dụng hook
     const apiRef = useGridApiRef();
-    const [criteria, setCriteria] = useState([]);
     const [showAddCriteriaModal, setShowAddCriteriaModal] = useState(false);
     const [criteriaName, setCriteriaName] = useState("");
     const [validationMessage, setValidationMessage] = useState("");
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState("success");
+
+    const [criteria, setCriteria] = useState([]);
     const [pageSize, setpageSize] = useState(5);
     const [page, setPage] = useState(1);
     const [filter, setFilter] = useState("");
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
     const [rows, setRows] = useState([]);
+
     const getAllCriteria = async () => {
         try {
             const data = await CriteriaAPI.searchCriteria(
