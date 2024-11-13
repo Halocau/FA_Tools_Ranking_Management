@@ -11,11 +11,6 @@ const useRankingGroup = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [page, setPage] = useState(0); // 0-indexed for DataGrid
-  const [size, setSize] = useState(7); // Default page size
-  const [totalPage, setTotalPage] = useState(0);
-  const [totalElement, setTotalElement] = useState(0);
-
   // Function to handle errors, including redirects if unauthorized
   const handleError = (err) => {
     if (err.response && err.response.status === 403) {
@@ -26,24 +21,6 @@ const useRankingGroup = () => {
       );
     }
   };
-  // Fetches list ranking groups with page and size from the API
-  const fetchRankingGroupPaging = async (page, size) => {
-    setLoading(true);
-    try {
-      const response = await api.get(
-        `/ranking-groups?page=${page + 1}&size=${size}`
-      ); // Adjust page to 1-indexed for API
-      const data = response.data;
-      setGroups(data.result);
-      setTotalPage(data.pageInfo.total); // Total number of pages
-      setTotalElement(data.pageInfo.element); // Total number of elements in the database
-    } catch (error) {
-      console.error("Error fetching ranking groups:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
 
   //  Fetches all ranking groups from the API
   const fetchAllRankingGroups = async () => {
@@ -136,13 +113,6 @@ const useRankingGroup = () => {
     data,
     loading,
     error,
-    page,
-    size,
-    totalPage,
-    totalElement,
-    setPage,
-    setSize,
-    fetchRankingGroupPaging,
     fetchAllRankingGroups,
     fetchRankingGroupById,
     addRankingGroup,

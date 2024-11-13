@@ -30,6 +30,7 @@ import Slider from "../../layouts/Slider.jsx";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 // Import hook Notification
 import useNotification from "../../hooks/useNotification";
+import rankingGroupApi from "../../api/rankingGroupAPI.js";
 
 const RankingGroups = () => {
   const navigate = useNavigate();
@@ -42,14 +43,21 @@ const RankingGroups = () => {
   // delete select
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   // Search Decision
-  const [rows, setRows] = useState([]);
   const [filteredRows, setFilteredRows] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   // Use hook notification
   const [showSuccessMessage, showErrorMessage] = useNotification();
   // Validation error message
   const [validationMessage, setValidationMessage] = useState("");
+  //paging
+  const [pageSize, setpageSize] = useState(5);
+  const [page, setPage] = useState(1);
+  const [filter, setFilter] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [rows, setRows] = useState([]);
   //
+  const [group, setGroup] = useState([]);
   const apiRef = useGridApiRef();
 
   // Destructuring from useRankingGroup custom hook
@@ -57,35 +65,32 @@ const RankingGroups = () => {
     data: groups,
     error,
     loading,
-    page,
-    size,
-    totalPage,
-    totalElement,
-    setPage,
-    setSize,
-    fetchRankingGroupPaging,
     fetchAllRankingGroups,
     deleteRankingGroup,
     addRankingGroup,
   } = useRankingGroup();
 
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
+  //get All Ranking Group
+  const getAllRankingGroup = async () => {
+    try {
+      const data = await rankingGroupApi.searchRankingGroups(
+        filter,
+        page,
+        pageSize
+      );
+      setGroup(data.result);
+      setTotalPages(data.pageInfo.total);
+      setTotalElements(data.pageInfo.element);
+    } catch (error) {
+      console.error("Failed to fetch ranking group :", error);
+    }
   };
 
-  const handlePageSizeChange = (newSize) => {
-    setSize(newSize);
-  };
+  useEffect(() => {
+    getAllRankingGroup();
+  }, [page, pageSize, filter]);
 
   // Fetch all ranking groups when component mounts
-  useEffect(() => {
-    fetchAllRankingGroups();
-  }, []);
-
-  // Gọi API lần đầu khi component mount
-  useEffect(() => {
-    fetchRankingGroupPaging(page, size);
-  }, [page, size]);
 
   // Log state changes for debugging purposes
   useEffect(() => {
@@ -279,21 +284,21 @@ const RankingGroups = () => {
 
   // Map decision data to rows for DataGrid when rows are fetched
   useEffect(() => {
-    if (groups) {
-      const mappedRows = groups.result.map((group, index) => ({
-        id: group.groupId,
+    if (group) {
+      const mappedRows = group.map((item, index) => ({
+        id: item.groupId,
         index: index + 1,
-        groupName: group.groupName,
-        numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
+        groupName: item.groupName,
+        numEmployees: item.numEmployees < 1 ? "0" : item.numEmployees,
         currentRankingDecision:
-          group.currentRankingDecision == null
+          item.currentRankingDecision == null
             ? "No decision applies"
-            : group.currentRankingDecision,
+            : item.currentRankingDecision,
       }));
       setRows(mappedRows);
       setFilteredRows(mappedRows);
     }
-  }, [groups]);
+  }, [group]);
   const handleInputChange = (event, value) => {
     setSearchValue(value);
     const filtered = value
@@ -382,22 +387,21 @@ const RankingGroups = () => {
               columns={columns}
               checkboxSelection
               pagination
-              pageSize={size}
-              page={page}
-              rowCount={totalElement}
-              paginationMode="server"
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              loading={loading}
               pageSizeOptions={[5, 10, 25]}
-              initialState={{
-                pagination: {
-                  paginationModel: {
-                    pageSize: 5,
-                    page: 0,
-                  },
-                },
+              loading={loading}
+              getRowId={(row) => row.id}
+              rowCount={totalElements}
+              paginationMode="server"
+              paginationModel={{
+                page: page - 1, // Adjusted for 0-based index
+                pageSize: pageSize,
               }}
+              onPaginationModelChange={(model) => {
+                setPage(model.page + 1); // Set 1-based page for backend
+                setpageSize(model.pageSize);
+              }}
+              disableNextButton={page >= totalPages}
+              disablePrevButton={page <= 1}
               disableRowSelectionOnClick
               autoHeight={false}
               sx={{
