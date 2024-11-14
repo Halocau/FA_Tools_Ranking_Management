@@ -5,7 +5,11 @@ import { format } from "date-fns";
 import { FaEdit, FaAngleRight } from "react-icons/fa";
 // Mui
 import { MdDeleteForever } from "react-icons/md";
-import { Button, TextField, Typography } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 // Source Code
 import ModalCustom from "../../components/Common/Modal.jsx";
@@ -200,14 +204,14 @@ const TaskManagement = () => {
 
   // Delete many tasks
   const handleDeleteManyTask = async () => {
-    const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
+    const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys()); 
     if (selectedIDs.length === 0) {
       showErrorMessage("Please select tasks to delete.");
       return;
     }
-    try {
+    try {     
       await Promise.all(selectedIDs.map((id) => taskApi.deleteTaskById(id)));
-      showSuccessMessage("Selected tasks deleted successfully!");
+      showSuccessMessage("Selected tasks deleted successfully!");      
       setTask((prevTasks) =>
         prevTasks.filter((task) => !selectedIDs.includes(task.taskId))
       );
@@ -215,11 +219,11 @@ const TaskManagement = () => {
         fetchAllTask();
       }
       if (task.length === 1) {
-        setPage(page - 1);
+        setPage(page - 1); 
       }
       handleCloseBulkDeleteModal();
     } catch (error) {
-      console.error("Failed to delete selected tasks:", error);
+      console.error("Failed to delete selected tasks:", error);      
       handleCloseBulkDeleteModal();
     }
   };
