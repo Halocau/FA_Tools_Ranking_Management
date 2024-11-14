@@ -18,7 +18,7 @@ public class Criteria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "criteria_id")
-    private int criteriaId;
+    private Integer criteriaId;
 
     @Column(name = "criteria_name", length = 100)
     private String criteriaName;

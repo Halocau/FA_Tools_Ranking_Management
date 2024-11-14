@@ -292,28 +292,28 @@ const EditRankingGroup = () => {
             ),
         },
     ];
-    // Map decision data to rows for DataGrid when decisions are fetched
-    useEffect(() => {
-        if (decisions) {
-            const mappedRows = decisions.map((decision, index) => ({
-                id: decision.decisionId,
-                index: index + 1,
-                dicisionname: decision.decisionName,
-                finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
-                finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
-                status: decision.status
-            }));
-            setRows(mappedRows); // Update rows with data from decisions
-            setFilteredRows(mappedRows); // Update filteredRows with original data
-        }
-    }, [decisions]);
-    const handleInputChange = (event, value) => {
-        setSearchValue(value);
-        const filtered = value
-            ? rows.filter(row => row.dicisionname.toLowerCase().includes(value.toLowerCase()))
-            : rows;
-        setFilteredRows(filtered);
-    };
+    // // Map decision data to rows for DataGrid when decisions are fetched
+    // useEffect(() => {
+    //     if (decisions) {
+    //         const mappedRows = decisions.map((decision, index) => ({
+    //             id: decision.decisionId,
+    //             index: index + 1,
+    //             dicisionname: decision.decisionName,
+    //             finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
+    //             finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
+    //             status: decision.status
+    //         }));
+    //         setRows(mappedRows); // Update rows with data from decisions
+    //         setFilteredRows(mappedRows); // Update filteredRows with original data
+    //     }
+    // }, [decisions]);
+    // const handleInputChange = (event, value) => {
+    //     setSearchValue(value);
+    //     const filtered = value
+    //         ? rows.filter(row => row.dicisionname.toLowerCase().includes(value.toLowerCase()))
+    //         : rows;
+    //     setFilteredRows(filtered);
+    // };
 
     return (
         <div style={{ marginTop: "60px" }}>
@@ -321,7 +321,7 @@ const EditRankingGroup = () => {
             {/* Group Info */}
             <Box sx={{ marginTop: 4, padding: 2 }}>
                 <Typography variant="h6">
-                    <a href="/ranking_group">Ranking Group List</a>{" "}
+                    <a href="/ranking-group">Ranking Group List</a>{" "}
                     {<FaAngleRight />}
                     Edit Ranking Group
                 </Typography>
@@ -347,7 +347,7 @@ const EditRankingGroup = () => {
                 <Typography variant="h5" sx={{ flexShrink: 0, marginRight: '16px' }}>Ranking Decision List</Typography>
                 {/* Search Decision */}
                 <Box sx={{ marginTop: '0px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Autocomplete
+                    {/* <Autocomplete
                         disablePortal
                         options={decisions}
                         getOptionLabel={option => option.decisionName || ''}
@@ -385,7 +385,7 @@ const EditRankingGroup = () => {
                             />
                         )}
                         sx={{ flexGrow: 1, marginRight: '16px', maxWidth: '600px' }}
-                    />
+                    /> */}
                     <Button
                         variant="contained"
                         color="primary"
@@ -473,7 +473,7 @@ const EditRankingGroup = () => {
                                 ),
                             }}
                         />
-                        <Autocomplete
+                        {/* <Autocomplete
                             disablePortal
                             options={decisions ? decisions.filter(decision => decision.status === 'Finalized') : []}
                             getOptionLabel={(option) => option.decisionName || ''}
@@ -491,7 +491,7 @@ const EditRankingGroup = () => {
                                     sx={{ marginTop: 2 }}
                                 />
                             )}
-                        />
+                        /> */}
 
                         <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
                             <Button variant="outlined" onClick={handleCloseEditGroupInfoModal}>Cancel</Button>

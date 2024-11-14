@@ -29,4 +29,7 @@ public interface ICriteriaService {
     public CriteriaResponse convertToCriteriaResponse(Criteria criteria);
 
     public List<CriteriaResponse> convertToCriteriaResponseList(List<Criteria> criteriaList);
+
+    //validation
+    boolean existsByCriteriaName(String name);
 }

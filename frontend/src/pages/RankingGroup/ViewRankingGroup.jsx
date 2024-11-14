@@ -77,7 +77,7 @@ const ViewRankingGroup = () => {
             {/* Group Info */}
             <Box sx={{ marginTop: 4, padding: 2 }}>
                 <Typography variant="h6">
-                    <a href="/ranking-group">Ranking Group List</a> {'>'} View Ranking Group
+                    <a href="/ranking_group">Ranking Group List</a> {'>'} View Ranking Group
                 </Typography>
                 <Box sx={{
                     border: '1px solid black',
