@@ -22,10 +22,12 @@ const EditCriteria = () => {
 
     const { fetchCriteriaById, updateCriteria, addOptionToCriteria, updateOption, deleteOption } = useRankingDecision();
 
-    const [criteria, setCriteria] = useState(null);
+    const [criteria, setCriteria] = useState({});
     const [showEditNameModal, setShowEditNameModal] = useState(false);
     const [newCriteriaName, setNewCriteriaName] = useState("");
     const [showAddOptionModal, setShowAddOptionModal] = useState(false);
+    const [showEditOptionModal, setShowEditOptionModal] = useState(false);
+
     const [newOption, setNewOption] = useState({ name: "", score: "", explanation: "" });
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState("success");
@@ -42,7 +44,7 @@ const EditCriteria = () => {
     useEffect(() => {
         getCriteria();
     }, [id]);
-
+    console.log("criteria:", criteria);
     useEffect(() => {
         getAllOptionByID();
     }, [page, pageSize, filter]);
@@ -89,16 +91,15 @@ const EditCriteria = () => {
     }, [options])
 
     const handleOpenEditNameModal = () => {
-        setNewCriteriaName(criteria?.name || "");
+        setNewCriteriaName(criteria?.criteriaName || "");
         setShowEditNameModal(true);
     };
 
     const handleSaveNewCriteriaName = async () => {
         try {
-            await updateCriteria(id, { name: newCriteriaName });
-            setCriteria(prev => ({ ...prev, name: newCriteriaName }));
-            setMessage("Criteria name updated successfully!");
-            setMessageType("success");
+            const data = await CriteriaAPI.updateCriteria(id, { criteriaName: newCriteriaName, updatedBy: localStorage.getItem("userId") });
+            setCriteria(data);
+            showSuccessMessage("Criteria name updated successfully!");
         } catch (error) {
             setMessage("Failed to update criteria name.");
             setMessageType("error");
@@ -111,12 +112,17 @@ const EditCriteria = () => {
         setShowAddOptionModal(true);
     };
 
+    const handleOpenEditOptionModal = (option) => {
+        setNewOption(option);
+        setShowEditOptionModal(true);
+    };
+
     const handleAddOption = async () => {
         try {
             const optionData = {
                 optionName: newOption.name,
                 score: newOption.score,
-                description: newOption.explanation,
+                description: newOption.description,
                 createdBy: localStorage.getItem("userId"),
                 criteriaId: id
             }
@@ -156,13 +162,20 @@ const EditCriteria = () => {
         // setFilter(filter.concat(`${event.target.value}`));
     };
 
-    const handleEditOption = async (option) => {
+    const handleEditOption = async () => {
         try {
-            await updateOption(option.id, option);
-            setCriteria(prev => ({
-                ...prev,
-                options: prev.options.map(opt => opt.id === option.id ? option : opt)
-            }));
+            const optionUpdate = {
+                optionName: newOption.optionName,
+                score: newOption.score,
+                description: newOption.description,
+                criteriaId: id
+            }
+            console.log("newOption:", newOption);
+            await OptionAPI.updateOption(newOption.id, optionUpdate);
+            if (options.some((option) => option.id === newOption.id)) {
+                getAllOptionByID();
+            }
+            setShowEditOptionModal(false);
             setMessage("Option updated successfully!");
             setMessageType("success");
         } catch (error) {
@@ -181,9 +194,7 @@ const EditCriteria = () => {
                 <>
                     <Button
                         variant="outlined"
-                    // onClick={() => {
-                    //     navigate(`/criteria/edit/${params.row.id}`);
-                    // }}
+                        onClick={() => handleOpenEditOptionModal(params.row)}
                     >
                         Edit
                     </Button>
@@ -206,7 +217,7 @@ const EditCriteria = () => {
         <Box sx={{ marginTop: "60px" }}>
             <Slider />
             <Typography variant="h6">
-                <a href="/ranking-decision">Ranking Decision List</a> {'>'} <a href="/criteria_list">Criteria List</a> {'>'} Edit Criteria
+                <a href="/ranking-decision">Ranking Decision List</a> {'>'} <a href="/criteria-management">Criteria List</a> {'>'} Edit Criteria
             </Typography>
 
 
@@ -219,8 +230,10 @@ const EditCriteria = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row' }}>
                     <Box sx={{ width: '90%', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                         <Typography style={{ marginLeft: '10px' }}>Criteria Name:</Typography>
-                        <TextField style={{ width: '50%', marginLeft: '10px' }} variant="outlined" fullWidth value={"Halo"} disabled />
-                        <EditIcon style={{ marginLeft: '10px' }} />
+                        <TextField style={{ width: '50%', marginLeft: '10px' }} variant="outlined" fullWidth value={criteria.criteriaName} disabled />
+                        <EditIcon style={{ marginLeft: '10px' }} onClick={() => {
+                            handleOpenEditNameModal();
+                        }} />
                     </Box>
                 </Box>
             </Box>
@@ -324,6 +337,49 @@ const EditCriteria = () => {
                     <>
                         <Button variant="outlined" onClick={() => setShowAddOptionModal(false)}>Cancel</Button>
                         <Button variant="contained" color="success" onClick={handleAddOption}>Add</Button>
+                    </>
+                }
+            />
+
+            {/* Modal for edit a new option */}
+            <ModalCustom
+                show={showEditOptionModal}
+                handleClose={() => setShowEditOptionModal(false)}
+                title="Edit Option"
+                bodyContent={
+                    <>
+                        <TextField
+                            label="Option Name"
+                            variant="outlined"
+                            fullWidth
+                            value={newOption.optionName}
+                            onChange={(e) => setNewOption({ ...newOption, optionName: e.target.value })}
+                            sx={{ marginBottom: 2 }}
+                        />
+                        <TextField
+                            label="Score"
+                            variant="outlined"
+                            fullWidth
+                            type="number"
+                            value={newOption.score}
+                            onChange={(e) => setNewOption({ ...newOption, score: e.target.value })}
+                            sx={{ marginBottom: 2 }}
+                        />
+                        <TextField
+                            label="Explanation"
+                            variant="outlined"
+                            fullWidth
+                            multiline
+                            rows={3}
+                            value={newOption.description}
+                            onChange={(e) => setNewOption({ ...newOption, description: e.target.value })}
+                        />
+                    </>
+                }
+                footerContent={
+                    <>
+                        <Button variant="outlined" onClick={() => setShowEditOptionModal(false)}>Cancel</Button>
+                        <Button variant="contained" color="success" onClick={handleEditOption}>Save</Button>
                     </>
                 }
             />

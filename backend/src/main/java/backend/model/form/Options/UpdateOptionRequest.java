@@ -18,6 +18,7 @@ public class UpdateOptionRequest {
 
     @NotBlank
     private String description;
+
     @NotNull
     private Integer criteriaId;
 }

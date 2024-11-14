@@ -43,6 +43,7 @@ const OptionAPI = {
     // Update option by ID
     updateOption: async (id, updateData) => {
         try {
+            console.log(updateData);
             const response = await authClient.put(`/option/update/${id}`, updateData);
             return response.data;
         } catch (error) {
