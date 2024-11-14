@@ -120,7 +120,7 @@ const CriteriaManagement = () => {
       setMessage("Criteria deleted successfully!");
       setTimeout(() => setMessage(null), 2000);
       const updatedCriteria = await fetchAllCriteria();
-      setCriteriaList(updatedCriteria);
+      setCriteria(updatedCriteria);
     } catch (error) {
       console.error("Failed to delete criteria:", error);
       setMessageType("error");

@@ -26,7 +26,7 @@ import useTask from "../../hooks/useTask.jsx";
 
 // Import hook Notification
 import useNotification from "../../hooks/useNotification";
-
+import authClient from "../../api/baseapi/AuthorAPI.js";
 import taskApi from "../../api/TaskAPI.js";
 
 const TaskManagement = () => {
@@ -43,12 +43,12 @@ const TaskManagement = () => {
   const [validationMessage, setValidationMessage] = useState("");
   // Paging
   const [task, setTask] = useState([]);
-   const [pageSize, setpageSize] = useState(5);
-   const [page, setPage] = useState(1);
-   const [filter, setFilter] = useState("");
-   const [totalPages, setTotalPages] = useState(0);
-   const [totalElements, setTotalElements] = useState(0);
-   
+  const [pageSize, setpageSize] = useState(5);
+  const [page, setPage] = useState(1);
+  const [filter, setFilter] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+
   const apiRef = useGridApiRef();
 
   const {
@@ -58,7 +58,9 @@ const TaskManagement = () => {
     fetchAllTasks,
     addTask,
     deleteTask,
-    updateTask, // Assuming you have an updateTask function in your useTask hook
+    updateTask,
+    setError,
+    setLoading,
   } = useTask();
 
   const getAllTask = async () => {
@@ -80,7 +82,7 @@ const TaskManagement = () => {
   const handleOpenAddModal = () => {
     setValidationMessage("");
     setShowAddModal(true);
-  }
+  };
   const handleCloseAddModal = () => {
     setShowAddModal(false);
     setNewTaskName("");
@@ -105,8 +107,7 @@ const TaskManagement = () => {
     // Kiểm tra xem tên đã tồn tại hay chưa
     const existingTasks = await fetchAllTasks();
     const isDuplicate = existingTasks.some(
-      (task) =>
-        task.taskName.toLowerCase() === trimmedName.toLowerCase()
+      (task) => task.taskName.toLowerCase() === trimmedName.toLowerCase()
     );
     console.log("isDuplicate:", isDuplicate);
 
@@ -118,7 +119,7 @@ const TaskManagement = () => {
     try {
       const newTask = {
         taskName: trimmedName,
-        createdBy: localStorage.getItem('userId'),
+        createdBy: localStorage.getItem("userId"),
       };
       await addTask(newTask);
       showSuccessMessage("Task added successfully!");
@@ -145,7 +146,7 @@ const TaskManagement = () => {
 
   const handleUpdateTask = async () => {
     const trimmedName = editTaskName.trim();
-    setValidationMessage("")
+    setValidationMessage("");
     if (!trimmedName) {
       setValidationMessage("Task name cannot be empty!");
       return;
@@ -165,13 +166,15 @@ const TaskManagement = () => {
     );
 
     if (isDuplicate) {
-      setValidationMessage("Task name already exists. Please choose another name.");
+      setValidationMessage(
+        "Task name already exists. Please choose another name."
+      );
       return;
     }
 
     const updatedTask = {
       taskName: trimmedName,
-      createdBy: localStorage.getItem('userId'),
+      createdBy: localStorage.getItem("userId"),
     };
 
     try {
@@ -193,7 +196,9 @@ const TaskManagement = () => {
 
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
 
+  //Delete Task
   const handleDeleteTask = async () => {
+    setLoading(true);
     try {
       if (groupToDelete) {
         await deleteTask(groupToDelete);
@@ -206,6 +211,8 @@ const TaskManagement = () => {
       console.error("Failed to delete Task:", error);
       showErrorMessage("Failed to delete Task. Please try again.");
       handleCloseDeleteModal();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -276,13 +283,13 @@ const TaskManagement = () => {
 
   const rows = task
     ? task.map((item, index) => ({
-      id: item.taskId,
-      index: index + 1,
-      taskName: item.taskName,
-      createdBy: item.createdByName || "Unknown",
-      createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
-      updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
-    }))
+        id: item.taskId,
+        index: index + 1,
+        taskName: item.taskName,
+        createdBy: item.createdByName || "Unknown",
+        createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
+        updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
+      }))
     : [];
 
   return (
@@ -308,7 +315,7 @@ const TaskManagement = () => {
             loading={loading}
             getRowId={(row) => row.id}
             rowCount={totalElements}
-            paginationMode="server" // Kích hoạt phân trang phía server
+            paginationMode="server"
             paginationModel={{
               page: page - 1, // Adjusted for 0-based index
               pageSize: pageSize,

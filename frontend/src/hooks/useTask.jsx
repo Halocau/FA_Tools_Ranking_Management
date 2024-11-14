@@ -21,7 +21,7 @@ const useTask = () => {
 
   // Fetches all task from the API
   const fetchAllTasks = async () => {
-    setLoading(true); // Sets loading state to true during the request
+    setLoading(true); 
     try {
       const response = await authClient.get("/task");
       setData(response.data);
@@ -83,18 +83,17 @@ const useTask = () => {
 
   // Delete task
   const deleteTask = async (id) => {
-    setLoading(true);
-    try {
-      await authClient.delete(`/task/delete/${id}`);
-      setData((prevData) => prevData.filter((dt) => dt.id !== id)); // Remove deleted group from state
-    } catch (error) {
-      setError(
-        error.response?.data || "An error occurred while deleting task."
-      );
-      console.error("Error deleting task :", error); // Log delete error
-    } finally {
-      setLoading(false); // Stop loading after response
-    }
+   setLoading(true);
+   try {
+     await authClient.delete(`/task/delete/${id}`);
+     setData((prevData) => (prevData | []).filter((dt) => dt.id !== id));
+     showSuccessMessage("Task deleted successfully!"); 
+     await fetchAllTasks(); 
+   } catch (error) {
+     setError(error.response?.data || "An error occurred while deleting task.");
+     console.error("Error deleting task:", error); 
+     setLoading(false);
+   }
   };
 
   return {
@@ -107,6 +106,7 @@ const useTask = () => {
     updateTask,
     deleteTask,
     setLoading,
+    setError
   };
 };
 
