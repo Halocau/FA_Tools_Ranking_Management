@@ -23,21 +23,21 @@ const useRankingGroup = () => {
     };
 
     // Fetch all ranking groups
-    // const fetchAllRankingGroups = async () => {
-    //     setLoading(true);
-    //     setError(null);
-    //     try {
-    //         const response = await authClient.get('/ranking-group');
-    //         setData(response.data);
-    //         return response.data;
-    //     } catch (err) {
-    //         handleError(err, "An error occurred while fetching ranking groups.");
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
+    const fetchAllRankingGroups = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await authClient.get('/ranking-group');
+            setData(response.data);
+            return response.data;
+        } catch (err) {
+            handleError(err, "An error occurred while fetching ranking groups.");
+        } finally {
+            setLoading(false);
+        }
+    };
     // Hàm fetch dữ liệu theo page và size
-    const fetchAllRankingGroups = async (page = 1, size = 5) => {
+    const fetchRankingGroups = async (page = 1, size = 5) => {
         setLoading(true);
         setError(null);
         try {
@@ -85,7 +85,7 @@ const useRankingGroup = () => {
         setError(null);
         try {
             const response = await authClient.post(`/ranking-group/add`, newGroup);
-            await fetchAllRankingGroups(); // Refresh list after adding
+            // await fetchAllRankingGroups(); // Refresh list after adding
             return response.data;
         } catch (err) {
             handleError(err, "An error occurred while adding the ranking group.");
@@ -100,11 +100,17 @@ const useRankingGroup = () => {
         setError(null);
         try {
             const response = await authClient.put(`/ranking-group/update/${id}`, updatedGroup);
-            setData((prevData) =>
-                prevData.map((group) =>
-                    group.id === id ? { ...group, ...response.data } : group
-                )
-            );
+            setData((prevData) => {
+                // Kiểm tra nếu prevData là một mảng hợp lệ
+                if (Array.isArray(prevData)) {
+                    return prevData.map((group) =>
+                        group.groupId === id ? { ...group, ...response.data } : group
+                    );
+                } else {
+                    console.warn("prevData is not an array during update.");
+                    return [];
+                }
+            });
             return response.data;
         } catch (err) {
             handleError(err, "An error occurred while updating the ranking group.");
@@ -119,7 +125,15 @@ const useRankingGroup = () => {
         setError(null);
         try {
             await authClient.delete(`/ranking-group/delete/${id}`);
-            setData((prevData) => prevData.filter((group) => group.id !== id));
+            setData((prevData) => {
+                // Kiểm tra nếu prevData là một mảng hợp lệ
+                if (Array.isArray(prevData)) {
+                    return prevData.filter((group) => group.groupId !== id);
+                } else {
+                    console.warn("prevData is not an array during deletion.");
+                    return [];
+                }
+            });
         } catch (err) {
             handleError(err, "An error occurred while deleting the ranking group.");
         } finally {
@@ -132,6 +146,7 @@ const useRankingGroup = () => {
         loading,
         error,
         pageInfo,
+        fetchRankingGroups,
         fetchAllRankingGroups,
         fetchRankingGroupById,
         addRankingGroup,

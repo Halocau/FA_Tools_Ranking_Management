@@ -235,33 +235,33 @@ const BulkRankingGroup = () => {
     };
 
     /// Columns configuration for the DataGrid
-    const columns = [
-        { field: "index", headerName: "File Name", width: 200 },
-        { field: "rankingdicision", headerName: "Ranking Decision", width: 300 },
-        { field: "uploadedAt", headerName: "Uploaded At", width: 130 },
-        { field: "uploadedBy", headerName: "Uploaded By", width: 130 },
-        { field: "status", headerName: "Status", width: 130 },
-        { field: "note", headerName: "Note", width: 300 }
-    ];
+    // const columns = [
+    //     { field: "index", headerName: "File Name", width: 200 },
+    //     { field: "rankingdicision", headerName: "Ranking Decision", width: 300 },
+    //     { field: "uploadedAt", headerName: "Uploaded At", width: 130 },
+    //     { field: "uploadedBy", headerName: "Uploaded By", width: 130 },
+    //     { field: "status", headerName: "Status", width: 130 },
+    //     { field: "note", headerName: "Note", width: 300 }
+    // ];
 
-    // Map decision data to rows for DataGrid
-    const rows = decisions
-        ? decisions.map((decision, index) => ({
-            id: decision.decisionId,
-            index: index + 1,
-            dicisionname: decision.decisionName,
-            finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
-            finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
-            status: decision.status
-        }))
-        : [];
+    // // Map decision data to rows for DataGrid
+    // const rows = decisions
+    //     ? decisions.map((decision, index) => ({
+    //         id: decision.decisionId,
+    //         index: index + 1,
+    //         dicisionname: decision.decisionName,
+    //         finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
+    //         finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
+    //         status: decision.status
+    //     }))
+    //     : [];
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
             {/* Group Info */}
             <Box sx={{ marginTop: 4, padding: 2 }}>
                 <Typography variant="h6">
-                    <a href="/ranking_group">Ranking Group List</a>{" "}
+                    <a href="/ranking-group">Ranking Group List</a>{" "}
                     {<FaAngleRight />}
                     Bulk Ranking Group
                 </Typography>
@@ -308,7 +308,7 @@ const BulkRankingGroup = () => {
                 </Box>
 
                 {/* Table Show Ranking Decision List */}
-                <Box sx={{ width: "100%", height: 350 }}>
+                {/* <Box sx={{ width: "100%", height: 350 }}>
                     <DataGrid
                         className="custom-data-grid"
                         rows={rows}
@@ -334,7 +334,7 @@ const BulkRankingGroup = () => {
                             },
                         }}
                     />
-                </Box>
+                </Box> */}
                 {/* Modal for editing group info */}
                 <Modal open={showEditGroupInfoModal} onClose={handleCloseEditGroupInfoModal}>
                     <Box sx={{
@@ -377,7 +377,7 @@ const BulkRankingGroup = () => {
                                 ),
                             }}
                         />
-                        <Autocomplete
+                        {/* <Autocomplete
                             disablePortal
                             options={decisions ? decisions.filter(decision => decision.status === 'Finalized') : []}
                             getOptionLabel={(option) => option.decisionName || ''}
@@ -393,7 +393,7 @@ const BulkRankingGroup = () => {
                                     sx={{ marginTop: 2 }}
                                 />
                             )}
-                        />
+                        /> */}
                         <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
                             <Button variant="outlined" onClick={handleCloseEditGroupInfoModal}>Cancel</Button>
                             <Button variant="contained" onClick={handleEditGroupInfo}>Save</Button>

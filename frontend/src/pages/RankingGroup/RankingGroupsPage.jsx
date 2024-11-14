@@ -4,36 +4,41 @@ import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { FaEye } from 'react-icons/fa';
 import { FaHistory } from 'react-icons/fa';
-import "../../assets/css/RankingGroups.css"
 // Mui
 import { Box, Button, Typography, TextField, Alert, CircularProgress, InputAdornment, IconButton, } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import Autocomplete from '@mui/material/Autocomplete';
 import ClearIcon from '@mui/icons-material/Clear';
+// CSS
+import "../../assets/css/RankingGroups.css"
 // Source code
+// API
+import RankingGroupAPI from "../../api/RankingGroupAPI.js";
 //Common
 import ModalCustom from "../../components/Common/Modal.jsx";
 import ActionButtons from "../../components/Common/ActionButtons.jsx";
-// Hooks
-import useRankingGroup from "../../hooks/useRankingGroup.jsx";
-import Slider from "../../layouts/Slider.jsx";
-// acountID
+// Contexts
 import { useAuth } from "../../contexts/AuthContext.jsx";
-// Import hook Notification
+// Hooks
 import useNotification from "../../hooks/useNotification";
+// Layouts
+import Slider from "../../layouts/Slider.jsx";
+
 
 const RankingGroups = () => {
   const navigate = useNavigate(); // Initialize the useNavigate hook to navigate between pages in the application
   // State
+
   //Add
   const [showAddModal, setShowAddModal] = useState(false); // State to determine whether the add group modal is visible or not
   const [newGroupName, setNewGroupName] = useState(""); // State to store the new group name that the user enters
   // Delete
   const [showDeleteModal, setShowDeleteModal] = useState(false); // State to determine whether the delete group modal is displayed or not
   const [groupToDelete, setGroupToDelete] = useState(null); // State to save the ID of the group to be deleted
-  // delete select
+  // Delete select
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   // Search Decision
+  const [filter, setFilter] = useState("");
   const [rows, setRows] = useState([]); // Initialize with empty array
   const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
   const [searchValue, setSearchValue] = useState(''); // State to store search value
@@ -41,43 +46,52 @@ const RankingGroups = () => {
   const [showSuccessMessage, showErrorMessage] = useNotification();
   // Validation error message
   const [validationMessage, setValidationMessage] = useState("");
-  //
+  // API
   const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
   // Table page, size 
-  const [page, setPage] = useState(0);
+  const [RankingGroups, setRankingGroups] = useState([]);
+  const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  // Destructuring from useRankingGroup custom hook
-  const {
-    data: groups,
-    error,
-    loading,
-    pageInfo,
-    // fetchRankingGroups,
-    fetchAllRankingGroups,
-    deleteRankingGroup,
-    addRankingGroup,
-  } = useRankingGroup();
-
+  //  Destructuring from RankingGroupAPI custom API
+  const fetchAllRankingGroups = async () => {
+    try {
+      const data = await RankingGroupAPI.searchRankingGroups(
+        filter,
+        page,
+        pageSize
+      );
+      setRankingGroups(data.result);
+      setTotalPages(data.pageInfo.total);
+      setTotalElements(data.pageInfo.element);
+    } catch (error) {
+      console.error("Failed to fetch criteria:", error);
+    }
+  }
   // Fetch all ranking groups when component mounts
-  // useEffect(() => {
-  //   fetchAllRankingGroups();
-  // }, []);
-  // Fetch dữ liệu khi component mount và khi thay đổi trang hoặc pageSize
   useEffect(() => {
-    fetchAllRankingGroups(pageInfo.page, pageInfo.size);
-  }, [pageInfo.page, pageInfo.size]);
-  console.log((pageInfo.page, pageInfo.size))
-
-  // Log state changes for debugging purposes
+    fetchAllRankingGroups();
+  }, [page, pageSize, filter]);
+  // Map decision data to rows for DataGrid when rows are fetched
   useEffect(() => {
-    console.log("Groups:", groups);
-    console.log("Loading:", loading);
-    console.log("Error:", error);
+    if (RankingGroups) {
+      const mappedRows = RankingGroups.map((group, index) => ({
+        id: group.groupId,
+        index: index + 1 + (page - 1) * 5,
+        groupName: group.groupName,
+        numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
+        currentRankingDecision: group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
+      }));
+      setRows(mappedRows);
+      setFilteredRows(mappedRows);
+    }
+  }, [RankingGroups]);
 
-  }, [groups, loading, error]);
+
   //// Handlers to open/close modals for adding or deleting groups
-  // Modal Add
+  // Modal Add Ranking Group
   const handleOpenAddModal = () => setShowAddModal(true);
   const handleCloseAddModal = () => {
     setShowAddModal(false);
@@ -105,35 +119,78 @@ const RankingGroups = () => {
     // Capitalize the first letter of each word in the group name
     trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
     // Check for duplicate group name
-    // const isDuplicate = groups.some(
-    //   group => group.groupName.toLowerCase() === trimmedName.toLowerCase()
-    // );
-    // if (isDuplicate) {
-    //   setValidationMessage("Group name already exists.");
-    //   return;
-    // }
+    const isDuplicate = RankingGroups.some(
+      group => group.groupName.toLowerCase() === trimmedName.toLowerCase()
+    );
+    if (isDuplicate) {
 
+      setValidationMessage("Group name already exists.");
+      return;
+    }
+    //   try {
+    //     const newGroup = {
+    //       groupName: trimmedName,
+    //       createdBy: localStorage.getItem('userId'),
+    //     };
+    //     await RankingGroupAPI.addRankingGroup(newGroup);
+    //     handleCloseAddModal();
+    //     setTotalElements(totalElements + 1);
+    //     if (RankingGroups.length < pageSize) {
+    //       fetchAllRankingGroups();
+    //     } else {
+    //       setTotalPages(totalPages + 1);
+    //     }
+    //     showSuccessMessage("Ranking Group successfully added.");
+    //   } catch (error) {
+    //     console.error("Failed to add group:", error);
+
+    //     // Kiểm tra nếu lỗi từ backend có chứa thông báo lỗi liên quan đến tên nhóm
+    //     if (error.response && error.response.data && error.response.data.detailMessage) {
+    //       // Hiển thị thông báo lỗi từ backend (ví dụ: "RankingGroup name exists already!")
+    //       setValidationMessage(error.response.data.detailMessage);
+    //     } else {
+    //       // Nếu không có thông báo cụ thể từ backend, hiển thị thông báo lỗi mặc định
+    //       showErrorMessage("Error occurred adding Ranking Group. Please try again");
+    //     }
+    //   }
+    // };
     try {
       const newGroup = {
         groupName: trimmedName,
-        createdBy: localStorage.getItem('userId'), // Get the account ID as the ID of the user creating the group
+        createdBy: localStorage.getItem('userId'),
       };
-      await addRankingGroup(newGroup); // Call API to add new group
+      await RankingGroupAPI.addRankingGroup(newGroup);
+      handleCloseAddModal();
+      setTotalElements(totalElements + 1);
+      if (RankingGroups.length < pageSize) {
+        fetchAllRankingGroups();
+      } else {
+        setTotalPages(totalPages + 1);
+      }
       showSuccessMessage("Ranking Group successfully added.");
-      handleCloseAddModal(); // Close the add modal after successful addition
-      await fetchAllRankingGroups(); // Refresh the group list
     } catch (error) {
       console.error("Failed to add group:", error);
-      showErrorMessage("Error occurred adding Ranking Group. Please try again");
 
+      // Kiểm tra nếu lỗi từ backend có chứa thông báo lỗi liên quan đến tên nhóm
+      if (error.response && error.response.data) {
+        // Lọc chỉ thông báo lỗi "RankingGroup name exists already!" từ phần detailMessage
+        const detailMessage = error.response.data.detailMessage;
+        if (detailMessage && detailMessage.includes("RankingGroup name exists already!")) {
+          setValidationMessage("RankingGroup name exists already!");  // Chỉ hiển thị thông báo lỗi mong muốn
+        } else {
+          showErrorMessage("Error occurred adding Ranking Group. Please try again");
+        }
+      } else {
+        // Nếu không có thông báo cụ thể từ backend, hiển thị thông báo lỗi mặc định
+        showErrorMessage("Error occurred adding Ranking Group. Please try again");
+      }
     }
   };
-
-  // Modal Delete
+  // Modal Delete Ranking Group
   const handleOpenDeleteModal = (groupId) => {
-    // Find groups by ID to check names
-    const selectedGroup = groups.find(group => group.groupId === groupId);
-    // If the group is named "Trainer", show a notification and do not open the modal
+    // Find group by ID in result array
+    const selectedGroup = RankingGroups.find(group => group.groupId === groupId);
+    // If the group is named "Trainer", display an error message and do not open the modal
     if (selectedGroup && selectedGroup.groupName === "Trainer") {
       showErrorMessage("Cannot delete the 'Trainer' group.");
       return;
@@ -143,27 +200,33 @@ const RankingGroups = () => {
     setShowDeleteModal(true);
   };
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
-
   // Function to delete a group
   const handleDeleteRankingGroup = async () => {
     try {
       if (groupToDelete) {
-        await deleteRankingGroup(groupToDelete); // Call API to delete group
-        showSuccessMessage("Ranking Group successfully removed.");
-        setGroupToDelete(null);
-        handleCloseDeleteModal();
-        await fetchAllRankingGroups();
+        await RankingGroupAPI.deleteRankingGroup(groupToDelete);
+        setRankingGroups(RankingGroups.filter((group) => group.groupId !== groupToDelete));
+        if (RankingGroups.length === 5) {
+          fetchAllRankingGroups();
+        }
+        if (RankingGroups.length === 1) {
+          setPage(page - 1)
+        }
       }
+      setTotalElements(totalElements - 1);
+      showSuccessMessage("Ranking Group successfully removed.");
+      setGroupToDelete(null);
+      handleCloseDeleteModal();
     } catch (error) {
       console.error("Failed to delete group:", error);
       showErrorMessage("Error occurred removing Ranking Group. Please try again.");
       handleCloseDeleteModal();
     }
   };
+
   // Bulk Delete Ranking Groupss
   const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
   const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false);
-
   const handleBulkDeleteRankingGroup = async () => {
     const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
     if (selectedIDs.length === 0) {
@@ -171,7 +234,7 @@ const RankingGroups = () => {
       return;
     }
     const groupsToDelete = selectedIDs.filter((id) => {
-      const group = groups.find((row) => row.groupId === id);
+      const group = RankingGroups.find((row) => row.groupId === id);
       return group && group.groupName !== "Trainer";
     });
     if (groupsToDelete.length === 0) {
@@ -179,9 +242,9 @@ const RankingGroups = () => {
       return;
     }
     try {
-      await Promise.all(groupsToDelete.map((id) => deleteRankingGroup(id)));
+      await Promise.all(groupsToDelete.map((id) => RankingGroupAPI.deleteRankingGroup(id)));
       showSuccessMessage("Selected groups deleted successfully!");
-      await fetchAllRankingGroups();
+      // await fetchRankingGroups();
       handleCloseBulkDeleteModal();
     } catch (error) {
       console.error("Failed to delete selected groups:", error);
@@ -250,43 +313,9 @@ const RankingGroups = () => {
       ),
     },
   ];
-
-  // Map group data to rows for DataGrid
-  // const rows = groups
-  //   ? groups.map((group, index) => ({
-  //     id: group.groupId,
-  //     index: index + 1,
-  //     groupName: group.groupName,
-  //     numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
-  //     currentRankingDecision:
-  //       group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
-  //   }))
-  //   : [];
   /////////////////////////////////////////////////////////// Search Decision ///////////////////////////////////////////////////////////
-  // Map decision data to rows for DataGrid when rows are fetched
-  useEffect(() => {
-    if (Array.isArray(groups?.result)) {
-      const mappedRows = groups.result.map((group, index) => ({
-        id: group.groupId,
-        index: index + 1,
-        groupName: group.groupName,
-        numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
-        currentRankingDecision:
-          group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
-      }));
-      setRows(mappedRows);
-      setFilteredRows(mappedRows);
-    } else {
-      console.warn('groups không phải là một mảng:', groups);
-      setRows([]);
-      setFilteredRows([]);
-    }
-  }, [groups]);
-  console.log(groups?.result)
-
   const handleInputChange = (event, value) => {
-    const safeGroups = Array.isArray(groups) ? groups : [];
-
+    // const safeGroups = Array.isArray(groups) ? groups : [];
     setSearchValue(value);
     const filtered = value
       ? filteredRows.filter(row => row.groupName.toLowerCase().includes(value.toLowerCase()))
@@ -349,81 +378,41 @@ const RankingGroups = () => {
             }}
           />
         </Box>
-        {/* <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
-          {loading ? <CircularProgress /> : (
-            <DataGrid
-              className="custom-data-grid"
-              apiRef={apiRef}
-              rows={filteredRows}
-              columns={columns}
-              checkboxSelection
-              pagination
-              pageSizeOptions={[5, 10, 25]}
-              // pageSize={pageSize}
-              // page={page}
-              // onPageChange={(newPage) => {
-              //   setPage(newPage);
-              //   // Gọi hàm API mới với `newPage` và `pageSize` hiện tại
-              //   // fetchRankingGroups(newPage, pageSize);
-              // }}
-              // onPageSizeChange={(newPageSize) => {
-              //   setPageSize(newPageSize);
-              //   setPage(0); // Reset lại `page` khi thay đổi `pageSize`
-              //   // Gọi hàm API mới với `page` là 0 và `newPageSize`
-              //   // fetchRankingGroups(0, newPageSize);
-              // }}
-              initialState={{
-                pagination: {
-                  paginationModel: {
-                    pageSize: 5,
-                    page: 0,
-                  },
-                },
-              }}
-              disableRowSelectionOnClick
-              autoHeight={false}
-              sx={{
-                height: '100%',
-                overflow: 'auto',
-                '& .MuiDataGrid-virtualScroller': {
-                  overflowY: 'auto',
-                },
-              }}
-            />
-          )}
-        </Box> */}
         {/* Table show Ranking Group */}
         <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
-          {loading ? <CircularProgress /> : (
-            <DataGrid
-              className="custom-data-grid"
-              apiRef={apiRef}
-              rows={filteredRows} // Dữ liệu hiển thị trong bảng
-              columns={columns} // Cấu hình cột của bảng
-              checkboxSelection
-              pagination
-              pageSizeOptions={[5, 10, 25]} // Các tùy chọn kích thước trang
-              rowCount={groups?.pageInfo?.total * groups?.pageInfo?.size || 0} // Tổng số bản ghi tính từ total (số trang) và size (số bản ghi mỗi trang)
-              paginationMode="server" // Kích hoạt phân trang phía server
-              paginationModel={{
-                page: groups?.pageInfo?.page - 1 || 0, // Chuyển đổi chỉ số trang thành 0-based (DataGrid yêu cầu)
-                pageSize: groups?.pageInfo?.size || 5, // Kích thước trang từ pageInfo hoặc mặc định 5
-              }}
-              onPaginationModelChange={(model) => {
-                // Khi thay đổi trang, gọi hàm fetch dữ liệu mới với trang mới và kích thước trang
-                fetchAllRankingGroups(model.page + 1, model.pageSize); // Chuyển đổi chỉ số trang 0-based thành 1-based
-              }}
-              disableRowSelectionOnClick
-              autoHeight={false}
-              sx={{
-                height: '100%',
-                overflow: 'auto',
-                '& .MuiDataGrid-virtualScroller': {
-                  overflowY: 'auto',
-                },
-              }}
-            />
-          )}
+          {/* {loading ? <CircularProgress /> : ( */}
+          <DataGrid
+            className="custom-data-grid"
+            apiRef={apiRef}
+            rows={rows}
+            columns={columns}
+            checkboxSelection
+            pagination
+            pageSizeOptions={[5, 10, 25]}
+            getRowId={(row) => row.id}
+            rowCount={totalElements}
+            paginationMode="server"
+            paginationModel={{
+              page: page - 1,  // Adjusted for 0-based index
+              pageSize: pageSize,
+            }}
+            onPaginationModelChange={(model) => {
+              setPage(model.page + 1);  // Set 1-based page for backend
+              setPageSize(model.pageSize);
+            }}
+            disableNextButton={page >= totalPages}
+            disablePrevButton={page <= 1}
+            disableRowSelectionOnClick
+            autoHeight={false}
+            sx={{
+              height: '100%',
+              overflow: 'auto',
+              '& .MuiDataGrid-virtualScroller': {
+                overflowY: 'auto',
+              },
+            }}
+          />
+          {/* )} */}
         </Box>
 
 
