@@ -3,10 +3,12 @@ import { Box, Button, Typography, TextField, Modal } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import useCriteria from "../../hooks/useCriteria"; // Import useCriteria hook
 import Slider from "../../layouts/Slider.jsx";
-import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import "../../assets/css/RankingGroups.css";
 import { useNavigate } from "react-router-dom";
 import CriteriaAPI from "../../api/CriteriaAPI.js";
+import useNotification from "../../hooks/useNotification.jsx";
+import SearchComponent from "../../components/Common/Search.jsx";
+
 const CriteriaManagement = () => {
     const navigate = useNavigate();
     const { addCriteria, fetchAllCriteria, deleteCriteria, loading, error } = useCriteria(); // Sử dụng hook
@@ -16,6 +18,8 @@ const CriteriaManagement = () => {
     const [validationMessage, setValidationMessage] = useState("");
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState("success");
+    const [showSuccessMessage, showErrorMessage] = useNotification();
+
 
     const [criteria, setCriteria] = useState([]);
     const [pageSize, setpageSize] = useState(5);
@@ -45,7 +49,6 @@ const CriteriaManagement = () => {
         getAllCriteria();
     }, [page, pageSize, filter]);
 
-    console.log(criteria, totalPages, totalElements, page, pageSize);
 
     useEffect(() => {
         if (criteria) {
@@ -72,6 +75,10 @@ const CriteriaManagement = () => {
         setValidationMessage("");
     };
 
+    const handleSearch = (event) => {
+        setFilter(event.target.value);
+    };
+
     const handleAddCriteria = async () => {
         setValidationMessage("");
         let trimmedName = criteriaName.trim();
@@ -96,9 +103,6 @@ const CriteriaManagement = () => {
 
         try {
             const newCriteria = await CriteriaAPI.createCriteria({ criteriaName: trimmedName, createdBy: localStorage.getItem("userId") });
-            setMessageType("success");
-            setMessage("Criteria added successfully!");
-            setTimeout(() => setMessage(null), 2000);
             handleCloseAddCriteriaModal();
             setTotalElements(totalElements + 1);
             if (criteria.length < pageSize) {
@@ -107,7 +111,7 @@ const CriteriaManagement = () => {
             } else {
                 setTotalPages(totalPages + 1);
             }
-            // setCriteriaList(updatedCriteria);
+            showSuccessMessage("Criteria added successfully!");
         } catch (error) {
             console.error("Failed to add criteria:", error);
             setMessageType("error");
@@ -121,13 +125,14 @@ const CriteriaManagement = () => {
             const response = await CriteriaAPI.deleteCriteria(criteriaId);
             console.log("Response:", response);
             setCriteria(criteria.filter((criteria) => criteria.criteriaId !== criteriaId));
-
+            if (criteria.length === 5) {
+                getAllCriteria();
+            }
             if (criteria.length === 1) {
                 setPage(page - 1);
             }
-            setMessageType("success");
-            setMessage("Criteria deleted successfully!");
-            setTimeout(() => setMessage(null), 2000);
+            setTotalElements(totalElements - 1);
+            showSuccessMessage("Criteria deleted successfully!");
         } catch (error) {
             // console.log("Error:", error.response.data.detailMessage);
             // console.error("Failed to delete criteria message: ", error);
@@ -166,7 +171,7 @@ const CriteriaManagement = () => {
             ),
         },
     ];
-    console.log(rows);
+
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
@@ -176,6 +181,7 @@ const CriteriaManagement = () => {
                 </Typography>
                 <Box sx={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                     <Typography variant="h5">Criteria List</Typography>
+                    <SearchComponent onSearch={handleSearch} />
                     <Button variant="contained" color="primary" onClick={handleOpenAddCriteriaModal} disabled={loading}>
                         Add New Criteria
                     </Button>
