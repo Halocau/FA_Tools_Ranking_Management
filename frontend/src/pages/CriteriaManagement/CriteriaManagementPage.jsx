@@ -4,9 +4,7 @@ import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import useCriteria from "../../hooks/useCriteria"; // Import useCriteria hook
 import Slider from "../../layouts/Slider.jsx";
-import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import "../../assets/css/RankingGroups.css";
-import { useNavigate } from "react-router-dom";
 import CriteriaAPI from "../../api/CriteriaAPI.js";
 const CriteriaManagement = () => {
     const navigate = useNavigate();

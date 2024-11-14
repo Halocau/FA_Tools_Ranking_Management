@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import { Nav } from "react-bootstrap";
 import {
-  Home,
   Settings,
-  Group,
-  People,
   Report,
   Work,
   ExpandMore,
@@ -14,9 +11,14 @@ import "../assets/css/Sidebar.css";
 
 const Sidebar = () => {
   const [openLogWork, setOpenLogWork] = useState(false);
+  const [openRankingDecision, setOpenRankingDecision] = useState(false);
 
   const toggleLogWork = () => {
     setOpenLogWork(!openLogWork);
+  };
+
+  const toggleRankingDecision = () => {
+    setOpenRankingDecision(!openRankingDecision);
   };
 
   return (
@@ -30,10 +32,20 @@ const Sidebar = () => {
         {openLogWork && (
           <div className="submenu ms-4">
             <Nav.Link href="/ranking_group">Ranking Group List</Nav.Link>
-            <Nav.Link href="/ranking_decision">Ranking Decision List</Nav.Link>
+            
+            {/* Ranking Decision List with expandable submenu */}
+            <Nav.Link onClick={toggleRankingDecision}>
+              Ranking Decision List {openRankingDecision ? <ExpandLess /> : <ExpandMore />}
+            </Nav.Link>
+            {openRankingDecision && (
+              <div className="submenu ms-4">
+                <Nav.Link href="/task_management">Task Management</Nav.Link>
+                <Nav.Link href="/criteria_management">Criteria Management</Nav.Link>
+              </div>
+            )}
           </div>
         )}
-
+  
         <Nav.Link href="#reports">
           <Report className="me-2" /> Reports
         </Nav.Link>
