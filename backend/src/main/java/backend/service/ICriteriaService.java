@@ -18,8 +18,6 @@ public interface ICriteriaService {
 
     public Criteria getCriteriabyId(int criteriaId);
 
-    public Criteria addCriteria(Criteria criteria);
-
     public Criteria updateCriteria(Criteria criteria);
 
     public void deleteCriteria(int criteriaId);
@@ -31,4 +29,7 @@ public interface ICriteriaService {
     public CriteriaResponse convertToCriteriaResponse(Criteria criteria);
 
     public List<CriteriaResponse> convertToCriteriaResponseList(List<Criteria> criteriaList);
+
+    //validation
+    boolean existsByCriteriaName(String name);
 }

@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
+
+//Layout
 import { Box, Button, Typography, TextField, Modal } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import Slider from "../../layouts/Slider.jsx";
 import "../../assets/css/RankingGroups.css";
+import SearchComponent from "../../components/Common/Search.jsx";
+
+//Hooks
 import { useNavigate } from "react-router-dom";
-import CriteriaAPI from "../../api/CriteriaAPI.js";
 import useNotification from "../../hooks/useNotification.jsx";
-// import SearchComponent from "../../components/Common/Search.jsx";
+
+//API
+import CriteriaAPI from "../../api/CriteriaAPI.js";
 
 const CriteriaManagement = () => {
     //Use for navigation
@@ -61,7 +67,7 @@ const CriteriaManagement = () => {
         if (criteria) {
             const mappedRows = criteria.map((criteria, index) => ({
                 id: criteria.criteriaId,
-                index: index + 1,
+                index: index + 1 + (page - 1) * 5,
                 criteriaName: criteria.criteriaName,
                 noOfOption: criteria.numOptions ? criteria.numOptions : 0,
                 maxScore: criteria.maxScore ? criteria.maxScore : 0,
@@ -156,14 +162,14 @@ const CriteriaManagement = () => {
         {
             field: "action", headerName: "Action", width: 200, renderCell: (params) => (
                 <>
-                    {/* <Button
+                    <Button
                         variant="outlined"
                         onClick={() => {
-                            // navigate(/criteria/edit/${ params.row.id });
+                            navigate(`/criteria/edit/${params.row.id}`);
                         }}
                     >
                         Edit
-                    </Button> */}
+                    </Button>
                     <Button
                         variant="outlined"
                         color="error"
@@ -183,11 +189,11 @@ const CriteriaManagement = () => {
             <Slider />
             <Box sx={{ marginTop: 4, padding: 2 }}>
                 <Typography variant="h6">
-                    <a href="/ranking-decision">Ranking Decision List</a> {'>'} Criteria List
+                    <a href="/ranking_decision">Ranking Decision List</a> {'>'} Criteria List
                 </Typography>
                 <Box sx={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                     <Typography variant="h5">Criteria List</Typography>
-                    {/* <SearchComponent onSearch={handleSearch} /> */}
+                    <SearchComponent onSearch={handleSearch} />
                     <Button variant="contained" color="primary" onClick={handleOpenAddCriteriaModal} >
                         Add New Criteria
                     </Button>

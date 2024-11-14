@@ -21,16 +21,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CriteriaService extends BaseService implements ICriteriaService {
+public class CriteriaService implements ICriteriaService {
 
     private final ICriteriaRepository criteriaRepository;
     private ModelMapper modelMapper;
 
     @Autowired
-    public CriteriaService(ICriteriaRepository criteriaRepository, ModelMapper modelMapper, ModelMapper modelMapper1) {
-        super(modelMapper);
+    public CriteriaService(ICriteriaRepository criteriaRepository, ModelMapper modelMapper) {
         this.criteriaRepository = criteriaRepository;
-        this.modelMapper = modelMapper1;
+        this.modelMapper = modelMapper;
     }
 
     @Override
@@ -42,11 +41,6 @@ public class CriteriaService extends BaseService implements ICriteriaService {
     public Criteria getCriteriabyId(int criteriaId) {
         return criteriaRepository.findById(criteriaId)
                 .orElseThrow(() -> new RuntimeException("Criteria not found with id: " + criteriaId));
-    }
-
-    @Override
-    public Criteria addCriteria(Criteria criteria) {
-        return criteriaRepository.save(criteria);
     }
 
     @Override
@@ -63,6 +57,7 @@ public class CriteriaService extends BaseService implements ICriteriaService {
         if (!criteriaRepository.existsById(criteriaId)) {
             throw new RuntimeException("Criteria not found with id: " + criteriaId);
         }
+        // System.out.println("criteriaId: " + criteriaId);
         criteriaRepository.deleteById(criteriaId);
     }
 
@@ -100,6 +95,11 @@ public class CriteriaService extends BaseService implements ICriteriaService {
             criteriaResponses.add(modelMapper.map(criteria, CriteriaResponse.class));
         }
         return criteriaResponses;
+    }
+
+    @Override
+    public boolean existsByCriteriaName(String name) {
+        return criteriaRepository.existsByCriteriaName(name);
     }
 
     @Override

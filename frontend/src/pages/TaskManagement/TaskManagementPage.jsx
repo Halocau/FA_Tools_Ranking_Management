@@ -53,13 +53,7 @@ const TaskManagement = () => {
   useEffect(() => {
     fetchAllTasks();
   }, []);
-  // Log state changes for debugging purposes
-  useEffect(() => {
-    console.log("Task:", tasks);
-    console.log("Loading:", loading);
-    console.log("Error:", error);
 
-  }, [tasks, loading, error]);
   // Modal Add
   const handleOpenAddModal = () => {
     setValidationMessage("");
@@ -145,7 +139,7 @@ const TaskManagement = () => {
     const isDuplicate = existingTasks.some(
       (task) =>
         task.taskName.toLowerCase() === trimmedName.toLowerCase() &&
-        task.id !== selectedTask.id
+        task.id == selectedTask.id
     );
 
     if (isDuplicate) {
@@ -259,13 +253,13 @@ const TaskManagement = () => {
   ];
 
   const rows = tasks
-    ? tasks.map((task, index) => ({
-      id: task.taskId,
+    ? tasks.result.map((item, index) => ({
+      id: item.taskId,
       index: index + 1,
-      taskName: task.taskName,
-      createdBy: task.createdByName || "Unknown",
-      createdAt: task.createdAt ? formatDate(task.createdAt) : "N/A",
-      updatedAt: task.updatedAt ? formatDate(task.updatedAt) : "N/A",
+      taskName: item.taskName,
+      createdBy: item.createdByName || "Unknown",
+      createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
+      updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
     }))
     : [];
 

@@ -30,7 +30,7 @@ function AppRoutes() {
       <Route path="/register" element={<SignupPage />} />
       <Route path="/forgetpassword" element={<ForgetPasswordPage />} />
       <Route
-        path="/ranking_group"
+        path="/ranking-group"
         element={
           <LayoutWrapper>
             <RankingGroups className="ml-2" />
@@ -62,7 +62,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/ranking_decision"
+        path="/ranking-decision"
         element={
           <LayoutWrapper>
             <RankingDecision className="ml-2" />
@@ -78,7 +78,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/task_management"
+        path="/task-management"
         element={
           <LayoutWrapper>
             <TaskManagement className="ml-2" />
@@ -86,7 +86,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/criteria_management"
+        path="/criteria-management"
         element={
           <LayoutWrapper>
             <CriteriaManagement className="ml-2" />
