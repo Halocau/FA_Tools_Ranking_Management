@@ -9,7 +9,8 @@ const useCriteria = () => {
     const fetchAllCriteria = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('/api/criteria');
+            const response = await axios.get('/criteria');
+            console.log(response.data);
             return response.data;
         } catch (err) {
             setError("Failed to fetch criteria.");

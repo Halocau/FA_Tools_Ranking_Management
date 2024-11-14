@@ -1,15 +1,21 @@
 package backend.controller;
 
+import backend.model.dto.CriteriaResponse;
 import backend.model.entity.Criteria;
 import backend.model.form.Criteria.AddCriteriaRequest;
 import backend.model.form.Criteria.UpdateCriteriaRequest;
+import backend.model.page.ResultPaginationDTO;
 import backend.service.ICriteriaService;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.turkraft.springfilter.boot.Filter;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,31 +32,36 @@ public class CriteriaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Criteria>> getAllCriteria() {
-        List<Criteria> criteriaList = criteriaService.getAllCriteria();
+    public ResponseEntity<ResultPaginationDTO> searchCriteria(
+            @Filter Specification<Criteria> spec,
+            Pageable pageable) {
+        ResultPaginationDTO criteriaList = criteriaService.getAllCriteria(spec, pageable);
+        // List<CriteriaResponse> criteriaResponses =
+        // criteriaService.convertToCriteriaResponseList(criteriaList);
         return new ResponseEntity<>(criteriaList, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Criteria> getCriteriaById(@PathVariable("id") int criteriaId) {
+    @GetMapping("/get/{id}")
+    public ResponseEntity<CriteriaResponse> getCriteriaById(@PathVariable("id") int criteriaId) {
         Criteria criteria = criteriaService.getCriteriabyId(criteriaId);
-        return new ResponseEntity<>(criteria, HttpStatus.OK);
+        return new ResponseEntity<>(criteriaService.convertToCriteriaResponse(criteria), HttpStatus.OK);
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Criteria> createCriteria(@Valid @RequestBody AddCriteriaRequest request) {
+    public ResponseEntity<CriteriaResponse> createCriteria(@Valid @RequestBody AddCriteriaRequest request) {
         Criteria createdCriteria = criteriaService.createCriteria(request);
-        return new ResponseEntity<>(createdCriteria, HttpStatus.CREATED);
+        return new ResponseEntity<>(criteriaService.convertToCriteriaResponse(createdCriteria), HttpStatus.CREATED);
     }
 
     @PutMapping("update/{id}")
-    public ResponseEntity<Criteria> updateCriteria(
+    public ResponseEntity<CriteriaResponse> updateCriteria(
             @PathVariable int id,
             @Valid @RequestBody UpdateCriteriaRequest request) {
 
         Optional<Criteria> updatedCriteria = criteriaService.updateCriteria(id, request);
         return updatedCriteria
-                .map(criteria -> new ResponseEntity<>(criteria, HttpStatus.OK))
+                .map(criteria -> new ResponseEntity<>(criteriaService.convertToCriteriaResponse(criteria),
+                        HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 

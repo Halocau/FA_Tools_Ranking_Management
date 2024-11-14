@@ -4,37 +4,62 @@ import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import useCriteria from "../../hooks/useCriteria"; // Import useCriteria hook
 import Slider from "../../layouts/Slider.jsx";
-import useRankingGroup from "../../hooks/useRankingGroup.jsx"; 
+import useRankingGroup from "../../hooks/useRankingGroup.jsx";
 import "../../assets/css/RankingGroups.css";
-
+import { useNavigate } from "react-router-dom";
+import CriteriaAPI from "../../api/CriteriaAPI.js";
 const CriteriaManagement = () => {
     const navigate = useNavigate();
-    const { fetchAllRankingGroups, data: group } = useRankingGroup();
     const { addCriteria, fetchAllCriteria, deleteCriteria, loading, error } = useCriteria(); // Sử dụng hook
-
     const apiRef = useGridApiRef();
-
     const [showAddCriteriaModal, setShowAddCriteriaModal] = useState(false);
     const [criteriaName, setCriteriaName] = useState("");
     const [validationMessage, setValidationMessage] = useState("");
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState("success");
-    const [criteriaList, setCriteriaList] = useState([]);
+
+    const [criteria, setCriteria] = useState([]);
+    const [pageSize, setpageSize] = useState(5);
+    const [page, setPage] = useState(1);
+    const [filter, setFilter] = useState("");
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
+    const [rows, setRows] = useState([]);
+
+    const getAllCriteria = async () => {
+        try {
+            const data = await CriteriaAPI.searchCriteria(
+                filter,
+                page,
+                pageSize
+            );
+            setCriteria(data.result);
+            setTotalPages(data.pageInfo.total);
+            setTotalElements(data.pageInfo.element);
+        } catch (error) {
+            console.error("Failed to fetch criteria:", error);
+        }
+    }
+
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                await fetchAllRankingGroups(); 
-                const criteriaData = await fetchAllCriteria();
-                setCriteriaList(criteriaData);
-            } catch (error) {
-                console.error("Failed to fetch data:", error);
-                setMessageType("error");
-                setMessage("Failed to load ranking groups. Please check the server.");
-            }
-        };
-        fetchData();
-    }, [fetchAllCriteria, fetchAllRankingGroups]);
+        getAllCriteria();
+    }, [page, pageSize, filter]);
+
+    console.log(criteria, totalPages, totalElements, page, pageSize);
+
+    useEffect(() => {
+        if (criteria) {
+            const mappedRows = criteria.map((criteria, index) => ({
+                id: criteria.criteriaId,
+                index: index + 1,
+                criteriaName: criteria.criteriaName,
+                noOfOption: criteria.numOptions ? criteria.numOptions : 0,
+                maxScore: criteria.maxScore ? criteria.maxScore : 0,
+            }));
+            setRows(mappedRows);
+        }
+    }, [criteria]);
 
     const handleOpenAddCriteriaModal = () => {
         setShowAddCriteriaModal(true);
@@ -71,13 +96,19 @@ const CriteriaManagement = () => {
         trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
 
         try {
-            await addCriteria({ criteriaName: trimmedName, createdBy: 1 });
+            const newCriteria = await CriteriaAPI.createCriteria({ criteriaName: trimmedName, createdBy: localStorage.getItem("userId") });
             setMessageType("success");
             setMessage("Criteria added successfully!");
             setTimeout(() => setMessage(null), 2000);
             handleCloseAddCriteriaModal();
-            const updatedCriteria = await fetchAllCriteria();
-            setCriteriaList(updatedCriteria);
+            setTotalElements(totalElements + 1);
+            if (criteria.length < pageSize) {
+                setCriteria(prevCriteria => [...prevCriteria, newCriteria]);
+
+            } else {
+                setTotalPages(totalPages + 1);
+            }
+            // setCriteriaList(updatedCriteria);
         } catch (error) {
             console.error("Failed to add criteria:", error);
             setMessageType("error");
@@ -88,14 +119,19 @@ const CriteriaManagement = () => {
 
     const handleDeleteCriteria = async (criteriaId) => {
         try {
-            await deleteCriteria(criteriaId);
+            const response = await CriteriaAPI.deleteCriteria(criteriaId);
+            console.log("Response:", response);
+            setCriteria(criteria.filter((criteria) => criteria.criteriaId !== criteriaId));
+
+            if (criteria.length === 1) {
+                setPage(page - 1);
+            }
             setMessageType("success");
             setMessage("Criteria deleted successfully!");
             setTimeout(() => setMessage(null), 2000);
-            const updatedCriteria = await fetchAllCriteria();
-            setCriteriaList(updatedCriteria);
         } catch (error) {
-            console.error("Failed to delete criteria:", error);
+            // console.log("Error:", error.response.data.detailMessage);
+            // console.error("Failed to delete criteria message: ", error);
             setMessageType("error");
             setMessage("Failed to delete criteria. Please try again.");
             setTimeout(() => setMessage(null), 2000);
@@ -103,7 +139,7 @@ const CriteriaManagement = () => {
     };
 
     const columns = [
-        { field: "id", headerName: "ID", width: 80 },
+        { field: "index", headerName: "ID", width: 80 },
         { field: "criteriaName", headerName: "Criteria Name", width: 300 },
         { field: "noOfOption", headerName: "No Of Option", width: 150 },
         { field: "maxScore", headerName: "Max Score", width: 150 },
@@ -131,7 +167,7 @@ const CriteriaManagement = () => {
             ),
         },
     ];
-
+    console.log(rows);
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
@@ -149,12 +185,26 @@ const CriteriaManagement = () => {
                 <Box sx={{ width: "100%" }}>
                     <DataGrid
                         apiRef={apiRef}
-                        rows={criteriaList}
+                        rows={rows}
                         columns={columns}
                         checkboxSelection
-                        pageSizeOptions={[5]}
+                        pagination
+                        pageSizeOptions={[5, 10, 20]}
                         loading={loading}
-                        getRowId={(row) => row.criteriaId}
+                        getRowId={(row) => row.id}
+                        rowCount={totalElements}
+                        paginationMode="server" // Kích hoạt phân trang phía server
+                        paginationModel={{
+                            page: page - 1,  // Adjusted for 0-based index
+                            pageSize: pageSize,
+                        }}
+                        onPaginationModelChange={(model) => {
+                            setPage(model.page + 1);  // Set 1-based page for backend
+                            setpageSize(model.pageSize);
+                        }}
+                        disableNextButton={page >= totalPages}
+                        disablePrevButton={page <= 1}
+                        disableRowSelectionOnClick
                     />
                 </Box>
 
