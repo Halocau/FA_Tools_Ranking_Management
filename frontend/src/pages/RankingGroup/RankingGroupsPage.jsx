@@ -362,73 +362,7 @@ const RankingGroups = () => {
             alignItems: "center",
             marginTop: 1,
           }}
-        >
-          {/* <Autocomplete
-            disablePortal
-            options={rows}
-            getOptionLabel={option => option.groupName || ''}
-            onInputChange={handleInputChange}
-            inputValue={searchValue}
-            renderInput={params => (
-              <TextField
-                {...params}
-                placeholder="Search Group" // Hiển thị text ở trong trường nhập liệu
-                variant="outlined"
-                fullWidth
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: (
-                    <InputAdornment position="start" sx={{ display: 'flex', alignItems: 'center' }}>
-                      <SearchIcon
-                        onClick={handleSearchSubmit}
-                        sx={{
-                          cursor: 'pointer',
-                          marginRight: 1,
-                          transition: 'transform 0.2s ease-in-out',
-                          '&:hover': {
-                            transform: 'scale(1.2)',
-                            color: 'primary.main',
-                          },
-                          '&:active': {
-                            transform: 'scale(1.1)',
-                          },
-                        }}
-                      />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    searchValue ? ( // Kiểm tra nếu searchValue không rỗng
-                      <InputAdornment position="end" sx={{ display: 'flex', marginRight: '-25px' }}>
-                        <IconButton
-                          onClick={() => {
-                            setFilteredRows(rows);
-                            setSearchValue('');
-                            params.inputProps.onChange({ target: { value: '' } });
-                          }}
-                          size="small"
-                          sx={{ padding: '0' }}
-                        >
-                          <ClearIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ) : null // Nếu không có văn bản, không hiển thị InputAdornment
-                  ),
-                }}
-                sx={{
-                  marginTop: 2,
-                  height: '40px',
-                  '& .MuiInputBase-root': { height: '130%', borderRadius: '20px' },
-                }}
-              />
-            )}
-            sx={{
-              flexGrow: 1,
-              marginRight: '16px',
-              maxWidth: '600px',
-              marginTop: '-10px',
-              borderRadius: '20px',
-            }}
-          /> */}
+        >          
           <TextField
             value={searchValue}
             onChange={handleInputChange}
