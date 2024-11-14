@@ -30,7 +30,7 @@ const useLogin = () => {
       setData(response.data); // Store the response data in the component state
       saveUserInfo(response.data); // Save user data in the AuthContext
       // Navigate to /ranking-groups after successful login
-      navigate("/ranking_group");
+      navigate("/ranking-group");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {

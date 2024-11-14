@@ -19,7 +19,19 @@ const useRankingGroup = () => {
             setError(err.response?.data || "An error occurred while fetching ranking groups.");
         }
     };
-    // Fetches all ranking groups from the API
+    // Fetches list ranking groups with page and size from the API 
+    const fetchRankingGroups = async (page, size) => {
+        setLoading(true); // Set loading state to true before making the request
+        try {
+            const response = await http.get(`/ranking-group?page=${page}&size=${size}`)
+                setData(response.data); // Update data state with the response data
+        } catch (err) {
+            handleError(err); 
+        }finally {
+            setLoading(false);
+            }       
+        };
+    //  Fetches all ranking groups from the API
     const fetchAllRankingGroups = async () => {
         setLoading(true);
         try {
@@ -97,6 +109,7 @@ const useRankingGroup = () => {
         data, // Contains fetched ranking group data
         loading, // Indicates loading state
         error, // Contains error messages
+        fetchRankingGroups,
         fetchAllRankingGroups, // Fetches all ranking groups
         fetchRankingGroupById, // Fetches a specific ranking group by ID
         addRankingGroup, // Adds a new ranking group

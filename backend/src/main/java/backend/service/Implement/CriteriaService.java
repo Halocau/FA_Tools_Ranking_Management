@@ -98,6 +98,11 @@ public class CriteriaService implements ICriteriaService {
     }
 
     @Override
+    public boolean existsByCriteriaName(String name) {
+        return criteriaRepository.existsByCriteriaName(name);
+    }
+
+    @Override
     public ResultPaginationDTO getAllCriteria(Specification<Criteria> spec, Pageable pageable) {
         // Page<Criteria> criteriaList = criteriaRepository.findAll(spec, pageable);
         Page<CriteriaResponse> criteriaResponses = criteriaRepository.findAll(spec, pageable)

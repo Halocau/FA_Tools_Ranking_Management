@@ -112,8 +112,7 @@ const EditRankingGroup = () => {
     const handleEditGroupInfo = async () => {
         setValidationMessage("");
         let trimmedName = newGroupName.trim();
-
-        // Validation for the group name
+        // Validation data
         if (!trimmedName) {
             setValidationMessage("Group name cannot be empty.");
             return;
@@ -127,32 +126,23 @@ const EditRankingGroup = () => {
             setValidationMessage("Group name can only contain letters, numbers, and spaces.");
             return;
         }
-
-        // Check if the group name has changed
-        if (trimmedName === editGroup.groupName) {
-            // If the name hasn't changed, skip the existing group check
-            setValidationMessage("");  // Clear any previous validation messages
+        if (trimmedName.toLowerCase() === editGroup.groupName.toLowerCase()) {
+            setValidationMessage("");
         } else {
-            // Check if the group name already exists, excluding the current group name
             const existingGroups = await fetchAllRankingGroups();
             const groupExists = existingGroups.some(group =>
-                group.groupName.toLowerCase() === trimmedName.toLowerCase() && group.groupName !== editGroup.groupName
+                group.groupName.toLowerCase() === trimmedName.toLowerCase() && group.groupName.toLowerCase() !== editGroup.groupName.toLowerCase()
             );
             if (groupExists) {
                 setValidationMessage("Group name already exists. Please choose a different name.");
                 return;
             }
         }
-
-        // Prevent changing the name of the trainer group
         if (editGroup.groupName === "Trainer" && trimmedName !== "Trainer") {
             setValidationMessage("Cannot change the name of the Trainer group.");
             return;
         }
-
-        // Capitalize the first letter of each word
         trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
-
         // Prepare the updated group object
         try {
             const updatedGroup = {
@@ -490,6 +480,7 @@ const EditRankingGroup = () => {
                             value={selectedCurrentDecision}
                             onChange={(event, value) => {
                                 setselectedCurrentDecision(value || null);
+                                console.log(selectedCurrentDecision)
                             }}
                             renderInput={(params) => (
                                 <TextField

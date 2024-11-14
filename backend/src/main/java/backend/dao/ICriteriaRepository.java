@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ICriteriaRepository extends JpaRepository<Criteria, Integer>, JpaSpecificationExecutor<Criteria> {
-    public Criteria findByCriteriaId(int criteriaId);
+    boolean existsByCriteriaName(String name);
 }

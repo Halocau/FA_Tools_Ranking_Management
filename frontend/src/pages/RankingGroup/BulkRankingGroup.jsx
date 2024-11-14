@@ -261,7 +261,7 @@ const BulkRankingGroup = () => {
             {/* Group Info */}
             <Box sx={{ marginTop: 4, padding: 2 }}>
                 <Typography variant="h6">
-                    <a href="/ranking_group">Ranking Group List</a>{" "}
+                    <a href="/ranking-group">Ranking Group List</a>{" "}
                     {<FaAngleRight />}
                     Bulk Ranking Group
                 </Typography>
