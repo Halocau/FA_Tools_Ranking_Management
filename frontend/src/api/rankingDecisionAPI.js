@@ -1,18 +1,22 @@
-// frontend/api/rankingDecisionApi.js
-import authClient from './authClient';
+// frontend/api/RankingDecisionAPI.js
+import authClient from './baseapi/AuthorAPI';
 
-const RANKING_DECISION_API = '/ranking-decision';
+const rankin_decision_api = '/ranking-decision';
 
-const rankingDecisionApi = {
+const RankingDecisionAPI = {
     // Get paginated list of ranking decisions
-    getRankingDecisions: async (page = 0, size = 5) => {
+    searchRankingDecisions: async (filter = "", page = 1, size = 5) => {
         try {
-            const response = await authClient.get(`${RANKING_DECISION_API}`, {
-                params: { page: page, size: size },
+            const response = await authClient.get(`${rankin_decision_api}`, {
+                params: {
+                    filter: filter,
+                    page: page,
+                    size: size
+                },
             });
             return response.data;
         } catch (error) {
-            console.error('Error fetching ranking decisions:', error);
+            console.error('Error fetching ranking groups:', error);
             throw error;
         }
     },
@@ -20,7 +24,7 @@ const rankingDecisionApi = {
     // Get a single ranking decision by ID
     getRankingDecisionById: async (id) => {
         try {
-            const response = await authClient.get(`${RANKING_DECISION_API}/get/${id}`);
+            const response = await authClient.get(`${rankin_decision_api}/get/${id}`);
             return response.data;
         } catch (error) {
             console.error(`Error fetching ranking decision with ID ${id}:`, error);
@@ -31,7 +35,7 @@ const rankingDecisionApi = {
     // Add a new ranking decision
     addRankingDecision: async (formData) => {
         try {
-            const response = await authClient.post(`${RANKING_DECISION_API}/add`, formData);
+            const response = await authClient.post(`${rankin_decision_api}/add`, formData);
             return response.data;
         } catch (error) {
             console.error('Error adding new ranking decision:', error);
@@ -42,7 +46,7 @@ const rankingDecisionApi = {
     // Update an existing ranking decision by ID
     updateRankingDecision: async (id, formData) => {
         try {
-            const response = await authClient.put(`${RANKING_DECISION_API}/update/${id}`, formData);
+            const response = await authClient.put(`${rankin_decision_api}/update/${id}`, formData);
             return response.data;
         } catch (error) {
             console.error(`Error updating ranking decision with ID ${id}:`, error);
@@ -53,7 +57,7 @@ const rankingDecisionApi = {
     // Delete a ranking decision by ID
     deleteRankingDecision: async (id) => {
         try {
-            const response = await authClient.delete(`${RANKING_DECISION_API}/delete/${id}`);
+            const response = await authClient.delete(`${rankin_decision_api}/delete/${id}`);
             return response.data;
         } catch (error) {
             console.error(`Error deleting ranking decision with ID ${id}:`, error);
@@ -64,7 +68,7 @@ const rankingDecisionApi = {
     // Search ranking decisions by name with pagination
     searchByDecisionName: async (decisionName = '', page = 0, size = 5) => {
         try {
-            const response = await authClient.get(`${RANKING_DECISION_API}/search`, {
+            const response = await authClient.get(`${rankin_decision_api}/search`, {
                 params: { name: decisionName, page: page, size: size },
             });
             return response.data;
@@ -75,4 +79,4 @@ const rankingDecisionApi = {
     },
 };
 
-export default rankingDecisionApi;
+export default RankingDecisionAPI;
