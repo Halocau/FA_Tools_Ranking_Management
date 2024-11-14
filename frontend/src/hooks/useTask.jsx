@@ -5,7 +5,7 @@ import authClient from "../api/baseapi/AuthorAPI";
 const useTask = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false); // Indicates loading state during API requests
+  const [loading, setLoading] = useState(false); 
   const [error, setError] = useState(null);
 
   // Handles errors, including redirecting if unauthorized access occurs
