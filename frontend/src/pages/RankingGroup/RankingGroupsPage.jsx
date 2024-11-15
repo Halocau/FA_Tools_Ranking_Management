@@ -19,6 +19,7 @@ import RankingGroupAPI from "../../api/RankingGroupAPI.js";
 //Common
 import ModalCustom from "../../components/Common/Modal.jsx";
 import ActionButtons from "../../components/Common/ActionButtons.jsx";
+import SearchComponent from "../../components/Common/Search.jsx";
 // Contexts
 import { useAuth } from "../../contexts/AuthContext.jsx";
 // Hooks
@@ -363,6 +364,7 @@ const RankingGroups = () => {
         <h2>
           Ranking Group List
         </h2>
+        <SearchComponent onSearch={handleSearchSubmit} />
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 1 }}>
           {/* <Autocomplete
             disablePortal
@@ -430,7 +432,7 @@ const RankingGroups = () => {
               borderRadius: '20px',
             }}
           /> */}
-          <TextField
+          {/* <TextField
             value={searchValue}
             onChange={handleInputChange}
             onKeyPress={(e) => e.key === "Enter" && handleSearchSubmit()}
@@ -482,7 +484,7 @@ const RankingGroups = () => {
                 height: '40px',
               },
             }}
-          />
+          /> */}
         </Box>
         {/* Table show Ranking Group */}
         <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>

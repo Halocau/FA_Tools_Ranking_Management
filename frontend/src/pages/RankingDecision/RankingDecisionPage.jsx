@@ -44,6 +44,9 @@ const RankingDecision = () => {
     const [PageSize, setPageSize] = useState(5);
     const [totalElements, setTotalElements] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
+    // ApiRef   
+    const apiRef = useGridApiRef(); // Create apiRef to select multiple decisions to delete
+
     // Add
     const [showAddModal, setShowAddModal] = useState(false); // State to determine whether the additional decision modal is displayed or not
     const [newDecisionName, setnewDecisionName] = useState(""); // State to store the new decison name that the user enters
@@ -56,7 +59,6 @@ const RankingDecision = () => {
     const [selectedRows, setSelectedRows] = useState([]); // State to save a list of IDs of selected rows in the DataGrid
     // delete select
     const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
-    const apiRef = useGridApiRef(); // Create apiRef to select multiple decisions to delete
     // Search Decision
     const [rows, setRows] = useState([]); // Initialize with empty array
     const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
@@ -411,7 +413,7 @@ const RankingDecision = () => {
                     />
 
                 </Box>
-                {/* Table show Ranking Group */}
+                {/* Table show Ranking Decision */}
                 <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
                     {/* {loading ? <CircularProgress /> : ( */}
                     <DataGrid

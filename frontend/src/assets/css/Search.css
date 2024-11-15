@@ -1,0 +1,38 @@
+.search-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 16px;
+}
+
+.search-input {
+    flex-grow: 1;
+    margin-right: 16px;
+    max-width: 600px;
+    margin-top: -10px;
+}
+
+.search-input .MuiInputBase-root {
+    border-radius: 20px !important;
+    height: 40px !important;
+}
+
+.search-icon {
+    cursor: pointer;
+    margin-right: 8px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.search-icon:hover {
+    transform: scale(1.2);
+    color: var(--mui-palette-primary-main);
+    /* Thay thế bằng mã màu nếu không có biến */
+}
+
+.search-icon:active {
+    transform: scale(1.1);
+}
+
+.clear-icon {
+    padding: 0 !important;
+}
