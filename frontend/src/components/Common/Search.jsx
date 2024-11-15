@@ -33,7 +33,6 @@ const SearchComponent = ({ onSearch, placeholder = "Search ..." }) => {
                         <InputAdornment position="start" sx={{ display: "flex", alignItems: "center" }}>
                             <SearchIcon
                                 onClick={() => {
-                                    setSearchValue(''); // Xóa text khi nhấn vào icon tìm kiếm
                                     handleSearchSubmit(); // Gọi hàm tìm kiếm (nếu cần thiết)
                                 }}
                                 sx={{

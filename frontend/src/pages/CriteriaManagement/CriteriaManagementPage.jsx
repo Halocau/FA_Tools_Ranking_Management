@@ -4,15 +4,18 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, Typography, TextField, Modal } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import Slider from "../../layouts/Slider.jsx";
-import "../../assets/css/RankingGroups.css";
 import SearchComponent from "../../components/Common/Search.jsx";
-
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 //Hooks
 import { useNavigate } from "react-router-dom";
 import useNotification from "../../hooks/useNotification.jsx";
 
 //API
 import CriteriaAPI from "../../api/CriteriaAPI.js";
+
+//Filter Query Builder
+import { sfLike } from 'spring-filter-query-builder';
 
 const CriteriaManagement = () => {
     //Use for navigation
@@ -92,7 +95,12 @@ const CriteriaManagement = () => {
 
     //Use for search
     const handleSearch = (event) => {
-        setFilter(event.target.value);
+        if (event) {
+            setFilter(sfLike("criteriaName", event).toString());
+        } else {
+            setFilter("");
+        }
+        setPage(1);
     };
 
     //Use for add criteria
@@ -168,7 +176,7 @@ const CriteriaManagement = () => {
                             navigate(`/criteria/edit/${params.row.id}`);
                         }}
                     >
-                        Edit
+                        <EditIcon />
                     </Button>
                     <Button
                         variant="outlined"
@@ -177,7 +185,7 @@ const CriteriaManagement = () => {
                         onClick={() => handleDeleteCriteria(params.row.id)}
                         sx={{ marginLeft: 1 }}
                     >
-                        Delete
+                        <DeleteIcon />
                     </Button>
                 </>
             ),
