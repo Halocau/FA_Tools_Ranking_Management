@@ -3,9 +3,6 @@ import React, { useEffect, useState } from "react";
 import { FaEdit, FaAngleRight } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
-
-// css 
-import "../../assets/css/RankingGroups.css"
 // Mui
 import {
     InputAdornment, Box, Button, Typography, TextField, FormControl, InputLabel, Select, MenuItem, Modal, IconButton, Switch, FormControlLabel, Alert, FormHelperText
@@ -14,21 +11,36 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import EditIcon from '@mui/icons-material/Edit';
 import Autocomplete from '@mui/material/Autocomplete';
-// Source code
+// Css 
+import "../../assets/css/RankingGroups.css"
+// API
+import RankingGroupAPI from "../../api/RankingGroupAPI.js";
+import RankingDecisionAPI from "../../api/RankingDecisionAPI.js";
+//Common
 import ModalCustom from "../../components/Common/Modal.jsx";
 import ActionButtons from "../../components/Common/ActionButtons.jsx";
-// acountID
+// Contexts
 import { useAuth } from "../../contexts/AuthContext.jsx";
-import useRankingGroup from "../../hooks/useRankingGroup.jsx";
-import useRankingDecision from "../../hooks/useRankingDecision.jsx";
-import Slider from "../../layouts/Slider.jsx";
-
-// Import hook Notification
+// Hooks
 import useNotification from "../../hooks/useNotification";
+import useRankingDecision from "../../hooks/useRankingDecision"
+
+// Layouts
+import Slider from "../../layouts/Slider.jsx";
 
 const EditRankingGroup = () => {
     const navigate = useNavigate(); // To navigate between pages
     const { id } = useParams(); // Get the ID from the URL
+    //// State
+    // Table  List Ranking decision (page, size)
+    const [filter, setFilter] = useState("");
+    const [RankingDecisions, setRankingDecisions] = useState([]);
+    const [Page, setPage] = useState(1);
+    const [PageSize, setPageSize] = useState(5);
+    const [totalElements, setTotalElements] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    // ApiRef   
+    const apiRef = useGridApiRef(); // Create apiRef to select multiple decisions to delete
 
     // Edit
     const [editGroup, setEditGroup] = useState({ groupName: '', currentRankingDecision: '' });
@@ -36,18 +48,17 @@ const EditRankingGroup = () => {
     const [showEditGroupInfoModal, setShowEditGroupInfoModal] = useState(false); // Display group editing modal
     const [newGroupName, setNewGroupName] = useState(""); // New Group Name
     const [originalDecisionName, setOriginalDecisionName] = useState('');
-    // const [selectedCurrentDecision, setselectedCurrentDecision] = useState(''); // Current rating decision
     const [selectedCurrentDecision, setselectedCurrentDecision] = useState(null); // Current rating decision
-    const [rankingDecisions, setRankingDecisions] = useState([]); // List of ranking decisions
     // Add
-    const [showAddModal, setShowAddModal] = useState(false); // Show modal add decision
-    const [newDecisionName, setnewDecisionName] = useState(""); // New decision name
+    const [showAddModal, setShowAddModal] = useState(false); // State to determine whether the additional decision modal is displayed or not
+    const [newDecisionName, setnewDecisionName] = useState(""); // State to store the new decison name that the user enters
     const [clone, setClone] = useState(false); // Clone state decides
-    // const [selectedCloneDecision, setSelectedCloneDecision] = useState(""); // Decided to clone
     const [selectedCloneDecision, setSelectedCloneDecision] = useState(null);
-    // Delele
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [DecisionToDelete, setDecisionToDelete] = useState(null);
+    const [listDecisionClone, setlistDecisionClone] = useState([]);
+    // Delete
+    const [showDeleteModal, setShowDeleteModal] = useState(false); // State to determine whether the delete decision modal is displayed or not
+    const [DecisionToDelete, setDecisionToDelete] = useState(null); // State to store the ID of the decision to be deleted
+    const [selectedRows, setSelectedRows] = useState([]); // State to save a list of IDs of selected rows in the DataGrid
     // Search Decision
     const [rows, setRows] = useState([]); // Initialize with empty array
     const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
@@ -57,43 +68,32 @@ const EditRankingGroup = () => {
     // Validation error message
     const [validationMessage, setValidationMessage] = useState("");
 
-    // Destructuring from useRankingGroup custom hook
-    const {
-        fetchAllRankingGroups,
-        fetchRankingGroupById,
-        updateRankingGroup,
-    } = useRankingGroup();
-    // // Destructuring from useRankingDecision custom hook
-    const {
-        data: decisions,
-        fetchAllRankingDecisions,
-        deleteRankingDecision,
-        addRankingDecision,
-        addRankingDecisionWithClone,
-    } = useRankingDecision();
-    // Get the list of ranking decisions
+    // Ranking Group Edit
+    const RankingGroupEdit = async () => {
+        try {
+            const groupData = await RankingGroupAPI.getRankingGroupById(id);
+
+            // Ensure no undefined values are passed
+            setEditGroup({
+                groupName: groupData.groupName || "",
+                currentRankingDecision: groupData.currentRankingDecision || "",
+            });
+            console.log(groupData)
+            setOriginalGroupName(groupData.groupName || "Group Name");
+            setNewGroupName(groupData.groupName || "");
+            setOriginalDecisionName(groupData.currentRankingDecision || "");
+            setselectedCurrentDecision(groupData.currentRankingDecision || "");
+            setRankingDecisions(groupData.rankingDecisions || []);
+        } catch (error) {
+            console.error("Error fetching group:", error);
+        }
+    };
+
+    // Fetch Ranking Group on id change
     useEffect(() => {
-        fetchAllRankingDecisions();
-    }, []);
-    useEffect(() => {
-        const loadGroup = async () => {
-            try {
-                const groupData = await fetchRankingGroupById(id);
-                setEditGroup({
-                    groupName: groupData.groupName,
-                    currentRankingDecision: groupData.currentRankingDecision,
-                });
-                setOriginalGroupName(groupData.groupName);
-                setNewGroupName(groupData.groupName);
-                setOriginalDecisionName(groupData.currentRankingDecision)
-                setselectedCurrentDecision(groupData.currentRankingDecision);
-                setRankingDecisions(groupData.rankingDecisions || []);
-            } catch (error) {
-                console.error("Error fetching group:", error);
-            }
-        };
-        loadGroup();
+        RankingGroupEdit();
     }, [id]);
+
 
 
 
@@ -112,8 +112,7 @@ const EditRankingGroup = () => {
     const handleEditGroupInfo = async () => {
         setValidationMessage("");
         let trimmedName = newGroupName.trim();
-
-        // Validation for the group name
+        // Validation data
         if (!trimmedName) {
             setValidationMessage("Group name cannot be empty.");
             return;
@@ -127,32 +126,23 @@ const EditRankingGroup = () => {
             setValidationMessage("Group name can only contain letters, numbers, and spaces.");
             return;
         }
-
-        // Check if the group name has changed
-        if (trimmedName === editGroup.groupName) {
-            // If the name hasn't changed, skip the existing group check
-            setValidationMessage("");  // Clear any previous validation messages
+        if (trimmedName.toLowerCase() === editGroup.groupName.toLowerCase()) {
+            setValidationMessage("");
         } else {
-            // Check if the group name already exists, excluding the current group name
             const existingGroups = await fetchAllRankingGroups();
             const groupExists = existingGroups.some(group =>
-                group.groupName.toLowerCase() === trimmedName.toLowerCase() && group.groupName !== editGroup.groupName
+                group.groupName.toLowerCase() === trimmedName.toLowerCase() && group.groupName.toLowerCase() !== editGroup.groupName.toLowerCase()
             );
             if (groupExists) {
                 setValidationMessage("Group name already exists. Please choose a different name.");
                 return;
             }
         }
-
-        // Prevent changing the name of the trainer group
         if (editGroup.groupName === "Trainer" && trimmedName !== "Trainer") {
             setValidationMessage("Cannot change the name of the Trainer group.");
             return;
         }
-
-        // Capitalize the first letter of each word
         trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
-
         // Prepare the updated group object
         try {
             const updatedGroup = {
@@ -302,28 +292,28 @@ const EditRankingGroup = () => {
             ),
         },
     ];
-    // Map decision data to rows for DataGrid when decisions are fetched
-    useEffect(() => {
-        if (decisions) {
-            const mappedRows = decisions.map((decision, index) => ({
-                id: decision.decisionId,
-                index: index + 1,
-                dicisionname: decision.decisionName,
-                finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
-                finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
-                status: decision.status
-            }));
-            setRows(mappedRows); // Update rows with data from decisions
-            setFilteredRows(mappedRows); // Update filteredRows with original data
-        }
-    }, [decisions]);
-    const handleInputChange = (event, value) => {
-        setSearchValue(value);
-        const filtered = value
-            ? rows.filter(row => row.dicisionname.toLowerCase().includes(value.toLowerCase()))
-            : rows;
-        setFilteredRows(filtered);
-    };
+    // // Map decision data to rows for DataGrid when decisions are fetched
+    // useEffect(() => {
+    //     if (decisions) {
+    //         const mappedRows = decisions.map((decision, index) => ({
+    //             id: decision.decisionId,
+    //             index: index + 1,
+    //             dicisionname: decision.decisionName,
+    //             finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
+    //             finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
+    //             status: decision.status
+    //         }));
+    //         setRows(mappedRows); // Update rows with data from decisions
+    //         setFilteredRows(mappedRows); // Update filteredRows with original data
+    //     }
+    // }, [decisions]);
+    // const handleInputChange = (event, value) => {
+    //     setSearchValue(value);
+    //     const filtered = value
+    //         ? rows.filter(row => row.dicisionname.toLowerCase().includes(value.toLowerCase()))
+    //         : rows;
+    //     setFilteredRows(filtered);
+    // };
 
     return (
         <div style={{ marginTop: "60px" }}>
@@ -331,7 +321,7 @@ const EditRankingGroup = () => {
             {/* Group Info */}
             <Box sx={{ marginTop: 4, padding: 2 }}>
                 <Typography variant="h6">
-                    <a href="/ranking_group">Ranking Group List</a>{" "}
+                    <a href="/ranking-group">Ranking Group List</a>{" "}
                     {<FaAngleRight />}
                     Edit Ranking Group
                 </Typography>
@@ -357,7 +347,7 @@ const EditRankingGroup = () => {
                 <Typography variant="h5" sx={{ flexShrink: 0, marginRight: '16px' }}>Ranking Decision List</Typography>
                 {/* Search Decision */}
                 <Box sx={{ marginTop: '0px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Autocomplete
+                    {/* <Autocomplete
                         disablePortal
                         options={decisions}
                         getOptionLabel={option => option.decisionName || ''}
@@ -395,7 +385,7 @@ const EditRankingGroup = () => {
                             />
                         )}
                         sx={{ flexGrow: 1, marginRight: '16px', maxWidth: '600px' }}
-                    />
+                    /> */}
                     <Button
                         variant="contained"
                         color="primary"
@@ -412,23 +402,30 @@ const EditRankingGroup = () => {
                         Add New Ranking Decision
                     </Button>
                 </Box>
-                {/* The table displays the Decision List */}
-                <Box sx={{ width: "100%", height: 350, marginTop: '30px' }}>
+                {/* Table show Ranking Decision */}
+                <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
+                    {/* {loading ? <CircularProgress /> : ( */}
                     <DataGrid
                         className="custom-data-grid"
-                        rows={filteredRows.length > 0 ? filteredRows : rows}
+                        apiRef={apiRef}
+                        rows={rows}
                         columns={columns}
                         checkboxSelection
                         pagination
                         pageSizeOptions={[5, 10, 25]}
-                        initialState={{
-                            pagination: {
-                                paginationModel: {
-                                    pageSize: 5,
-                                    page: 0,
-                                },
-                            },
+                        getRowId={(row) => row.id}
+                        rowCount={totalElements}
+                        paginationMode="server"
+                        paginationModel={{
+                            page: Page - 1,  // Adjusted for 0-based index
+                            pageSize: PageSize,
                         }}
+                        onPaginationModelChange={(model) => {
+                            setPage(model.page + 1);  // Set 1-based page for backend
+                            setPageSize(model.pageSize);
+                        }}
+                        disableNextButton={Page >= totalPages}
+                        disablePrevButton={Page <= 1}
                         disableRowSelectionOnClick
                         autoHeight={false}
                         sx={{
@@ -439,7 +436,9 @@ const EditRankingGroup = () => {
                             },
                         }}
                     />
+                    {/* )} */}
                 </Box>
+
 
                 {/* Modal for editing group info */}
                 <Modal open={showEditGroupInfoModal} onClose={handleCloseEditGroupInfoModal}>
@@ -459,11 +458,10 @@ const EditRankingGroup = () => {
                             label="Group Name"
                             variant="outlined"
                             fullWidth
-                            value={newGroupName}
-                            onChange={(e) => {
-                                setNewGroupName(e.target.value);
-                                setValidationMessage("");
-                            }}
+                            value={editGroup.groupName || ""} // Default to empty string if undefined
+                            onChange={(e) =>
+                                setNewGroupName(e.target.value)
+                            }
                             error={!!validationMessage}
                             helperText={validationMessage}
                             sx={{ marginTop: 2 }}
@@ -483,13 +481,14 @@ const EditRankingGroup = () => {
                                 ),
                             }}
                         />
-                        <Autocomplete
+                        {/* <Autocomplete
                             disablePortal
                             options={decisions ? decisions.filter(decision => decision.status === 'Finalized') : []}
                             getOptionLabel={(option) => option.decisionName || ''}
                             value={selectedCurrentDecision}
                             onChange={(event, value) => {
                                 setselectedCurrentDecision(value || null);
+                                console.log(selectedCurrentDecision)
                             }}
                             renderInput={(params) => (
                                 <TextField
@@ -500,7 +499,7 @@ const EditRankingGroup = () => {
                                     sx={{ marginTop: 2 }}
                                 />
                             )}
-                        />
+                        /> */}
 
                         <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
                             <Button variant="outlined" onClick={handleCloseEditGroupInfoModal}>Cancel</Button>

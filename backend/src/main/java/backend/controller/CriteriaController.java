@@ -1,11 +1,14 @@
 package backend.controller;
 
 import backend.model.dto.CriteriaResponse;
+import backend.model.dto.DecisionCriteriaResponse;
 import backend.model.entity.Criteria;
+import backend.model.entity.DecisionCriteria;
 import backend.model.form.Criteria.AddCriteriaRequest;
 import backend.model.form.Criteria.UpdateCriteriaRequest;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.ICriteriaService;
+import backend.service.IDecisionCriteriaService;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +28,12 @@ import java.util.Optional;
 public class CriteriaController {
 
     private final ICriteriaService criteriaService;
+    private IDecisionCriteriaService idDecisionCriteriaService;
 
     @Autowired
-    public CriteriaController(ICriteriaService criteriaService) {
+    public CriteriaController(ICriteriaService criteriaService, IDecisionCriteriaService idDecisionCriteriaService) {
         this.criteriaService = criteriaService;
+        this.idDecisionCriteriaService = idDecisionCriteriaService;
     }
 
     @GetMapping
@@ -40,6 +45,14 @@ public class CriteriaController {
         // criteriaService.convertToCriteriaResponseList(criteriaList);
         return new ResponseEntity<>(criteriaList, HttpStatus.OK);
     }
+
+    @GetMapping("/test")
+    public ResponseEntity<List<DecisionCriteriaResponse>> alltest() {
+        List<Criteria> criteria = criteriaService.getAllCriteria();
+        List<DecisionCriteriaResponse> test = idDecisionCriteriaService.getDecisionCriteriaResponse(criteria);
+        return ResponseEntity.status(HttpStatus.OK).body(test);
+    }
+
 
     @GetMapping("/get/{id}")
     public ResponseEntity<CriteriaResponse> getCriteriaById(@PathVariable("id") int criteriaId) {

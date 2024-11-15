@@ -1,43 +1,35 @@
 package backend.model.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
-import java.io.Serializable;
-
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "Decision_Criteria")
+@Table(name="Decision_Criteria")
 public class DecisionCriteria {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "decision_id")
+    private Integer decisionId;
 
-    @EmbeddedId
-    private DecisionCriteriaId id = new DecisionCriteriaId();
-
-    @ManyToOne
-    @MapsId("decisionId")
-    @JoinColumn(name = "decision_id")
-    private RankingDecision rankingDecision;
-
-    @ManyToOne
-    @MapsId("criteriaId")
-    @JoinColumn(name = "criteria_id")
-    private Criteria criteria;
+    @Column(name = "criteria_id")
+    private Integer criteriaId;
 
     @Column(name = "weight")
     private Float weight;
 
+    @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    // Getters and Setters
-
-    // Composite Key Class
-    @Embeddable
-    public static class DecisionCriteriaId implements Serializable {
-        private Integer decisionId;
-        private Integer criteriaId;
-
-        // Constructors, equals(), and hashCode()
-    }
 }
