@@ -133,33 +133,6 @@ const RankingGroups = () => {
       setValidationMessage("Group name already exists.");
       return;
     }
-    //   try {
-    //     const newGroup = {
-    //       groupName: trimmedName,
-    //       createdBy: localStorage.getItem('userId'),
-    //     };
-    //     await RankingGroupAPI.addRankingGroup(newGroup);
-    //     handleCloseAddRankingGroupModal()();
-    //     setTotalElements(totalElements + 1);
-    //     if (RankingGroups.length < pageSize) {
-    //       fetchAllRankingGroups();
-    //     } else {
-    //       setTotalPages(totalPages + 1);
-    //     }
-    //     showSuccessMessage("Ranking Group successfully added.");
-    //   } catch (error) {
-    //     console.error("Failed to add group:", error);
-
-    //     // Kiểm tra nếu lỗi từ backend có chứa thông báo lỗi liên quan đến tên nhóm
-    //     if (error.response && error.response.data && error.response.data.detailMessage) {
-    //       // Hiển thị thông báo lỗi từ backend (ví dụ: "RankingGroup name exists already!")
-    //       setValidationMessage(error.response.data.detailMessage);
-    //     } else {
-    //       // Nếu không có thông báo cụ thể từ backend, hiển thị thông báo lỗi mặc định
-    //       showErrorMessage("Error occurred adding Ranking Group. Please try again");
-    //     }
-    //   }
-    // };
     try {
       const newGroup = {
         groupName: trimmedName,

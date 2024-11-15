@@ -12,7 +12,9 @@ import ModalCustom from "../../components/Common/Modal.jsx";
 // acountID
 import Slider from "../../layouts/Slider.jsx";
 import Box from "@mui/material/Box";
-
+//search
+import { sfLike } from "spring-filter-query-builder";
+import SearchComponent from "../../components/Common/Search.jsx";
 // Import hook Notification
 import useNotification from "../../hooks/useNotification";
 import taskApi from "../../api/TaskAPI.js";
@@ -31,7 +33,7 @@ const TaskManagement = () => {
   //Delete many
   const [selectedTask, setSelectedTask] = useState(null); // State to store selected task for editing
   const [groupToDelete, setGroupToDelete] = useState(null);
-   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   // Use hook notification
   const [showSuccessMessage, showErrorMessage] = useNotification();
   //Validation error mesage
@@ -237,7 +239,7 @@ const TaskManagement = () => {
     setEditTaskName("");
     setValidationMessage("");
   };
-
+  // Update Task
   const handleUpdateTask = async () => {
     const trimmedName = editTaskName.trim();
     setValidationMessage("");
@@ -289,6 +291,16 @@ const TaskManagement = () => {
     }
   };
 
+  //Search Task
+  const handleSearch = (event) => {
+    if (event) {
+      setFilter(sfLike("taskName", event).toString());
+    } else {
+      setFilter("");
+    }
+    setPage(1);
+  };
+
   //Format Data
   const formatDate = (dateString) => {
     return dateString ? format(new Date(dateString), "dd/MM/yyyy ") : "N/A";
@@ -335,6 +347,9 @@ const TaskManagement = () => {
           {<FaAngleRight />}
           Task Management
         </Typography>
+        <div>
+          <SearchComponent onSearch={handleSearch} placeholder=" Sreach Task" />
+        </div>
         <DataGrid
           className="custom-data-grid"
           apiRef={apiRef}
