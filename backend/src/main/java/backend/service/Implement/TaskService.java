@@ -89,27 +89,6 @@ public class TaskService implements ITaskService {
         return taskResponses;
     }
 
-    // Response
-//    @Override
-//    public List<TaskResponse> getAllTaskResponse(List<Task> tasks) {
-//        List<TaskResponse> taskResponses = new ArrayList<>();
-//
-//        for (Task task : tasks) {
-//            TaskResponse response = modelMapper.map(task, TaskResponse.class);
-//
-//            if (task.getCreatedBy() == null) {
-//                response.setCreatedByName(null);
-//            } else {
-//                Account account = iAccount.findById(task.getCreatedBy()).orElse(null);
-//                response.setCreatedByName(account != null ? account.getUsername() : null);
-//            }
-//
-//            taskResponses.add(response);
-//        }
-//
-//        return taskResponses;
-//    }
-
 
     @Override
     public TaskResponse getTaskResponseById(Task task) {

@@ -21,16 +21,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CriteriaService extends BaseService implements ICriteriaService {
+public class CriteriaService implements ICriteriaService {
 
     private final ICriteriaRepository criteriaRepository;
     private ModelMapper modelMapper;
 
     @Autowired
-    public CriteriaService(ICriteriaRepository criteriaRepository, ModelMapper modelMapper, ModelMapper modelMapper1) {
-        super(modelMapper);
+    public CriteriaService(ICriteriaRepository criteriaRepository, ModelMapper modelMapper) {
         this.criteriaRepository = criteriaRepository;
-        this.modelMapper = modelMapper1;
+        this.modelMapper = modelMapper;
     }
 
     @Override
