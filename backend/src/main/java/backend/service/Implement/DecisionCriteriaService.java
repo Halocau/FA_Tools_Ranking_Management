@@ -47,6 +47,12 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
     }
 
     @Override
+    public List<DecisionCriteria> findByDecisionId(Integer decisionId) {
+        return List.of();
+    }
+
+
+    @Override
     public List<DecisionCriteriaResponse> getDecisionCriteriaResponse(List<DecisionCriteria> list) {
         // Kiểm tra nếu list là null hoặc rỗng
         if (list == null || list.isEmpty()) {
@@ -77,12 +83,26 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
         return decisionCriteriaResponses;
     }
 
+    // Service
+    @Override
+    public ResultPaginationDTO findByDecisionIdAndSpecification(Integer decisionId, Specification<DecisionCriteria> spec, Pageable pageable) {
+        Specification<DecisionCriteria> combinedSpec = (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("decisionId"), decisionId);
 
+        if (spec != null) {
+            combinedSpec = combinedSpec.and(spec);
+        }
 
-    @Override//search list by decisionId
-    public List<DecisionCriteria> findByDecisionIdList(Integer decisionId) {
-        return iDecisionCriteriaRepository.findByDecisionId(decisionId);
+        Page<DecisionCriteria> find =  iDecisionCriteriaRepository.findAll(combinedSpec, pageable);
+        return new PaginationUtils().buildPaginationDTO(find);
     }
+
+
+
+//    @Override//search list by decisionId
+//    public List<DecisionCriteria> findByDecisionId(Integer decisionId) {
+//        return iDecisionCriteriaRepository.findByDecisionId(decisionId);
+//    }
 
     @Override
     public DecisionCriteria findByCriteriaIdAndDecisionId(Integer criteriaId, Integer decisionId) {

@@ -29,9 +29,16 @@ public class DecisionCriteriaController {
     }
 
     @GetMapping("/get/{decisionId}")
-    public List<DecisionCriteriaResponse> getAllDecisionCriteriaByDecisionId(@PathVariable(name = "decisionId") Integer decisionId) {
-        List<DecisionCriteria> findDecisionId = iDecisionCriteriaService.findByDecisionIdList(decisionId);
-        return iDecisionCriteriaService.getDecisionCriteriaResponse(findDecisionId);
+    public ResponseEntity<ResultPaginationDTO> getAllDecisionCriteriaByDecisionId(
+            @PathVariable(name = "decisionId") Integer decisionId,
+            @Filter Specification<DecisionCriteria> spec,
+            Pageable pageable
+    ) {
+        ResultPaginationDTO find = iDecisionCriteriaService.findByDecisionIdAndSpecification(decisionId, spec, pageable);
+        List<DecisionCriteria> findDecisionCriteria = (List<DecisionCriteria>) find.getResult();
+        List<DecisionCriteriaResponse> decisionCriteriaResponses = iDecisionCriteriaService.getDecisionCriteriaResponse(findDecisionCriteria);
+        find.setResult(decisionCriteriaResponses);
+        return ResponseEntity.status(HttpStatus.OK).body(find);
     }
 
     @GetMapping("all")
