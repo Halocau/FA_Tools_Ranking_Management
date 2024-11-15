@@ -4,6 +4,8 @@ import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { FaEye } from 'react-icons/fa';
+//Filter Query Builder
+import { sfLike } from 'spring-filter-query-builder';
 // Mui
 import { Box, Button, Menu, MenuItem, InputAdornment, Typography, TextField, FormControl, InputLabel, Select, Modal, IconButton, Switch, FormControlLabel, Alert, FormHelperText } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
@@ -19,6 +21,7 @@ import RankingDecisionAPI from "../../api/RankingDecisionAPI.js";
 //Common
 import ModalCustom from "../../components/Common/Modal.jsx";
 import ActionButtons from "../../components/Common/ActionButtons.jsx";
+import SearchComponent from "../../components/Common/Search.jsx";
 // Contexts
 import { useAuth } from "../../contexts/AuthContext.jsx";
 // Hooks
@@ -44,23 +47,21 @@ const RankingDecision = () => {
     const [PageSize, setPageSize] = useState(5);
     const [totalElements, setTotalElements] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
+    // ApiRef   
+    const apiRef = useGridApiRef(); // Create apiRef to select multiple decisions to delete
+
     // Add
     const [showAddModal, setShowAddModal] = useState(false); // State to determine whether the additional decision modal is displayed or not
     const [newDecisionName, setnewDecisionName] = useState(""); // State to store the new decison name that the user enters
     const [clone, setClone] = useState(false); // Clone state decides
     const [selectedCloneDecision, setSelectedCloneDecision] = useState(null);
-    const [listDecisionClone, setlistDecisionClone] = useState([]);
     // Delete
     const [showDeleteModal, setShowDeleteModal] = useState(false); // State to determine whether the delete decision modal is displayed or not
     const [DecisionToDelete, setDecisionToDelete] = useState(null); // State to store the ID of the decision to be deleted
-    const [selectedRows, setSelectedRows] = useState([]); // State to save a list of IDs of selected rows in the DataGrid
     // delete select
     const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
-    const apiRef = useGridApiRef(); // Create apiRef to select multiple decisions to delete
     // Search Decision
     const [rows, setRows] = useState([]); // Initialize with empty array
-    const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
-    const [searchValue, setSearchValue] = useState(''); // State to store search value
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Validation error message
@@ -107,7 +108,6 @@ const RankingDecision = () => {
                 status: decision.status
             }));
             setRows(mappedRows); // Update rows with data from decisions
-            setFilteredRows(mappedRows); // Update filteredRows with original data
         }
     }, [RankingDecisions]);
 
@@ -262,24 +262,15 @@ const RankingDecision = () => {
         }
     };
 
-    //// Search Decision 
-    const handleInputChange = (event, value) => {
-        // const safeGroups = Array.isArray(groups) ? groups : [];
-        setSearchValue(event.target.value); // Cập nhật giá trị tìm kiếm
-        const filtered = value
-            ? filteredRows.filter(row => row.groupName.toLowerCase().includes(value.toLowerCase()))
-            : rows; // If no value, use original rows
-        setFilteredRows(filtered);
-    };
-    const handleSearchSubmit = () => {
-        // Gửi text trong searchValue về backend
-        console.log("Search query:", searchValue);
-        // Thực hiện gọi API hoặc hành động gửi dữ liệu về backend
-        // fetch('/api/search', { method: 'POST', body: JSON.stringify({ query: searchValue }) })
-    };
-    const clearSearch = () => {
-        setSearchValue("");
-        setFilteredRows([]); // Reset dữ liệu lọc nếu cần
+
+    ///// Search Decision 
+    const handleSearch = (event) => {
+        if (event) {
+            setFilter(sfLike("decisionName", event).toString());
+        } else {
+            setFilter("")
+        }
+        setPage(1);
     };
 
     // Define columns for DataGrid
@@ -339,6 +330,7 @@ const RankingDecision = () => {
                     </IconButton>
                     Ranking Decision List
                 </h2>
+                {/* Menu list task and criteria */}
                 <Menu
                     anchorEl={anchorEl}
                     open={Boolean(anchorEl)}
@@ -354,64 +346,8 @@ const RankingDecision = () => {
                     </MenuItem>
                 </Menu>
                 {/* Search Decision */}
-                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 2 }}>
-                    {/* <Typography sx={{ marginRight: 2, fontSize: '1.3rem', marginTop: 0 }}>Search Decision Name:</Typography> */}
-                    <TextField
-                        value={searchValue}
-                        onChange={handleInputChange}
-                        onKeyPress={(e) => e.key === "Enter" && handleSearchSubmit()}
-                        placeholder="Search Decision"
-                        variant="outlined"
-                        fullWidth
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start" sx={{ display: "flex", alignItems: "center" }}>
-                                    <SearchIcon
-                                        onClick={() => {
-                                            setSearchValue(''); // Xóa text khi nhấn vào icon tìm kiếm
-                                            handleSearchSubmit(); // Gọi hàm tìm kiếm (nếu cần thiết)
-                                        }}
-                                        sx={{
-                                            cursor: 'pointer',
-                                            marginRight: 1,
-                                            transition: 'transform 0.2s ease-in-out',
-                                            '&:hover': {
-                                                transform: 'scale(1.2)',
-                                                color: 'primary.main',
-                                            },
-                                            '&:active': {
-                                                transform: 'scale(1.1)',
-                                            },
-                                        }}
-                                    />
-                                </InputAdornment>
-                            ),
-                            endAdornment: searchValue && (
-                                <InputAdornment position="end" sx={{ display: 'flex' }}>
-                                    <IconButton
-                                        onClick={clearSearch}
-                                        size="small"
-                                        sx={{ padding: '0' }}
-                                    >
-                                        <ClearIcon />
-                                    </IconButton>
-                                </InputAdornment>
-                            ),
-                        }}
-                        sx={{
-                            flexGrow: 1,
-                            marginRight: '16px',
-                            maxWidth: '600px',
-                            marginTop: '-10px',
-                            '& .MuiInputBase-root': {
-                                borderRadius: '20px',
-                                height: '40px',
-                            },
-                        }}
-                    />
-
-                </Box>
-                {/* Table show Ranking Group */}
+                <SearchComponent onSearch={handleSearch} placeholder=" Sreach Decision" />
+                {/* Table show Ranking Decision */}
                 <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
                     {/* {loading ? <CircularProgress /> : ( */}
                     <DataGrid

@@ -3,31 +3,25 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
-import { FaEye } from "react-icons/fa";
-import { FaHistory } from "react-icons/fa";
+import { FaEye } from 'react-icons/fa';
+import { FaHistory } from 'react-icons/fa';
+//Filter Query Builder
+import { sfLike } from 'spring-filter-query-builder';
 // Mui
-import {
-  Box,
-  Button,
-  Typography,
-  TextField,
-  Alert,
-  CircularProgress,
-  InputAdornment,
-  IconButton,
-} from "@mui/material";
+import { Box, Button, Typography, TextField, Alert, CircularProgress, InputAdornment, IconButton, } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
-import Autocomplete from "@mui/material/Autocomplete";
-import ClearIcon from "@mui/icons-material/Clear";
-import SearchIcon from "@mui/icons-material/Search";
+import Autocomplete from '@mui/material/Autocomplete';
+import ClearIcon from '@mui/icons-material/Clear';
+import SearchIcon from '@mui/icons-material/Search';
 // Css
-import "../../assets/css/RankingGroups.css";
+import "../../assets/css/RankingGroups.css"
 // Source code
 // API
-import RankingGroupAPI from "../../api/rankingGroupAPI.js";
+import RankingGroupAPI from "../../api/RankingGroupAPI.js";
 //Common
 import ModalCustom from "../../components/Common/Modal.jsx";
 import ActionButtons from "../../components/Common/ActionButtons.jsx";
+import SearchComponent from "../../components/Common/Search.jsx";
 // Contexts
 import { useAuth } from "../../contexts/AuthContext.jsx";
 // Hooks
@@ -35,8 +29,10 @@ import useNotification from "../../hooks/useNotification";
 // Layouts
 import Slider from "../../layouts/Slider.jsx";
 
+
 const RankingGroups = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Initialize the useNavigate hook to navigate between pages in the application
+  // State
   // Table  List Ranking Group (page, size)
   const [filter, setFilter] = useState("");
   const [RankingGroups, setRankingGroups] = useState([]);
@@ -45,23 +41,24 @@ const RankingGroups = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   //Add
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newGroupName, setNewGroupName] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false); // State to determine whether the add group modal is visible or not
+  const [newGroupName, setNewGroupName] = useState(""); // State to store the new group name that the user enters
   // Delete
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [groupToDelete, setGroupToDelete] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // State to determine whether the delete group modal is displayed or not
+  const [groupToDelete, setGroupToDelete] = useState(null); // State to save the ID of the group to be deleted
   // Delete select
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
-  // Create apiRef to select multiple groups to delete
-  const apiRef = useGridApiRef();
+  // API
+  const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
   // Search Group
   const [rows, setRows] = useState([]); // Initialize with empty array
   const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState(''); // State to store search value
   // Use hook notification
   const [showSuccessMessage, showErrorMessage] = useNotification();
   // Validation error message
   const [validationMessage, setValidationMessage] = useState("");
+
   //  Destructuring from RankingGroupAPI custom API
   const fetchAllRankingGroups = async () => {
     try {
@@ -76,8 +73,7 @@ const RankingGroups = () => {
     } catch (error) {
       console.error("Failed to fetch criteria:", error);
     }
-  };
-
+  }
   // Fetch all ranking groups when component mounts
   useEffect(() => {
     fetchAllRankingGroups();
@@ -91,16 +87,15 @@ const RankingGroups = () => {
         index: index + 1 + (Page - 1) * PageSize,
         groupName: group.groupName,
         numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
-        currentRankingDecision:
-          group.currentRankingDecision == null
-            ? "No decision applies"
-            : group.currentRankingDecision,
+        currentRankingDecision: group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
       }));
       setRows(mappedRows);
       setFilteredRows(mappedRows);
     }
   }, [RankingGroups]);
 
+
+  //// Handlers to open/close modals for adding group
   // Open the modal
   const handleOpenAddRankingGroupModal = () => setShowAddModal(true);
   // Close the modal
@@ -124,25 +119,51 @@ const RankingGroups = () => {
     }
     const nameRegex = /^[a-zA-Z0-9 ]+$/;
     if (!nameRegex.test(trimmedName)) {
-      setValidationMessage(
-        "Group name can only contain letters, numbers, and spaces."
-      );
+      setValidationMessage("Group name can only contain letters, numbers, and spaces.");
       return;
     }
     // Capitalize the first letter of each word in the group name
     trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
     // Check for duplicate group name
     const isDuplicate = RankingGroups.some(
-      (group) => group.groupName.toLowerCase() === trimmedName.toLowerCase()
+      group => group.groupName.toLowerCase() === trimmedName.toLowerCase()
     );
     if (isDuplicate) {
+
       setValidationMessage("Group name already exists.");
       return;
     }
+    //   try {
+    //     const newGroup = {
+    //       groupName: trimmedName,
+    //       createdBy: localStorage.getItem('userId'),
+    //     };
+    //     await RankingGroupAPI.addRankingGroup(newGroup);
+    //     handleCloseAddRankingGroupModal()();
+    //     setTotalElements(totalElements + 1);
+    //     if (RankingGroups.length < pageSize) {
+    //       fetchAllRankingGroups();
+    //     } else {
+    //       setTotalPages(totalPages + 1);
+    //     }
+    //     showSuccessMessage("Ranking Group successfully added.");
+    //   } catch (error) {
+    //     console.error("Failed to add group:", error);
+
+    //     // Kiểm tra nếu lỗi từ backend có chứa thông báo lỗi liên quan đến tên nhóm
+    //     if (error.response && error.response.data && error.response.data.detailMessage) {
+    //       // Hiển thị thông báo lỗi từ backend (ví dụ: "RankingGroup name exists already!")
+    //       setValidationMessage(error.response.data.detailMessage);
+    //     } else {
+    //       // Nếu không có thông báo cụ thể từ backend, hiển thị thông báo lỗi mặc định
+    //       showErrorMessage("Error occurred adding Ranking Group. Please try again");
+    //     }
+    //   }
+    // };
     try {
       const newGroup = {
         groupName: trimmedName,
-        createdBy: localStorage.getItem("userId"),
+        createdBy: localStorage.getItem('userId'),
       };
       await RankingGroupAPI.addRankingGroup(newGroup);
       handleCloseAddRankingGroupModal()();
@@ -155,39 +176,37 @@ const RankingGroups = () => {
       showSuccessMessage("Ranking Group successfully added.");
     } catch (error) {
       console.error("Failed to add group:", error);
+
+      // Kiểm tra nếu lỗi từ backend có chứa thông báo lỗi liên quan đến tên nhóm
       if (error.response && error.response.data) {
+        // Lọc chỉ thông báo lỗi "RankingGroup name exists already!" từ phần detailMessage
         const detailMessage = error.response.data.detailMessage;
-        if (
-          detailMessage &&
-          detailMessage.includes("RankingGroup name exists already!")
-        ) {
-          setValidationMessage("RankingGroup name exists already!");
-          showErrorMessage(
-            "Error occurred adding Ranking Group. Please try again"
-          );
+        if (detailMessage && detailMessage.includes("RankingGroup name exists already!")) {
+          setValidationMessage("RankingGroup name exists already!");  // Chỉ hiển thị thông báo lỗi mong muốn
+        } else {
+          showErrorMessage("Error occurred adding Ranking Group. Please try again");
         }
       } else {
-        showErrorMessage(
-          "Error occurred adding Ranking Group. Please try again"
-        );
+        // Nếu không có thông báo cụ thể từ backend, hiển thị thông báo lỗi mặc định
+        showErrorMessage("Error occurred adding Ranking Group. Please try again");
       }
     }
   };
 
   //// Handlers to open/close modals for delete group
+  /// Open the modal
   const handleOpenDeleteRankingGroupModal = (groupId) => {
     // Find group by ID in result array
-    const selectedGroup = RankingGroups.find(
-      (group) => group.groupId === groupId
-    );
+    const selectedGroup = RankingGroups.find(group => group.groupId === groupId);
+    // If the group is named "Trainer", display an error message and do not open the modal
     if (selectedGroup && selectedGroup.groupName === "Trainer") {
       showErrorMessage("Cannot delete the 'Trainer' group.");
       return;
     }
+    // If not "Trainer", open the delete modal
     setGroupToDelete(groupId);
     setShowDeleteModal(true);
   };
-
   // Close the modal
   const handleCloseDeleteRankingGroupModal = () => setShowDeleteModal(false);
   // Function to delete a ranking  group
@@ -195,14 +214,12 @@ const RankingGroups = () => {
     try {
       if (groupToDelete) {
         await RankingGroupAPI.deleteRankingGroup(groupToDelete);
-        setRankingGroups(
-          RankingGroups.filter((group) => group.groupId !== groupToDelete)
-        );
+        setRankingGroups(RankingGroups.filter((group) => group.groupId !== groupToDelete));
         if (RankingGroups.length === 5) {
           fetchAllRankingGroups();
         }
         if (RankingGroups.length === 1) {
-          setPage(Page - 1);
+          setPage(Page - 1)
         }
       }
       setTotalElements(totalElements - 1);
@@ -211,9 +228,7 @@ const RankingGroups = () => {
       handleCloseDeleteRankingGroupModal();
     } catch (error) {
       console.error("Failed to delete group:", error);
-      showErrorMessage(
-        "Error occurred removing Ranking Group. Please try again."
-      );
+      showErrorMessage("Error occurred removing Ranking Group. Please try again.");
       handleCloseDeleteRankingGroupModal();
     }
   };
@@ -242,16 +257,15 @@ const RankingGroups = () => {
     }
 
     try {
-      await Promise.all(
-        groupsToDelete.map((id) => RankingGroupAPI.deleteRankingGroup(id))
-      );
+      await Promise.all(groupsToDelete.map((id) => RankingGroupAPI.deleteRankingGroup(id)));
       showSuccessMessage("Selected groups deleted successfully!");
-      setRankingGroups(
-        RankingGroups.filter((group) => !groupsToDelete.includes(group.groupId))
-      );
+      // Cập nhật lại danh sách nhóm sau khi xóa
+      setRankingGroups(RankingGroups.filter((group) => !groupsToDelete.includes(group.groupId)));
+      // Kiểm tra nếu còn đúng 5 nhóm sau khi xóa thì gọi fetchAllRankingGroups
       if (RankingGroups.length === 5) {
         await fetchAllRankingGroups();
       }
+      // Kiểm tra nếu còn đúng 1 nhóm sau khi xóa thì giảm Page đi 1
       if (RankingGroups.length === 1) {
         setPage(Page - 1);
       }
@@ -265,22 +279,14 @@ const RankingGroups = () => {
     }
   };
 
-  ///// Search Decision
-  const handleInputChange = (event, value) => {
-    setSearchValue(event.target.value);
-    const filtered = value
-      ? filteredRows.filter((row) =>
-          row.groupName.toLowerCase().includes(value.toLowerCase())
-        )
-      : rows;
-    setFilteredRows(filtered);
-  };
-  const handleSearchSubmit = () => {
-    console.log("Search query:", searchValue);
-  };
-  const clearSearch = () => {
-    setSearchValue("");
-    setFilteredRows([]);
+  ///// Search Group
+  const handleSearch = (event) => {
+    if (event) {
+      setFilter(sfLike("groupName", event).toString());
+    } else {
+      setFilter("")
+    }
+    setPage(1);
   };
 
   // Define columns for DataGrid
@@ -288,16 +294,9 @@ const RankingGroups = () => {
     { field: "index", headerName: "ID", width: 70 },
     { field: "groupName", headerName: "Group Name", width: 230 },
     { field: "numEmployees", headerName: "No. of Employees", width: 230 },
+    { field: "currentRankingDecision", headerName: "Current Ranking Decision", width: 350 },
     {
-      field: "currentRankingDecision",
-      headerName: "Current Ranking Decision",
-      width: 350,
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      width: 300,
-      renderCell: (params) => (
+      field: "action", headerName: "Action", width: 300, renderCell: (params) => (
         <>
           {/* View */}
           <Button
@@ -350,78 +349,18 @@ const RankingGroups = () => {
     },
   ];
 
+  /////////////////////////////////////////////////////////// Return ///////////////////////////////////////////////////////////
   return (
     <div style={{ marginTop: "60px" }}>
       <Slider />
       <div>
-        <h2>Ranking Group List</h2>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 1,
-          }}
-        >          
-          <TextField
-            value={searchValue}
-            onChange={handleInputChange}
-            onKeyPress={(e) => e.key === "Enter" && handleSearchSubmit()}
-            placeholder="Search Group"
-            variant="outlined"
-            fullWidth
-            InputProps={{
-              startAdornment: (
-                <InputAdornment
-                  position="start"
-                  sx={{ display: "flex", alignItems: "center" }}
-                >
-                  <SearchIcon
-                    onClick={() => {
-                      setSearchValue("");
-                      handleSearchSubmit();
-                    }}
-                    sx={{
-                      cursor: "pointer",
-                      marginRight: 1,
-                      transition: "transform 0.2s ease-in-out",
-                      "&:hover": {
-                        transform: "scale(1.2)",
-                        color: "primary.main",
-                      },
-                      "&:active": {
-                        transform: "scale(1.1)",
-                      },
-                    }}
-                  />
-                </InputAdornment>
-              ),
-              endAdornment: searchValue && (
-                <InputAdornment position="end" sx={{ display: "flex" }}>
-                  <IconButton
-                    onClick={clearSearch}
-                    size="small"
-                    sx={{ padding: "0" }}
-                  >
-                    <ClearIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              flexGrow: 1,
-              marginRight: "16px",
-              maxWidth: "600px",
-              marginTop: "-10px",
-              "& .MuiInputBase-root": {
-                borderRadius: "20px",
-                height: "40px",
-              },
-            }}
-          />
-        </Box>
+        <h2>
+          Ranking Group List
+        </h2>
+        {/* Search Ranking Group */}
+        <SearchComponent onSearch={handleSearch} placeholder=" Sreach Group" />
         {/* Table show Ranking Group */}
-        <Box sx={{ width: "100%", height: 370, marginTop: "60px" }}>
+        <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
           {/* {loading ? <CircularProgress /> : ( */}
           <DataGrid
             className="custom-data-grid"
@@ -435,11 +374,11 @@ const RankingGroups = () => {
             rowCount={totalElements}
             paginationMode="server"
             paginationModel={{
-              page: Page - 1, // Adjusted for 0-based index
+              page: Page - 1,  // Adjusted for 0-based index
               pageSize: PageSize,
             }}
             onPaginationModelChange={(model) => {
-              setPage(model.page + 1); // Set 1-based page for backend
+              setPage(model.page + 1);  // Set 1-based page for backend
               setPageSize(model.pageSize);
             }}
             disableNextButton={Page >= totalPages}
@@ -447,10 +386,10 @@ const RankingGroups = () => {
             disableRowSelectionOnClick
             autoHeight={false}
             sx={{
-              height: "100%",
-              overflow: "auto",
-              "& .MuiDataGrid-virtualScroller": {
-                overflowY: "auto",
+              height: '100%',
+              overflow: 'auto',
+              '& .MuiDataGrid-virtualScroller': {
+                overflowY: 'auto',
               },
             }}
           />
@@ -458,19 +397,10 @@ const RankingGroups = () => {
         </Box>
         {/* Button Add new Group and Delete Selected Groups */}
         <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={handleOpenAddRankingGroupModal}
-          >
+          <Button variant="contained" color="success" onClick={handleOpenAddRankingGroupModal}>
             Add New Group
           </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleOpenBulkDeleteModal}
-            sx={{ ml: 2 }}
-          >
+          <Button variant="contained" color="error" onClick={handleOpenBulkDeleteModal} sx={{ ml: 2 }}>
             Delete Selected Groups
           </Button>
         </Box>
@@ -536,7 +466,7 @@ const RankingGroups = () => {
           }
         />
       </div>
-    </div>
+    </div >
   );
 };
 

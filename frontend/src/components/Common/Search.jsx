@@ -1,67 +1,82 @@
 import React, { useState } from 'react';
+import { TextField, InputAdornment, IconButton } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
+import '../../assets/css/Search.css';
 
-// Search component
-const SearchComponent = ({ onSearch, placeholder = "Search...", delay = 300 }) => {
-    const [query, setQuery] = useState("");
-    const [typingTimeout, setTypingTimeout] = useState(null);
+const SearchComponent = ({ onSearch, placeholder = "Search ..." }) => {
+    const [searchValue, setSearchValue] = useState("");
 
     const handleInputChange = (event) => {
-        const newQuery = event.target.value;
-        setQuery(newQuery);
-
-        if (typingTimeout) clearTimeout(typingTimeout);
-
-        setTypingTimeout(
-            setTimeout(() => {
-                onSearch(newQuery);
-            }, delay)
-        );
+        setSearchValue(event.target.value);
     };
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        onSearch(query);
+    const handleSearchSubmit = () => {
+        onSearch(searchValue);
+    };
+
+    const clearSearch = () => {
+        setSearchValue('');
+        onSearch(''); // Clear search results when cleared
     };
 
     return (
-        <form onSubmit={handleSubmit} style={styles.form}>
-            <input
-                type="text"
-                value={query}
+        <div className="search-container">
+            <TextField
+                value={searchValue}
                 onChange={handleInputChange}
+                onKeyPress={(e) => e.key === "Enter" && handleSearchSubmit()}
                 placeholder={placeholder}
-                style={styles.input}
+                variant="outlined"
+                fullWidth
+                InputProps={{
+                    startAdornment: (
+                        <InputAdornment position="start" sx={{ display: "flex", alignItems: "center" }}>
+                            <SearchIcon
+                                onClick={() => {
+                                    // setSearchValue('');
+                                    handleSearchSubmit();
+                                }}
+                                sx={{
+                                    cursor: 'pointer',
+                                    marginRight: 1,
+                                    transition: 'transform 0.2s ease-in-out',
+                                    '&:hover': {
+                                        transform: 'scale(1.2)',
+                                        color: 'primary.main',
+                                    },
+                                    '&:active': {
+                                        transform: 'scale(1.1)',
+                                    },
+                                }}
+                            />
+                        </InputAdornment>
+                    ),
+                    endAdornment: searchValue && (
+                        <InputAdornment position="end" sx={{ display: 'flex' }}>
+                            <IconButton
+                                onClick={clearSearch}
+                                size="small"
+                                sx={{ padding: '0' }}
+                            >
+                                <ClearIcon />
+                            </IconButton>
+                        </InputAdornment>
+                    ),
+                }}
+                sx={{
+                    flexGrow: 1,
+                    marginRight: '16px',
+                    maxWidth: '600px',
+                    marginTop: '-10px',
+                    '& .MuiInputBase-root': {
+                        borderRadius: '20px',
+                        height: '40px',
+                    },
+                }}
             />
-            <button type="submit" style={styles.button}>Search</button>
-        </form>
+        </div>
     );
-};
-
-// Custom styles for the component
-const styles = {
-    form: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        width: '50%',
-    },
-    input: {
-        padding: '10px',
-        fontSize: '16px',
-        borderRadius: '20px',
-        border: '1px solid #ccc',
-        flexGrow: 1,
-        marginBottom: '0px',
-    },
-    button: {
-        padding: '10px 20px',
-        fontSize: '16px',
-        borderRadius: '4px',
-        border: 'none',
-        backgroundColor: '#007bff',
-        color: '#fff',
-        cursor: 'pointer',
-    },
 };
 
 export default SearchComponent;
