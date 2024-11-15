@@ -40,7 +40,7 @@ const taskApi = {
     },
 
     // Update a task by ID
-    updateTask: async (id, formData) => {
+    updateTaskByID: async (id, formData) => {
         try {
             const response = await authClient.put(`${TASK_API}/update/${id}`, formData);
             return response.data;

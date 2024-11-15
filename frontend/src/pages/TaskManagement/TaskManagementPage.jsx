@@ -250,11 +250,19 @@ const TaskManagement = () => {
       setValidationMessage("Task name must be between 3 and 20 characters.");
       return;
     }
-    const existingTasks = await fetchAllTask();
-    const isDuplicate = existingTasks.some(
+
+    const nameRegex = /^[a-zA-Z0-9 ]+$/;
+    if (!nameRegex.test(trimmedName)) {
+      setValidationMessage(
+        "Task name can only contain letters, numbers, and spaces."
+      );
+      return;
+    }
+
+    const isDuplicate = rows.some(
       (task) =>
         task.taskName.toLowerCase() === trimmedName.toLowerCase() &&
-        task.id == selectedTask.id
+        task.id !== selectedTask.id
     );
 
     if (isDuplicate) {
@@ -270,10 +278,11 @@ const TaskManagement = () => {
     };
 
     try {
-      await updateTask(selectedTask.id, updatedTask);
+      // Assuming taskApi.updateTaskById exists and updates a task by its ID
+      await taskApi.updateTaskByID(selectedTask.id, updatedTask);
       showSuccessMessage("Task updated successfully!");
       handleCloseEditModal();
-      await fetchAllTasks(); // Cập nhật lại danh sách nhiệm vụ
+      fetchAllTask(); // Update task list after editing
     } catch (error) {
       console.error("Failed to update Task:", error);
       showErrorMessage("Failed to update task. Please try again.");
