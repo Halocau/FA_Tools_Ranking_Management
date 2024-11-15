@@ -15,6 +15,9 @@ import useNotification from "../../hooks/useNotification";
 import OptionAPI from "../../api/OptionAPI.js";
 import CriteriaAPI from "../../api/CriteriaAPI.js";
 import SearchComponent from "../../components/Common/Search.jsx";
+
+import { sfAnd, sfEqual, sfGt, sfIsNull, sfLike, sfNot, sfOr } from 'spring-filter-query-builder';
+
 const EditCriteria = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -39,12 +42,12 @@ const EditCriteria = () => {
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
     const [rows, setRows] = useState([]);
-
+    const [query, setQuery] = useState("");
 
     useEffect(() => {
         getCriteria();
     }, [id]);
-    console.log("criteria:", criteria);
+
     useEffect(() => {
         getAllOptionByID();
     }, [page, pageSize, filter]);
@@ -158,9 +161,18 @@ const EditCriteria = () => {
         }
     };
 
-    const handleSearch = (event) => {
-        // setFilter(filter.concat(`${event.target.value}`));
+    const handleSearch = (query) => {
+        if (query === "") {
+            setFilter(sfEqual("criteriaId", id).toString());
+        }
+        else {
+            const check = sfAnd([sfEqual("criteriaId", id), sfLike("optionName", query)]);
+            console.log("filter:", check.toString());
+            setFilter(check.toString());
+        }
+        setPage(1);
     };
+    // console.log("filter:", filter);
 
     const handleEditOption = async () => {
         try {
@@ -242,15 +254,7 @@ const EditCriteria = () => {
                 <Typography variant="h5">Score List</Typography>
 
                 <SearchComponent onSearch={handleSearch}></SearchComponent>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<AddIcon />}
-                    // sx={{ marginTop: 2 }}
-                    onClick={handleOpenAddOptionModal}
-                >
-                    Add New Option
-                </Button>
+
             </Box>
 
             <Box sx={{ width: "100%" }}>
@@ -277,6 +281,18 @@ const EditCriteria = () => {
                     disableRowSelectionOnClick
                 />
             </Box>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<AddIcon />}
+                    // sx={{ marginTop: 2 }}
+                    onClick={handleOpenAddOptionModal}
+                >
+                    Add New Option
+                </Button>
+            </div>
 
 
             {/* Modal for editing criteria name */}
