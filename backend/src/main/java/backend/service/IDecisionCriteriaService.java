@@ -11,17 +11,20 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.List;
 
 public interface IDecisionCriteriaService {
-    public DecisionCriteria findByCriteriaId(Integer criteriaId);
 
-    public List<DecisionCriteriaResponse> getDecisionCriteriaResponse(List<DecisionCriteria> list);
-
+    //have page
     public ResultPaginationDTO findByDecisionIdAndSpecification(Integer decisionId, Specification<DecisionCriteria> spec, Pageable pageable);
 
     public ResultPaginationDTO getAllDecisionCriteria(Specification<DecisionCriteria> spec, Pageable pageable);
 
-    public List<DecisionCriteria> findByDecisionId(Integer decisionId);
-
     public DecisionCriteria findByCriteriaIdAndDecisionId(Integer criteriaId, Integer decisionId);
 
+    //crud
+    public DecisionCriteria findByCriteriaId(Integer criteriaId);
+
+    public List<DecisionCriteria> findByDecisionId(Integer decisionId);
+
     public DecisionCriteria addDecisionCriteria(DecisionCriteria decisionCriteria);
+    //response
+    public List<DecisionCriteriaResponse> getDecisionCriteriaResponse(List<DecisionCriteria> list);
 }
