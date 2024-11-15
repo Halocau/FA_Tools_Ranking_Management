@@ -14,6 +14,9 @@ import useNotification from "../../hooks/useNotification.jsx";
 //API
 import CriteriaAPI from "../../api/CriteriaAPI.js";
 
+//Filter Query Builder
+import { sfLike } from 'spring-filter-query-builder';
+
 const CriteriaManagement = () => {
     //Use for navigation
     const navigate = useNavigate();
@@ -92,7 +95,12 @@ const CriteriaManagement = () => {
 
     //Use for search
     const handleSearch = (event) => {
-        setFilter(event.target.value);
+        if (event) {
+            setFilter(sfLike("criteriaName", event).toString());
+        } else {
+            setFilter("")
+        }
+        setPage(1);
     };
 
     //Use for add criteria
@@ -189,7 +197,7 @@ const CriteriaManagement = () => {
             <Slider />
             <Box sx={{ marginTop: 4, padding: 2 }}>
                 <Typography variant="h6">
-                    <a href="/ranking_decision">Ranking Decision List</a> {'>'} Criteria List
+                    <a href="/ranking-decision">Ranking Decision List</a> {'>'} Criteria List
                 </Typography>
                 <Box sx={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                     <Typography variant="h5">Criteria List</Typography>

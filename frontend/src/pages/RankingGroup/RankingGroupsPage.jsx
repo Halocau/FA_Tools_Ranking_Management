@@ -5,6 +5,8 @@ import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { FaEye } from 'react-icons/fa';
 import { FaHistory } from 'react-icons/fa';
+//Filter Query Builder
+import { sfLike } from 'spring-filter-query-builder';
 // Mui
 import { Box, Button, Typography, TextField, Alert, CircularProgress, InputAdornment, IconButton, } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
@@ -76,6 +78,7 @@ const RankingGroups = () => {
   useEffect(() => {
     fetchAllRankingGroups();
   }, [Page, PageSize, filter]);
+
   // Map decision data to rows for DataGrid when rows are fetched
   useEffect(() => {
     if (RankingGroups) {
@@ -276,24 +279,14 @@ const RankingGroups = () => {
     }
   };
 
-  ///// Search Decision 
-  const handleInputChange = (event, value) => {
-    // const safeGroups = Array.isArray(groups) ? groups : [];
-    setSearchValue(event.target.value); // Cập nhật giá trị tìm kiếm
-    const filtered = value
-      ? filteredRows.filter(row => row.groupName.toLowerCase().includes(value.toLowerCase()))
-      : rows; // If no value, use original rows
-    setFilteredRows(filtered);
-  };
-  const handleSearchSubmit = () => {
-    // Gửi text trong searchValue về backend
-    console.log("Search query:", searchValue);
-    // Thực hiện gọi API hoặc hành động gửi dữ liệu về backend
-    // fetch('/api/search', { method: 'POST', body: JSON.stringify({ query: searchValue }) })
-  };
-  const clearSearch = () => {
-    setSearchValue("");
-    setFilteredRows([]); // Reset dữ liệu lọc nếu cần
+  ///// Search Group
+  const handleSearch = (event) => {
+    if (event) {
+      setFilter(sfLike("groupName", event).toString());
+    } else {
+      setFilter("")
+    }
+    setPage(1);
   };
 
   // Define columns for DataGrid
@@ -364,128 +357,8 @@ const RankingGroups = () => {
         <h2>
           Ranking Group List
         </h2>
-        <SearchComponent onSearch={handleSearchSubmit} />
-        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 1 }}>
-          {/* <Autocomplete
-            disablePortal
-            options={rows}
-            getOptionLabel={option => option.groupName || ''}
-            onInputChange={handleInputChange}
-            inputValue={searchValue}
-            renderInput={params => (
-              <TextField
-                {...params}
-                placeholder="Search Group" // Hiển thị text ở trong trường nhập liệu
-                variant="outlined"
-                fullWidth
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: (
-                    <InputAdornment position="start" sx={{ display: 'flex', alignItems: 'center' }}>
-                      <SearchIcon
-                        onClick={handleSearchSubmit}
-                        sx={{
-                          cursor: 'pointer',
-                          marginRight: 1,
-                          transition: 'transform 0.2s ease-in-out',
-                          '&:hover': {
-                            transform: 'scale(1.2)',
-                            color: 'primary.main',
-                          },
-                          '&:active': {
-                            transform: 'scale(1.1)',
-                          },
-                        }}
-                      />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    searchValue ? ( // Kiểm tra nếu searchValue không rỗng
-                      <InputAdornment position="end" sx={{ display: 'flex', marginRight: '-25px' }}>
-                        <IconButton
-                          onClick={() => {
-                            setFilteredRows(rows);
-                            setSearchValue('');
-                            params.inputProps.onChange({ target: { value: '' } });
-                          }}
-                          size="small"
-                          sx={{ padding: '0' }}
-                        >
-                          <ClearIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ) : null // Nếu không có văn bản, không hiển thị InputAdornment
-                  ),
-                }}
-                sx={{
-                  marginTop: 2,
-                  height: '40px',
-                  '& .MuiInputBase-root': { height: '130%', borderRadius: '20px' },
-                }}
-              />
-            )}
-            sx={{
-              flexGrow: 1,
-              marginRight: '16px',
-              maxWidth: '600px',
-              marginTop: '-10px',
-              borderRadius: '20px',
-            }}
-          /> */}
-          {/* <TextField
-            value={searchValue}
-            onChange={handleInputChange}
-            onKeyPress={(e) => e.key === "Enter" && handleSearchSubmit()}
-            placeholder="Search Group"
-            variant="outlined"
-            fullWidth
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start" sx={{ display: "flex", alignItems: "center" }}>
-                  <SearchIcon
-                    onClick={() => {
-                      setSearchValue(''); // Xóa text khi nhấn vào icon tìm kiếm
-                      handleSearchSubmit(); // Gọi hàm tìm kiếm (nếu cần thiết)
-                    }}
-                    sx={{
-                      cursor: 'pointer',
-                      marginRight: 1,
-                      transition: 'transform 0.2s ease-in-out',
-                      '&:hover': {
-                        transform: 'scale(1.2)',
-                        color: 'primary.main',
-                      },
-                      '&:active': {
-                        transform: 'scale(1.1)',
-                      },
-                    }}
-                  />
-                </InputAdornment>
-              ),
-              endAdornment: searchValue && (
-                <InputAdornment position="end" sx={{ display: 'flex' }}>
-                  <IconButton
-                    onClick={clearSearch}
-                    size="small"
-                    sx={{ padding: '0' }}
-                  >
-                    <ClearIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              flexGrow: 1,
-              marginRight: '16px',
-              maxWidth: '600px',
-              marginTop: '-10px',
-              '& .MuiInputBase-root': {
-                borderRadius: '20px',
-                height: '40px',
-              },
-            }}
-          /> */}
-        </Box>
+        {/* Search Ranking Group */}
+        <SearchComponent onSearch={handleSearch} placeholder=" Sreach Group" />
         {/* Table show Ranking Group */}
         <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
           {/* {loading ? <CircularProgress /> : ( */}
