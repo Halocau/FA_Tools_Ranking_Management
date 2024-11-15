@@ -4,7 +4,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import '../../assets/css/Search.css'; // Import file CSS
 
-const SearchComponent = ({ onSearch, placeholder = "Search Decision" }) => {
+const SearchComponent = ({ onSearch, placeholder = "Search ..." }) => {
     const [searchValue, setSearchValue] = useState("");
 
     const handleInputChange = (event) => {
@@ -26,7 +26,7 @@ const SearchComponent = ({ onSearch, placeholder = "Search Decision" }) => {
                 value={searchValue}
                 onChange={handleInputChange}
                 onKeyPress={(e) => e.key === "Enter" && handleSearchSubmit()}
-                placeholder="Search Decision"
+                placeholder={placeholder}
                 variant="outlined"
                 fullWidth
                 InputProps={{
