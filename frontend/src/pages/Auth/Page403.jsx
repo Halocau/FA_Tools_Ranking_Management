@@ -11,7 +11,7 @@ const ForbiddenPage = () => {
         <div style={styles.container}>
             <h1 style={styles.header}>403 Forbidden</h1>
             <p style={styles.message}>You do not have permission to access this page.</p>
-            <Link to="/" onClick={handleHome} className="btn btn-primary" style={styles.link}>Go Back to Home</Link>
+            <Link to="/" style={styles.link}>Go Back to Home</Link>
         </div>
     );
 };
