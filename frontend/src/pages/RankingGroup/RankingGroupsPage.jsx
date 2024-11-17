@@ -56,22 +56,24 @@ const RankingGroups = () => {
   const [showSuccessMessage, showErrorMessage] = useNotification();
   // Validation error message
   const [validationMessage, setValidationMessage] = useState("");
-
   //  Destructuring from RankingGroupAPI custom API
   const fetchAllRankingGroups = async () => {
     try {
-      const data = await RankingGroupAPI.searchRankingGroups(
-        filter,
-        page,
-        pageSize
-      );
-      setRankingGroups(data.result);
-      setTotalPages(data.pageInfo.total);
-      setTotalElements(data.pageInfo.element);
+      const data = await RankingGroupAPI.searchRankingGroups(filter, page, pageSize);
+      if (data.result && data.result.length > 0) {
+        setRankingGroups(data.result);
+        setTotalPages(data.pageInfo.total);
+        setTotalElements(data.pageInfo.element);
+      } else {
+        showErrorMessage("No Ranking Groups found.");
+      }
     } catch (error) {
-      console.error("Failed to fetch criteria:", error);
+      // Extract the error message from the response
+      const errorMessage = error.response?.data?.detailMessage || "An unexpected error occurred."; // Default message if no specific message found
+      showErrorMessage(errorMessage); // Set the error message from API response
+      setRankingGroups([])
     }
-  }
+  };
   // Fetch all ranking groups when component mounts
   useEffect(() => {
     fetchAllRankingGroups();
@@ -261,7 +263,7 @@ const RankingGroups = () => {
       // Cập nhật lại danh sách nhóm sau khi xóa
       setRankingGroups(rankingGroups.filter((group) => !groupsToDelete.includes(group.groupId)));
       // Kiểm tra nếu còn đúng 5 nhóm sau khi xóa thì gọi fetchAllRankingGroups
-      if (RankingGroups.length === 5) {
+      if (rankingGroups.length === 5) {
         await fetchAllRankingGroups();
       }
       // Kiểm tra nếu còn đúng 1 nhóm sau khi xóa thì giảm Page đi 1
@@ -280,6 +282,7 @@ const RankingGroups = () => {
 
   ///// Search Group
   const handleSearch = (event) => {
+    console.log("Search", event)
     if (event) {
       setFilter(sfLike("groupName", event).toString());
     } else {

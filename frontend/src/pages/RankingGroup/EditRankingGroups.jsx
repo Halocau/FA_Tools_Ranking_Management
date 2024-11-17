@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { FaEdit, FaAngleRight } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
+//Filter Query Builder
+import { sfLike } from 'spring-filter-query-builder';
 // Mui
 import {
     InputAdornment, Box, Button, Typography, TextField, FormControl, InputLabel, Select, MenuItem, Modal, IconButton, Switch, FormControlLabel, Alert, FormHelperText
@@ -86,7 +88,7 @@ const EditRankingGroup = () => {
         }
     };
 
-    // Fetch Ranking Group on id change
+    //// Fetch Ranking Group on id change
     useEffect(() => {
         RankingGroupEdit();
     }, [id]);
@@ -106,7 +108,8 @@ const EditRankingGroup = () => {
             console.error("Failed to fetch criteria:", error);
         }
     }
-    // Fetch all ranking decisions when component mounts
+
+    //// Fetch all ranking decisions when component mounts
     useEffect(() => {
         fetchAllRankingDecisions();
     }, [page, pageSize, filter]);

@@ -90,7 +90,7 @@ const RankingDecision = () => {
             setTotalPages(data.pageInfo.total);
             setTotalElements(data.pageInfo.element);
         } catch (error) {
-            console.error("Failed to fetch criteria:", error);
+            console.error("Failed to fetch decision:", error);
         }
     }
     // Fetch all ranking decisions when component mounts
@@ -135,7 +135,7 @@ const RankingDecision = () => {
             );
             setlistDecisionSearchClone(data.result)
         } catch (error) {
-            console.error("Failed to fetch criteria:", error);
+            console.error("Failed to fetch decision:", error);
         }
     }
     useEffect(() => {
@@ -187,7 +187,7 @@ const RankingDecision = () => {
             handleCloseAddRankingDecisionModal();
             showSuccessMessage("Ranking Decision successfully added.");
         } catch (error) {
-            console.error("Failed to add group:", error);
+            console.error("Failed to add decision:", error);
 
             if (error.response && error.response.data) {
                 // Kiểm tra và lấy thông báo lỗi từ phần exception
@@ -243,42 +243,46 @@ const RankingDecision = () => {
     // Close the modal
     const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false);
     const handleBulkDeleteRankingDecision = async () => {
-        // List ID of Row choice
+        // Lấy danh sách ID của các dòng đã chọn
         const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
         if (selectedIDs.length === 0) {
             showErrorMessage("Please select decisions to delete.");
             handleCloseBulkDeleteModal();
             return;
         }
+
         try {
+            // Xóa các quyết định đã chọn
             await Promise.all(selectedIDs.map((id) => RankingDecisionAPI.deleteRankingDecision(id)));
             showSuccessMessage("Selected decision deleted successfully!");
+            // Cập nhật danh sách các quyết định
             const updatedRankingDecisions = rankingDecisions.filter(
                 (decision) => !selectedIDs.includes(decision.decisionId)
             );
             setRankingDecisions(updatedRankingDecisions);
-            if (updatedRankingDecisions.length === 0 && page > 1) {
-                setPage(page - 1);
-            } else if (updatedRankingDecisions.length < pageSize && page === totalPages) {
-                setPage(Math.max(page - 1, 1));
-            }
-            if (updatedRankingDecisions.length < pageSize) {
+            if (rankingDecisions.length === 5) {
                 await fetchAllRankingDecisions();
             }
+            // Kiểm tra nếu còn đúng 1 nhóm sau khi xóa thì giảm Page đi 1
+            if (rankingDecisions.length === 1) {
+                setPage(page - 1);
+            }
+
+            await fetchAllRankingDecisions();
 
             handleCloseBulkDeleteModal();
         } catch (error) {
-            console.error("Failed to delete selected groups:", error);
-            showErrorMessage("Failed to delete selected groups. Please try again.");
-            handleCloseBulkDeleteModal();
+            console.error("Error during bulk delete:", error);
+            showErrorMessage("An error occurred while deleting decisions.");
         }
     };
+
 
 
     ///// Search Decision 
     const handleSearch = (event) => {
         // console
-        console.log(event)
+        console.log("Search", event)
         if (event) {
             setFilter(sfLike("decisionName", event).toString());
         } else {
