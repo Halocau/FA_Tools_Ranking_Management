@@ -28,8 +28,20 @@ public class DecisionCriteriaController {
         this.iDecisionCriteriaService = iDecisionCriteriaService;
     }
 
+    @GetMapping()
+    public ResponseEntity<ResultPaginationDTO> getAllDecisionCriteriaDecision(
+            @Filter Specification<DecisionCriteria> spec,
+            Pageable pageable
+    ) {
+        ResultPaginationDTO decisonCritaria = iDecisionCriteriaService.getAllDecisionCriteria(spec, pageable);
+        List<DecisionCriteria> decisionCriteriaList = (List<DecisionCriteria>) decisonCritaria.getResult();
+        List<DecisionCriteriaResponse> decisionCriteriaResponseList = iDecisionCriteriaService.getDecisionCriteriaResponse(decisionCriteriaList);
+        decisonCritaria.setResult(decisionCriteriaResponseList);
+        return ResponseEntity.status(HttpStatus.OK).body(decisonCritaria);
+    }
+
     @GetMapping("/get/{decisionId}")
-    public ResponseEntity<ResultPaginationDTO> getAllDecisionCriteriaByDecisionId(
+    public ResponseEntity<ResultPaginationDTO> getDecisionCriteriaByDecisionId(
             @PathVariable(name = "decisionId") Integer decisionId,
             @Filter Specification<DecisionCriteria> spec,
             Pageable pageable
@@ -41,15 +53,6 @@ public class DecisionCriteriaController {
         return ResponseEntity.status(HttpStatus.OK).body(find);
     }
 
-    @GetMapping("all")
-    public ResponseEntity<ResultPaginationDTO> getDecisionCriteriaDecision(
-            @Filter Specification<DecisionCriteria> spec,
-            Pageable pageable
-    ) {
-        ResultPaginationDTO decisonCritaria = iDecisionCriteriaService.getAllDecisionCriteria(spec, pageable);
-        List<DecisionCriteria> decisionCriteriaList = (List<DecisionCriteria>) decisonCritaria.getResult();
-        List<DecisionCriteriaResponse> decisionCriteriaResponseList = iDecisionCriteriaService.getDecisionCriteriaResponse(decisionCriteriaList);
-        decisonCritaria.setResult(decisionCriteriaResponseList);
-        return ResponseEntity.status(HttpStatus.OK).body(decisonCritaria);
-    }
+    public ResponseEntity<DecisionCriteriaResponse> add
+
 }

@@ -3,6 +3,7 @@ package backend.service;
 import backend.model.dto.DecisionCriteriaResponse;
 import backend.model.entity.Criteria;
 import backend.model.entity.DecisionCriteria;
+import backend.model.form.DecisionCriteria.AddDecisionCriteria;
 import backend.model.page.ResultPaginationDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,4 +28,7 @@ public interface IDecisionCriteriaService {
     public DecisionCriteria addDecisionCriteria(DecisionCriteria decisionCriteria);
     //response
     public List<DecisionCriteriaResponse> getDecisionCriteriaResponse(List<DecisionCriteria> list);
+
+    //form
+    public void createDecisionCriteria(AddDecisionCriteria form);
 }

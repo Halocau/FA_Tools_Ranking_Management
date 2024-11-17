@@ -7,8 +7,10 @@ import backend.dao.IRankingDecisionRepository;
 import backend.model.dto.DecisionCriteriaResponse;
 import backend.model.entity.Criteria;
 import backend.model.entity.DecisionCriteria;
+import backend.model.form.DecisionCriteria.AddDecisionCriteria;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.IDecisionCriteriaService;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -107,5 +109,15 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
         return null;
     }
 
-
+    /** Form request */
+    @Override   //ADD
+    @Transactional
+    public void createDecisionCriteria(AddDecisionCriteria form) {
+        DecisionCriteria decisionCriteria = DecisionCriteria.builder()
+                .decisionId(form.getDecisionId())
+                .criteriaId(form.getCriteriaId())
+                .weight(form.getWeight())
+                .build();
+        iDecisionCriteriaRepository.save(decisionCriteria);
+    }
 }
