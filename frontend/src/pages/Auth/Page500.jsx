@@ -1,12 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
-// import { Helmet } from "react-helmet-async";
+import { Helmet } from "react-helmet-async";
 
 import { Button } from "react-bootstrap";
 
 const Page500 = () => (
     <>
-        {/* <Helmet title="500 Error" /> */}
+        <Helmet title="500 Error" />
         <div className="text-center">
             <h1 className="display-1 fw-bold">500</h1>
             <p className="h2">Internal server error.</p>

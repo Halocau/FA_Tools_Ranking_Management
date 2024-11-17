@@ -12,14 +12,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@IdClass(DecisionCriteriaId.class)
 @Table(name="Decision_Criteria")
 public class DecisionCriteria {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "decision_id")
     private Integer decisionId;
 
-    @Id
     @Column(name = "criteria_id")
     private Integer criteriaId;
 

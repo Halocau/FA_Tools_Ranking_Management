@@ -1,12 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-const ForbiddenPage = () => {
 
-    const navigate = useNavigate();
-    const handleHome = () => {
-        navigate('/');
-    }
+const ForbiddenPage = () => {
     return (
         <div style={styles.container}>
             <h1 style={styles.header}>403 Forbidden</h1>

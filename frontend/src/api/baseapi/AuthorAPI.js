@@ -24,45 +24,4 @@ authClient.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Interceptor to handle responses globally
-authClient.interceptors.response.use(
-    (response) => {
-        // You can add any global response handling logic here
-        return response; // Pass the successful response back
-    },
-    (error) => {
-        // Handle specific response errors globally
-        if (error.response) {
-            const { status } = error.response;
-
-            // Unauthorized
-            // if (status === 401) {
-            //     console.error('Unauthorized - Redirecting to login.');
-            //     window.location.href = '/login';
-            // }
-
-            // Forbidden
-            if (status === 403) {
-                console.error('Access forbidden - Redirecting to 403 page.');
-                window.location.href = '/403';
-            }
-
-            // // Not Found
-            // if (status === 404) {
-            //     console.error('Resource not found.');
-            //     window.location.href = '/404';
-            // }
-
-            // Internal Server Error
-            if (status === 500) {
-                console.error('Server error - Redirecting to 500 page.');
-                window.location.href = '/500';
-            }
-        }
-
-        // Return the error for further handling by the caller
-        return Promise.reject(error);
-    }
-);
-
 export default authClient;
