@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DecisionCriteriaResponse {
+    private Integer decisionId;
     private Integer criteriaId;
     private String criteriaName;
     private Float weight;

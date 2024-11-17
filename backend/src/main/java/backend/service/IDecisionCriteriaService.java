@@ -3,10 +3,28 @@ package backend.service;
 import backend.model.dto.DecisionCriteriaResponse;
 import backend.model.entity.Criteria;
 import backend.model.entity.DecisionCriteria;
+import backend.model.page.ResultPaginationDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 
 public interface IDecisionCriteriaService {
+
+    //have page
+    public ResultPaginationDTO findByDecisionIdAndSpecification(Integer decisionId, Specification<DecisionCriteria> spec, Pageable pageable);
+
+    public ResultPaginationDTO getAllDecisionCriteria(Specification<DecisionCriteria> spec, Pageable pageable);
+
+    public DecisionCriteria findByCriteriaIdAndDecisionId(Integer criteriaId, Integer decisionId);
+
+    //crud
     public DecisionCriteria findByCriteriaId(Integer criteriaId);
-    public List<DecisionCriteriaResponse> getDecisionCriteriaResponse(List<Criteria> criteria);
+
+    public List<DecisionCriteria> findByDecisionId(Integer decisionId);
+
+    public DecisionCriteria addDecisionCriteria(DecisionCriteria decisionCriteria);
+    //response
+    public List<DecisionCriteriaResponse> getDecisionCriteriaResponse(List<DecisionCriteria> list);
 }

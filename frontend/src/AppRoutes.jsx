@@ -10,6 +10,7 @@ import SignupPage from "./pages/Auth/SignupPage";
 import ForgetPasswordPage from "./pages/Auth/ForgetPasswordPage";
 import NotFound from "./pages/Auth/Page404.jsx";
 import ForbiddenPage from "./pages/Auth/Page403.jsx";
+import Page500 from "./pages/Auth/Page500.jsx";
 import Sidebar from "./layouts/Sidebar";
 import Header from "./layouts/Header";
 import RankingGroups from "./pages/RankingGroup/RankingGroupsPage.jsx";
@@ -102,6 +103,7 @@ function AppRoutes() {
         }
       />
       <Route path="403" element={<ForbiddenPage />} />
+      <Route path="500" element={<Page500 />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

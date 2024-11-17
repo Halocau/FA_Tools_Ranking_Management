@@ -18,19 +18,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class OptionService extends BaseService implements IOptionService {
+public class OptionService implements IOptionService {
     private IOptionRepository iOptionRepository;
     private ModelMapper modelMapper;
 
     @Autowired
-    public OptionService(IOptionRepository iOptionRepository, ModelMapper modelMapper, ModelMapper modelMapper1) {
-        super(modelMapper);
+    public OptionService(IOptionRepository iOptionRepository, ModelMapper modelMapper) {
         this.iOptionRepository = iOptionRepository;
-        this.modelMapper = modelMapper1;
+        this.modelMapper = modelMapper;
     }
 
     @Override

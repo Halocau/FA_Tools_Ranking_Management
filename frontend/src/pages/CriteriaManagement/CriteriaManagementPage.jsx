@@ -4,9 +4,9 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, Typography, TextField, Modal } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import Slider from "../../layouts/Slider.jsx";
-import "../../assets/css/RankingGroups.css";
 import SearchComponent from "../../components/Common/Search.jsx";
-
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 //Hooks
 import { useNavigate } from "react-router-dom";
 import useNotification from "../../hooks/useNotification.jsx";
@@ -98,7 +98,7 @@ const CriteriaManagement = () => {
         if (event) {
             setFilter(sfLike("criteriaName", event).toString());
         } else {
-            setFilter("")
+            setFilter("");
         }
         setPage(1);
     };
@@ -176,7 +176,7 @@ const CriteriaManagement = () => {
                             navigate(`/criteria/edit/${params.row.id}`);
                         }}
                     >
-                        Edit
+                        <EditIcon />
                     </Button>
                     <Button
                         variant="outlined"
@@ -185,7 +185,7 @@ const CriteriaManagement = () => {
                         onClick={() => handleDeleteCriteria(params.row.id)}
                         sx={{ marginLeft: 1 }}
                     >
-                        Delete
+                        <DeleteIcon />
                     </Button>
                 </>
             ),
@@ -197,7 +197,7 @@ const CriteriaManagement = () => {
             <Slider />
             <Box sx={{ marginTop: 4, padding: 2 }}>
                 <Typography variant="h6">
-                    <a href="/ranking-decision">Ranking Decision List</a> {'>'} Criteria List
+                    <a href="/ranking_decision">Ranking Decision List</a> {'>'} Criteria List
                 </Typography>
                 <Box sx={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                     <Typography variant="h5">Criteria List</Typography>
