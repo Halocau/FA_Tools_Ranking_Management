@@ -1,14 +1,13 @@
 package backend.service;
 
 import backend.model.dto.DecisionCriteriaResponse;
-import backend.model.entity.Criteria;
 import backend.model.entity.DecisionCriteria;
-import backend.model.form.DecisionCriteria.AddDecisionCriteria;
+import backend.model.form.DecisionCriteria.AddDecisionCriteriaRequest;
 import backend.model.page.ResultPaginationDTO;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.security.PublicKey;
 import java.util.List;
 
 public interface IDecisionCriteriaService {
@@ -26,9 +25,11 @@ public interface IDecisionCriteriaService {
     public List<DecisionCriteria> findByDecisionId(Integer decisionId);
 
     public DecisionCriteria addDecisionCriteria(DecisionCriteria decisionCriteria);
+
+    public void deleteDecisionCriteria(Integer decisionId, Integer criteriaId);
     //response
     public List<DecisionCriteriaResponse> getDecisionCriteriaResponse(List<DecisionCriteria> list);
 
     //form
-    public void createDecisionCriteria(AddDecisionCriteria form);
+    public void createDecisionCriteria(AddDecisionCriteriaRequest form);
 }

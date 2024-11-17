@@ -7,10 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class AddDecisionCriteria {
-    @NotBlank
+public class AddDecisionCriteriaRequest {
+    @NotNull
     private Integer decisionId;
     @NotNull
     private Integer criteriaId;

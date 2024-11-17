@@ -14,14 +14,12 @@ import java.util.List;
 
 @Repository
 public interface IDecisionCriteriaRepository extends JpaRepository<DecisionCriteria, Integer>, JpaSpecificationExecutor<DecisionCriteria> {
-    //    @Query("SELECT d FROM DecisionCriteria d WHERE d.decisionId = :decisionId")
-//    Page<DecisionCriteria> findByDecisionId(Integer decisionId, Pageable pageable);
     public List<DecisionCriteria> findByDecisionId(Integer decisionId);
 
     public DecisionCriteria findByCriteriaId(Integer criteriaId);
+
+    // criteriaId and decisionId
     public DecisionCriteria findByCriteriaIdAndDecisionId(Integer criteriaId, Integer decisionId);
-
-    Page<DecisionCriteria> findAll(Specification<DecisionCriteria> spec, Pageable pageable);
-
+    public void deleteDecisionCriteriaByDecisionIdAndCriteriaId(Integer decisionId, Integer criteriaId);
 
 }
