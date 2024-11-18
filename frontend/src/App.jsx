@@ -1,10 +1,9 @@
-
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Css
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import 'notyf/notyf.min.css';
+import "notyf/notyf.min.css";
 // Home
 import HomePage from "./pages/HomePage";
 // Auth
@@ -21,15 +20,16 @@ import DashboardLayout from "./layouts/DashboardLayout";
 // Pages
 //RankingGroups
 import RankingGroups from "./pages/RankingGroup/RankingGroupsPage.jsx";
-import EditRankingGroup from './pages/RankingGroup/EditRankingGroups.jsx';
-import ViewRankingGroup from './pages/RankingGroup/ViewRankingGroup.jsx';
-import BulkRankingGroup from './pages/RankingGroup/BulkRankingGroup.jsx';
+import EditRankingGroup from "./pages/RankingGroup/EditRankingGroups.jsx";
+import ViewRankingGroup from "./pages/RankingGroup/ViewRankingGroup.jsx";
+import BulkRankingGroup from "./pages/RankingGroup/BulkRankingGroup.jsx";
 //RankingDecision
 import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
 import EditRankingDecision from "./pages/RankingDecision/EditRankingDecision.jsx";
 import EditDecision from "./pages/RankingDecision/EditDecision.jsx";
-import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx';
-import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx';
+import TaskManagement from "./pages/TaskManagement/TaskManagementPage.jsx";
+import CriteriaManagement from "./pages/CriteriaManagement/CriteriaManagementPage.jsx";
+import EditCriteria from "./pages/CriteriaManagement/EditCriterial.jsx";
 
 function App() {
   return (
@@ -111,7 +111,14 @@ function App() {
                 </DashboardLayout>
               }
             />
-
+            <Route
+              path="/criteria/edit/:id"
+              element={
+                <DashboardLayout>
+                  <EditCriteria className="ml-2" />
+                </DashboardLayout>
+              }
+            />
             {/* Error Routes */}
             <Route path="403" element={<ForbiddenPage />} />
             <Route path="*" element={<NotFound />} />
