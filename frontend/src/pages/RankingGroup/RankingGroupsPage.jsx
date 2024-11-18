@@ -33,11 +33,11 @@ import Slider from "../../layouts/Slider.jsx";
 const RankingGroups = () => {
   const navigate = useNavigate(); // Initialize the useNavigate hook to navigate between pages in the application
   // State
-  // Table  List Ranking Group (page, size) 
-  const [rows, setRows] = useState([]); // Initialize with empty array
-  const [rankingGroups, setRankingGroups] = useState([]);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  // Table  List Ranking Group (page, size)
+  const [filter, setFilter] = useState("");
+  const [RankingGroups, setRankingGroups] = useState([]);
+  const [Page, setPage] = useState(1);
+  const [PageSize, setPageSize] = useState(5);
   const [totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   //Add
@@ -51,47 +51,48 @@ const RankingGroups = () => {
   // API
   const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
   // Search Group
-  const [filter, setFilter] = useState("");
+  const [rows, setRows] = useState([]); // Initialize with empty array
+  const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
+  const [searchValue, setSearchValue] = useState(''); // State to store search value
   // Use hook notification
   const [showSuccessMessage, showErrorMessage] = useNotification();
   // Validation error message
   const [validationMessage, setValidationMessage] = useState("");
+
   //  Destructuring from RankingGroupAPI custom API
   const fetchAllRankingGroups = async () => {
     try {
-      const data = await RankingGroupAPI.searchRankingGroups(filter, page, pageSize);
-      if (data.result && data.result.length > 0) {
-        setRankingGroups(data.result);
-        setTotalPages(data.pageInfo.total);
-        setTotalElements(data.pageInfo.element);
-      } else {
-        showErrorMessage("No Ranking Groups found.");
-      }
+      const data = await RankingGroupAPI.searchRankingGroups(
+        filter,
+        Page,
+        PageSize
+      );
+      setRankingGroups(data.result);
+      setTotalPages(data.pageInfo.total);
+      setTotalElements(data.pageInfo.element);
     } catch (error) {
-      // Extract the error message from the response
-      const errorMessage = error.response?.data?.detailMessage || "An unexpected error occurred."; // Default message if no specific message found
-      showErrorMessage(errorMessage); // Set the error message from API response
-      setRankingGroups([])
+      console.error("Failed to fetch criteria:", error);
     }
-  };
+  }
   // Fetch all ranking groups when component mounts
   useEffect(() => {
     fetchAllRankingGroups();
-  }, [page, pageSize, filter]);
+  }, [Page, PageSize, filter]);
 
   // Map decision data to rows for DataGrid when rows are fetched
   useEffect(() => {
     if (RankingGroups) {
-      const mappedRows = rankingGroups.map((group, index) => ({
+      const mappedRows = RankingGroups.map((group, index) => ({
         id: group.groupId,
-        index: index + 1 + (page - 1) * pageSize,
+        index: index + 1 + (Page - 1) * PageSize,
         groupName: group.groupName,
         numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
         currentRankingDecision: group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
       }));
       setRows(mappedRows);
+      setFilteredRows(mappedRows);
     }
-  }, [rankingGroups]);
+  }, [RankingGroups]);
 
 
   //// Handlers to open/close modals for adding group
@@ -124,7 +125,7 @@ const RankingGroups = () => {
     // Capitalize the first letter of each word in the group name
     trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
     // Check for duplicate group name
-    const isDuplicate = rankingGroups.some(
+    const isDuplicate = RankingGroups.some(
       group => group.groupName.toLowerCase() === trimmedName.toLowerCase()
     );
     if (isDuplicate) {
@@ -132,43 +133,15 @@ const RankingGroups = () => {
       setValidationMessage("Group name already exists.");
       return;
     }
-    //   try {
-    //     const newGroup = {
-    //       groupName: trimmedName,
-    //       createdBy: localStorage.getItem('userId'),
-    //     };
-    //     await RankingGroupAPI.addRankingGroup(newGroup);
-    //     handleCloseAddRankingGroupModal()();
-    //     setTotalElements(totalElements + 1);
-    //     if (rankingGroups.length < pageSize) {
-    //       fetchAllRankingGroups();
-    //     } else {
-    //       setTotalPages(totalPages + 1);
-    //     }
-    //     showSuccessMessage("Ranking Group successfully added.");
-    //   } catch (error) {
-    //     console.error("Failed to add group:", error);
-
-    //     // Kiểm tra nếu lỗi từ backend có chứa thông báo lỗi liên quan đến tên nhóm
-    //     if (error.response && error.response.data && error.response.data.detailMessage) {
-    //       // Hiển thị thông báo lỗi từ backend (ví dụ: "RankingGroup name exists already!")
-    //       setValidationMessage(error.response.data.detailMessage);
-    //     } else {
-    //       // Nếu không có thông báo cụ thể từ backend, hiển thị thông báo lỗi mặc định
-    //       showErrorMessage("Error occurred adding Ranking Group. Please try again");
-    //     }
-    //   }
-    // };
-
     try {
       const newGroup = {
         groupName: trimmedName,
         createdBy: localStorage.getItem('userId'),
       };
       await RankingGroupAPI.addRankingGroup(newGroup);
-      handleCloseAddRankingGroupModal();
+      handleCloseAddRankingGroupModal()();
       setTotalElements(totalElements + 1);
-      if (rankingGroups.length < pageSize) {
+      if (RankingGroups.length < PageSize) {
         fetchAllRankingGroups();
       } else {
         setTotalPages(totalPages + 1);
@@ -177,19 +150,18 @@ const RankingGroups = () => {
     } catch (error) {
       console.error("Failed to add group:", error);
 
+      // Kiểm tra nếu lỗi từ backend có chứa thông báo lỗi liên quan đến tên nhóm
       if (error.response && error.response.data) {
-        // Kiểm tra và lấy thông báo lỗi từ phần exception
-        if (error.response.data.exception && error.response.data.exception.groupName) {
-          setValidationMessage(error.response.data.exception.groupName); // Hiển thị thông báo lỗi từ exception
-        } else if (error.response.data.detailMessage) {
-          setValidationMessage(error.response.data.detailMessage); // Hiển thị detailMessage nếu không có exception
-        } else if (error.response.data.message) {
-          setValidationMessage(error.response.data.message); // Hiển thị message chung nếu không có detailMessage
+        // Lọc chỉ thông báo lỗi "RankingGroup name exists already!" từ phần detailMessage
+        const detailMessage = error.response.data.detailMessage;
+        if (detailMessage && detailMessage.includes("RankingGroup name exists already!")) {
+          setValidationMessage("RankingGroup name exists already!");  // Chỉ hiển thị thông báo lỗi mong muốn
         } else {
-          showErrorMessage("Error occurred adding Ranking Decision. Please try again");
+          showErrorMessage("Error occurred adding Ranking Group. Please try again");
         }
       } else {
-        showErrorMessage("Error occurred adding Ranking Decision. Please try again");
+        // Nếu không có thông báo cụ thể từ backend, hiển thị thông báo lỗi mặc định
+        showErrorMessage("Error occurred adding Ranking Group. Please try again");
       }
     }
   };
@@ -198,7 +170,7 @@ const RankingGroups = () => {
   /// Open the modal
   const handleOpenDeleteRankingGroupModal = (groupId) => {
     // Find group by ID in result array
-    const selectedGroup = rankingGroups.find(group => group.groupId === groupId);
+    const selectedGroup = RankingGroups.find(group => group.groupId === groupId);
     // If the group is named "Trainer", display an error message and do not open the modal
     if (selectedGroup && selectedGroup.groupName === "Trainer") {
       showErrorMessage("Cannot delete the 'Trainer' group.");
@@ -215,12 +187,12 @@ const RankingGroups = () => {
     try {
       if (groupToDelete) {
         await RankingGroupAPI.deleteRankingGroup(groupToDelete);
-        setRankingGroups(rankingGroups.filter((group) => group.groupId !== groupToDelete));
-        if (rankingGroups.length === 5) {
+        setRankingGroups(RankingGroups.filter((group) => group.groupId !== groupToDelete));
+        if (RankingGroups.length === 5) {
           fetchAllRankingGroups();
         }
-        if (rankingGroups.length === 1) {
-          setPage(page - 1)
+        if (RankingGroups.length === 1) {
+          setPage(Page - 1)
         }
       }
       setTotalElements(totalElements - 1);
@@ -248,7 +220,7 @@ const RankingGroups = () => {
     }
 
     const groupsToDelete = selectedIDs.filter((id) => {
-      const group = rankingGroups.find((row) => row.groupId === id);
+      const group = RankingGroups.find((row) => row.groupId === id);
       return group && group.groupName !== "Trainer";
     });
 
@@ -261,14 +233,14 @@ const RankingGroups = () => {
       await Promise.all(groupsToDelete.map((id) => RankingGroupAPI.deleteRankingGroup(id)));
       showSuccessMessage("Selected groups deleted successfully!");
       // Cập nhật lại danh sách nhóm sau khi xóa
-      setRankingGroups(rankingGroups.filter((group) => !groupsToDelete.includes(group.groupId)));
+      setRankingGroups(RankingGroups.filter((group) => !groupsToDelete.includes(group.groupId)));
       // Kiểm tra nếu còn đúng 5 nhóm sau khi xóa thì gọi fetchAllRankingGroups
-      if (rankingGroups.length === 5) {
+      if (RankingGroups.length === 5) {
         await fetchAllRankingGroups();
       }
       // Kiểm tra nếu còn đúng 1 nhóm sau khi xóa thì giảm Page đi 1
-      if (rankingGroups.length === 1) {
-        setPage(page - 1);
+      if (RankingGroups.length === 1) {
+        setPage(Page - 1);
       }
 
       await fetchAllRankingGroups();
@@ -282,16 +254,13 @@ const RankingGroups = () => {
 
   ///// Search Group
   const handleSearch = (event) => {
-    console.log("Search", event)
     if (event) {
       setFilter(sfLike("groupName", event).toString());
     } else {
-      setFilter("");
+      setFilter("")
     }
     setPage(1);
-
   };
-
 
   // Define columns for DataGrid
   const columns = [
@@ -378,15 +347,15 @@ const RankingGroups = () => {
             rowCount={totalElements}
             paginationMode="server"
             paginationModel={{
-              page: page - 1,  // Adjusted for 0-based index
-              pageSize: pageSize,
+              page: Page - 1,  // Adjusted for 0-based index
+              pageSize: PageSize,
             }}
             onPaginationModelChange={(model) => {
               setPage(model.page + 1);  // Set 1-based page for backend
               setPageSize(model.pageSize);
             }}
-            disableNextButton={page >= totalPages}
-            disablePrevButton={page <= 1}
+            disableNextButton={Page >= totalPages}
+            disablePrevButton={Page <= 1}
             disableRowSelectionOnClick
             autoHeight={false}
             sx={{

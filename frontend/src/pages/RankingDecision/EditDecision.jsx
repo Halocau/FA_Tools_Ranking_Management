@@ -10,17 +10,44 @@ import EditIcon from '@mui/icons-material/Edit';
 import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
 import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 import useNotification from "../../hooks/useNotification";
-//Data
-import { rankTitles, initialCriteria, initialTitles, initialTasks } from "../../pages/RankingDecision/Data";
+const rankTitles = [
+    "0 - No experience",
+    "1 - Low",
+    "2 - Normal",
+    "3 - Medium",
+];
+const initialCriteria = [
+    { criteria_name: 'Scope of Training Assignments', weight: 10, max_score: 4, num_options: 4 },
+    { criteria_name: 'Technical or Professional Skills', weight: 10, max_score: 6, num_options: 6 },
+    { criteria_name: 'Courseraware Development', weight: 30, max_score: 4, num_options: 4 },
+    { criteria_name: 'Courseware Development', weight: 10, max_score: 3, num_options: 3 },
+    { criteria_name: 'Training Certificate', weight: 30, max_score: 4, num_options: 4 },
+    { criteria_name: 'Years of Working and Teaching', weight: 10, max_score: 4, num_options: 4 },
+];
+
+const initialTitles = [
+    { title_name: 'TRN1.1', rank_score: 37 },
+    { title_name: 'TRN1.2', rank_score: 45 },
+    { title_name: 'TRN1.3', rank_score: 50 },
+    { title_name: 'TRN2.1', rank_score: 61 },
+    { title_name: 'TRN2.2', rank_score: 63 },
+    { title_name: 'TRN2.3', rank_score: 74 },
+    { title_name: 'TRN3.1', rank_score: 80 },
+    { title_name: 'TRN3.2', rank_score: 86 },
+    { title_name: 'TRN3.3', rank_score: 100 },
+];
+
+const initialTasks = [
+    { task_name: 'Giảng dạy', task_type: 'In Working Hour', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    { task_name: 'Giảng dạy', task_type: 'Overtime', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    { task_name: 'Hướng dẫn, hỗ trợ, chấm bài', task_type: 'In Working Hour', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    { task_name: 'Hướng dẫn, hỗ trợ, chấm bài', task_type: 'Overtime', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    { task_name: 'Tạo tài liệu', task_type: 'In Working Hour', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    { task_name: 'Tạo tài liệu', task_type: 'Overtime', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    { task_name: 'Xem xét tài liệu', task_type: 'In Working Hour', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    { task_name: 'Xem xét tài liệu', task_type: 'Overtime', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+];
 const EditDecision = () => {
-    // Table  List Ranking Group (page, size) 
-    const [rows, setRows] = useState([]); // Initialize with empty array
-    // const [rankingGroups, setRankingGroups] = useState([]);
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(5);
-    const [totalElements, setTotalElements] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
-    //
     const [activeStep, setActiveStep] = useState(1);
     const [criteriaData, setCriteriaData] = useState(initialCriteria);
     const [titles, setTitles] = useState(initialTitles);
@@ -188,69 +215,6 @@ const EditDecision = () => {
         console.log(newCriteria)
         setCriteria([...criteria, newCriteria]);
     };
-
-    const columns = [
-        { field: 'criteria_name', headerName: 'Criteria Name', width: 500, editable: decisionStatus === 'Draft' },
-        { field: 'weight', headerName: 'Weight', width: 150, editable: decisionStatus === 'Draft', cellClassName: 'cell-center' },
-        { field: 'num_options', headerName: 'No of Options', width: 150, editable: decisionStatus === 'Draft', cellClassName: 'cell-center' },
-        { field: 'max_score', headerName: 'Max Score', width: 150, editable: decisionStatus === 'Draft', cellClassName: 'cell-center' },
-        {
-            field: 'action',
-            headerName: 'Action',
-            width: 200,
-            renderCell: (params) => (
-                decisionStatus === 'Draft' && (
-                    <Button
-                        variant="contained"
-                        color="error"
-                        onClick={() => handleDeleteRowData(params.row.id)}
-                    >
-                        Xóa
-                    </Button>
-                )
-            )
-        },
-    ];
-    // Thêm CSS để tạo viền cho ô
-    const dataGridStyles = {
-        '& .cell-center': {
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
-        '& .cell-border': {
-            border: '1px solid black', // Tạo viền cho các ô
-        },
-
-        '& .MuiDataGrid-cell--editable': {
-            backgroundColor: '#f0f0f0', // Màu nền ô chỉnh sửa để dễ phân biệt
-        }
-    };
-
-
-    const [isSaveButtonEnabled, setIsSaveButtonEnabled] = useState(false);
-
-    // Hàm xử lý khi có thay đổi trong ô dữ liệu
-    const handleCellEditCommit = (params) => {
-        // Kích hoạt nút Save khi dữ liệu được chỉnh sửa
-        setIsSaveButtonEnabled(true);
-        console.log('Cell edit committed:', params);
-    };
-
-    // Hàm xử lý khi nhấp vào nút Save
-    const handleSaveChanges = () => {
-        // Tham khảo các quy tắc BR 3 và thực hiện lưu thay đổi
-        console.log('Save button clicked');
-        // Sau khi lưu, tắt nút Save
-        setIsSaveButtonEnabled(false);
-    };
-
-    // Hàm xử lý khi người dùng nhấp vào nút Cancel
-    const handleCancelChanges = () => {
-        // Tắt nút Save khi hủy
-        setIsSaveButtonEnabled(false);
-    };
-
     return (
         <div style={{ marginTop: "60px" }}>
             <Box sx={{ marginTop: 4, padding: 2 }}>
@@ -291,30 +255,18 @@ const EditDecision = () => {
                     </Box>
                 </Box>
 
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        gap: 20,  // Giảm khoảng cách giữa các button
-                        marginTop: 2
-                    }}
-                >
+                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, marginTop: 2 }}>
                     {[1, 2, 3].map((step) => (
                         <Button
                             key={step}
                             variant={activeStep === step ? 'contained' : 'outlined'}
                             onClick={() => handleStepChange(step)}
-                            sx={{
-                                width: '40px',  // Giảm chiều rộng
-                                height: '40px', // Giảm chiều cao
-                                borderRadius: '50%'
-                            }}
+                            sx={{ width: '50px', height: '50px', borderRadius: '50%' }}
                         >
                             {step}
                         </Button>
                     ))}
                 </Box>
-
 
                 {/* Step 1 - Criteria Configuration */}
                 {/* Tạo viền xung quanh */}
@@ -322,98 +274,75 @@ const EditDecision = () => {
                 <Box sx={{ overflowX: 'auto' }}>
                     {
                         activeStep === 1 && (
-                            <Box
-                                sx={{
-                                    width: "100%",
-                                    height: 500,
-                                    marginTop: '60px',
-                                    border: '2px solid black',
-                                    borderRadius: '8px',
-                                    padding: '16px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 2,
-                                    overflow: 'hidden', // Loại bỏ thanh cuộn bên ngoài
-                                }}
-                            >
-                                {/* DataGrid */}
-                                <Box sx={{ width: "100%", height: 370, marginTop: '0px' }}>
-                                    <DataGrid
-                                        className="custom-data-grid"
-                                        rows={initialCriteria}
-                                        columns={columns}
-                                        // checkboxSelection
-                                        pagination
-                                        pageSizeOptions={[3, 5, 10]}
-                                        getRowId={(row) => row.criteria_name}
-                                        rowCount={totalElements}
-                                        paginationMode="server"
-                                        paginationModel={{
-                                            page: page - 1,  // Adjusted for 0-based index
-                                            pageSize: pageSize,
-                                        }}
-                                        onPaginationModelChange={(model) => {
-                                            setPage(model.page + 1);  // Set 1-based page for backend
-                                            setPageSize(model.pageSize);
-                                        }}
-                                        disableNextButton={page >= totalPages}
-                                        disablePrevButton={page <= 1}
-                                        disableRowSelectionOnClick
-                                        autoHeight={false}
-                                        processRowUpdate={(newRow, oldRow) => {
-                                            // Custom logic to handle row update
-                                            const updatedRow = { ...oldRow, ...newRow };
-                                            // Cập nhật state hoặc gửi request đến backend
-                                            handleRowUpdate(updatedRow);
-                                            return updatedRow;
-                                        }}
-                                        onCellEditCommit={(params) => {
-                                            // Handle trực tiếp khi ô dữ liệu được chỉnh sửa
-                                            console.log('Cell edit committed:', params);
-                                        }}
-                                        sx={{
-                                            height: '100%',
-                                            ...dataGridStyles,
-                                            '& .MuiDataGrid-virtualScroller': {
-                                                overflowY: 'auto', // Chỉ cho phép cuộn bên trong DataGrid
-                                            },
-                                        }}
-                                    />
-                                </Box>
-                                {/* Add Criteria Button */}
-                                {/* <Button variant="contained" color="primary" onClick={'handleAddCriteria'}>
+                            <Box sx={{ overflowX: 'auto', marginTop: 2 }}>
+                                <Table>
+                                    <TableHead sx={{ backgroundColor: 'blue', color: '#fff' }}>
+                                        <TableRow sx={{ '& > th': { backgroundColor: 'gray', color: '#fff' } }}>
+                                            <TableCell>#</TableCell>
+                                            <TableCell>Criteria Name</TableCell>
+                                            <TableCell>Weight (%)</TableCell>
+                                            <TableCell>Max Score</TableCell>
+                                            <TableCell>Num Options</TableCell>
+                                            {decisionStatus === 'Draft' && <TableCell>Action</TableCell>}
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {criteriaData.map((row, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>{index + 1}</TableCell>
+                                                <TableCell>
+                                                    <TextField
+                                                        value={row.criteria_name}
+                                                        onChange={(e) => handleInputChange(index, 'criteria_name', e.target.value)}
+                                                        sx={{ width: '200px' }}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TextField
+                                                        type="number"
+                                                        value={row.weight || ''}
+                                                        onChange={(e) => handleNumberInput(e.target.value, index, 'weight', setCriteriaData, criteriaData)}
+                                                        sx={{ width: '120px' }}
+                                                        InputProps={{ endAdornment: <Typography>%</Typography> }}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TextField
+                                                        type="number"
+                                                        value={row.max_score || ''}
+                                                        onChange={(e) => handleNumberInput(e.target.value, index, 'max_score', setCriteriaData, criteriaData)}
+                                                        sx={{ width: '100px' }}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TextField
+                                                        type="number"
+                                                        value={row.num_options || ''}
+                                                        onChange={(e) => handleNumberInput(e.target.value, index, 'num_options', setCriteriaData, criteriaData)}
+                                                        sx={{ width: '100px' }}
+                                                    />
+                                                </TableCell>
+                                                {decisionStatus === 'Draft' && (
+                                                    <TableCell>
+                                                        <Button
+                                                            variant="contained"
+                                                            color="secondary"
+                                                            onClick={() => handleDeleteRowData(index)}
+                                                        >
+                                                            Xóa
+                                                        </Button>
+                                                    </TableCell>
+                                                )}
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                                <Button variant="contained" color="primary" onClick={handleAddCriteria}>
                                     Add Criteria
-                                </Button> */}
-                                {decisionStatus === 'Draft' && (
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                                        <Button variant="contained" color="primary" onClick={handleAddCriteria}>
-                                            Add Criteria
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            color="success"
-                                            onClick={handleSaveChanges}
-                                            disabled={!isSaveButtonEnabled} // Bật/tắt dựa trên trạng thái
-                                            sx={{ display: isSaveButtonEnabled ? 'inline-flex' : 'none' }} // Hiển thị khi cần
-                                        >
-                                            Save
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            color="error"
-                                            onClick={handleCancelChanges}
-                                            disabled={!hasChanges} // Bật/tắt dựa trên trạng thái
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </Box>
-                                )}
-
-
+                                </Button>
                             </Box>
                         )
                     }
-
                 </Box>
                 {/* Step 2 - Title Configuration */}
                 {
@@ -538,7 +467,7 @@ const EditDecision = () => {
                     )
                 }
 
-                {/* <Box sx={{ marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
+                <Box sx={{ marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
                     <Button variant="outlined" color="error" onClick={handleCancelAllData}>
                         Hủy tất cả
                     </Button>
@@ -550,7 +479,7 @@ const EditDecision = () => {
                             Lưu
                         </Button>
                     </Box>
-                </Box> */}
+                </Box>
             </Box >
             {/* </Box> */}
         </div >

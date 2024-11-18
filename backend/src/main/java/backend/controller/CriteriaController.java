@@ -46,6 +46,14 @@ public class CriteriaController {
         return new ResponseEntity<>(criteriaList, HttpStatus.OK);
     }
 
+    @GetMapping("/test")
+    public ResponseEntity<List<DecisionCriteriaResponse>> alltest() {
+        List<Criteria> criteria = criteriaService.getAllCriteria();
+        List<DecisionCriteriaResponse> test = idDecisionCriteriaService.getDecisionCriteriaResponse(criteria);
+        return ResponseEntity.status(HttpStatus.OK).body(test);
+    }
+
+
     @GetMapping("/get/{id}")
     public ResponseEntity<CriteriaResponse> getCriteriaById(@PathVariable("id") int criteriaId) {
         Criteria criteria = criteriaService.getCriteriabyId(criteriaId);
@@ -71,8 +79,8 @@ public class CriteriaController {
     }
 
     @DeleteMapping("delete/{id}")
-    public ResponseEntity<String> deleteCriteria(@PathVariable("id") int criteriaId) {
+    public ResponseEntity<Void> deleteCriteria(@PathVariable("id") int criteriaId) {
         criteriaService.deleteCriteria(criteriaId);
-        return new ResponseEntity<>("Criteria deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
