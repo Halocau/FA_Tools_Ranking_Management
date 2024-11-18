@@ -19,6 +19,7 @@ import "../../assets/css/RankingGroups.css"
 // Source code
 // API
 import RankingGroupAPI from "../../api/RankingGroupAPI.js";
+import BulkRankingAPI from "../../api/BulkRankingAPI.js";
 //Common
 import ModalCustom from "../../components/Common/Modal.jsx";
 import ActionButtons from "../../components/Common/ActionButtons.jsx";
@@ -52,6 +53,33 @@ const BulkRankingGroup = () => {
     const [messageType, setMessageType] = useState("success"); // Message type (success/error)
     const [validationMessage, setValidationMessage] = useState(""); // Validation error message
 
+
+    const getBulkRankingGroup = async () => {
+        try {
+            const response = await BulkRankingAPI.viewBulkHistory();
+            setBulkRankingGroup(response);
+        } catch (error) {
+            console.error("Error fetching group:", error);
+        }
+    }
+
+    useEffect(() => {
+        getBulkRankingGroup();
+    }, [id]);
+
+    // useEffect(() => {
+    //     if(bulkRankingGroup) {
+    //         const mappedRows = bulkRankingGroup.map((criteria, index) => ({
+    //             id: bulkRankingGroup.criteriaId,
+    //             index: index + 1 + (page - 1) * 5,
+    //             criteriaName: bulkRankingGroup.criteriaName,
+    //             noOfOption: bulkRankingGroup.numOptions ? bulkRankingGroup.numOptions : 0,
+    //             maxScore: bulkRankingGroup.maxScore ? bulkRankingGroup.maxScore : 0,
+    //         }));
+    //         setRows(mappedRows);
+    //     }
+    // },[bulkRankingGroup])
+    console.log(bulkRankingGroup);
     // Ranking Group Edit
     const RankingGroupEdit = async () => {
         try {
