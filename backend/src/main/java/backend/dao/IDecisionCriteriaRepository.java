@@ -1,10 +1,25 @@
 package backend.dao;
 
 import backend.model.entity.DecisionCriteria;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
-public interface IDecisionCriteriaRepository extends JpaRepository<DecisionCriteria, Integer> {
+public interface IDecisionCriteriaRepository extends JpaRepository<DecisionCriteria, Integer>, JpaSpecificationExecutor<DecisionCriteria> {
+    public List<DecisionCriteria> findByDecisionId(Integer decisionId);
+
     public DecisionCriteria findByCriteriaId(Integer criteriaId);
+
+    // criteriaId and decisionId
+    public DecisionCriteria findByCriteriaIdAndDecisionId(Integer criteriaId, Integer decisionId);
+    public void deleteDecisionCriteriaByDecisionIdAndCriteriaId(Integer decisionId, Integer criteriaId);
+
 }
