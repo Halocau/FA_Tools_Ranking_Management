@@ -11,6 +11,7 @@ export const initialCriteria = [
     { criteria_name: 'Courseware Development', weight: 10, max_score: 3, num_options: 3 },
     { criteria_name: 'Training Certificate', weight: 30, max_score: 4, num_options: 4 },
     { criteria_name: 'Years of Working and Teaching', weight: 10, max_score: 4, num_options: 4 },
+    { criteria_name: 'Years of Working and Teaching _01', weight: 10, max_score: 5, num_options: 5 },
 ];
 
 export const initialTitles = [
