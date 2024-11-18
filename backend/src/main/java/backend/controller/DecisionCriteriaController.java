@@ -3,9 +3,11 @@ package backend.controller;
 import backend.model.dto.DecisionCriteriaResponse;
 import backend.model.entity.DecisionCriteria;
 import backend.model.form.DecisionCriteria.AddDecisionCriteriaRequest;
+import backend.model.form.DecisionCriteria.UpdateDecisionCriteriaRequest;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.IDecisionCriteriaService;
 import com.turkraft.springfilter.boot.Filter;
+import jakarta.validation.Path;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,13 +59,23 @@ public class DecisionCriteriaController {
         iDecisionCriteriaService.createDecisionCriteria(form);
         return ResponseEntity.ok("Decision criteria created successfully.");
     }
+
     @DeleteMapping("/delete/{decisionId}/{criteriaId}")
     public ResponseEntity<String> deleteDecisionCriteriaById(
             @PathVariable Integer decisionId,
-            @PathVariable Integer criteriaId)
-    {
-        iDecisionCriteriaService.deleteDecisionCriteria(decisionId,criteriaId);
+            @PathVariable Integer criteriaId) {
+        iDecisionCriteriaService.deleteDecisionCriteria(decisionId, criteriaId);
         return ResponseEntity.ok("Decision criteria deleted successfully.");
+    }
+
+    @PutMapping("/update/{decisionId}/{criteriaId}")
+    public ResponseEntity<String> updateDecisionCriteria(
+            @RequestBody @Valid UpdateDecisionCriteriaRequest form,
+            @PathVariable Integer decisionId,
+            @PathVariable Integer criteriaId
+    ) {
+        iDecisionCriteriaService.updateDecisionCriteria(form, decisionId, criteriaId);
+        return ResponseEntity.ok("Decision criteria updated successfully.");
     }
 
 }

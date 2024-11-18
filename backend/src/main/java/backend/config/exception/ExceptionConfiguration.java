@@ -1,11 +1,14 @@
 package backend.config.exception;
 
+import java.nio.file.AccessDeniedException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
 import backend.config.exception.ErrorResponse;
 import backend.config.exception.exceptionEntity.PageException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -297,6 +300,74 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
         // Trả về phản hồi với mã lỗi 400 (Bad Request)
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Object> handleEntityNotFoundException(EntityNotFoundException exception) {
+        String message = "Entity not found!";
+        String detailMessage = exception.getLocalizedMessage();
+        int code = 11; // Mã lỗi cho "Not Found"
+
+        // Tạo đối tượng ErrorResponse để trả về thông tin lỗi
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                message,
+                detailMessage,
+                code,
+                exception,
+                null,
+                null
+        );
+
+        // Log lỗi chi tiết
+        log.error(detailMessage, exception);
+
+        // Trả về phản hồi với mã lỗi 404 (Not Found)
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    //Lỗi định dạng đầu vào không hợp lệ (InvalidFormatException)
+    @ExceptionHandler(InvalidFormatException.class)
+    public ResponseEntity<Object> handleInvalidFormatException(InvalidFormatException exception) {
+        String message = "Invalid format for field " + exception.getPathReference();
+        String detailMessage = exception.getLocalizedMessage();
+        int code = 12;
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                message,
+                detailMessage,
+                code,
+                exception,
+                null,
+                null
+        );
+
+        log.error(detailMessage, exception);
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+    //Lỗi truy cập bị từ chối tài nguyên (Access Denied)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException exception) {
+        String message = "Access Denied";
+        String detailMessage = exception.getLocalizedMessage();
+        int code = 13;
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                message,
+                detailMessage,
+                code,
+                exception,
+                null,
+                null
+        );
+
+        log.error(detailMessage, exception);
+
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
 
 //    // Account blocked exception
 //    @ExceptionHandler({ AccountBlockException.class })
