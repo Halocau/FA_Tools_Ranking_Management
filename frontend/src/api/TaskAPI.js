@@ -1,5 +1,5 @@
 // frontend/api/taskApi.js
-import authClient from "./baseapi/AuthorAPI";
+import authClient from './authClient';
 
 const TASK_API = '/task';
 
@@ -40,7 +40,7 @@ const taskApi = {
     },
 
     // Update a task by ID
-    updateTaskByID: async (id, formData) => {
+    updateTask: async (id, formData) => {
         try {
             const response = await authClient.put(`${TASK_API}/update/${id}`, formData);
             return response.data;
@@ -62,10 +62,10 @@ const taskApi = {
     },
 
     // Search tasks by name with pagination
-    searchByTaskName: async (filter = "", page = 0, size = 5) => {
+    searchByTaskName: async (taskName = '', page = 0, size = 5) => {
         try {
-            const response = await authClient.get(`${TASK_API}`, {
-              params: { filter: filter, page: page, size: size },
+            const response = await authClient.get(`${TASK_API}/search`, {
+                params: { name: taskName, page: page, size: size },
             });
             return response.data;
         } catch (error) {
