@@ -347,7 +347,7 @@ const TaskManagement = () => {
           {<FaAngleRight />}
           Task Management
         </Typography>
-        <div>
+        <div style={{ marginBottom: "10px" }}>
           <SearchComponent onSearch={handleSearch} placeholder=" Sreach Task" />
         </div>
         <DataGrid
