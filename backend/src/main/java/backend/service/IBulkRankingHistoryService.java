@@ -17,5 +17,6 @@ public interface IBulkRankingHistoryService {
 
     //response
     public List<BulkRankingHistoryResponse> getAllBulkRankingHistoryResponses(List<BulkRankingHistory> list);
+//    public List<BulkRankingHistoryResponse> findListBulkRankingHistoryResponses(Integer historyId);
 
 }

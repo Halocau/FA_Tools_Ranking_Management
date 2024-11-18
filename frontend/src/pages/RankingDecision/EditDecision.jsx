@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaAngleRight } from "react-icons/fa";
+import { useEffect } from 'react';
 // MUI
 import {
     InputAdornment, Box, Button, Typography, TextField, Modal, IconButton, Select, MenuItem, Table, TableHead, TableBody, TableCell, TableRow
@@ -10,44 +11,20 @@ import EditIcon from '@mui/icons-material/Edit';
 import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
 import useRankingDecision from "../../hooks/useRankingDecision.jsx";
 import useNotification from "../../hooks/useNotification";
-const rankTitles = [
-    "0 - No experience",
-    "1 - Low",
-    "2 - Normal",
-    "3 - Medium",
-];
-const initialCriteria = [
-    { criteria_name: 'Scope of Training Assignments', weight: 10, max_score: 4, num_options: 4 },
-    { criteria_name: 'Technical or Professional Skills', weight: 10, max_score: 6, num_options: 6 },
-    { criteria_name: 'Courseraware Development', weight: 30, max_score: 4, num_options: 4 },
-    { criteria_name: 'Courseware Development', weight: 10, max_score: 3, num_options: 3 },
-    { criteria_name: 'Training Certificate', weight: 30, max_score: 4, num_options: 4 },
-    { criteria_name: 'Years of Working and Teaching', weight: 10, max_score: 4, num_options: 4 },
-];
-
-const initialTitles = [
-    { title_name: 'TRN1.1', rank_score: 37 },
-    { title_name: 'TRN1.2', rank_score: 45 },
-    { title_name: 'TRN1.3', rank_score: 50 },
-    { title_name: 'TRN2.1', rank_score: 61 },
-    { title_name: 'TRN2.2', rank_score: 63 },
-    { title_name: 'TRN2.3', rank_score: 74 },
-    { title_name: 'TRN3.1', rank_score: 80 },
-    { title_name: 'TRN3.2', rank_score: 86 },
-    { title_name: 'TRN3.3', rank_score: 100 },
-];
-
-const initialTasks = [
-    { task_name: 'Giảng dạy', task_type: 'In Working Hour', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-    { task_name: 'Giảng dạy', task_type: 'Overtime', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-    { task_name: 'Hướng dẫn, hỗ trợ, chấm bài', task_type: 'In Working Hour', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-    { task_name: 'Hướng dẫn, hỗ trợ, chấm bài', task_type: 'Overtime', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-    { task_name: 'Tạo tài liệu', task_type: 'In Working Hour', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-    { task_name: 'Tạo tài liệu', task_type: 'Overtime', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-    { task_name: 'Xem xét tài liệu', task_type: 'In Working Hour', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-    { task_name: 'Xem xét tài liệu', task_type: 'Overtime', scores: initialTitles.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-];
+// Css
+import "../../assets/css/Table.css";
+//Data
+import { rankTitles, initialCriteria, initialTitles, initialTasks } from "../../pages/RankingDecision/Data";
 const EditDecision = () => {
+    // Table  List Ranking Group (page, size) 
+    const [rows, setRows] = useState([]); // Initialize with empty array
+    // const [rankingGroups, setRankingGroups] = useState([]);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(5);
+    // const [totalElements, setTotalElements] = useState(0);
+    const [totalElements, setTotalElements] = useState(initialCriteria.length);
+    const [totalPages, setTotalPages] = useState(0);
+
     const [activeStep, setActiveStep] = useState(1);
     const [criteriaData, setCriteriaData] = useState(initialCriteria);
     const [titles, setTitles] = useState(initialTitles);
@@ -67,7 +44,12 @@ const EditDecision = () => {
     // Validation error message
     const [validationMessage, setValidationMessage] = useState("");
 
-    // Destructuring from useRankingDecision custom hook
+
+    useEffect(() => {
+        // Cập nhật totalPages mỗi khi totalElements hoặc pageSize thay đổi
+        setTotalPages(Math.ceil(totalElements / pageSize));
+    }, [totalElements, pageSize]);
+
     const {
         data: decisions,
         fetchAllRankingDecisions,
@@ -215,6 +197,74 @@ const EditDecision = () => {
         console.log(newCriteria)
         setCriteria([...criteria, newCriteria]);
     };
+
+    const columns = [
+        { field: 'criteria_name', headerName: 'Criteria Name', width: 500, editable: decisionStatus === 'Draft' },
+        { field: 'weight', headerName: 'Weight', width: 150, editable: decisionStatus === 'Draft', cellClassName: 'cell-center' },
+        { field: 'num_options', headerName: 'No of Options', width: 150, editable: decisionStatus === 'Draft', cellClassName: 'cell-center' },
+        { field: 'max_score', headerName: 'Max Score', width: 150, editable: decisionStatus === 'Draft', cellClassName: 'cell-center' },
+        {
+            field: 'action',
+            headerName: 'Action',
+            width: 200,
+            renderCell: (params) => (
+                decisionStatus === 'Draft' && (
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => handleDeleteRowData(params.row.id)}
+                    >
+                        Xóa
+                    </Button>
+                )
+            )
+        },
+    ];
+    // Thêm CSS để tạo viền cho ô
+    const dataGridStyles = {
+        '& .cell-center': {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        '& .cell-border': {
+            border: '1px solid black', // Tạo viền cho các ô
+        },
+
+        '& .MuiDataGrid-cell--editable': {
+            backgroundColor: '#f0f0f0', // Màu nền ô chỉnh sửa để dễ phân biệt
+        }
+    };
+
+
+    const [isSaveButtonEnabled, setIsSaveButtonEnabled] = useState(false);
+
+    // Hàm xử lý khi có thay đổi trong ô dữ liệu
+    const handleCellEditCommit = (params) => {
+        // Kích hoạt nút Save khi dữ liệu được chỉnh sửa
+        setIsSaveButtonEnabled(true);
+        console.log('Cell edit committed:', params);
+    };
+
+    // Hàm xử lý khi nhấp vào nút Save
+    const handleSaveChanges = () => {
+        // Tham khảo các quy tắc BR 3 và thực hiện lưu thay đổi
+        console.log('Save button clicked');
+        // Sau khi lưu, tắt nút Save
+        setIsSaveButtonEnabled(false);
+    };
+
+    // Hàm xử lý khi người dùng nhấp vào nút Cancel
+    const handleCancelChanges = () => {
+        // Tắt nút Save khi hủy
+        setIsSaveButtonEnabled(false);
+    };
+    const handleEditCellChange = (index, field, value) => {
+        const updatedTitles = [...titles];
+        updatedTitles[index][field] = value;
+        setTitles(updatedTitles);
+    };
+
     return (
         <div style={{ marginTop: "60px" }}>
             <Box sx={{ marginTop: 4, padding: 2 }}>
@@ -255,218 +305,396 @@ const EditDecision = () => {
                     </Box>
                 </Box>
 
-                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, marginTop: 2 }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: 20,  // Giảm khoảng cách giữa các button
+                        marginTop: 2,
+                        marginBottom: -5
+                    }}
+                >
                     {[1, 2, 3].map((step) => (
                         <Button
                             key={step}
                             variant={activeStep === step ? 'contained' : 'outlined'}
                             onClick={() => handleStepChange(step)}
-                            sx={{ width: '50px', height: '50px', borderRadius: '50%' }}
+                            sx={{
+                                width: '40px',  // Giảm chiều rộng
+                                height: '40px', // Giảm chiều cao
+                                borderRadius: '50%'
+                            }}
                         >
                             {step}
                         </Button>
                     ))}
                 </Box>
 
+
                 {/* Step 1 - Criteria Configuration */}
                 {/* Tạo viền xung quanh */}
                 {/* <Box sx={{ border: '2px solid black', borderRadius: '8px', padding: 2, maxWidth: '1300px', margin: 'auto', maxHeight: '800px' }}> */}
-                <Box sx={{ overflowX: 'auto' }}>
+                <Box sx={{ overflowX: 'auto', marginTop: '10px' }}>
                     {
                         activeStep === 1 && (
-                            <Box sx={{ overflowX: 'auto', marginTop: 2 }}>
-                                <Table>
-                                    <TableHead sx={{ backgroundColor: 'blue', color: '#fff' }}>
-                                        <TableRow sx={{ '& > th': { backgroundColor: 'gray', color: '#fff' } }}>
-                                            <TableCell>#</TableCell>
-                                            <TableCell>Criteria Name</TableCell>
-                                            <TableCell>Weight (%)</TableCell>
-                                            <TableCell>Max Score</TableCell>
-                                            <TableCell>Num Options</TableCell>
-                                            {decisionStatus === 'Draft' && <TableCell>Action</TableCell>}
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {criteriaData.map((row, index) => (
-                                            <TableRow key={index}>
-                                                <TableCell>{index + 1}</TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        value={row.criteria_name}
-                                                        onChange={(e) => handleInputChange(index, 'criteria_name', e.target.value)}
-                                                        sx={{ width: '200px' }}
-                                                    />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        type="number"
-                                                        value={row.weight || ''}
-                                                        onChange={(e) => handleNumberInput(e.target.value, index, 'weight', setCriteriaData, criteriaData)}
-                                                        sx={{ width: '120px' }}
-                                                        InputProps={{ endAdornment: <Typography>%</Typography> }}
-                                                    />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        type="number"
-                                                        value={row.max_score || ''}
-                                                        onChange={(e) => handleNumberInput(e.target.value, index, 'max_score', setCriteriaData, criteriaData)}
-                                                        sx={{ width: '100px' }}
-                                                    />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        type="number"
-                                                        value={row.num_options || ''}
-                                                        onChange={(e) => handleNumberInput(e.target.value, index, 'num_options', setCriteriaData, criteriaData)}
-                                                        sx={{ width: '100px' }}
-                                                    />
-                                                </TableCell>
-                                                {decisionStatus === 'Draft' && (
-                                                    <TableCell>
-                                                        <Button
-                                                            variant="contained"
-                                                            color="secondary"
-                                                            onClick={() => handleDeleteRowData(index)}
-                                                        >
-                                                            Xóa
-                                                        </Button>
-                                                    </TableCell>
-                                                )}
+                            <Box
+                                sx={{
+                                    width: "100%",
+                                    height: 500,
+                                    marginTop: '60px',
+                                    border: '2px solid black',
+                                    borderRadius: '8px',
+                                    padding: '16px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 2,
+                                    overflow: 'hidden', // Loại bỏ thanh cuộn bên ngoài
+                                }}
+                            >
+                                {/* DataGrid */}
+                                {/* <Box sx={{ width: '100%', height: 370, marginTop: '10px' }}>
+                                    <DataGrid
+                                        className="custom-data-grid"
+                                        rows={initialCriteria}
+                                        columns={columns}
+                                        pagination
+                                        pageSizeOptions={[3, 5, 10]}
+                                        getRowId={(row) => row.criteria_name}
+                                        rowCount={totalElements}
+                                        paginationMode="server"
+                                        paginationModel={{
+                                            page: page - 1,
+                                            pageSize: pageSize,
+                                        }}
+                                        onPaginationModelChange={(model) => {
+                                            setPage(model.page + 1);
+                                            setPageSize(model.pageSize);
+                                        }}
+                                        disableNextButton={page >= totalPages}
+                                        disablePrevButton={page <= 1}
+                                        disableRowSelectionOnClick
+                                        autoHeight={false}
+                                        processRowUpdate={(newRow, oldRow) => {
+                                            const updatedRow = { ...oldRow, ...newRow };
+                                            handleRowUpdate(updatedRow);
+                                            return updatedRow;
+                                        }}
+                                        onCellEditCommit={(params) => {
+                                            console.log('Cell edit committed:', params);
+                                        }}
+                                        sx={{
+                                            height: '100%',
+                                            '& .MuiDataGrid-virtualScroller': {
+                                                overflowY: 'auto',
+                                            },
+                                        }}
+                                    />
+                                </Box> */}
+                                <Box sx={{ maxHeight: 400, overflow: 'auto' }}>
+                                    <Table stickyHeader>
+                                        <TableHead>
+                                            <TableRow className="custom-table-row">
+                                                <TableCell className="custom-table-cell" sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }}>#</TableCell>
+                                                <TableCell sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }}>Criteria Name</TableCell>
+                                                <TableCell sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }}>Weight</TableCell>
+                                                <TableCell sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }}>No of Option</TableCell>
+                                                <TableCell sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }}>Max score</TableCell>
+                                                {decisionStatus === 'Draft' && <TableCell sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }}>Action</TableCell>}
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                                <Button variant="contained" color="primary" onClick={handleAddCriteria}>
-                                    Add Criteria
-                                </Button>
+                                        </TableHead>
+                                        <TableBody>
+                                            {criteria.map((row, criterionIndex) => (
+                                                <TableRow key={criterionIndex}>
+                                                    <TableCell>{criterionIndex + 1}</TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            value={row.criteria_name}
+                                                            onChange={(e) => handleChangeScore(criterionIndex, 'criteria_name', e.target.value)}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            type="number"
+                                                            value={row.weight}
+                                                            onChange={(e) => handleChangeScore(criterionIndex, 'weight', e.target.value)}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            type="number"
+                                                            value={row.num_options}
+                                                            onChange={(e) => handleChangeScore(criterionIndex, 'num_options', e.target.value)}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            type="number"
+                                                            value={row.max_score}
+                                                            onChange={(e) => handleChangeScore(criterionIndex, 'max_score', e.target.value)}
+                                                        />
+                                                    </TableCell>
+                                                    {decisionStatus === 'Draft' && (
+                                                        <TableCell>
+                                                            <Button
+                                                                variant="contained"
+                                                                color="error"
+                                                                onClick={() => handleDeleteRowData(criterionIndex)}
+                                                            >
+                                                                Xóa
+                                                            </Button>
+                                                        </TableCell>
+                                                    )}
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+
+                                    </Table>
+                                </Box>
+                                {/* Add Criteria Button */}
+                                {decisionStatus === 'Draft' && (
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                                        <Button variant="contained" color="primary" onClick={handleAddCriteria}>
+                                            Add Criteria
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="success"
+                                            onClick={handleSaveChanges}
+                                            disabled={!isSaveButtonEnabled} // Bật/tắt dựa trên trạng thái
+                                            sx={{ display: isSaveButtonEnabled ? 'inline-flex' : 'none' }} // Hiển thị khi cần
+                                        >
+                                            Save
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            onClick={handleCancelChanges}
+                                            disabled={!hasChanges} // Bật/tắt dựa trên trạng thái
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </Box>
+                                )}
+
+
                             </Box>
                         )
                     }
+
                 </Box>
                 {/* Step 2 - Title Configuration */}
+
                 {
                     activeStep === 2 && (
-                        <Box sx={{ overflowX: 'auto', marginTop: 2 }}>
-                            <Table>
-                                <TableHead sx={{ backgroundColor: '#b0bec5', color: '#fff' }}>
-                                    <TableRow>
-                                        <TableCell>#</TableCell>
-                                        <TableCell>Rank Title</TableCell>
-                                        {initialCriteria.map((criterion) => (
-                                            <TableCell key={criterion.criteria_name}>
-                                                {criterion.criteria_name}
-                                            </TableCell>
-                                        ))}
-                                        {decisionStatus === 'Draft' && <TableCell>Action</TableCell>}
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {titles.map((row, titleIndex) => (
-                                        <TableRow key={titleIndex}>
-                                            <TableCell>{titleIndex + 1}</TableCell>
-                                            <TableCell>{row.title_name}</TableCell>
-                                            {initialCriteria.map((criterion, criterionIndex) => (
-                                                <TableCell key={criterion.criteria_name}>
-                                                    <Select
-                                                        value={row.scores ? row.scores[criterionIndex] : ''}
-                                                        onChange={(e) => handleScoreChange(titleIndex, criterionIndex, e.target.value)}
-                                                        sx={{ width: '120px' }}
-                                                    >
-                                                        <MenuItem value="">
-                                                        </MenuItem>
-                                                        {rankTitles.map((rank) => (
-                                                            <MenuItem key={rank} value={rank}>
-                                                                {rank}
-                                                            </MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </TableCell>
-                                            )
-                                            )}
-                                            {decisionStatus === 'Draft' && (
-                                                <TableCell>
-                                                    <Button
-                                                        variant="contained"
-                                                        color="secondary"
-                                                        onClick={() => handleDeleteRowData(index)}
-                                                    >
-                                                        Xóa
-                                                    </Button>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                        <Box sx={{ overflowX: 'auto', marginTop: '10px' }}>
+                            <Box
+                                sx={{
+                                    width: "100%",
+                                    height: 500,
+                                    marginTop: '60px',
+                                    border: '2px solid black',
+                                    borderRadius: '8px',
+                                    padding: '16px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 2,
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                {/* Box bọc bảng với thanh cuộn */}
+                                <Box sx={{ maxHeight: 400, overflow: 'auto' }}>
+                                    <Table stickyHeader>
+                                        <TableHead>
+                                            <TableRow className="custom-table-row">
+                                                <TableCell className="custom-table-cell" sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }}>#</TableCell>
+                                                <TableCell sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }}>Rank Title</TableCell>
+                                                {/* Tạo cột động từ mảng initialCriteria */}
+                                                {initialCriteria.map((criterion) => (
+                                                    <TableCell sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }} key={criterion.criteria_name}>
+                                                        {criterion.criteria_name}
+                                                    </TableCell >
+                                                ))}
+                                                {decisionStatus === 'Draft' && <TableCell sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }}>Action</TableCell>}
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {titles.map((row, titleIndex) => (
+                                                <TableRow key={titleIndex}>
+                                                    <TableCell>{titleIndex + 1}</TableCell>
+                                                    <TableCell>{row.title_name}</TableCell>
+                                                    {/* Hiển thị dữ liệu cho từng cột criteria */}
+                                                    {initialCriteria.map((criterion, criterionIndex) => (
+                                                        <TableCell key={criterion.criteria_name}>
+                                                            <Select
+                                                                value={row.scores ? row.scores[criterionIndex] : ''}
+                                                                onChange={(e) => handleScoreChange(titleIndex, criterionIndex, e.target.value)}
+                                                                sx={{ width: '120px' }}
+                                                            >
+                                                                <MenuItem value="">
+                                                                </MenuItem>
+                                                                {rankTitles.map((rank) => (
+                                                                    <MenuItem key={rank} value={rank}>
+                                                                        {rank}
+                                                                    </MenuItem>
+                                                                ))}
+                                                            </Select>
+                                                        </TableCell>
+                                                    ))}
+                                                    {decisionStatus === 'Draft' && (
+                                                        <TableCell>
+                                                            <Button
+                                                                variant="contained"
+                                                                color="error"
+                                                                onClick={() => handleDeleteRowData(titleIndex)}
+                                                            >
+                                                                Xóa
+                                                            </Button>
+                                                        </TableCell>
+                                                    )}
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </Box>
+                                {/* Add Title Button */}
+                                {decisionStatus === 'Draft' && (
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, marginTop: 2 }}>
+                                        <Button variant="contained" color="primary" onClick={'handleAddTitle'}>
+                                            Add Title
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="success"
+                                            onClick={handleSaveChanges}
+                                            disabled={!isSaveButtonEnabled}
+                                            sx={{ display: isSaveButtonEnabled ? 'inline-flex' : 'none' }}
+                                        >
+                                            Save
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            onClick={handleCancelChanges}
+                                            disabled={!hasChanges}
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </Box>
+                                )}
+                            </Box>
                         </Box>
                     )
                 }
+
 
                 {/* Step 3 - Task & Price Configuration */}
                 {
                     activeStep === 3 && (
-                        <Box sx={{ overflowX: 'auto', marginTop: 2 }}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>#</TableCell>
-                                        <TableCell>Tên nhiệm vụ</TableCell>
-                                        <TableCell>Loại nhiệm vụ</TableCell>
-                                        {initialTitles.map((title) => (
-                                            <TableCell key={title.title_name}>{title.title_name}</TableCell>
-                                        ))}
-                                        {decisionStatus === 'Draft' && <TableCell>Action</TableCell>}
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {taskRows.map((row, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell>{index + 1}</TableCell>
-                                            <TableCell>
-                                                <TextField
-                                                    value={row.task_name}
-                                                    onChange={(e) => handleInputChange(index, 'task_name', e.target.value)}
-                                                    sx={{ width: '200px' }}
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <TextField
-                                                    value={row.task_type}
-                                                    onChange={(e) => handleInputChange(index, 'task_type', e.target.value)}
-                                                    sx={{ width: '150px' }}
-                                                />
-                                            </TableCell>
-                                            {initialTitles.map((title) => (
-                                                <TableCell key={title.title_name}>
-                                                    <TextField
-                                                        type="number"
-                                                        value={row.scores[title.title_name] || ''}
-                                                        onChange={(e) => handleScoreChange(index, title.title_name, e.target.value)}
-                                                        sx={{ width: '80px' }}
-                                                        inputProps={{ min: 0 }}
-                                                    />
-                                                </TableCell>
+                        <Box sx={{ overflowX: 'auto', marginTop: '10px' }}>
+                            <Box
+                                sx={{
+                                    width: "100%",
+                                    height: 500,
+                                    marginTop: '60px',
+                                    border: '2px solid black',
+                                    borderRadius: '8px',
+                                    padding: '16px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 2,
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                {/* Box bọc bảng với thanh cuộn */}
+                                <Box sx={{ maxHeight: 400, overflow: 'auto' }}>
+                                    <Table stickyHeader>
+                                        <TableHead>
+                                            <TableRow sx={{ '& .MuiTableCell-root': { padding: '4px 8px' } }}>
+                                                <TableCell sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }}>#</TableCell>
+                                                <TableCell sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }}>Tên nhiệm vụ</TableCell>
+                                                <TableCell sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }}>Loại nhiệm vụ</TableCell>
+                                                {initialTitles.map((title) => (
+                                                    <TableCell sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }} key={title.title_name}>{title.title_name}</TableCell>
+                                                ))}
+                                                {decisionStatus === 'Draft' && <TableCell sx={{ backgroundColor: '#607d8b', color: '#fff', fontWeight: 'bold' }}>Action</TableCell>}
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {taskRows.map((row, index) => (
+                                                <TableRow key={index}>
+                                                    <TableCell>{index + 1}</TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            value={row.task_name}
+                                                            onChange={(e) => handleInputChange(index, 'task_name', e.target.value)}
+                                                            sx={{ width: '200px' }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            value={row.task_type}
+                                                            onChange={(e) => handleInputChange(index, 'task_type', e.target.value)}
+                                                            sx={{ width: '150px' }}
+                                                        />
+                                                    </TableCell>
+                                                    {initialTitles.map((title) => (
+                                                        <TableCell key={title.title_name}>
+                                                            <TextField
+                                                                type="number"
+                                                                value={row.scores[title.title_name] || ''}
+                                                                onChange={(e) => handleScoreChange(index, title.title_name, e.target.value)}
+                                                                sx={{ width: '80px' }}
+                                                                inputProps={{ min: 0 }}
+                                                            />
+                                                        </TableCell>
+                                                    ))}
+                                                    {decisionStatus === 'Draft' && (
+                                                        <TableCell>
+                                                            <Button
+                                                                variant="contained"
+                                                                color="error"
+                                                                onClick={() => handleDeleteRowData(index)}
+                                                            >
+                                                                Xóa
+                                                            </Button>
+                                                        </TableCell>
+                                                    )}
+                                                </TableRow>
                                             ))}
-                                            {decisionStatus === 'Draft' && (
-                                                <TableCell>
-                                                    <Button
-                                                        variant="contained"
-                                                        color="secondary"
-                                                        onClick={() => handleDeleteRowData(index)}
-                                                    >
-                                                        Xóa
-                                                    </Button>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                        </TableBody>
+                                    </Table>
+
+                                </Box>
+                                {decisionStatus === 'Draft' && (
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, marginTop: 2 }}>
+                                        <Button variant="contained" color="primary" onClick={'handleAddTitle'}>
+                                            Add
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="success"
+                                            onClick={handleSaveChanges}
+                                            disabled={!isSaveButtonEnabled}
+                                            sx={{ display: isSaveButtonEnabled ? 'inline-flex' : 'none' }}
+                                        >
+                                            Save
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            onClick={handleCancelChanges}
+                                            disabled={!hasChanges}
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </Box>
+                                )}
+                            </Box>
+
                         </Box>
                     )
                 }
-
+                {/* 
                 <Box sx={{ marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
                     <Button variant="outlined" color="error" onClick={handleCancelAllData}>
                         Hủy tất cả
@@ -479,9 +707,10 @@ const EditDecision = () => {
                             Lưu
                         </Button>
                     </Box>
-                </Box>
+                </Box> */}
             </Box >
             {/* </Box> */}
+
         </div >
 
     );
