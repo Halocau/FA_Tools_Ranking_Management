@@ -2,20 +2,19 @@ package backend.controller;
 
 import backend.model.dto.DecisionCriteriaResponse;
 import backend.model.entity.DecisionCriteria;
+import backend.model.form.DecisionCriteria.AddDecisionCriteriaRequest;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.IDecisionCriteriaService;
 import com.turkraft.springfilter.boot.Filter;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -28,8 +27,20 @@ public class DecisionCriteriaController {
         this.iDecisionCriteriaService = iDecisionCriteriaService;
     }
 
+    @GetMapping()
+    public ResponseEntity<ResultPaginationDTO> getAllDecisionCriteriaDecision(
+            @Filter Specification<DecisionCriteria> spec,
+            Pageable pageable
+    ) {
+        ResultPaginationDTO decisonCritaria = iDecisionCriteriaService.getAllDecisionCriteria(spec, pageable);
+        List<DecisionCriteria> decisionCriteriaList = (List<DecisionCriteria>) decisonCritaria.getResult();
+        List<DecisionCriteriaResponse> decisionCriteriaResponseList = iDecisionCriteriaService.getDecisionCriteriaResponse(decisionCriteriaList);
+        decisonCritaria.setResult(decisionCriteriaResponseList);
+        return ResponseEntity.status(HttpStatus.OK).body(decisonCritaria);
+    }
+
     @GetMapping("/get/{decisionId}")
-    public ResponseEntity<ResultPaginationDTO> getAllDecisionCriteriaByDecisionId(
+    public ResponseEntity<ResultPaginationDTO> getDecisionCriteriaByDecisionId(
             @PathVariable(name = "decisionId") Integer decisionId,
             @Filter Specification<DecisionCriteria> spec,
             Pageable pageable
@@ -41,15 +52,18 @@ public class DecisionCriteriaController {
         return ResponseEntity.status(HttpStatus.OK).body(find);
     }
 
-    @GetMapping("all")
-    public ResponseEntity<ResultPaginationDTO> getDecisionCriteriaDecision(
-            @Filter Specification<DecisionCriteria> spec,
-            Pageable pageable
-    ) {
-        ResultPaginationDTO decisonCritaria = iDecisionCriteriaService.getAllDecisionCriteria(spec, pageable);
-        List<DecisionCriteria> decisionCriteriaList = (List<DecisionCriteria>) decisonCritaria.getResult();
-        List<DecisionCriteriaResponse> decisionCriteriaResponseList = iDecisionCriteriaService.getDecisionCriteriaResponse(decisionCriteriaList);
-        decisonCritaria.setResult(decisionCriteriaResponseList);
-        return ResponseEntity.status(HttpStatus.OK).body(decisonCritaria);
+    @PostMapping("/add")
+    public ResponseEntity<String> addDecisionCriteria(@RequestBody @Valid AddDecisionCriteriaRequest form) {
+        iDecisionCriteriaService.createDecisionCriteria(form);
+        return ResponseEntity.ok("Decision criteria created successfully.");
     }
+    @DeleteMapping("/delete/{decisionId}/{criteriaId}")
+    public ResponseEntity<String> deleteDecisionCriteriaById(
+            @PathVariable Integer decisionId,
+            @PathVariable Integer criteriaId)
+    {
+        iDecisionCriteriaService.deleteDecisionCriteria(decisionId,criteriaId);
+        return ResponseEntity.ok("Decision criteria deleted successfully.");
+    }
+
 }

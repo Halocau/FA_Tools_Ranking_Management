@@ -7,8 +7,11 @@ import backend.dao.IRankingDecisionRepository;
 import backend.model.dto.DecisionCriteriaResponse;
 import backend.model.entity.Criteria;
 import backend.model.entity.DecisionCriteria;
+import backend.model.form.DecisionCriteria.AddDecisionCriteriaRequest;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.IDecisionCriteriaService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -103,9 +106,35 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
     }
 
     @Override
+    @Transactional
     public DecisionCriteria addDecisionCriteria(DecisionCriteria decisionCriteria) {
-        return null;
+        return iDecisionCriteriaRepository.save(decisionCriteria);
     }
 
+    @Override
+    @Transactional
+    public void deleteDecisionCriteria(Integer decisionId, Integer criteriaId) {
+        DecisionCriteria findDecisionCriteria = iDecisionCriteriaRepository.findByCriteriaIdAndDecisionId(criteriaId, decisionId);
+        if (findDecisionCriteria != null) {
+            iDecisionCriteriaRepository.delete(findDecisionCriteria);
+        }else{
+            throw new EntityNotFoundException(
+                    String.format("DecisionCriteria with decisionId %d and criteriaId %d not found", decisionId,criteriaId)
+            );
+        }
+    }
 
+    /**
+     * Form request
+     */
+    @Override   //ADD
+    @Transactional
+    public void createDecisionCriteria(AddDecisionCriteriaRequest form) {
+        DecisionCriteria decisionCriteria = DecisionCriteria.builder()
+                .decisionId(form.getDecisionId())
+                .criteriaId(form.getCriteriaId())
+                .weight(form.getWeight())
+                .build();
+        iDecisionCriteriaRepository.save(decisionCriteria);
+    }
 }
