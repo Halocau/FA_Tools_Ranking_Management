@@ -68,7 +68,7 @@ public class DecisionCriteriaController {
         return ResponseEntity.ok("Decision criteria deleted successfully.");
     }
 
-    @PutMapping("/update/{decisionId}/{criteriaId}")
+    @PutMapping("/upsert/{decisionId}/{criteriaId}")
     public ResponseEntity<String> updateDecisionCriteria(
             @RequestBody @Valid UpdateDecisionCriteriaRequest form,
             @PathVariable Integer decisionId,

@@ -151,9 +151,12 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
             find.setWeight(form.getWeight());
             iDecisionCriteriaRepository.saveAndFlush(find);
         }else{
-            throw new EntityNotFoundException(
-                    String.format("DecisionCriteria with decisionId %d and criteriaId %d not found [updateDecisionCriteria]", decisionId,criteriaId)
-            );
+            DecisionCriteria newCriteria = DecisionCriteria.builder()
+                    .decisionId(form.getDecisionId())
+                    .criteriaId(form.getCriteriaId())
+                    .weight(form.getWeight())
+                    .build();
+            iDecisionCriteriaRepository.save(newCriteria);
         }
     }
 }
