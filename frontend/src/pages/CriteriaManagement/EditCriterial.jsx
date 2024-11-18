@@ -184,7 +184,9 @@ const EditCriteria = () => {
             }
             console.log("newOption:", newOption);
             await OptionAPI.updateOption(newOption.id, optionUpdate);
-            getAllOptionByID();
+            if (options.some((option) => option.id === newOption.id)) {
+                getAllOptionByID();
+            }
             setShowEditOptionModal(false);
             setMessage("Option updated successfully!");
             setMessageType("success");
