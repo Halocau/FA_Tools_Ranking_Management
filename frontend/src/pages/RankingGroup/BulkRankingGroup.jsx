@@ -30,6 +30,8 @@ import { useAuth } from "../../contexts/AuthContext.jsx";
 import useNotification from "../../hooks/useNotification";
 // Layouts
 import Slider from "../../layouts/Slider.jsx";
+//Filter
+import { sfLike, sfEqual, sfAnd } from 'spring-filter-query-builder';
 
 const BulkRankingGroup = () => {
     const navigate = useNavigate(); // To navigate between pages
@@ -40,6 +42,7 @@ const BulkRankingGroup = () => {
     // Table  List Ranking Decision (page, size) 
     const [rows, setRows] = useState([]); // Initialize with empty array
     const [bulkRankingGroup, setBulkRankingGroup] = useState([]);
+    const [filter, setFilter] = useState(`rankingGroupId : ${id}`);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(5);
     const [totalElements, setTotalElements] = useState(0);
@@ -56,8 +59,14 @@ const BulkRankingGroup = () => {
 
     const getBulkRankingGroup = async () => {
         try {
-            const response = await BulkRankingAPI.viewBulkHistory();
-            setBulkRankingGroup(response);
+            const response = await BulkRankingAPI.viewBulkHistory(
+                filter,
+                page,
+                pageSize
+            );
+            setBulkRankingGroup(response.result);
+            setTotalPages(response.pageInfo.total);
+            setTotalElements(response.pageInfo.element);
         } catch (error) {
             console.error("Error fetching group:", error);
         }
@@ -67,18 +76,21 @@ const BulkRankingGroup = () => {
         getBulkRankingGroup();
     }, [id]);
 
-    // useEffect(() => {
-    //     if(bulkRankingGroup) {
-    //         const mappedRows = bulkRankingGroup.map((criteria, index) => ({
-    //             id: bulkRankingGroup.criteriaId,
-    //             index: index + 1 + (page - 1) * 5,
-    //             criteriaName: bulkRankingGroup.criteriaName,
-    //             noOfOption: bulkRankingGroup.numOptions ? bulkRankingGroup.numOptions : 0,
-    //             maxScore: bulkRankingGroup.maxScore ? bulkRankingGroup.maxScore : 0,
-    //         }));
-    //         setRows(mappedRows);
-    //     }
-    // },[bulkRankingGroup])
+    useEffect(() => {
+        if (bulkRankingGroup) {
+            const mappedRows = bulkRankingGroup.map((bulkRankingGroup, index) => ({
+                id: bulkRankingGroup.historyId,
+                fileName: bulkRankingGroup.fileName,
+                rankingdecision: bulkRankingGroup.decisionName,
+                uploadedAt: bulkRankingGroup.uploadedAt ? bulkRankingGroup.uploadedAt : "N/A",
+                uploadedBy: bulkRankingGroup.uploadByName ? bulkRankingGroup.uploadByName : "N/A",
+                status: bulkRankingGroup.status ? bulkRankingGroup.status : "N/A",
+                note: bulkRankingGroup.note
+            }));
+            setRows(mappedRows);
+        }
+    }, [bulkRankingGroup])
+
     console.log(bulkRankingGroup);
     // Ranking Group Edit
     const RankingGroupEdit = async () => {
@@ -103,8 +115,8 @@ const BulkRankingGroup = () => {
     }, [id]);
     // Columns configuration for the DataGrid
     const columns = [
-        { field: "index", headerName: "File Name", width: 200 },
-        { field: "rankingdicision", headerName: "Ranking Decision", width: 300 },
+        { field: "fileName", headerName: "File Name", width: 200 },
+        { field: "rankingdecision", headerName: "Ranking Decision", width: 300 },
         { field: "uploadedAt", headerName: "Uploaded At", width: 130 },
         { field: "uploadedBy", headerName: "Uploaded By", width: 130 },
         { field: "status", headerName: "Status", width: 130 },
@@ -183,6 +195,8 @@ const BulkRankingGroup = () => {
                         columns={columns}
                         // checkboxSelection
                         pagination
+                        getRowId={(row) => row.id}
+
                         pageSizeOptions={[5, 10, 25]}
                         initialState={{
                             pagination: {
