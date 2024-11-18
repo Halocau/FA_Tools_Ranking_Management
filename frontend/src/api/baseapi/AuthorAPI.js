@@ -35,23 +35,11 @@ authClient.interceptors.response.use(
         if (error.response) {
             const { status } = error.response;
 
-            // Unauthorized
-            // if (status === 401) {
-            //     console.error('Unauthorized - Redirecting to login.');
-            //     window.location.href = '/login';
-            // }
-
             // Forbidden
             if (status === 403) {
                 console.error('Access forbidden - Redirecting to 403 page.');
                 window.location.href = '/403';
             }
-
-            // // Not Found
-            // if (status === 404) {
-            //     console.error('Resource not found.');
-            //     window.location.href = '/404';
-            // }
 
             // Internal Server Error
             if (status === 500) {

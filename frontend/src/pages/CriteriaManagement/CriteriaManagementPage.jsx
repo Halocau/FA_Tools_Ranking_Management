@@ -207,7 +207,7 @@ const CriteriaManagement = () => {
                     </Button>
                 </Box>
 
-                <Box sx={{ width: "100%" }}>
+                <Box sx={{ width: "100%", height: "80vh" }}>
                     <DataGrid
                         apiRef={apiRef}
                         rows={rows}
