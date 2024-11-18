@@ -25,8 +25,8 @@ public class BulkRankingHistory {
     @Size(min = 3, max = 100)
     private String fileName;
 
-    @Column(name = "decision_id")
-    private Integer decisionId;
+    @Column(name = "ranking_group_id")
+    private Integer rankingGroupId;
 
     @CreationTimestamp
     @Column(name = "upload_at")
