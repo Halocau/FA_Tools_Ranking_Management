@@ -4,60 +4,70 @@ import { MdDeleteForever } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { FaEye } from 'react-icons/fa';
-// css 
-import "../../assets/css/RankingGroups.css"
+//Filter Query Builder
+import { sfLike } from 'spring-filter-query-builder';
 // Mui
 import { Box, Button, Menu, MenuItem, InputAdornment, Typography, TextField, FormControl, InputLabel, Select, Modal, IconButton, Switch, FormControlLabel, Alert, FormHelperText } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
-import ClearIcon from '@mui/icons-material/Clear';
-import EditIcon from '@mui/icons-material/Edit';
 import Autocomplete from '@mui/material/Autocomplete';
+import ClearIcon from '@mui/icons-material/Clear';
+import SearchIcon from '@mui/icons-material/Search';
+// Css
+import "../../assets/css/RankingGroups.css"
 // Source code
-// Common
+// API
+import RankingDecisionAPI from "../../api/RankingDecisionAPI.js";
+//Common
 import ModalCustom from "../../components/Common/Modal.jsx";
 import ActionButtons from "../../components/Common/ActionButtons.jsx";
-// Hooks
-import useRankingDecision from "../../hooks/useRankingDecision.jsx";
-import Slider from "../../layouts/Slider.jsx";
-// acountID
+import SearchComponent from "../../components/Common/Search.jsx";
+// Contexts
 import { useAuth } from "../../contexts/AuthContext.jsx";
-// Import hook Notification
+// Hooks
 import useNotification from "../../hooks/useNotification";
+import useRankingDecision from "../../hooks/useRankingDecision"
+// Layouts
+import Slider from "../../layouts/Slider.jsx";
 
 const RankingDecision = () => {
     const navigate = useNavigate(); //  // Initialize the useNavigate hook to navigate between pages in the application
+    //
     const handleTaskManagementClick = () => {
         navigate('/task-management'); // Navigate Page Task Management
     };
     const handleCriteriaManagementClick = () => {
         navigate('/criteria-management'); // Navigate Page CriteriaManagement
     };
+    //// State
+    // Table  List Ranking decision (page, size)
+    const [rows, setRows] = useState([]); // Initialize with empty array
+    const [rankingDecisions, setRankingDecisions] = useState([]);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(5);
+    const [totalElements, setTotalElements] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    // ApiRef   
+    const apiRef = useGridApiRef(); // Create apiRef to select multiple decisions to delete
 
     // Add
     const [showAddModal, setShowAddModal] = useState(false); // State to determine whether the additional decision modal is displayed or not
     const [newDecisionName, setnewDecisionName] = useState(""); // State to store the new decison name that the user enters
     const [clone, setClone] = useState(false); // Clone state decides
     const [selectedCloneDecision, setSelectedCloneDecision] = useState(null);
-    const [rankingDecisions, setRankingDecisions] = useState([]); // List of ranking decisions
+    const [listDecisionSearchClone, setlistDecisionSearchClone] = useState([]);
     // Delete
     const [showDeleteModal, setShowDeleteModal] = useState(false); // State to determine whether the delete decision modal is displayed or not
-    const [DecisionToDelete, setDecisionToDelete] = useState(null); // State to store the ID of the decision to be deleted
-    const [selectedRows, setSelectedRows] = useState([]); // State to save a list of IDs of selected rows in the DataGrid
+    const [decisionToDelete, setDecisionToDelete] = useState(null); // State to store the ID of the decision to be deleted
     // delete select
     const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
-    const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
-    const handleCloseBulk_DeleteRankingModal = () => setShowBulkDeleteModal(false);
     // Search Decision
-    const [rows, setRows] = useState([]); // Initialize with empty array
-    const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
-    const [searchValue, setSearchValue] = useState(''); // State to store search value
+    const [filter, setFilter] = useState("");
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Validation error message
-    const [validationMessage, setValidationMessage] = useState("");
-    const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
-    // Status
+    const [validationMessage, setValidationMessage] = useState(""); setRows
+    // Status menu
     const [anchorEl, setAnchorEl] = useState(null);
     // Function Onclick Menu
     const handleClick = (event) => {
@@ -67,29 +77,44 @@ const RankingDecision = () => {
     const handleClose = () => {
         setAnchorEl(null);
     };
-    // User `useRankingDecision` 
-    const {
-        data: decisions,
-        error,
-        loading,
-        fetchAllRankingDecisions,
-        deleteRankingDecision,
-        addRankingDecision,
-    } = useRankingDecision();
+
+    //  Destructuring from RankingdecisionAPI custom API
+    const fetchAllRankingDecisions = async () => {
+        try {
+            const data = await RankingDecisionAPI.searchRankingDecisions(
+                filter,
+                page,
+                pageSize
+            );
+            setRankingDecisions(data.result);
+            setTotalPages(data.pageInfo.total);
+            setTotalElements(data.pageInfo.element);
+        } catch (error) {
+            console.error("Failed to fetch decision:", error);
+        }
+    }
     // Fetch all ranking decisions when component mounts
     useEffect(() => {
         fetchAllRankingDecisions();
-    }, []);
+    }, [page, pageSize, filter]);
+    ;
 
-    // Log state changes for debugging purposes
+    // Map decision data to rows for DataGrid when rows are fetched
     useEffect(() => {
-        console.log("Decisions:", decisions);
-        console.log("Loading:", loading);
-        console.log("Error:", error);
+        if (rankingDecisions) {
+            const mappedRows = rankingDecisions.map((decision, index) => ({
+                id: decision.decisionId,
+                index: index + 1 + (page - 1) * pageSize,
+                dicisionname: decision.decisionName,
+                finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
+                finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
+                status: decision.status
+            }));
+            setRows(mappedRows); // Update rows with data from decisions
+        }
+    }, [rankingDecisions]);
 
-    }, [decisions, loading, error]);
-
-    //// Handlers to open/close modals for adding or deleting decisions
+    //// Handlers to open/close modals for adding decisions
     // Open the modal
     const handleOpenAddRankingDecisionModal = () => setShowAddModal(true);
     // Close the modal
@@ -97,7 +122,26 @@ const RankingDecision = () => {
         setShowAddModal(false);
         setnewDecisionName("");
         setValidationMessage("");
+        setSelectedCloneDecision(null);
+        setClone(false);
     };
+    //  list ranking decision to choose from for clone
+    const fetchlistRankingDecisionsClone = async () => {
+        try {
+            const data = await RankingDecisionAPI.searchRankingDecisions(
+                filter,
+                1,
+                totalElements,
+            );
+            setlistDecisionSearchClone(data.result)
+        } catch (error) {
+            console.error("Failed to fetch decision:", error);
+        }
+    }
+    useEffect(() => {
+        fetchlistRankingDecisionsClone();
+    }, [totalElements, filter])
+
     // Function to adding Ranking Decision
     const handleAddRankingDecision = async () => {
         setValidationMessage("");
@@ -106,11 +150,12 @@ const RankingDecision = () => {
             setValidationMessage("Ranking Decision Name is required.");
             return;
         }
-        const isDuplicate = decisions.some((decision) => {
-            return decision.decisionName && decision.decisionName.toLowerCase() === trimmedName.toLowerCase();
-        });
+        const isDuplicate = rankingDecisions.some(
+            decision => decision.decisionName.toLowerCase() === trimmedName.toLowerCase()
+        );
         if (isDuplicate) {
-            setValidationMessage("Ranking Decision Name already exists.");
+
+            setValidationMessage("Decision name already exists.");
             return;
         }
         try {
@@ -124,73 +169,129 @@ const RankingDecision = () => {
                     ...newDecision,
                     CloneDecision: selectedCloneDecision.decisionId
                 };
-                await addRankingDecision(newDecision);
+                await RankingDecisionAPI.addRankingDecision(newDecision);
             } else {
                 newDecision = {
                     ...newDecision,
                     CloneDecision: null
                 };
-                await addRankingDecision(newDecision);
+                await RankingDecisionAPI.addRankingDecision(newDecision);
             }
-            setRankingDecisions([...rankingDecisions, newDecision]);
-            showSuccessMessage("Ranking Decision successfully added.");
-
+            // setRankingDecisions([...rankingDecisions, newDecision]);
+            setTotalElements(totalElements + 1);
+            if (rankingDecisions.length < pageSize) {
+                fetchAllRankingDecisions();
+            } else {
+                setTotalPages(totalPages + 1);
+            }
             handleCloseAddRankingDecisionModal();
-            await fetchAllRankingDecisions();
+            showSuccessMessage("Ranking Decision successfully added.");
         } catch (error) {
             console.error("Failed to add decision:", error);
-            showErrorMessage("Error occurred adding Ranking Decision. Please try again.");
+
+            if (error.response && error.response.data) {
+                // Kiểm tra và lấy thông báo lỗi từ phần exception
+                if (error.response.data.exception && error.response.data.exception.decisionName) {
+                    setValidationMessage(error.response.data.exception.decisionName); // Hiển thị thông báo lỗi từ exception
+                } else if (error.response.data.detailMessage) {
+                    setValidationMessage(error.response.data.detailMessage); // Hiển thị detailMessage nếu không có exception
+                } else if (error.response.data.message) {
+                    setValidationMessage(error.response.data.message); // Hiển thị message chung nếu không có detailMessage
+                } else {
+                    showErrorMessage("Error occurred adding Ranking Decision. Please try again");
+                }
+            } else {
+                showErrorMessage("Error occurred adding Ranking Decision. Please try again");
+            }
         }
     };
 
-    //////////////////////////////////////////////////////////// Handlers to open/close modals for Delete Ranking Decision ///////////////////////////////////////////////////////////
+    //// Handlers to open/close modals for delete decision
     // Open the modal
-    const handleOpenDeleteRnkingDecisionModal = (decisionId) => {
+    const handleOpenDeleteRankingDecisionModal = (decisionId) => {
         setDecisionToDelete(decisionId);
         setShowDeleteModal(true);
     };
     // Close the modal
     const handleCloseDeleteRankingDecisionModal = () => setShowDeleteModal(false);
-    // Function to delete a row ranking decision
-    const handledeleteRankingDecision = async () => {
+    // Function to delete a  ranking decision
+    const handleDeleteRankingDecision = async () => {
         try {
-            if (DecisionToDelete) {
-                await deleteRankingDecision(DecisionToDelete);
-                showSuccessMessage("Ranking Decision successfully removed!");
-                setDecisionToDelete(null);
-                handleCloseDeleteRankingDecisionModal();
-                await fetchAllRankingDecisions();
+            if (decisionToDelete) {
+                await RankingDecisionAPI.deleteRankingDecision(decisionToDelete);
+                setRankingDecisions(rankingDecisions.filter((decision) => decision.decisionId !== decisionToDelete))
+                if (rankingDecisions.length === 5) {
+                    fetchAllRankingDecisions();
+                }
+                if (rankingDecisions.length === 1) {
+                    setPage(page - 1)
+                }
             }
+            setTotalElements(totalElements - 1);
+            showSuccessMessage("Ranking Decision successfully removed.");
+            setDecisionToDelete(null);
+            handleCloseDeleteRankingDecisionModal();
         } catch (error) {
-            console.error("Failed to delete decision:", error);
+            console.error("Failed to delete decison:", error);
             showErrorMessage("Error occurred removing Ranking Decision. Please try again.");
             handleCloseDeleteRankingDecisionModal();
         }
     };
     // Function to delete a selected ranking decisions
+    // Open the modal
+    const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
+    // Close the modal
+    const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false);
     const handleBulkDeleteRankingDecision = async () => {
-        // List ID of Row choice
+        // Lấy danh sách ID của các dòng đã chọn
         const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
         if (selectedIDs.length === 0) {
             showErrorMessage("Please select decisions to delete.");
-            handleCloseBulk_DeleteRankingModal()
+            handleCloseBulkDeleteModal();
             return;
         }
+
         try {
-            await Promise.all(selectedIDs.map(id => deleteRankingDecision(id)));
-            showSuccessMessage("Ranking Decision successfully removed.");
+            // Xóa các quyết định đã chọn
+            await Promise.all(selectedIDs.map((id) => RankingDecisionAPI.deleteRankingDecision(id)));
+            showSuccessMessage("Selected decision deleted successfully!");
+            // Cập nhật danh sách các quyết định
+            const updatedRankingDecisions = rankingDecisions.filter(
+                (decision) => !selectedIDs.includes(decision.decisionId)
+            );
+            setRankingDecisions(updatedRankingDecisions);
+            if (rankingDecisions.length === 5) {
+                await fetchAllRankingDecisions();
+            }
+            // Kiểm tra nếu còn đúng 1 nhóm sau khi xóa thì giảm Page đi 1
+            if (rankingDecisions.length === 1) {
+                setPage(page - 1);
+            }
+
             await fetchAllRankingDecisions();
-            setSelectedRows([]);
-            handleCloseBulk_DeleteRankingModal();
+
+            handleCloseBulkDeleteModal();
         } catch (error) {
-            console.error("Failed to delete selected decisions:", error);
-            showErrorMessage("Error occurred removing Ranking Decision. Please try again.");
-            handleCloseBulk_DeleteRankingModal();
+            console.error("Error during bulk delete:", error);
+            showErrorMessage("An error occurred while deleting decisions.");
         }
     };
-    /////////////////////////////////////////////////////////// Search Decision ///////////////////////////////////////////////////////////
-    // Map decision data to rows for DataGrid when decisions are fetched
-    // Columns configuration for the DataGrid
+
+
+
+    ///// Search Decision 
+    const handleSearch = (event) => {
+        // console
+        console.log("Search", event)
+        if (event) {
+            setFilter(sfLike("decisionName", event).toString());
+        } else {
+            setFilter("")
+        }
+        setPage(1);
+    };
+
+    //// Define columns for DataGrid
     const columns = [
         { field: "index", headerName: "ID", width: 80 },
         { field: "dicisionname", headerName: "Ranking Decision Name", width: 350 },
@@ -206,8 +307,8 @@ const RankingDecision = () => {
                     <IconButton
                         color="gray"
                         onClick={() => {
-                            console.log(`Viewing group with ID: ${params.row.id}`);
-                            navigate(`/ranking-group/view/${params.row.id}`);
+                            console.log(`Viewing decision with ID: ${params.row.id}`);
+                            navigate(`/ranking-decision/view/${params.row.id}`);
                         }}
                     >
                         <FaEye />
@@ -226,7 +327,7 @@ const RankingDecision = () => {
                             variant="outlined"
                             color="error"
                             sx={{ marginLeft: 1 }} // 
-                            onClick={() => handleOpenDeleteRnkingDecisionModal(params.row.id)}
+                            onClick={() => handleOpenDeleteRankingDecisionModal(params.row.id)}
                         >
                             <MdDeleteForever />
                         </Button>
@@ -235,30 +336,8 @@ const RankingDecision = () => {
             ),
         },
     ];
-    // Load data table ranking decision list
-    useEffect(() => {
-        if (decisions) {
-            const mappedRows = decisions.result.map((decision, index) => ({
-                id: decision.decisionId,
-                index: index + 1,
-                dicisionname: decision.decisionName,
-                finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
-                finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
-                status: decision.status
-            }));
-            setRows(mappedRows); // Update rows with data from decisions
-            setFilteredRows(mappedRows); // Update filteredRows with original data
-        }
-    }, [decisions]);
-    //
-    const handleInputChange = (event, value) => {
-        setSearchValue(value);
-        const filtered = value
-            ? rows.filter(row => row.dicisionname.toLowerCase().includes(value.toLowerCase()))
-            : rows;
-        setFilteredRows(filtered);
-    };
 
+    /////////////////////////////////////////////////////////// Return ///////////////////////////////////////////////////////////
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
@@ -269,6 +348,7 @@ const RankingDecision = () => {
                     </IconButton>
                     Ranking Decision List
                 </h2>
+                {/* Menu list task and criteria */}
                 <Menu
                     anchorEl={anchorEl}
                     open={Boolean(anchorEl)}
@@ -284,72 +364,31 @@ const RankingDecision = () => {
                     </MenuItem>
                 </Menu>
                 {/* Search Decision */}
-                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 2 }}>
-                    {/* <Typography sx={{ marginRight: 2, fontSize: '1.3rem', marginTop: 0 }}>Search Decision Name:</Typography> */}
-                    <Autocomplete
-                        disablePortal
-                        options={decisions}
-                        getOptionLabel={option => option.decisionName || ''}
-                        onInputChange={handleInputChange}
-                        value={{ decisionName: searchValue }}
-                        renderInput={params => (
-                            <TextField
-                                {...params}
-                                label="Search Decision"
-                                variant="outlined"
-                                fullWidth
-                                sx={{
-                                    marginTop: 2,
-                                    height: '40px',
-                                    '& .MuiOutlinedInput-root': { height: '130%', borderRadius: '20px' },
-                                }}
-                                InputProps={{
-                                    ...params.InputProps,
-                                    endAdornment: (
-                                        <InputAdornment position="end" sx={{ marginRight: '-50px' }}>
-                                            <IconButton
-                                                onClick={() => {
-                                                    setFilteredRows(rows);
-                                                    setSearchValue('');
-                                                    params.inputProps.onChange({ target: { value: '' } });
-                                                }}
-                                                size="small"
-                                                sx={{ padding: '0' }} // Giảm khoảng cách padding của icon
-                                            >
-                                                <ClearIcon />
-                                            </IconButton>
-                                        </InputAdornment>
-                                    ),
-                                }}
-                            />
-                        )}
-                        sx={{
-                            flexGrow: 1,
-                            marginRight: '16px',
-                            maxWidth: '600px',
-                            marginTop: '-10px',
-                            borderRadius: '20px' // Bo tròn góc cho Autocomplete
-                        }}
-                    />
-
-                </Box>
-                <Box sx={{ width: "100%", height: 400, marginTop: '60px' }}>
+                <SearchComponent onSearch={handleSearch} placeholder=" Sreach Decision" />
+                {/* Table show Ranking Decision */}
+                <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
+                    {/* {loading ? <CircularProgress /> : ( */}
                     <DataGrid
                         className="custom-data-grid"
                         apiRef={apiRef}
-                        rows={filteredRows.length > 0 ? filteredRows : rows} // Hiển thị hàng đã lọc hoặc tất cả hàng nếu không có gì được tìm thấy
+                        rows={rows}
                         columns={columns}
                         checkboxSelection
                         pagination
                         pageSizeOptions={[5, 10, 25]}
-                        initialState={{
-                            pagination: {
-                                paginationModel: {
-                                    pageSize: 5,
-                                    page: 0,
-                                },
-                            },
+                        getRowId={(row) => row.id}
+                        rowCount={totalElements}
+                        paginationMode="server"
+                        paginationModel={{
+                            page: page - 1,  // Adjusted for 0-based index
+                            pageSize: pageSize,
                         }}
+                        onPaginationModelChange={(model) => {
+                            setPage(model.page + 1);  // Set 1-based page for backend
+                            setPageSize(model.pageSize);
+                        }}
+                        disableNextButton={page >= totalPages}
+                        disablePrevButton={page <= 1}
                         disableRowSelectionOnClick
                         autoHeight={false}
                         sx={{
@@ -360,9 +399,10 @@ const RankingDecision = () => {
                             },
                         }}
                     />
+                    {/* )} */}
                 </Box>
 
-
+                {/* Button Add new Group and Delete Selected Decision */}
                 <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
                     <Button variant="contained" color="success" onClick={handleOpenAddRankingDecisionModal}>
                         Add New Decision
@@ -408,9 +448,9 @@ const RankingDecision = () => {
                         {clone && (
                             <Autocomplete
                                 disablePortal
-                                options={decisions}
+                                options={listDecisionSearchClone}
                                 getOptionLabel={(option) => option.decisionName || ''}
-                                value={selectedCloneDecision}  // Tìm đối tượng quyết định
+                                value={selectedCloneDecision}
                                 onChange={(event, value) => {
                                     setSelectedCloneDecision(value || null);
                                     console.log(selectedCloneDecision)
@@ -442,22 +482,22 @@ const RankingDecision = () => {
                     footerContent={
                         <ActionButtons
                             onCancel={handleCloseDeleteRankingDecisionModal}
-                            onConfirm={handledeleteRankingDecision}
+                            onConfirm={handleDeleteRankingDecision}
                             confirmText="Delete"
                             cancelText="Cancel"
                             color="error"
                         />
                     }
                 />
-                {/* Modal for deleting select group */}
+                {/* Modal for deleting select decision */}
                 <ModalCustom
                     show={showBulkDeleteModal}
-                    handleClose={handleCloseBulk_DeleteRankingModal}
-                    title="Delete Selected Groups"
-                    bodyContent="Are you sure you want to delete the selected groups?"
+                    handleClose={handleCloseBulkDeleteModal}
+                    title="Delete Selected decisions"
+                    bodyContent="Are you sure you want to delete the selected decisions?"
                     footerContent={
                         <ActionButtons
-                            onCancel={handleCloseBulk_DeleteRankingModal}
+                            onCancel={handleCloseBulkDeleteModal}
                             onConfirm={handleBulkDeleteRankingDecision}
                             confirmText="Delete"
                             cancelText="Cancel"
