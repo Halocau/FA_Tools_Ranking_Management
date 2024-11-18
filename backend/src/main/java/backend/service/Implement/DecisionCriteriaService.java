@@ -8,6 +8,7 @@ import backend.model.dto.DecisionCriteriaResponse;
 import backend.model.entity.Criteria;
 import backend.model.entity.DecisionCriteria;
 import backend.model.form.DecisionCriteria.AddDecisionCriteriaRequest;
+import backend.model.form.DecisionCriteria.UpdateDecisionCriteriaRequest;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.IDecisionCriteriaService;
 import jakarta.persistence.EntityNotFoundException;
@@ -136,5 +137,23 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
                 .weight(form.getWeight())
                 .build();
         iDecisionCriteriaRepository.save(decisionCriteria);
+    }
+
+
+    @Override   //UPDATE
+    @Transactional
+    public void updateDecisionCriteria(UpdateDecisionCriteriaRequest form, Integer decisionId, Integer criteriaId) {
+        DecisionCriteria find = iDecisionCriteriaRepository.findByCriteriaIdAndDecisionId(criteriaId, decisionId);
+        if(find != null) {
+            // update form
+            find.setDecisionId(form.getDecisionId());
+            find.setCriteriaId(form.getCriteriaId());
+            find.setWeight(form.getWeight());
+            iDecisionCriteriaRepository.saveAndFlush(find);
+        }else{
+            throw new EntityNotFoundException(
+                    String.format("DecisionCriteria with decisionId %d and criteriaId %d not found [updateDecisionCriteria]", decisionId,criteriaId)
+            );
+        }
     }
 }
