@@ -13,14 +13,14 @@ import ForbiddenPage from "./pages/Auth/Page403.jsx";
 import Sidebar from "./layouts/Sidebar";
 import Header from "./layouts/Header";
 import RankingGroups from "./pages/RankingGroup/RankingGroupsPage.jsx";
-import EditRankingGroup from './pages/RankingGroup/EditRankingGroups.jsx';
-import ViewRankingGroup from './pages/RankingGroup/ViewRankingGroup.jsx';
-import BulkRankingGroup from './pages/RankingGroup/BulkRankingGroup.jsx';
+import EditRankingGroup from "./pages/RankingGroup/EditRankingGroups.jsx";
+import ViewRankingGroup from "./pages/RankingGroup/ViewRankingGroup.jsx";
+import BulkRankingGroup from "./pages/RankingGroup/BulkRankingGroup.jsx";
 import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
 import EditRankingDecison from "./pages/RankingDecision/EditRankingDecision.jsx";
-import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx';
-import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx';
-import EditCriteria from './pages/CriteriaManagement/EditCriterial.jsx';
+import TaskManagement from "./pages/TaskManagement/TaskManagementPage.jsx";
+import CriteriaManagement from "./pages/CriteriaManagement/CriteriaManagementPage.jsx";
+import EditCriteria from "./pages/CriteriaManagement/EditCriterial.jsx";
 
 function AppRoutes() {
   return (
