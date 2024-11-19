@@ -27,13 +27,12 @@ import SearchComponent from "../../components/Common/Search.jsx";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 // Hooks
 import useNotification from "../../hooks/useNotification";
-import useRankingDecision from "../../hooks/useRankingDecision"
 
 // Layouts
 import Slider from "../../layouts/Slider.jsx";
 
 const EditRankingGroup = () => {
-    const navigate = useNavigate(); // To navigate between pages
+    const navigate = useNavigate(); // To navigate between page
     const { id } = useParams(); // Get the ID from the URL
     //// State
     // Table  List Ranking Decision (page, size) 
@@ -80,7 +79,7 @@ const EditRankingGroup = () => {
             console.log(groupData)
             setOriginalGroupName(groupData.groupName || "Group Name");
             setNewGroupName(groupData.groupName || "");
-            setOriginalDecisionName(groupData.currentRankingDecision || "");
+            setOriginalDecisionName(groupData.currentRankingDecision || "Decision Name");
             setselectedCurrentDecision(groupData.currentRankingDecision || "");
             setRankingDecisions(groupData.rankingDecisions || []);
         } catch (error) {
@@ -199,6 +198,7 @@ const EditRankingGroup = () => {
                 totalElements,
             );
             setlistDecisionSearchClone(data.result)
+            console.log(listDecisionSearchClone)
         } catch (error) {
             console.error("Failed to fetch criteria:", error);
         }
@@ -460,7 +460,7 @@ const EditRankingGroup = () => {
                             label="Group Name"
                             variant="outlined"
                             fullWidth
-                            value={editGroup.groupName || ""} // Default to empty string if undefined
+                            value={newGroupName || ""} // Default to empty string if undefined
                             onChange={(e) =>
                                 setNewGroupName(e.target.value)
                             }
@@ -487,10 +487,10 @@ const EditRankingGroup = () => {
                             disablePortal
                             options={listDecisionSearchClone ? listDecisionSearchClone.filter(decision => decision.status === 'Finalized') : []}
                             getOptionLabel={(option) => option.decisionName || ''}
-                            value={selectedCurrentDecision}
+                            value={listDecisionSearchClone.find(decision => decision.decisionName === (selectedCurrentDecision || originalDecisionName)) || null}
                             onChange={(event, value) => {
-                                setselectedCurrentDecision(value || null);
-                                console.log(selectedCurrentDecision)
+                                setselectedCurrentDecision(value ? value.decisionName : originalDecisionName);
+                                console.log(selectedCurrentDecision);
                             }}
                             renderInput={(params) => (
                                 <TextField
@@ -502,6 +502,8 @@ const EditRankingGroup = () => {
                                 />
                             )}
                         />
+
+
 
                         <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
                             <Button variant="outlined" onClick={handleCloseEditGroupInfoModal}>Cancel</Button>
