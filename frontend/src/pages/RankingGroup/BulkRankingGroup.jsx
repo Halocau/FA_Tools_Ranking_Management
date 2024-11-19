@@ -113,6 +113,7 @@ const BulkRankingGroup = () => {
     useEffect(() => {
         RankingGroupEdit();
     }, [id]);
+
     // Columns configuration for the DataGrid
     const columns = [
         { field: "fileName", headerName: "File Name", width: 200 },
@@ -123,17 +124,6 @@ const BulkRankingGroup = () => {
         { field: "note", headerName: "Note", width: 300 }
     ];
 
-    // // Map decision data to rows for DataGrid
-    // const rows = decisions
-    //     ? decisions.map((decision, index) => ({
-    //         id: decision.decisionId,
-    //         index: index + 1,
-    //         dicisionname: decision.decisionName,
-    //         finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
-    //         finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
-    //         status: decision.status
-    //     }))
-    //     : [];
 
     return (
         <div style={{ marginTop: "60px" }}>

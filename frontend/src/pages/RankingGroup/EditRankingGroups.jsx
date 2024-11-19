@@ -460,7 +460,7 @@ const EditRankingGroup = () => {
                             label="Group Name"
                             variant="outlined"
                             fullWidth
-                            value={editGroup.groupName || ""} // Default to empty string if undefined
+                            value={newGroupName || ""} // Default to empty string if undefined
                             onChange={(e) =>
                                 setNewGroupName(e.target.value)
                             }

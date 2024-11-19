@@ -11,7 +11,6 @@ const BulkRankingAPI = {
                     size: size
                 }
             });
-        // console.log(response.data);
         return response.data;
     }
 };
