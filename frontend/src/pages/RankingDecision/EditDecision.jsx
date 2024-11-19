@@ -38,7 +38,13 @@ const EditDecision = () => {
     const [showEditDecisionInfoModal, setShowEditDecisionInfoModal] = useState(false); // Display decision editing modal
     const [newDecisionName, setNewDecisionName] = useState(""); // New decision Name
     const [status, setStatus] = useState("");
-
+    // Table  List Ranking Group (page, size) 
+    const [rows, setRows] = useState([]); // Initialize with empty array
+    const [rankingGroups, setRankingGroups] = useState([]);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(5);
+    const [totalElements, setTotalElements] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Validation error message

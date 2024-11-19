@@ -389,13 +389,6 @@ const RankingGroups = () => {
             disablePrevButton={page <= 1}
             disableRowSelectionOnClick
             autoHeight={false}
-            sx={{
-              height: '100%',
-              overflow: 'auto',
-              '& .MuiDataGrid-virtualScroller': {
-                overflowY: 'auto',
-              },
-            }}
           />
           {/* )} */}
         </Box>
