@@ -1,5 +1,6 @@
 package backend.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,7 +27,8 @@ public class Options {
     private Integer criteriaId;
 
     @ManyToOne
-    @JoinColumn(name = "criteria_id", referencedColumnName = "criteria_id", insertable = false, updatable = false)
+    @JoinColumn(name = "criteria_id",insertable = false, updatable = false)
+    @JsonIgnore// Bỏ qua tham chiếu ngược khi chuyển đổi sang JSON
     private Criteria criteria;
 
     @Column(name = "option_name")

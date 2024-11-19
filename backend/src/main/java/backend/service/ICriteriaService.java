@@ -1,6 +1,7 @@
 package backend.service;
 
 import backend.model.dto.CriteriaResponse;
+import backend.model.dto.TitleConfiguration.CriteriaDTO;
 import backend.model.entity.Criteria;
 import backend.model.form.Criteria.AddCriteriaRequest;
 import backend.model.form.Criteria.UpdateCriteriaRequest;
@@ -18,6 +19,8 @@ public interface ICriteriaService {
 
     public Criteria getCriteriabyId(int criteriaId);
 
+    public Criteria addCriteria(Criteria criteria);
+
     public Criteria updateCriteria(Criteria criteria);
 
     public void deleteCriteria(int criteriaId);
@@ -32,4 +35,7 @@ public interface ICriteriaService {
 
     //validation
     boolean existsByCriteriaName(String name);
+
+    //TitleConfiguration
+    public List<CriteriaDTO> getAllCriteriaTitleConfiguration(List<Criteria> criteriaList);
 }
