@@ -3,7 +3,7 @@ package backend.service.Implement;
 import backend.config.common.PaginationUtils;
 import backend.dao.ICriteriaRepository;
 import backend.model.dto.CriteriaResponse;
-import backend.model.dto.TitleConfiguration.CriteriaDTO;
+import backend.model.dto.TitleConfiguration.DecisionCriteriaDTO;
 import backend.model.dto.TitleConfiguration.OptionDTO;
 import backend.model.entity.Criteria;
 import backend.model.entity.Options;
@@ -110,17 +110,17 @@ public class CriteriaService implements ICriteriaService {
     }
 
     @Override
-    public List<CriteriaDTO> getAllCriteriaTitleConfiguration(List<Criteria> criteriaList) {
-        List<CriteriaDTO> criteriaDTO = new ArrayList<>();
+    public List<DecisionCriteriaDTO> getAllCriteriaTitleConfiguration(List<Criteria> criteriaList) {
+        List<DecisionCriteriaDTO> decisionCriteriaDTO = new ArrayList<>();
         for (Criteria criteria : criteriaList) {
-            criteriaDTO.add(convertToDto(criteria));
+            decisionCriteriaDTO.add(convertToDto(criteria));
         }
-        return criteriaDTO;
+        return decisionCriteriaDTO;
     }
 
-    private CriteriaDTO convertToDto(Criteria criteria) {
+    private DecisionCriteriaDTO convertToDto(Criteria criteria) {
         //change CriteriaDTO
-        CriteriaDTO criteriaDTO = modelMapper.map(criteria, CriteriaDTO.class);
+        DecisionCriteriaDTO decisionCriteriaDTO = modelMapper.map(criteria, DecisionCriteriaDTO.class);
 
         //change list Option -> OptionDTO
         List<OptionDTO> optionDTOList = new ArrayList<>();
@@ -128,8 +128,8 @@ public class CriteriaService implements ICriteriaService {
             OptionDTO optionDTO = modelMapper.map(option, OptionDTO.class);
             optionDTOList.add(optionDTO);
         }
-        criteriaDTO.setOptions(optionDTOList);
-        return criteriaDTO;
+        decisionCriteriaDTO.setOptions(optionDTOList);
+        return decisionCriteriaDTO;
     }
 
     @Override

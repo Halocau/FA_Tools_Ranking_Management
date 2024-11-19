@@ -1,7 +1,7 @@
 package backend.service;
 
 import backend.model.dto.CriteriaResponse;
-import backend.model.dto.TitleConfiguration.CriteriaDTO;
+import backend.model.dto.TitleConfiguration.DecisionCriteriaDTO;
 import backend.model.entity.Criteria;
 import backend.model.form.Criteria.AddCriteriaRequest;
 import backend.model.form.Criteria.UpdateCriteriaRequest;
@@ -37,5 +37,5 @@ public interface ICriteriaService {
     boolean existsByCriteriaName(String name);
 
     //TitleConfiguration
-    public List<CriteriaDTO> getAllCriteriaTitleConfiguration(List<Criteria> criteriaList);
+    public List<DecisionCriteriaDTO> getAllCriteriaTitleConfiguration(List<Criteria> criteriaList);
 }
