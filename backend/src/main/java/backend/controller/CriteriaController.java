@@ -2,6 +2,7 @@ package backend.controller;
 
 import backend.model.dto.CriteriaResponse;
 import backend.model.dto.DecisionCriteriaResponse;
+import backend.model.dto.TitleConfiguration.CriteriaDTO;
 import backend.model.entity.Criteria;
 import backend.model.entity.DecisionCriteria;
 import backend.model.form.Criteria.AddCriteriaRequest;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.turkraft.springfilter.boot.Filter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,15 +38,12 @@ public class CriteriaController {
         this.idDecisionCriteriaService = idDecisionCriteriaService;
     }
 
-    // @GetMapping
-    // public ResponseEntity<List<CriteriaResponse>> getAllCriteria(
-    // @Filter Specification<Criteria> spec,
-    // Pageable pageable) {
-    // List<Criteria> criteriaList = criteriaService.getAllCriteria();
-    // List<CriteriaResponse> criteriaResponses =
-    // criteriaService.convertToCriteriaResponseList(criteriaList);
-    // return new ResponseEntity<>(criteriaResponses, HttpStatus.OK);
-    // }
+    @GetMapping("/test")
+    public ResponseEntity<List<CriteriaDTO>> listAllCriteria() {
+        List<Criteria> test = criteriaService.getAllCriteria();
+        List<CriteriaDTO> criteriaDTOList = criteriaService.getAllCriteriaTitleConfiguration(test);
+        return new ResponseEntity<>(criteriaDTOList, HttpStatus.OK);
+    }
 
     @GetMapping
     public ResponseEntity<ResultPaginationDTO> searchCriteria(
