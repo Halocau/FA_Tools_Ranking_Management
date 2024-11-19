@@ -92,7 +92,7 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
         }
 
         for (DecisionCriteria dcResponse : list) {
-            // Start convert CriteriaDecision -> DecisionCriteriaDTO
+
             DecisionCriteriaDTO response = modelMapper.map(dcResponse, DecisionCriteriaDTO.class);
 
             // Get criteriaName
