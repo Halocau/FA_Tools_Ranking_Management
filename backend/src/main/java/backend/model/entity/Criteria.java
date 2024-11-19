@@ -41,7 +41,7 @@ public class Criteria {
     private LocalDateTime updatedAt;
 
     // Add the OneToMany relationship to Options with cascading delete
-    @OneToMany(mappedBy = "criteriaId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "criteria", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Options> options;
 
     public Criteria() {

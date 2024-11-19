@@ -3,7 +3,10 @@ package backend.service.Implement;
 import backend.config.common.PaginationUtils;
 import backend.dao.ICriteriaRepository;
 import backend.model.dto.CriteriaResponse;
+import backend.model.dto.TitleConfiguration.CriteriaDTO;
+import backend.model.dto.TitleConfiguration.OptionDTO;
 import backend.model.entity.Criteria;
+import backend.model.entity.Options;
 import backend.model.form.Criteria.AddCriteriaRequest;
 import backend.model.form.Criteria.UpdateCriteriaRequest;
 import backend.model.page.ResultPaginationDTO;
@@ -104,6 +107,29 @@ public class CriteriaService implements ICriteriaService {
     @Override
     public boolean existsByCriteriaName(String name) {
         return criteriaRepository.existsByCriteriaName(name);
+    }
+
+    @Override
+    public List<CriteriaDTO> getAllCriteriaTitleConfiguration(List<Criteria> criteriaList) {
+        List<CriteriaDTO> criteriaDTO = new ArrayList<>();
+        for (Criteria criteria : criteriaList) {
+            criteriaDTO.add(convertToDto(criteria));
+        }
+        return criteriaDTO;
+    }
+
+    private CriteriaDTO convertToDto(Criteria criteria) {
+        //change CriteriaDTO
+        CriteriaDTO criteriaDTO = modelMapper.map(criteria, CriteriaDTO.class);
+
+        //change list Option -> OptionDTO
+        List<OptionDTO> optionDTOList = new ArrayList<>();
+        for (Options option : criteria.getOptions()) {
+            OptionDTO optionDTO = modelMapper.map(option, OptionDTO.class);
+            optionDTOList.add(optionDTO);
+        }
+        criteriaDTO.setOptions(optionDTOList);
+        return criteriaDTO;
     }
 
     @Override
