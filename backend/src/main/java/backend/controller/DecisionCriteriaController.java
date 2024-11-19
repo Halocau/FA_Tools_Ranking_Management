@@ -57,7 +57,6 @@ public class DecisionCriteriaController {
     @GetMapping("/take/{decisionId}")
     public ResponseEntity<List<DecisionCriteriaDTO>> getDecisionCriteriaByDecisionConfigurationId(@PathVariable(name = "decisionId") Integer decisionId){
         List<DecisionCriteria> find = iDecisionCriteriaService.findByDecisionId(decisionId);
-        System.out.println("find: " + find);
         List<DecisionCriteriaDTO> list = iDecisionCriteriaService.getDecisionCriteriaConfigurationResponse(find);
         return ResponseEntity.status(HttpStatus.OK).body(list);
     }
