@@ -81,8 +81,8 @@ public class CriteriaController {
     }
 
     @DeleteMapping("delete/{id}")
-    public ResponseEntity<Void> deleteCriteria(@PathVariable("id") int criteriaId) {
+    public ResponseEntity<String> deleteCriteria(@PathVariable("id") int criteriaId) {
         criteriaService.deleteCriteria(criteriaId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>("Criteria deleted successfully", HttpStatus.OK);
     }
 }
