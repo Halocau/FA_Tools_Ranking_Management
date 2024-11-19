@@ -30,21 +30,18 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class RankingGroupService extends BaseService implements IRankingGroupService {
+public class RankingGroupService implements IRankingGroupService {
 
     private IRankingGroupRepository iRankingGroupRepository;
     private IAccount iAccount;
     private IRankingDecisionRepository iRankingDecisionRepository;
     private ModelMapper modelMapper;
 
-    @Autowired
-    public RankingGroupService(ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository,
-                               IAccount iAccount, IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper1) {
-        super(modelMapper);
+    public RankingGroupService(IRankingGroupRepository iRankingGroupRepository, IAccount iAccount, IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper) {
         this.iRankingGroupRepository = iRankingGroupRepository;
         this.iAccount = iAccount;
         this.iRankingDecisionRepository = iRankingDecisionRepository;
-        this.modelMapper = modelMapper1;
+        this.modelMapper = modelMapper;
     }
 
     @Override

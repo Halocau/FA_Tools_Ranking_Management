@@ -44,6 +44,11 @@ public class CriteriaService implements ICriteriaService {
     }
 
     @Override
+    public Criteria addCriteria(Criteria criteria) {
+        return criteriaRepository.save(criteria);
+    }
+
+    @Override
     public Criteria updateCriteria(Criteria criteria) {
         // Check if the criteria exists before updating
         if (!criteriaRepository.existsById(criteria.getCriteriaId())) {
@@ -57,7 +62,6 @@ public class CriteriaService implements ICriteriaService {
         if (!criteriaRepository.existsById(criteriaId)) {
             throw new RuntimeException("Criteria not found with id: " + criteriaId);
         }
-        // System.out.println("criteriaId: " + criteriaId);
         criteriaRepository.deleteById(criteriaId);
     }
 

@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface ITaskService {
     // crud task
-//    public ResultPaginationDTO getTask(Pageable pageable);
+
     public ResultPaginationDTO getTask(Specification<Task> spec, Pageable pageable);
     public Task getTaskById(int id);
 

@@ -41,10 +41,7 @@ const EditDecision = () => {
     const [status, setStatus] = useState("");
 
     // Step
-    const [activeStep, setActiveStep] = useState(2);
-    // const [criteria, setCriteria] = useState([]);
-    // const [titles, setTitle] = useState([]);
-    // const [task, setTask] = useState([]);
+    const [activeStep, setActiveStep] = useState(0);
     const [criteria, setCriteria] = useState([]);
     const [title, setTitle] = useState([]);
     const [task, setTask] = useState([]);
@@ -169,37 +166,37 @@ const EditDecision = () => {
         }
         return 'secondary'; // Các bước đã lưu sẽ có tick mark
     };
-    {/* 
-        //////////////////////////////////////////////////////////////////////////// Criteria Configuration ////////////////////////////////////////////////////////////////////////////
+    // {/* 
+    //////////////////////////////////////////////////////////////////////////// Criteria Configuration ////////////////////////////////////////////////////////////////////////////
 
-    // const DecisionCriteria = async (id) => {
-    //     try {
-    //         const CriteriaData = await RankingDecisionCriteriaAPI.getRankingDecisionCriteriaById(id);
-    //         console.log(CriteriaData);
+    const DecisionCriteria = async (id) => {
+        try {
+            const CriteriaData = await RankingDecisionCriteriaAPI.getRankingDecisionCriteriaById(id);
+            console.log(CriteriaData);
 
-    //         // Check if result and pageInfo exist
-    //         if (CriteriaData.result && CriteriaData.pageInfo) {
-    //             setCriteria(CriteriaData.result);  // Setting the criteria list
-    //             setTotalPages(CriteriaData.pageInfo.total);  // Setting the total pages
-    //             setTotalElements(CriteriaData.pageInfo.element);  // Setting the total elements
-    //         }
-    //     } catch (error) {
-    //         console.error('Error fetching decision criteria:', error);
-    //         // Handle error appropriately (optional)
-    //     }
-    // }
-    // useEffect(() => {
-    //     DecisionCriteria();
-    // }, [id]);
+            // Check if result and pageInfo exist
+            if (CriteriaData.result && CriteriaData.pageInfo) {
+                setCriteria(CriteriaData.result);  // Setting the criteria list
+                setTotalPages(CriteriaData.pageInfo.total);  // Setting the total pages
+                setTotalElements(CriteriaData.pageInfo.element);  // Setting the total elements
+            }
+        } catch (error) {
+            console.error('Error fetching decision criteria:', error);
+            // Handle error appropriately (optional)
+        }
+    }
+    useEffect(() => {
+        DecisionCriteria();
+    }, [id]);
 
-    // // useEffect to call both functions when the component loads or when id changes
-    // useEffect(() => {
-    //     if (id) {
-    //         RankingDecisionEdit();  // Call RankingDecisionEdit with the id
-    //         DecisionCriteria();  // Call DecisionCriteria with the same id
-    //     }
-    // }, [id]);  // Depend on the id so that it re-fetches whenever id changes
-*/}
+    // useEffect to call both functions when the component loads or when id changes
+    useEffect(() => {
+        if (id) {
+            RankingDecisionEdit();  // Call RankingDecisionEdit with the id
+            DecisionCriteria();  // Call DecisionCriteria with the same id
+        }
+    }, [id]);  // Depend on the id so that it re-fetches whenever id changes
+    // */}
     const handleAddCriteria = () => {
         const newCriteria = {
             criteria_name: 'New Criteria',
