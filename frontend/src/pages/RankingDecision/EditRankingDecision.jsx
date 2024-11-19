@@ -18,7 +18,6 @@ import '../../assets/css/Table.css';
 // API
 import RankingDecisionAPI from "../../api/rankingDecisionAPI.js";
 import RankingDecisionCriteriaAPI from "../../api/rankingDecisionCriteria.js";
-import DecisionCriteriaAPI from "../../api/DecisionCriteriaAPI.js";
 //Common
 import ModalCustom from "../../components/Common/Modal.jsx";
 import ActionButtons from "../../components/Common/ActionButtons.jsx";
@@ -42,8 +41,7 @@ const EditDecision = () => {
     const [status, setStatus] = useState("");
 
     // Step
-    const [activeStep, setActiveStep] = useState(2);
-
+    const [activeStep, setActiveStep] = useState(0);
     const [criteria, setCriteria] = useState([]);
     const [title, setTitle] = useState([]);
     const [task, setTask] = useState([]);
@@ -54,10 +52,7 @@ const EditDecision = () => {
     const [isCriteriaSaved, setIsCriteriaSaved] = useState(false);
     const [isTitleSaved, setIsTitleSaved] = useState(false);
     const [isTaskSaved, setIsTaskSaved] = useState(false);
-
-    const [rows, setRows] = useState([]);
     // Table  List  (page, size) 
-    const [filter, setFilter] = useState('');
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(5);
     const [totalElements, setTotalElements] = useState(0);
@@ -129,23 +124,6 @@ const EditDecision = () => {
         }
     };
 
-
-    const getCriteriaConfiguration = async () => {
-        try {
-            const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
-            setCriteria(response.result);
-            setTotalElements(response.pageInfo.element);
-            setTotalPages(response.pageInfo.total);
-        } catch (error) {
-            console.error("Error fetching criteria:", error);
-        }
-    };
-
-    useEffect(() => {
-        getCriteriaConfiguration();
-    }, []);
-
-    console.log(rows);
     ////////////////////////////////////////////////////////////////////////////////////
     // Hàm kiểm tra xem có thể chuyển sang bước khác không
     const canMoveToNextStep = (step) => {
@@ -188,7 +166,37 @@ const EditDecision = () => {
         }
         return 'secondary'; // Các bước đã lưu sẽ có tick mark
     };
+    // {/* 
+    //////////////////////////////////////////////////////////////////////////// Criteria Configuration ////////////////////////////////////////////////////////////////////////////
 
+    const DecisionCriteria = async (id) => {
+        try {
+            const CriteriaData = await RankingDecisionCriteriaAPI.getRankingDecisionCriteriaById(id);
+            console.log(CriteriaData);
+
+            // Check if result and pageInfo exist
+            if (CriteriaData.result && CriteriaData.pageInfo) {
+                setCriteria(CriteriaData.result);  // Setting the criteria list
+                setTotalPages(CriteriaData.pageInfo.total);  // Setting the total pages
+                setTotalElements(CriteriaData.pageInfo.element);  // Setting the total elements
+            }
+        } catch (error) {
+            console.error('Error fetching decision criteria:', error);
+            // Handle error appropriately (optional)
+        }
+    }
+    useEffect(() => {
+        DecisionCriteria();
+    }, [id]);
+
+    // useEffect to call both functions when the component loads or when id changes
+    useEffect(() => {
+        if (id) {
+            RankingDecisionEdit();  // Call RankingDecisionEdit with the id
+            DecisionCriteria();  // Call DecisionCriteria with the same id
+        }
+    }, [id]);  // Depend on the id so that it re-fetches whenever id changes
+    // */}
     const handleAddCriteria = () => {
         const newCriteria = {
             criteria_name: 'New Criteria',
@@ -197,7 +205,7 @@ const EditDecision = () => {
             num_options: 1,
         };
         console.log(newCriteria)
-        setRows([...rows, newCriteria]);
+        setCriteria([...criteria, newCriteria]);
     };
     // Xử lý khi người dùng chỉnh sửa một ô
     const handleCellEditCriteriaCommit = (newRow, oldRow) => {
@@ -206,8 +214,8 @@ const EditDecision = () => {
             // Cập nhật giá trị weight
             updatedRow.weight = newRow.weight;
             // Cập nhật lại giá trị trong trạng thái
-            setRows((prevRows) =>
-                prevRows.map((item) =>
+            setCriteria((prevCriteria) =>
+                prevCriteria.map((item) =>
                     item.id === updatedRow.id ? updatedRow : item
                 )
             );
@@ -244,24 +252,29 @@ const EditDecision = () => {
             // Sử dụng initialCriteria để phục hồi dữ liệu gốc cho hàng đó
             const newRows = [...criteria];
             newRows[rowIndex] = { ...initialCriteria[rowIndex] }; // Khôi phục lại dữ liệu ban đầu
-            setRows(newRows);
+            setCriteria(newRows);
         }
     };
-
     useEffect(() => {
-        if (criteria) {
-            const mappedRows = criteria.map((criteria, index) => ({
+        setCriteria(initialCriteria);
+        setTotalElements(initialCriteria.length);
+        console.log(initialCriteria)
+        // setTotalPages(Math.ceil(initialCriteria.length / pageSize));
+    }, [page, pageSize]);
+    // Map decision data to rows for DataGrid when rows are fetched
+    useEffect(() => {
+        if (initialCriteria) {
+            const mappedRows = initialCriteria.map((criteria, index) => ({
                 id: criteria.criteriaId,
                 index: index + 1 + (page - 1) * pageSize,
                 criteria_name: criteria.criteriaName,
                 weight: criteria.weight,
                 num_options: criteria.numOptions < 1 ? "0" : criteria.numOptions,
                 max_score: criteria.maxScore == null ? "" : criteria.maxScore,
-            }))
-            setRows(mappedRows)
+            }));
+            setCriteria(mappedRows);
         }
-    }, [criteria])
-
+    }, [initialCriteria]);
     // Column Criteria
     const columnsCriteria = [
         { field: 'criteria_name', headerName: 'Criteria Name', width: 500 },
@@ -661,12 +674,11 @@ const EditDecision = () => {
                                         <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
                                             <DataGrid
                                                 // className="custom-data-grid"
-                                                rows={rows}
+                                                rows={criteria}
                                                 columns={columnsCriteria}
                                                 pagination
                                                 pageSize={pageSize}
-                                                pageSizeOptions={[5, 10, 20]}
-
+                                                rowsPerPageOptions={[3, 5, 10]}
                                                 getRowId={(row) => row.id}  // Sử dụng criteriaId làm id
                                                 rowCount={totalElements}
                                                 paginationMode="server"

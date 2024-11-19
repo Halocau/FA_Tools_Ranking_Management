@@ -1,13 +1,13 @@
 // frontend/api/RankingDecisionAPI.js
 import authClient from './baseapi/AuthorAPI';
 
-const rankin_decision_criteri_api = '/decision-criteria';
+const rankin_decision_criteria_api = '/decision-criteria';
 
 const RankingDecisionCriteriaAPI = {
     // Get paginated list of ranking decisions
     searchRankingDecisionCriteria: async (filter = "", page = 1, size = 5) => {
         try {
-            const response = await authClient.get(`${rankin_decision_criteri_api}`, {
+            const response = await authClient.get(`${rankin_decision_criteria_api}`, {
                 params: {
                     filter: filter,
                     page: page,
@@ -24,7 +24,7 @@ const RankingDecisionCriteriaAPI = {
     // Get a single ranking decision by ID
     getRankingDecisionCriteriaById: async (id) => {
         try {
-            const response = await authClient.get(`${rankin_decision_criteri_api}/get/${id}`);
+            const response = await authClient.get(`${rankin_decision_criteria_api}/get/${id}`);
             return response.data;
         } catch (error) {
             console.error(`Error fetching ranking decision with ID ${id}:`, error);
@@ -35,7 +35,7 @@ const RankingDecisionCriteriaAPI = {
     // Add a new ranking decision
     addRankingDecisionCriteria: async (formData) => {
         try {
-            const response = await authClient.post(`${rankin_decision_criteri_api}/add`, formData);
+            const response = await authClient.post(`${rankin_decision_criteria_api}/add`, formData);
             return response.data;
         } catch (error) {
             console.error('Error adding new ranking decision:', error);
@@ -46,7 +46,7 @@ const RankingDecisionCriteriaAPI = {
     // Update an existing ranking decision by ID
     updateRankingDecisionCriteria: async (id, formData) => {
         try {
-            const response = await authClient.put(`${rankin_decision_criteri_api}/update/${id}`, formData);
+            const response = await authClient.put(`${rankin_decision_criteria_api}/update/${id}`, formData);
             return response.data;
         } catch (error) {
             console.error(`Error updating ranking decision with ID ${id}:`, error);
@@ -57,7 +57,7 @@ const RankingDecisionCriteriaAPI = {
     // Delete a ranking decision by ID
     deleteRankingDecisionCriteria: async (id) => {
         try {
-            const response = await authClient.delete(`${rankin_decision_criteri_api}/delete/${id}`);
+            const response = await authClient.delete(`${rankin_decision_criteria_api}/delete/${id}`);
             return response.data;
         } catch (error) {
             console.error(`Error deleting ranking decision with ID ${id}:`, error);
@@ -68,7 +68,7 @@ const RankingDecisionCriteriaAPI = {
     // Search ranking decisions by name with pagination
     searchByDecisionCriteriaName: async (decisionName = '', page = 0, size = 5) => {
         try {
-            const response = await authClient.get(`${rankin_decision_criteri_api}/search`, {
+            const response = await authClient.get(`${rankin_decision_criteria_api}/search`, {
                 params: { name: decisionName, page: page, size: size },
             });
             return response.data;
