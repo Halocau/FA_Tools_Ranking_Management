@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Box, TextField, Button } from '@mui/material';
 import { MdDeleteForever } from 'react-icons/md';
+// API
+import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
+import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 
 const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToNextStep, showErrorMessage }) => {
     const [rows, setRows] = useState([]);
@@ -16,13 +19,14 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
                     item.id === updatedRow.id ? updatedRow : item
                 )
             );
-        }
-        return updatedRow;
+            return updatedRow;
+        };
     };
 
     // Tính tổng weight
     const calculateTotalWeight = () => {
         const totalWeight = rows.reduce((total, row) => total + Number(row.weight || 0), 0);
+        console.log(totalWeight)
         return totalWeight;
     };
 
@@ -37,17 +41,35 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
         }
     };
 
-    // Thêm tiêu chí mới
-    const handleAddCriteria = () => {
-        const newCriteria = {
+    const handleAddCriteria = async () => {
+        const newRow = {
             id: rows.length + 1,
             criteria_name: 'New Criteria',
             weight: 0,
             max_score: 1,
             num_options: 1,
         };
-        setRows([...rows, newCriteria]);
+
+        try {
+            // Gửi dữ liệu mới lên backend
+
+            const response = await DecisionCriteriaAPI.addDecisionCriteria(newRow);
+
+            // Nếu thành công, cập nhật rows với tiêu chí mới
+            if (response.status === 200) {
+                setRows([...rows, newRow]);
+                // Có thể thêm thông báo thành công tại đây
+                console.log("Tiêu chí mới đã được thêm thành công!");
+            } else {
+                throw new Error('Không thể thêm tiêu chí');
+            }
+        } catch (error) {
+            // Xử lý lỗi nếu có vấn đề khi gọi API
+            console.error('Lỗi khi thêm tiêu chí:', error);
+            // Có thể hiển thị thông báo lỗi cho người dùng tại đây
+        }
     };
+
 
     // Xóa một dòng
     const handleDeleteRowData = (id) => {
@@ -56,6 +78,7 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
 
     // Map dữ liệu criteria thành rows
     useEffect(() => {
+        console.log(criteria)
         if (criteria) {
             const mappedRows = criteria.map((item, index) => ({
                 id: item.criteriaId,
@@ -76,17 +99,40 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
             field: 'weight',
             headerName: 'Weight',
             width: 150,
+            align: 'center',
             editable: decisionStatus === 'Draft',
             renderCell: (params) =>
                 decisionStatus === 'Draft' ? (
                     <TextField
+                        sx={{
+                            marginTop: '7px',
+                            textAlign: 'center',  // Căn giữa giá trị trong TextField
+                        }}
                         value={params.value || ''}
-                        onChange={(e) =>
-                            handleCellEditCriteriaCommit(
-                                { id: params.row.id, weight: e.target.value },
-                                params.row
-                            )
-                        }
+                        onChange={(e) => {
+                            // Hiển thị giá trị nhập nhưng chưa cập nhật vào state
+                            const newWeight = e.target.value;
+                            setRows((prevRows) =>
+                                prevRows.map((row) =>
+                                    row.id === params.row.id
+                                        ? { ...row, weight: newWeight }
+                                        : row
+                                )
+                            );
+                        }}
+                        onBlur={() => {
+                            // Cập nhật vào state khi người dùng rời khỏi ô
+                            setRows((prevRows) =>
+                                prevRows.map((row) =>
+                                    row.id === params.row.id
+                                        ? { ...row, weight: params.value }
+                                        : row
+                                )
+                            );
+                        }}
+                        onFocus={(e) => {
+                            e.target.select(); // Tự động chọn toàn bộ giá trị khi người dùng nhấp vào
+                        }}
                         variant="outlined"
                         size="small"
                         fullWidth
@@ -97,8 +143,8 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
                     params.value
                 ),
         },
-        { field: 'num_options', headerName: 'No of Options', width: 150 },
-        { field: 'max_score', headerName: 'Max Score', width: 150 },
+        { field: 'num_options', headerName: 'No of Options', width: 150, align: 'center', headerAlign: 'center' },
+        { field: 'max_score', headerName: 'Max Score', width: 150, align: 'center', headerAlign: 'center' },
         {
             field: 'action',
             headerName: 'Action',
@@ -135,7 +181,10 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
                     columns={columnsCriteria}
                     pageSize={pageSize}
                     autoHeight
-                    disableSelectionOnClick
+                    processRowUpdate={(newRow, oldRow) => handleCellEditCriteriaCommit(newRow, oldRow)}
+                    onProcessRowUpdateError={(error) => {
+                        console.error('Cập nhật bị lỗi:', error);
+                    }}
                 />
                 {/* Button criteria */}
                 {decisionStatus === 'Draft' && (
