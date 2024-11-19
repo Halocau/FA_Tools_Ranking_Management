@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { TextField, InputAdornment, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
-import '../../assets/css/Search.css';
 
 const SearchComponent = ({ onSearch, placeholder = "Search ..." }) => {
     const [searchValue, setSearchValue] = useState("");
@@ -34,8 +33,7 @@ const SearchComponent = ({ onSearch, placeholder = "Search ..." }) => {
                         <InputAdornment position="start" sx={{ display: "flex", alignItems: "center" }}>
                             <SearchIcon
                                 onClick={() => {
-                                    // setSearchValue('');
-                                    handleSearchSubmit();
+                                    handleSearchSubmit(); // Gọi hàm tìm kiếm (nếu cần thiết)
                                 }}
                                 sx={{
                                     cursor: 'pointer',

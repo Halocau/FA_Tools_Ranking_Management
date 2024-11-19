@@ -1,57 +1,78 @@
 import React, { useEffect, useState } from "react";
-import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
-import { FaEdit, FaAngleRight } from "react-icons/fa";
 
-import { Box, Button, Typography, TextField, IconButton, Table, TableHead, TableBody, TableRow, TableCell, Modal, Alert } from "@mui/material";
+//Layout
+import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
+import { Box, Button, Typography, TextField, IconButton, Modal, Alert } from "@mui/material";
+import Slider from "../../layouts/Slider.jsx";
+
+//Icons
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import { useParams, useNavigate } from "react-router-dom";
-import useRankingDecision from "../../hooks/useRankingDecision";
-import ModalCustom from "../../components/Common/Modal.jsx";
-import "../../assets/css/RankingGroups.css";
-import Slider from "../../layouts/Slider.jsx";
+
+//Hooks
 import useNotification from "../../hooks/useNotification";
+import { useParams, useNavigate } from "react-router-dom";
+
+// API
 import OptionAPI from "../../api/OptionAPI.js";
 import CriteriaAPI from "../../api/CriteriaAPI.js";
-import SearchComponent from "../../components/Common/Search.jsx";
 
-import { sfAnd, sfEqual, sfGt, sfIsNull, sfLike, sfNot, sfOr } from 'spring-filter-query-builder';
+//Components
+import SearchComponent from "../../components/Common/Search.jsx";
+import ModalCustom from "../../components/Common/Modal.jsx";
+
+//Filter Query Builder
+import { sfAnd, sfEqual, sfLike } from 'spring-filter-query-builder';
 
 const EditCriteria = () => {
+    //Get criteria id
     const { id } = useParams();
     const navigate = useNavigate();
     const apiRef = useGridApiRef();
 
-    const { fetchCriteriaById, updateCriteria, addOptionToCriteria, updateOption, deleteOption } = useRankingDecision();
-
+    //Use for save data of criteria
     const [criteria, setCriteria] = useState({});
+
+    //Control modal
     const [showEditNameModal, setShowEditNameModal] = useState(false);
-    const [newCriteriaName, setNewCriteriaName] = useState("");
     const [showAddOptionModal, setShowAddOptionModal] = useState(false);
     const [showEditOptionModal, setShowEditOptionModal] = useState(false);
 
-    const [newOption, setNewOption] = useState({ name: "", score: "", explanation: "" });
+    //Use for save new criteria name
+    const [newCriteriaName, setNewCriteriaName] = useState("");
+
+    //Use for add and update option
+    const [newOption, setNewOption] = useState({ name: "", score: "", description: "" });
+
+    //Use for show notification
+    const [showSuccessMessage, showErrorMessage] = useNotification();
+
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState("success");
+
+    //Use for load data of option
     const [options, setOptions] = useState([]);
+
+    //Use for pagination
     const [pageSize, setpageSize] = useState(5);
     const [page, setPage] = useState(1);
     const [filter, setFilter] = useState(`criteriaId : ${id}`);
-    const [showSuccessMessage, showErrorMessage] = useNotification();
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
     const [rows, setRows] = useState([]);
-    const [query, setQuery] = useState("");
 
+    //Use to fetch data of criteria when id change
     useEffect(() => {
         getCriteria();
     }, [id]);
 
+    //Use for load data of options when page, pageSize or filter change
     useEffect(() => {
         getAllOptionByID();
     }, [page, pageSize, filter]);
 
+    //Use for load data of current criteria
     const getCriteria = async () => {
         try {
             const data = await CriteriaAPI.getCriteriaById(id);
@@ -61,6 +82,7 @@ const EditCriteria = () => {
         }
     }
 
+    //Use for load data of options
     const getAllOptionByID = async () => {
         try {
             const data = await OptionAPI.searchOptions(
@@ -76,6 +98,7 @@ const EditCriteria = () => {
         }
     }
 
+    //Use for pass data in data grid
     useEffect(() => {
         try {
             if (options) {
@@ -93,33 +116,37 @@ const EditCriteria = () => {
         }
     }, [options])
 
+    //Use for open edit criteria name modal
     const handleOpenEditNameModal = () => {
         setNewCriteriaName(criteria?.criteriaName || "");
         setShowEditNameModal(true);
     };
 
+    //Use for save new criteria name
     const handleSaveNewCriteriaName = async () => {
         try {
             const data = await CriteriaAPI.updateCriteria(id, { criteriaName: newCriteriaName, updatedBy: localStorage.getItem("userId") });
             setCriteria(data);
             showSuccessMessage("Criteria name updated successfully!");
         } catch (error) {
-            setMessage("Failed to update criteria name.");
-            setMessageType("error");
+            showErrorMessage("Failed to update criteria name.");
         }
         setShowEditNameModal(false);
     };
 
+    //Use for open add option modal
     const handleOpenAddOptionModal = () => {
-        setNewOption({ name: "", score: "", explanation: "" });
+        setNewOption({ name: "", score: "", description: "" });
         setShowAddOptionModal(true);
     };
 
+    //Use for open edit option modal
     const handleOpenEditOptionModal = (option) => {
         setNewOption(option);
         setShowEditOptionModal(true);
     };
 
+    //Use for add new option
     const handleAddOption = async () => {
         try {
             const optionData = {
@@ -129,6 +156,7 @@ const EditCriteria = () => {
                 createdBy: localStorage.getItem("userId"),
                 criteriaId: id
             }
+            console.log(newOption);
             const data = await OptionAPI.createOption(optionData);
             setTotalElements(totalElements + 1);
             if (options.length < pageSize) {
@@ -137,12 +165,13 @@ const EditCriteria = () => {
                 setTotalPages(totalPages + 1);
             }
             showSuccessMessage("Option added successfully!");
+            setShowAddOptionModal(false);
         } catch (error) {
             showErrorMessage("Failed to add option.")
         }
-        setShowAddOptionModal(false);
     };
 
+    //Use for delete option
     const handleDeleteOption = async (optionId) => {
         try {
             await OptionAPI.deleteOption(optionId);
@@ -156,24 +185,11 @@ const EditCriteria = () => {
             setTotalElements(totalElements - 1);
             showSuccessMessage("Option deleted successfully!")
         } catch (error) {
-            setMessage("Failed to delete option.");
-            setMessageType("error");
+            showErrorMessage("Failed to delete option. Please try again.");
         }
     };
 
-    const handleSearch = (query) => {
-        if (query === "") {
-            setFilter(sfEqual("criteriaId", id).toString());
-        }
-        else {
-            const check = sfAnd([sfEqual("criteriaId", id), sfLike("optionName", query)]);
-            console.log("filter:", check.toString());
-            setFilter(check.toString());
-        }
-        setPage(1);
-    };
-    // console.log("filter:", filter);
-
+    //Use for update option
     const handleEditOption = async () => {
         try {
             const optionUpdate = {
@@ -186,13 +202,26 @@ const EditCriteria = () => {
             await OptionAPI.updateOption(newOption.id, optionUpdate);
             getAllOptionByID();
             setShowEditOptionModal(false);
-            setMessage("Option updated successfully!");
-            setMessageType("success");
+            showSuccessMessage("Option updated successfully!");
         } catch (error) {
-            setMessage("Failed to update option.");
-            setMessageType("error");
+            showErrorMessage("Failed to update option. Please try again.");
         }
     };
+
+    //Use for search
+    const handleSearch = (query) => {
+        if (query === "") {
+            setFilter(sfEqual("criteriaId", id).toString());
+        }
+        else {
+            const check = sfAnd([sfEqual("criteriaId", id), sfLike("optionName", query)]);
+            console.log("filter:", check.toString());
+            setFilter(check.toString());
+        }
+        setPage(1);
+    };
+
+
 
     const columns = [
         { field: "index", headerName: "#", width: 80 },
@@ -206,7 +235,7 @@ const EditCriteria = () => {
                         variant="outlined"
                         onClick={() => handleOpenEditOptionModal(params.row)}
                     >
-                        Edit
+                        <EditIcon />
                     </Button>
                     <Button
                         variant="outlined"
@@ -215,7 +244,7 @@ const EditCriteria = () => {
                         onClick={() => handleDeleteOption(params.row.id)}
                         sx={{ marginLeft: 1 }}
                     >
-                        Delete
+                        <DeleteIcon />
                     </Button>
                 </>
             ),
@@ -342,8 +371,8 @@ const EditCriteria = () => {
                             fullWidth
                             multiline
                             rows={3}
-                            value={newOption.explanation}
-                            onChange={(e) => setNewOption({ ...newOption, explanation: e.target.value })}
+                            value={newOption.description}
+                            onChange={(e) => setNewOption({ ...newOption, description: e.target.value })}
                         />
                     </>
                 }
