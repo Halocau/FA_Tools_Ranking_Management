@@ -1,5 +1,6 @@
 package backend.model.entity;
 
+import backend.model.entity.Serializable.RankingTitleOptionSerializable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@IdClass(RankingTitleOptionSerializable.class)
 @Entity
 @Table(name = "Ranking_Title_Option")
 public class RankingTitleOption {
