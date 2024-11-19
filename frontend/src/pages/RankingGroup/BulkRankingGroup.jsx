@@ -30,8 +30,6 @@ import { useAuth } from "../../contexts/AuthContext.jsx";
 import useNotification from "../../hooks/useNotification";
 // Layouts
 import Slider from "../../layouts/Slider.jsx";
-//Filter
-import { sfLike, sfEqual, sfAnd } from 'spring-filter-query-builder';
 
 const BulkRankingGroup = () => {
     const navigate = useNavigate(); // To navigate between pages
@@ -42,11 +40,12 @@ const BulkRankingGroup = () => {
     // Table  List Ranking Decision (page, size) 
     const [rows, setRows] = useState([]); // Initialize with empty array
     const [bulkRankingGroup, setBulkRankingGroup] = useState([]);
-    const [filter, setFilter] = useState(`rankingGroupId : ${id}`);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(5);
     const [totalElements, setTotalElements] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
+    // ApiRef   
+    const apiRef = useGridApiRef(); // Create apiRef to select multiple decisions to delete
     // Edit
     const [editGroup, setEditGroup] = useState({ groupName: '', currentRankingDecision: '' });
     const [originalGroupName, setOriginalGroupName] = useState('');
@@ -56,42 +55,6 @@ const BulkRankingGroup = () => {
     const [messageType, setMessageType] = useState("success"); // Message type (success/error)
     const [validationMessage, setValidationMessage] = useState(""); // Validation error message
 
-
-    const getBulkRankingGroup = async () => {
-        try {
-            const response = await BulkRankingAPI.viewBulkHistory(
-                filter,
-                page,
-                pageSize
-            );
-            setBulkRankingGroup(response.result);
-            setTotalPages(response.pageInfo.total);
-            setTotalElements(response.pageInfo.element);
-        } catch (error) {
-            console.error("Error fetching group:", error);
-        }
-    }
-
-    useEffect(() => {
-        getBulkRankingGroup();
-    }, [id]);
-
-    useEffect(() => {
-        if (bulkRankingGroup) {
-            const mappedRows = bulkRankingGroup.map((bulkRankingGroup, index) => ({
-                id: bulkRankingGroup.historyId,
-                fileName: bulkRankingGroup.fileName,
-                rankingdecision: bulkRankingGroup.decisionName,
-                uploadedAt: bulkRankingGroup.uploadedAt ? bulkRankingGroup.uploadedAt : "N/A",
-                uploadedBy: bulkRankingGroup.uploadByName ? bulkRankingGroup.uploadByName : "N/A",
-                status: bulkRankingGroup.status ? bulkRankingGroup.status : "N/A",
-                note: bulkRankingGroup.note
-            }));
-            setRows(mappedRows);
-        }
-    }, [bulkRankingGroup])
-
-    console.log(bulkRankingGroup);
     // Ranking Group Edit
     const RankingGroupEdit = async () => {
         try {
@@ -113,28 +76,61 @@ const BulkRankingGroup = () => {
     useEffect(() => {
         RankingGroupEdit();
     }, [id]);
+
+    // 
+    const getBulkRankingGroup = async () => {
+        try {
+            const response = await BulkRankingAPI.viewBulkHistory();
+            setBulkRankingGroup(response.result);
+            setTotalPages(response.pageInfo.total);
+            setTotalElements(response.pageInfo.element);
+            console.log(response)
+        } catch (error) {
+            console.error("Error fetching group:", error);
+        }
+    }
+
+    useEffect(() => {
+        getBulkRankingGroup();
+    }, [id]);
+
+    useEffect(() => {
+        if (bulkRankingGroup) {
+            const mappedRows = bulkRankingGroup.map((bulk, index) => {
+                const formattedDate = new Date(bulk.uploadAt).toLocaleString('vi-VN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+
+                return {
+                    id: bulk.historyId,
+                    index: index + 1 + (page - 1) * 5,
+                    filename: bulk.fileName,
+                    rankingdicision: bulk.decisionName,
+                    uploadedAt: formattedDate, // Định dạng ngày tháng
+                    uploadedBy: bulk.uploadByName,
+                    status: bulk.status ? bulk.status : "",
+                    note: bulk.note ? bulk.note : '',
+                };
+            });
+            setRows(mappedRows);
+        }
+    }, [bulkRankingGroup]);
+
+
     // Columns configuration for the DataGrid
     const columns = [
-        { field: "fileName", headerName: "File Name", width: 200 },
-        { field: "rankingdecision", headerName: "Ranking Decision", width: 300 },
-        { field: "uploadedAt", headerName: "Uploaded At", width: 130 },
+        { field: "filename", headerName: "File Name", width: 200 },
+        { field: "rankingdicision", headerName: "Ranking Decision", width: 270 },
+        { field: "uploadedAt", headerName: "Uploaded At", width: 170 },
         { field: "uploadedBy", headerName: "Uploaded By", width: 130 },
-        { field: "status", headerName: "Status", width: 130 },
+        { field: "status", headerName: "Status", width: 100 },
         { field: "note", headerName: "Note", width: 300 }
     ];
-
-    // // Map decision data to rows for DataGrid
-    // const rows = decisions
-    //     ? decisions.map((decision, index) => ({
-    //         id: decision.decisionId,
-    //         index: index + 1,
-    //         dicisionname: decision.decisionName,
-    //         finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
-    //         finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
-    //         status: decision.status
-    //     }))
-    //     : [];
-
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
@@ -187,26 +183,28 @@ const BulkRankingGroup = () => {
                     </Box>
                 </Box>
 
-                {/* Table Show Ranking Decision List */}
-                <Box sx={{ width: "100%", height: 350 }}>
+                {/* Table show Ranking Decision */}
+                <Box sx={{ width: "100%", height: 370, marginTop: '10px' }}>
                     <DataGrid
                         className="custom-data-grid"
+                        apiRef={apiRef}
                         rows={rows}
                         columns={columns}
-                        // checkboxSelection
                         pagination
-                        getRowId={(row) => row.id}
-
                         pageSizeOptions={[5, 10, 25]}
-                        initialState={{
-                            pagination: {
-                                paginationModel: {
-                                    pageSize: 5,
-                                    page: 0,
-                                },
-                            },
+                        getRowId={(row) => row.id}
+                        rowCount={totalElements}
+                        paginationMode="server"
+                        paginationModel={{
+                            page: page - 1,
+                            pageSize: pageSize,
                         }}
-                        // disableRowSelectionOnClick
+                        onPaginationModelChange={(model) => {
+                            setPage(model.page + 1);
+                            setPageSize(model.pageSize);
+                        }}
+                        disableNextButton={page >= totalPages}
+                        disablePrevButton={page <= 1}
                         autoHeight={false}
                         sx={{
                             height: '100%',
@@ -216,6 +214,7 @@ const BulkRankingGroup = () => {
                             },
                         }}
                     />
+                    {/* )} */}
                 </Box>
 
             </Box>
