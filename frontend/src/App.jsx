@@ -26,7 +26,7 @@ import BulkRankingGroup from "./pages/RankingGroup/BulkRankingGroup.jsx";
 //RankingDecision
 import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
 import EditRankingDecision from "./pages/RankingDecision/EditRankingDecision.jsx";
-import EditDecision from "./pages/RankingDecision/EditDecision.jsx";
+import EditDecision from "./pages/RankingDecision/EditRankingDecision.jsx";
 import TaskManagement from "./pages/TaskManagement/TaskManagementPage.jsx";
 import CriteriaManagement from "./pages/CriteriaManagement/CriteriaManagementPage.jsx";
 import EditCriteria from "./pages/CriteriaManagement/EditCriterial.jsx";
