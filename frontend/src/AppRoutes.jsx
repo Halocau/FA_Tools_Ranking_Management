@@ -22,7 +22,7 @@ import EditRankingDecison from "./pages/RankingDecision/EditRankingDecision.jsx"
 import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx';
 import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx';
 import EditCriteria from './pages/CriteriaManagement/EditCriterial.jsx';
-
+import CriteriaConfiguration from "./components/Rankingdecision/CriteriaConfiguration.jsx";
 function AppRoutes() {
   return (
     <Routes>
@@ -99,6 +99,14 @@ function AppRoutes() {
         element={
           <LayoutWrapper>
             <EditCriteria className="ml-2" />
+          </LayoutWrapper>
+        }
+      />
+      <Route
+        path="/criteria-configuration"
+        element={
+          <LayoutWrapper>
+            <CriteriaConfiguration className="ml-2" />
           </LayoutWrapper>
         }
       />
