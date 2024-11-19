@@ -1,6 +1,7 @@
 package backend.service;
 
 import backend.model.entity.RankingTitleOption;
+import backend.model.form.RankingTitleOption.AddRankingTitleOptionRequest;
 
 import java.util.List;
 
@@ -11,4 +12,6 @@ public interface IRankingTitleOptionService {
     public RankingTitleOption addRankingTitleOption(RankingTitleOption rankingTitleOption);
     public RankingTitleOption updateRankingTitleOption(RankingTitleOption rankingTitleOption);
     public void deleteRankingTitleOption(int id);
+    //form
+    public void createRankingTitleOption(AddRankingTitleOptionRequest form);
 }

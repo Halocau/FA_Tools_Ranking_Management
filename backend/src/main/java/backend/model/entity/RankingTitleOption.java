@@ -5,22 +5,25 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@IdClass(RankingTitleOptionSerializable.class)
+@SuperBuilder
+@IdClass(RankingTitleOptionSerializable.class)  // Composite Key Class
 @Entity
 @Table(name = "Ranking_Title_Option")
 public class RankingTitleOption {
     @Id
-    @Column(name = "option_id")
-    private Integer RankingTitleId;
+    @Column(name = "ranking_title_id")
+    private Integer rankingTitleId;  // Consistent field naming
 
     @Id
-    @Column(name = "ranking_title_id")
-    private Integer OptionId;
+    @Column(name = "option_id")
+    private Integer optionId;        // Consistent field naming
 
     @Column(name = "created_at")
     private LocalDate createdAt;

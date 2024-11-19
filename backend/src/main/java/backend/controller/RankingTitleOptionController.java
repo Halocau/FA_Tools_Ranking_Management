@@ -1,7 +1,9 @@
 package backend.controller;
 
 import backend.model.entity.RankingTitleOption;
+import backend.model.form.RankingTitleOption.AddRankingTitleOptionRequest;
 import backend.service.IRankingTitleOptionService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,10 +28,11 @@ public class RankingTitleOptionController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<String> addRankingTitleOption(@RequestBody  RankingTitleOption rankingTitleOption) {
-        iRankingTitleOptionService.addRankingTitleOption(rankingTitleOption);
+    public ResponseEntity<String> addRankingTitleOption(@Valid @RequestBody AddRankingTitleOptionRequest form) {
+        iRankingTitleOptionService.createRankingTitleOption(form);
         return ResponseEntity.status(HttpStatus.CREATED).body("Ranking Title Option added");
     }
+
     @PutMapping("/update/{id}")
     public ResponseEntity<String> updateRankingTitleOption(RankingTitleOption rankingTitleOption, Integer id) {
         RankingTitleOption find = iRankingTitleOptionService.findRankingTitleOptionById(id);

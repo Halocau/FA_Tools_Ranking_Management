@@ -2,6 +2,7 @@ package backend.service.Implement;
 
 import backend.dao.IRankingTitleOptionRepository;
 import backend.model.entity.RankingTitleOption;
+import backend.model.form.RankingTitleOption.AddRankingTitleOptionRequest;
 import backend.service.IRankingTitleOptionService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -46,5 +47,15 @@ public class RankingTitleOptionService implements IRankingTitleOptionService {
     @Transactional
     public void deleteRankingTitleOption(int id) {
         irankingTitleOptionRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void createRankingTitleOption(AddRankingTitleOptionRequest form) {
+        RankingTitleOption rankingTitleOption = RankingTitleOption.builder()
+                .rankingTitleId(form.getRankingTitleId())
+                .optionId(form.getOptionId())
+                .build();
+        irankingTitleOptionRepository.save(rankingTitleOption);
     }
 }
