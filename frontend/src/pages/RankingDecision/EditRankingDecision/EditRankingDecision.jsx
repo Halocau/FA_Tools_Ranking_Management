@@ -11,24 +11,24 @@ import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Stepper, Step, StepButton } from '@mui/material';
-
 // Css 
-import "../../assets/css/RankingGroups.css"
-import '../../assets/css/Table.css';
+import "../../../assets/css/RankingGroups.css"
+import '../../../assets/css/Table.css';
 // API
-import RankingDecisionAPI from "../../api/rankingDecisionAPI.js";
-import RankingDecisionCriteriaAPI from "../../api/rankingDecisionCriteria.js";
+import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
+import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 //Common
-import ModalCustom from "../../components/Common/Modal.jsx";
-import ActionButtons from "../../components/Common/ActionButtons.jsx";
-import SearchComponent from "../../components/Common/Search.jsx";
+import ModalCustom from "../../../components/Common/Modal.jsx";
+import ActionButtons from "../../../components/Common/ActionButtons.jsx";
+import SearchComponent from "../../../components/Common/Search.jsx";
 // Contexts
-import { useAuth } from "../../contexts/AuthContext.jsx";
+import { useAuth } from "../../../contexts/AuthContext.jsx";
 // Hooks
-import useNotification from "../../hooks/useNotification";
+import useNotification from "../../../hooks/useNotification.jsx";
 //Data
-import { rankTitles, initialCriteria, initialTitle, initialTask } from "../../pages/RankingDecision/Data";
-
+import { rankTitles, initialCriteria, initialTitle, initialTask } from "../Data.jsx";
+import CriteriaConfiguration from "./CriteriaConfiguration.jsx";
+import TitleConfiguration from "./TitleConfiguration.jsx";
 
 const EditDecision = () => {
     // const navigate = useNavigate(); // To navigate between pages
@@ -41,18 +41,22 @@ const EditDecision = () => {
     const [status, setStatus] = useState("");
 
     // Step
-    const [activeStep, setActiveStep] = useState(0);
+    const [activeStep, setActiveStep] = useState(2);
+    // Data
     const [criteria, setCriteria] = useState([]);
     const [title, setTitle] = useState([]);
     const [task, setTask] = useState([]);
-    const [decisionStatus, setDecisionStatus] = useState('Draft'); // Trạng thái quyết định
-    // Các bước
+    const [decisionStatus, setDecisionStatus] = useState('Draft');
+    // 'Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'
     const steps = ['Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'];
     // Trạng thái lưu dữ liệu cho từng bước
     const [isCriteriaSaved, setIsCriteriaSaved] = useState(false);
     const [isTitleSaved, setIsTitleSaved] = useState(false);
     const [isTaskSaved, setIsTaskSaved] = useState(false);
+
     // Table  List  (page, size) 
+    const [rows, setRows] = useState([]);
+    const [filter, setFilter] = useState('');
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(5);
     const [totalElements, setTotalElements] = useState(0);
@@ -63,7 +67,7 @@ const EditDecision = () => {
     const [validationMessage, setValidationMessage] = useState("");
 
     // Ranking Decision Edit
-    const RankingDecisionEdit = async () => {
+    const EditRankingDecision = async () => {
         try {
             const decisionData = await RankingDecisionAPI.getRankingDecisionById(id);
             // Ensure no undefined values are passed
@@ -81,18 +85,21 @@ const EditDecision = () => {
     };
     // Fetch Ranking Decision on id change
     useEffect(() => {
-        RankingDecisionEdit();
+        EditRankingDecision();
     }, [id]);
 
     ////Handlers to open/close modals for editing of the decision info 
+    // Open modal
     const handleOpenEditRankingDecisionInfoModal = () => {
         setShowEditDecisionInfoModal(true);
         setValidationMessage("");
     };
+    // Close modal
     const handleCloseEditRankingDecisionInfoModal = () => {
         setShowEditDecisionInfoModal(false);
         setValidationMessage("");
     };
+    // Function
     const handleEditRankingDecisionInfo = async () => {
         setValidationMessage("");
         let trimmedName = newDecisionName.trim();
@@ -124,21 +131,21 @@ const EditDecision = () => {
         }
     };
 
-    ////////////////////////////////////////////////////////////////////////////////////
+
+
+    /////////////////////////////////////////////////////// Stepp /////////////////////////////////////////////////////////////////
     // Hàm kiểm tra xem có thể chuyển sang bước khác không
     const canMoveToNextStep = (step) => {
         if (step === 1 && !isCriteriaSaved) return false;  // Không chuyển sang Title Configuration nếu Criteria chưa lưu
         if (step === 2 && !isTitleSaved) return false;  // Không chuyển sang Task & Price Configuration nếu Title chưa lưu
         return true;
     };
-
     // Hàm xử lý khi người dùng nhấn vào một bước
     const handleStepChange = (step) => {
         if (step < activeStep || canMoveToNextStep(step)) {  // Người dùng chỉ có thể quay lại các bước trước hoặc tiến tới bước sau nếu dữ liệu đã lưu
             setActiveStep(step);
         }
     };
-
     // Hàm xử lý khi lưu dữ liệu cho từng bước
     const handleSave = () => {
         if (activeStep === 0) {
@@ -149,7 +156,6 @@ const EditDecision = () => {
             setIsTaskSaved(true); // Đánh dấu Task đã lưu
         }
     };
-
     // Màu sắc cho từng bước dựa trên trạng thái
     const getStepColor = (index) => {
         if (index === activeStep) {
@@ -166,47 +172,28 @@ const EditDecision = () => {
         }
         return 'secondary'; // Các bước đã lưu sẽ có tick mark
     };
-    // {/* 
-    //////////////////////////////////////////////////////////////////////////// Criteria Configuration ////////////////////////////////////////////////////////////////////////////
-
-    const DecisionCriteria = async (id) => {
-        try {
-            const CriteriaData = await RankingDecisionCriteriaAPI.getRankingDecisionCriteriaById(id);
-            console.log(CriteriaData);
-
-            // Check if result and pageInfo exist
-            if (CriteriaData.result && CriteriaData.pageInfo) {
-                setCriteria(CriteriaData.result);  // Setting the criteria list
-                setTotalPages(CriteriaData.pageInfo.total);  // Setting the total pages
-                setTotalElements(CriteriaData.pageInfo.element);  // Setting the total elements
-            }
-        } catch (error) {
-            console.error('Error fetching decision criteria:', error);
-            // Handle error appropriately (optional)
-        }
-    }
-    useEffect(() => {
-        DecisionCriteria();
-    }, [id]);
-
-    // useEffect to call both functions when the component loads or when id changes
-    useEffect(() => {
-        if (id) {
-            RankingDecisionEdit();  // Call RankingDecisionEdit with the id
-            DecisionCriteria();  // Call DecisionCriteria with the same id
-        }
-    }, [id]);  // Depend on the id so that it re-fetches whenever id changes
-    // */}
-    const handleAddCriteria = () => {
-        const newCriteria = {
-            criteria_name: 'New Criteria',
-            weight: 0,
-            max_score: 1,
-            num_options: 1,
-        };
-        console.log(newCriteria)
-        setCriteria([...criteria, newCriteria]);
+    // Hàm chuyển sang bước tiếp theo
+    const goToNextStep = () => {
+        setActiveStep(prevStep => prevStep + 1);
     };
+    //////////////////////////////////////////////////////////////////////////// Criteria Configuration ////////////////////////////////////////////////////////////////////////////
+    const getCriteriaConfiguration = async () => {
+        try {
+            const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
+            setCriteria(response.result);
+            setTotalElements(response.pageInfo.element);
+            setTotalPages(response.pageInfo.total);
+        } catch (error) {
+            console.error("Error fetching criteria:", error);
+        }
+    };
+
+    useEffect(() => {
+        getCriteriaConfiguration();
+    }, []);
+
+    console.log(rows);
+
     // Xử lý khi người dùng chỉnh sửa một ô
     const handleCellEditCriteriaCommit = (newRow, oldRow) => {
         const updatedRow = { ...oldRow, ...newRow };
@@ -214,8 +201,8 @@ const EditDecision = () => {
             // Cập nhật giá trị weight
             updatedRow.weight = newRow.weight;
             // Cập nhật lại giá trị trong trạng thái
-            setCriteria((prevCriteria) =>
-                prevCriteria.map((item) =>
+            setRows((prevRows) =>
+                prevRows.map((item) =>
                     item.id === updatedRow.id ? updatedRow : item
                 )
             );
@@ -239,11 +226,19 @@ const EditDecision = () => {
             showErrorMessage('Tổng weight phải bằng 100');
         }
     };
-    // Hàm chuyển sang bước tiếp theo
-    const goToNextStep = () => {
-        setActiveStep(prevStep => prevStep + 1);
-    };
 
+
+    //// Handlers to open/close modals for adding decision criteria
+    const handleAddCriteria = () => {
+        const newCriteria = {
+            criteria_name: 'New Criteria',
+            weight: 0,
+            max_score: 1,
+            num_options: 1,
+        };
+        console.log(newCriteria)
+        setRows([...rows, newCriteria]);
+    };
     // Hàm xử lý khi bấm nút Xóa
     const handleDeleteRowData = (id) => {
         // Tìm vị trí của dòng cần hủy
@@ -252,29 +247,24 @@ const EditDecision = () => {
             // Sử dụng initialCriteria để phục hồi dữ liệu gốc cho hàng đó
             const newRows = [...criteria];
             newRows[rowIndex] = { ...initialCriteria[rowIndex] }; // Khôi phục lại dữ liệu ban đầu
-            setCriteria(newRows);
+            setRows(newRows);
         }
     };
+
     useEffect(() => {
-        setCriteria(initialCriteria);
-        setTotalElements(initialCriteria.length);
-        console.log(initialCriteria)
-        // setTotalPages(Math.ceil(initialCriteria.length / pageSize));
-    }, [page, pageSize]);
-    // Map decision data to rows for DataGrid when rows are fetched
-    useEffect(() => {
-        if (initialCriteria) {
-            const mappedRows = initialCriteria.map((criteria, index) => ({
+        if (criteria) {
+            const mappedRows = criteria.map((criteria, index) => ({
                 id: criteria.criteriaId,
                 index: index + 1 + (page - 1) * pageSize,
                 criteria_name: criteria.criteriaName,
                 weight: criteria.weight,
                 num_options: criteria.numOptions < 1 ? "0" : criteria.numOptions,
                 max_score: criteria.maxScore == null ? "" : criteria.maxScore,
-            }));
-            setCriteria(mappedRows);
+            }))
+            setRows(mappedRows)
         }
-    }, [initialCriteria]);
+    }, [criteria])
+
     // Column Criteria
     const columnsCriteria = [
         { field: 'criteria_name', headerName: 'Criteria Name', width: 500 },
@@ -588,6 +578,49 @@ const EditDecision = () => {
         });
     };
 
+    const renderStepContent = (step) => {
+        switch (step) {
+            case 0:
+                return (
+                    <CriteriaConfiguration
+                        criteria={criteria}
+                        decisionStatus={decisionStatus}
+                        initialCriteria={criteria}
+                        page={1}
+                        pageSize={5}
+                        goToNextStep={goToNextStep}
+                        showErrorMessage={showErrorMessage}
+                    />
+                );
+            case 1:
+                return (
+                    <TitleConfiguration
+                        criteria={criteria}
+                        title={title}
+                        decisionStatus={decisionStatus}
+                        page={1}
+                        pageSize={5}
+                        goToNextStep={goToNextStep}
+                        showErrorMessage={showErrorMessage}
+                    />
+                );
+            // case 2:
+            //     return (
+            //         <TaskandPriceConfiguration
+            //             criteria={criteria}
+            //             title={title}
+            //             task={task}
+            //             decisionStatus={decisionStatus}
+            //             page={1}
+            //             pageSize={5}
+            //             goToNextStep={goToNextStep}
+            //             showErrorMessage={showErrorMessage}
+            //         />
+            //     );
+            default:
+                return <div>Unknown Step</div>;
+        }
+    };
     return (
         <div style={{ marginTop: "60px" }}>
             <Box sx={{ marginTop: 4, padding: 2 }}>
@@ -650,253 +683,7 @@ const EditDecision = () => {
                         ))}
                     </Stepper>
                 </Box>
-                {/* Nội dung của bước hiện tại */}
-                <Box sx={{ marginTop: 4 }}>
-                    {/*Criteria Configuration */}
-                    {activeStep === 0 && (
-                        <div>
-                            <h3>Criteria Configuration</h3>
-                            {/* Nội dung của Criteria Configuration */}
-                            <Box sx={{
-                                width: "100%",
-                                height: 500,
-                                marginTop: '10px',
-                                border: '2px solid black',
-                                borderRadius: '8px',
-                                padding: '16px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 2,
-                                overflow: 'hidden', // Loại bỏ thanh cuộn bên ngoài
-                            }}>
-                                {
-                                    activeStep === 0 && (
-                                        <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
-                                            <DataGrid
-                                                // className="custom-data-grid"
-                                                rows={criteria}
-                                                columns={columnsCriteria}
-                                                pagination
-                                                pageSize={pageSize}
-                                                rowsPerPageOptions={[3, 5, 10]}
-                                                getRowId={(row) => row.id}  // Sử dụng criteriaId làm id
-                                                rowCount={totalElements}
-                                                paginationMode="server"
-                                                paginationModel={{
-                                                    page: page - 1,
-                                                    pageSize: pageSize,
-                                                }}
-                                                onPaginationModelChange={(model) => {
-                                                    setPage(model.page + 1);
-                                                    setPageSize(model.pageSize);
-                                                }}
-                                                disableNextButton={page >= totalPages}
-                                                disablePrevButton={page <= 1}
-                                                disableRowSelectionOnClick
-                                                autoHeight={false}
-                                                processRowUpdate={handleCellEditCriteriaCommit}
-                                                onCellEditCommit={(params) => {
-                                                    console.log('Cell edit committed:', params);
-                                                }}
-                                                sx={{
-                                                    height: '100%',
-                                                    '& .MuiDataGrid-virtualScroller': {
-                                                        overflowY: 'auto',
-                                                    },
-                                                }}
-                                            />
-
-                                            {/* Button criteria */}
-                                            {decisionStatus === 'Draft' && (
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-                                                    {/* Nút Add Criteria ở bên trái */}
-                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                                                        <Button variant="contained" color="success" onClick={handleAddCriteria}>
-                                                            Add Criteria
-                                                        </Button>
-                                                    </Box>
-                                                    {/* Nút Save và Cancel ở bên phải */}
-                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                                                        <Button
-                                                            variant="contained"
-                                                            color="error"
-                                                        // onClick={handleCancelChanges}
-                                                        // disabled={!hasChanges} // Bật/tắt dựa trên trạng thái
-                                                        >
-                                                            Cancel
-                                                        </Button>
-                                                        <Button
-                                                            variant="contained"
-                                                            color="primary"
-                                                            onClick={handleSaveChanges}
-                                                        // disabled={!isSaveButtonEnabled} // Bật/tắt dựa trên trạng thái
-                                                        >
-                                                            Save
-                                                        </Button>
-
-
-                                                    </Box>
-                                                </Box>
-
-                                            )}
-                                        </Box>
-                                    )
-                                }
-
-                            </Box>
-                        </div>
-                    )}
-                    {/* Title Configuration */}
-                    {activeStep === 1 && (
-                        <div>
-                            <h3>Title Configuration</h3>
-                            {/* Nội dung của Title Configuration */}
-                            <Box sx={{
-                                width: "100%",
-                                height: 500,
-                                marginTop: '10px',
-                                border: '2px solid black',
-                                borderRadius: '8px',
-                                padding: '16px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 2,
-                                overflow: 'hidden', // Loại bỏ thanh cuộn bên ngoài
-                            }}>
-                                {
-                                    activeStep === 1 && (
-                                        <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
-                                            <DataGrid
-                                                // className="custom-data-grid"
-                                                rows={title}
-                                                columns={columnsTitle}
-                                                getRowId={(row) => row.id}
-                                                pageSize={5}
-                                                rowsPerPageOptions={[5]}
-
-                                            />
-
-                                            {/* Button Title */}
-                                            {decisionStatus === 'Draft' && (
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-                                                    {/* Nút Add Criteria ở bên trái */}
-                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                                                        <Button variant="contained" color="success" onClick={handleAddCriteria}>
-                                                            Add Criteria
-                                                        </Button>
-                                                    </Box>
-
-                                                    {/* Nút Save và Cancel ở bên phải */}
-                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                                                        <Button
-                                                            variant="contained"
-                                                            color="error"
-                                                        // onClick={handleCancelChanges}
-                                                        // disabled={!hasChanges} // Bật/tắt dựa trên trạng thái
-                                                        >
-                                                            Cancel
-                                                        </Button>
-                                                        <Button
-                                                            variant="contained"
-                                                            color="primary"
-                                                            onClick={handleSaveChanges}
-                                                        // disabled={!isSaveButtonEnabled} // Bật/tắt dựa trên trạng thái
-                                                        >
-                                                            Save
-                                                        </Button>
-
-
-                                                    </Box>
-                                                </Box>
-
-                                            )}
-                                        </Box>
-                                    )
-                                }
-
-                            </Box>
-                        </div>
-                    )}
-
-                    {activeStep === 2 && (
-                        <div>
-                            <h3>Task & Price Configuration</h3>
-                            {/* Nội dung của Task & Price Configuration */}
-                            <Box sx={{
-                                width: "100%",
-                                height: 500,
-                                marginTop: '10px',
-                                border: '2px solid black',
-                                borderRadius: '8px',
-                                padding: '16px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 2,
-                                overflow: 'hidden', // Loại bỏ thanh cuộn bên ngoài
-                            }}>
-                                {
-                                    activeStep === 2 && (
-                                        <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
-                                            <DataGrid
-                                                // className="custom-data-grid"z
-                                                rows={task}
-                                                columns={columnsTask}
-                                                getRowId={(row) => row.id}
-                                                pageSize={5}
-                                                rowsPerPageOptions={[5]}
-
-                                            />
-
-
-                                            {/* Button Task */}
-                                            {decisionStatus === 'Draft' && (
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-                                                    {/* Nút Add Criteria ở bên trái */}
-                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                                                        <Button variant="contained" color="success" onClick={handleAddCriteria}>
-                                                            Add Task
-                                                        </Button>
-                                                    </Box>
-
-                                                    {/* Nút Save và Cancel ở bên phải */}
-                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                                                        <Button
-                                                            variant="contained"
-                                                            color="error"
-                                                        // onClick={handleCancelChanges}
-                                                        // disabled={!hasChanges} // Bật/tắt dựa trên trạng thái
-                                                        >
-                                                            Cancel
-                                                        </Button>
-                                                        <Button
-                                                            variant="contained"
-                                                            color="primary"
-                                                            onClick={handleSaveChanges}
-                                                        // disabled={!isSaveButtonEnabled} // Bật/tắt dựa trên trạng thái
-                                                        >
-                                                            Save
-                                                        </Button>
-
-
-                                                    </Box>
-                                                </Box>
-
-                                            )}
-                                        </Box>
-                                    )
-                                }
-
-                            </Box>
-                        </div>
-                    )}
-
-                    {/* Nút lưu */}
-                    {/* <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}><Button variant="contained" onClick={handleSave}>Save</Button></Box> */}
-
-                </Box>
-
-
-
+                <Box>{renderStepContent(activeStep)}</Box>
 
                 {/* Modal for editing group info */}
                 <Modal open={showEditDecisionInfoModal} onClose={handleCloseEditRankingDecisionInfoModal}>
@@ -953,3 +740,4 @@ const EditDecision = () => {
     );
 };
 export default EditDecision;
+
