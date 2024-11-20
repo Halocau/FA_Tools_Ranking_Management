@@ -7,10 +7,13 @@ import Select from "react-select";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 import CriteriaAPI from "../../../api/CriteriaAPI.js"
 
-const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToNextStep, showErrorMessage }) => {
+const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToNextStep, showErrorMessage, id, fetchData }) => {
+
     const [rows, setRows] = useState([]);
 
     const [criteriaList, setCriteriaList] = useState([]);
+
+    const [selectedCriteria, setSelectedCriteria] = useState(null);
 
     const getCriteriaList = async () => {
         const data = await CriteriaAPI.searchCriteria();
@@ -56,32 +59,38 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
     };
 
     const handleAddCriteria = async () => {
-        const newRow = {
-            id: rows.length + 1,
-            criteria_name: 'New Criteria',
-            weight: 0,
-            max_score: 1,
-            num_options: 1,
-        };
 
-        try {
-            // Gửi dữ liệu mới lên backend
+        const newCriteria = criteriaList.find(
+            (criteria) => criteria.criteriaId === selectedCriteria.value
+        );
 
-            const response = await DecisionCriteriaAPI.addDecisionCriteria(newRow);
+        console.log(newCriteria);
+        // const newRow = {
+        //     id: rows.length + 1,
+        //     criteria_name: 'New Criteria',
+        //     weight: 0,
+        //     max_score: 1,
+        //     num_options: 1,
+        // };
 
-            // Nếu thành công, cập nhật rows với tiêu chí mới
-            if (response.status === 200) {
-                setRows([...rows, newRow]);
-                // Có thể thêm thông báo thành công tại đây
-                console.log("Tiêu chí mới đã được thêm thành công!");
-            } else {
-                throw new Error('Không thể thêm tiêu chí');
-            }
-        } catch (error) {
-            // Xử lý lỗi nếu có vấn đề khi gọi API
-            console.error('Lỗi khi thêm tiêu chí:', error);
-            // Có thể hiển thị thông báo lỗi cho người dùng tại đây
-        }
+        // try {
+        //     // Gửi dữ liệu mới lên backend
+
+        //     const response = await DecisionCriteriaAPI.addDecisionCriteria(newRow);
+
+        //     // Nếu thành công, cập nhật rows với tiêu chí mới
+        //     if (response.status === 200) {
+        //         setRows([...rows, newRow]);
+        //         // Có thể thêm thông báo thành công tại đây
+        //         console.log("Tiêu chí mới đã được thêm thành công!");
+        //     } else {
+        //         throw new Error('Không thể thêm tiêu chí');
+        //     }
+        // } catch (error) {
+        //     // Xử lý lỗi nếu có vấn đề khi gọi API
+        //     console.error('Lỗi khi thêm tiêu chí:', error);
+        //     // Có thể hiển thị thông báo lỗi cho người dùng tại đây
+        // }
     };
 
 
@@ -179,15 +188,15 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
     return (
         <Box sx={{
             width: "100%",
-            height: 500,
-            marginTop: '10px',
+            height: "100%",
+            marginTop: '20px',
             border: '2px solid black',
             borderRadius: '8px',
             padding: '16px',
             display: 'flex',
             flexDirection: 'column',
             gap: 2,
-            overflow: 'hidden', // Loại bỏ thanh cuộn bên ngoài
+            // overflow: 'hidden', // Loại bỏ thanh cuộn bên ngoài
         }}>
             <Box>
                 <DataGrid
@@ -209,12 +218,27 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
                             <Select
                                 isSearchable={true}
                                 placeholder="Add New Criteria ..."
-                                options={criteriaList.map((criteria) => ({
-                                    value: criteria.criteriaId, // Assuming criteriaId is the unique identifier
-                                    label: criteria.criteriaName, // Assuming criteriaName is the name to display
-                                }))}
+                                options={criteriaList
+                                    .filter(
+                                        (criteria) => !rows.some((row) => row.id === criteria.criteriaId) // Exclude criteria already in DataGrid
+                                    )
+                                    .map((criteria) => ({
+                                        value: criteria.criteriaId, // Use criteriaId as the value
+                                        label: criteria.criteriaName, // Display criteriaName in the dropdown
+                                    }))}
+                                styles={{
+                                    menu: (provided) => ({
+                                        ...provided,
+                                        maxHeight: 300, // Limit dropdown height to 300px
+                                        overflowY: 'auto', // Enable scrolling for overflow
+                                        width: 300,
+                                    }),
+                                }}
+
+                                menuPlacement="top" // Display dropdown upwards
+
                                 onChange={(selectedOption) => {
-                                    console.log("Selected criteria:", selectedOption);
+                                    setSelectedCriteria(selectedOption);
                                     // Handle the selection logic here, for example:
                                     // setSelectedCriteria(selectedOption);
                                 }}

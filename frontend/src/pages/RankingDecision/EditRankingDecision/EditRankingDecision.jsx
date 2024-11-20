@@ -20,9 +20,6 @@ import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 //Common
 import ModalCustom from "../../../components/Common/Modal.jsx";
 import ActionButtons from "../../../components/Common/ActionButtons.jsx";
-import SearchComponent from "../../../components/Common/Search.jsx";
-// Contexts
-import { useAuth } from "../../../contexts/AuthContext.jsx";
 // Hooks
 import useNotification from "../../../hooks/useNotification.jsx";
 //Data
@@ -41,7 +38,7 @@ const EditDecision = () => {
     const [status, setStatus] = useState("");
 
     // Step
-    const [activeStep, setActiveStep] = useState(2);
+    const [activeStep, setActiveStep] = useState(0);
     // Data
     const [criteria, setCriteria] = useState([]);
     const [title, setTitle] = useState([]);
@@ -452,13 +449,15 @@ const EditDecision = () => {
             case 0:
                 return (
                     <CriteriaConfiguration
+                        data={criteria}
                         criteria={criteria}
                         decisionStatus={decisionStatus}
-                        initialCriteria={criteria}
                         page={1}
                         pageSize={5}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
+                        id={id}
+                        fetchData={getCriteriaConfiguration}
                     />
                 );
             case 1:

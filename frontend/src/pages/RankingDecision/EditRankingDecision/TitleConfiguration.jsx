@@ -1,5 +1,6 @@
 const TitleConfiguration = ({ criteria, title, decisionStatus, page, pageSize, goToNextStep, showErrorMessage }) => {
     const [columnsTitle, setColumnsTitle] = useState([]);
+
     // Tạo cấu hình cột và hàng
     useEffect(() => {
         if (criteria && title) {
@@ -20,7 +21,6 @@ const TitleConfiguration = ({ criteria, title, decisionStatus, page, pageSize, g
                                 padding: '4px', // Padding trong box
                             },
                         }}
-
                     >
                         {rankTitles.map((title, index) => (
                             <MenuItem key={index} value={title}>
