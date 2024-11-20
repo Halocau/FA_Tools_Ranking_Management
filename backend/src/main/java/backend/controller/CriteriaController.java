@@ -35,13 +35,6 @@ public class CriteriaController {
         this.idDecisionCriteriaService = idDecisionCriteriaService;
     }
 
-    @GetMapping("/test")
-    public ResponseEntity<List<DecisionCriteriaDTO>> listAllCriteria() {
-        List<Criteria> test = criteriaService.getAllCriteria();
-        List<DecisionCriteriaDTO> decisionCriteriaDTOList = criteriaService.getAllCriteriaTitleConfiguration(test);
-        return new ResponseEntity<>(decisionCriteriaDTOList, HttpStatus.OK);
-    }
-
     @GetMapping
     public ResponseEntity<ResultPaginationDTO> searchCriteria(
             @Filter Specification<Criteria> spec,
