@@ -220,6 +220,7 @@ const EditDecision = () => {
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
+                        showSuccessMessage={showSuccessMessage}
                     />
                 );
             case 1:
@@ -231,6 +232,7 @@ const EditDecision = () => {
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
+                        showSuccessMessage={showSuccessMessage}
                     />
                 );
             case 2:
@@ -243,6 +245,7 @@ const EditDecision = () => {
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
+                        showSuccessMessage={showSuccessMessage}
                     />
                 );
             default:

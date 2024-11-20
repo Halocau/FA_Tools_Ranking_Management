@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Select from "react-select";
 import { DataGrid } from '@mui/x-data-grid';
 import { Box, TextField, Button } from '@mui/material';
 import { MdDeleteForever } from 'react-icons/md';
@@ -7,7 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 import CriteriaAPI from "../../../api/CriteriaAPI.js";
 
-const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage }) => {
+const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
     // Data 
     const { id } = useParams(); // Get the ID from the URL
     const [criteria, setCriteria] = useState([]);
@@ -17,6 +18,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
     // State Cancel and Save
     const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
     //Select to Add a new Criteria
+    const [selectedCriteria, setSelectedCriteria] = useState(null);
     const [listcriteria, setListCriteria] = useState([]);
 
     //// Load data getCriteriaConfiguration
@@ -42,13 +44,11 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
         console.log(newRow)
         // Cập nhật hàng mới
         const updatedRow = { ...newRow };
-
         // Cập nhật trạng thái `rows`
         setRows((prevRows) => {
             const updatedRows = prevRows.map((row) =>
                 row.id === updatedRow.id ? updatedRow : row
             );
-
             return updatedRows;
         });
     };
@@ -59,11 +59,9 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
     const handleDeleteRowData = (id) => {
         setRows((prevRows) => {
             const rowIndex = prevRows.findIndex((row) => row.id === id);
-
             if (rowIndex !== -1) {
                 // Lưu hàng bị xóa vào deletedRows
                 // setDeletedRows((prevDeleted) => [...prevDeleted, prevRows[rowIndex]]);
-
                 const updatedRows = [...prevRows];
                 updatedRows.splice(rowIndex, 1); // Xóa hàng khỏi mảng rows
                 return updatedRows;
@@ -97,6 +95,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
         const totalWeight = calculateTotalWeight();
         if (totalWeight === 100) {
             console.log("Tổng weight hợp lệ. Lưu dữ liệu...");
+            showSuccessMessage("Criteria Configuration saved successfully!");
             goToNextStep();
         } else {
             showErrorMessage('Tổng weight phải bằng 100');
@@ -104,27 +103,37 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
     };
 
     //////////////////////////////////// Select to Add a new Criteria ////////////////////////////////////
-    const handleAddCriteria = async () => {
-        const newRow = {
-            id: rows.length + 1,
-            criteria_name: 'New Criteria',
-            weight: 0,
-            max_score: 1,
-            num_options: 1,
-        };
-
+    const getListCriteria = async () => {
         try {
-            const response = await DecisionCriteriaAPI.addDecisionCriteria(newRow);
-            if (response.status === 200) {
-                setRows([...rows, newRow]);
-                console.log("Tiêu chí mới đã được thêm thành công!");
-            } else {
-                throw new Error('Không thể thêm tiêu chí');
-            }
+            const response = await CriteriaAPI.searchCriteria(
+                '',
+                0,
+                20
+            );
+            setListCriteria(response.result);
+            console.log(listcriteria)
         } catch (error) {
-            console.error('Lỗi khi thêm tiêu chí:', error);
+            console.error("Error fetching criteria:", error);
         }
+    }
+    useEffect(() => {
+        getListCriteria();
+    }, []);
+    const handleAddCriteria = async () => {
+        const addedCriteria = listcriteria.find(
+            (criteria) => criteria.criteriaId === selectedCriteria.value
+        );
+        const newRows = {
+            id: addedCriteria.criteriaId,
+            criteria_name: addedCriteria.criteriaName,
+            weight: addedCriteria.weight || 0,
+            num_options: addedCriteria.numOptions < 1 ? "0" : addedCriteria.numOptions,
+            max_score: addedCriteria.maxScore == null ? "" : addedCriteria.maxScore,
+        }
+        setRows((prevCriteria) => [...prevCriteria, newRows]);
+        setSelectedCriteria(null);
     };
+
     //////////////////////////////////// Column Criteria ////////////////////////////////////
     const columnsCriteria = [
         { field: 'index', headerName: 'ID', width: 20 },  // Thêm cột chỉ mục
@@ -214,7 +223,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
             gap: 2,
             overflow: 'hidden',
         }}>
-            <Box>
+            <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
                 <DataGrid
                     rows={rows}
                     columns={columnsCriteria}
@@ -228,6 +237,29 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
                 {/* Button criteria */}
                 {decisionStatus === 'Draft' && (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
+                        <Select
+                            isSearchable={true}
+                            placeholder="Add New Criteria ..."
+                            options={listcriteria
+                                .filter(
+                                    (criteria) => !rows.some((row) => row.id === criteria.criteriaId)
+                                )
+                                .map((criteria) => ({
+                                    value: criteria.criteriaId,
+                                    label: criteria.criteriaName,
+                                }))}
+                            styles={{
+                                menu: (provided) => ({
+                                    ...provided,
+                                    maxHeight: 300,
+                                    overflowY: 'auto',
+                                    width: 300,
+                                }),
+                            }}
+                            menuPlacement="top"
+                            value={selectedCriteria} // Bind the selected option to the state
+                            onChange={(option) => setSelectedCriteria(option)} // Update state on selection
+                        />
                         <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                             <Button variant="contained" color="success" onClick={handleAddCriteria}>
                                 Add Criteria
