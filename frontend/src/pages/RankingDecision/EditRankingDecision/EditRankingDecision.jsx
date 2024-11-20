@@ -20,7 +20,6 @@ import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 //Common
 import ModalCustom from "../../../components/Common/Modal.jsx";
 import ActionButtons from "../../../components/Common/ActionButtons.jsx";
-import SearchComponent from "../../../components/Common/Search.jsx";
 // Contexts
 import { useAuth } from "../../../contexts/AuthContext.jsx";
 // Hooks
@@ -227,6 +226,7 @@ const EditDecision = () => {
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
+                        showSuccessMessage={showSuccessMessage}
                     />
                 );
             case 1:

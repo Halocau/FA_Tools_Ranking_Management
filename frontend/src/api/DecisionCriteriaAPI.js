@@ -39,6 +39,7 @@ const DecisionCriteriaAPI = {
         authClient
             .put(`${decision_criteria_api}/upsert/${decisionId}/${criteriaId}`, form)
             .then((response) => response.data),
+
 };
 
 export default DecisionCriteriaAPI;
