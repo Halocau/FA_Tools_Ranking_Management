@@ -39,6 +39,12 @@ public class RankingTitleController {
     }
 
 
+    @GetMapping("/get-decisionId/{id}")
+    public ResponseEntity<List<RankingTitleResponse>> findRankingTitleByDecisionId(@PathVariable int id) {
+        List<RankingTitle> listDecisionId = iRankingTitleService.findByDecisionId(id);
+        List<RankingTitleResponse> rankingTitleResponse = iRankingTitleService.getRankingTittleResponse(listDecisionId);
+        return ResponseEntity.status(HttpStatus.OK).body(rankingTitleResponse);
+    }
     @PostMapping("/add")
     public ResponseEntity<String> addRankingTitle(@Valid @RequestBody AddRankingTitleRequest form) {
         iRankingTitleService.createRankingTitleByForm(form);
