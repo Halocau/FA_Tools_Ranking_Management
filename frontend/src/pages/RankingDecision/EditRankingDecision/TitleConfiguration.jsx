@@ -9,6 +9,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Stepper, Step, StepButton } from '@mui/material';
+import { DataGridPro } from '@mui/x-data-grid-pro';
 
 const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNextStep, showErrorMessage }) => {
     // // Data 
@@ -56,7 +57,7 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
         });
     };
     //////////////////////////////////// Remove ////////////////////////////////////
-    // Hàm hủy thay đổi, đặt lại  giá trị ban đầu của 1 hàng
+    // Hàm xóa hàng 
     const handleDeleteRowData = (id) => {
         setRows((prevRows) => {
             const rowIndex = prevRows.findIndex((row) => row.id === id);
@@ -72,40 +73,7 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
             return prevRows; // Nếu không tìm thấy, giữ nguyên
         });
     };
-    //////////////////////////////////// Cancel /////////////////////////////////////
-    // // Theo dõi sự thay đổi của rows và originalTitle
-    // useEffect(() => {
-    //     const checkForChanges = () => {
-    //         // Kiểm tra số lượng hàng thay đổi (thêm hoặc xóa)
-    //         if (rows.length !== originalTitle.length) {
-    //             setHasChanges(true);
-    //             return;
-    //         }
-
-    //         // Kiểm tra nội dung của các hàng
-    //         const hasAnyChanges = rows.some((row, index) => {
-    //             const originalRow = originalTitle[index];
-
-    //             // Nếu không tìm thấy hàng gốc hoặc có sự khác biệt trong giá trị
-    //             return (
-    //                 !originalRow || // Trường hợp hàng mới được thêm
-    //                 Object.keys(row).some((key) => {
-    //                     if (key !== 'id' && key !== 'titleName' && row[key] !== originalRow[key]) {
-    //                         return true; // Giá trị bị thay đổi
-    //                     }
-    //                     return false;
-    //                 })
-    //             );
-    //         });
-
-    //         setHasChanges(hasAnyChanges);
-    //     };
-    //     checkForChanges();
-    // }, [rows, originalTitle]); // Theo dõi cả rows và originalTitle
-
-
-
-
+    //////////////////////////////////// Cancel ////////////////////////////////////
     //// Hàm hủy thay đổi, đặt lại  giá trị ban đầu của tất cả
     const handleCancelChanges = () => {
         setRows(() => {
@@ -128,6 +96,12 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
     };
     // Hàm save, kiểm tra weight nếu bằng 100 thì chuyển sang bước tiếp
     const handleSaveChanges = () => {
+        // Bỏ qua kiểm tra weight nếu trạng thái là Finalized
+        if (decisionStatus === 'Finalized') {
+            console.log("Finalized: Lưu dữ liệu và chuyển bước...");
+            goToNextStep();
+            return;
+        }
         // Kiểm tra xem tất cả rankScore đã được tính toán chưa
         const allRankScoresCalculated = rows.every(row => row.rankScore && row.rankScore !== '');
         console.log(rows)
@@ -181,20 +155,13 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
 
         // Cột cố định
         const fixedColumns = [
-            { field: 'titleName', headerName: 'Title Name', width: 100 },
-            {
-                field: 'rankScore',
-                headerName: 'Rank Score',
-                width: 100,
-                editable: decisionStatus === 'Draft',
-                align: 'center',
-                headerAlign: 'center',
-            }
+            { field: 'titleName', headerName: 'Title Name', width: 100, pinned: 'left' },
+            { field: 'rankScore', headerName: 'Rank Score', width: 100, editable: decisionStatus === 'Draft', align: 'center', headerAlign: 'center', pinned: 'left' }
         ];
 
         const actionColumn = [
             {
-                field: 'action', headerName: 'Action', width: 130,
+                field: 'action', headerName: 'Action', width: 90,
                 renderCell: (params) =>
                     decisionStatus === 'Draft' && (
                         <Button
@@ -254,13 +221,23 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
                 overflow: 'hidden',
             }}>
                 <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
-                    <DataGrid
+                    <DataGridPro
                         rows={rows}
                         columns={columnsTitle}
+                        // initialState={{ pinnedColumns: { left: ['titleName', 'rankScore'], right: ['action'] } }}
                         getRowId={(row) => row.id}
-                        pageSize={5}
-                        rowsPerPageOptions={[5]}
+                        sx={{
+                            '& .MuiDataGrid-columnHeaders': {
+                                backgroundColor: '#f4f4f4',
+                            },
+                            overflowX: 'auto',  // Cho phép cuộn ngang cho các cột cuộn
+                            '.MuiDataGrid-virtualScroller': {
+                                overflowX: 'auto', // Cho phép cuộn ngang trong phần cuộn
+                                overflowY: 'auto', // Ẩn cuộn dọc trong vùng cuộn
+                            },
+                        }}
                     />
+                    {/* Button */}
                     {decisionStatus === 'Draft' && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                             <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>

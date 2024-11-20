@@ -54,14 +54,6 @@ const EditDecision = () => {
     const [isCriteriaSaved, setIsCriteriaSaved] = useState(false);
     const [isTitleSaved, setIsTitleSaved] = useState(false);
     const [isTaskSaved, setIsTaskSaved] = useState(false);
-
-    // Table  List  (page, size) 
-    // const [rows, setRows] = useState([]);
-    // const [filter, setFilter] = useState('');
-    // const [page, setPage] = useState(1);
-    // const [pageSize, setPageSize] = useState(5);
-    // const [totalElements, setTotalElements] = useState(0);
-    // const [totalPages, setTotalPages] = useState(0);
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Validation error message
@@ -80,6 +72,7 @@ const EditDecision = () => {
             setOriginalDecisionName(decisionData.decisionName || "Decision Name");
             setNewDecisionName(decisionData.decisionName || "");
             setStatus(decisionData.status || "");
+            setDecisionStatus(decisionData.status.charAt(0).toUpperCase() + decisionStatus.slice(1).toLowerCase() || "")
         } catch (error) {
             console.error("Error fetching group:", error);
         }

@@ -49,52 +49,30 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
                 row.id === updatedRow.id ? updatedRow : row
             );
 
-            // Kiểm tra sự thay đổi so với `originalCriteria`
-            const hasAnyChanges = updatedRows.some(
-                (row, index) => row.weight !== originalCriteria[index]?.weight
-            );
-            setHasChanges(hasAnyChanges);
-
             return updatedRows;
         });
     };
 
     //////////////////////////////////// Remove ////////////////////////////////////
     // Hàm hủy thay đổi, đặt lại  giá trị ban đầu của 1 hàng
+    // Hàm xóa hàng 
     const handleDeleteRowData = (id) => {
         setRows((prevRows) => {
-            // Tìm chỉ số của hàng cần xóa giá trị
             const rowIndex = prevRows.findIndex((row) => row.id === id);
-            if (rowIndex !== -1) {
-                // Tạo một bản sao của hàng hiện tại
-                const updatedRow = { ...prevRows[rowIndex] };
 
-                // Xóa các giá trị trong các ô, giữ lại id và các thuộc tính cố định
-                Object.keys(updatedRow).forEach((key) => {
-                    if (key === "weight") {
-                        // Tìm giá trị weight ban đầu từ originalCriteria
-                        const originalRow = originalCriteria.find((row) => row.id === id);
-                        if (originalRow) {
-                            updatedRow[key] = originalRow.weight; // Đặt lại giá trị weight ban đầu
-                        }
-                    }
-                });
-                // Cập nhật lại hàng trong mảng
+            if (rowIndex !== -1) {
+                // Lưu hàng bị xóa vào deletedRows
+                // setDeletedRows((prevDeleted) => [...prevDeleted, prevRows[rowIndex]]);
+
                 const updatedRows = [...prevRows];
-                updatedRows[rowIndex] = updatedRow;
+                updatedRows.splice(rowIndex, 1); // Xóa hàng khỏi mảng rows
                 return updatedRows;
             }
-            return prevRows;
+            return prevRows; // Nếu không tìm thấy, giữ nguyên
         });
     };
 
     //////////////////////////////////// Cancel ////////////////////////////////////
-    useEffect(() => {
-        // Kiểm tra xem có bất kỳ ô nào đã được thay đổi không
-        const hasAnyChanges = rows.some((row, index) => row.weight !== originalCriteria[index]?.weight);
-
-        setHasChanges(hasAnyChanges);
-    }, [rows, originalCriteria]); // Theo dõi sự thay đổi của rows và originalCriteria
     // Hàm hủy thay đổi, đặt lại cột weight về giá trị ban đầu
     const handleCancelChanges = () => {
         setRows(originalCriteria);  // Đặt lại dữ liệu cũ
@@ -107,8 +85,15 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
         console.log(totalWeight)
         return totalWeight;
     };
-    // Hàm save, kiểm tra weight nếu bằng 100 thì chuyển sang bước tiếp
     const handleSaveChanges = () => {
+        // Bỏ qua kiểm tra weight nếu trạng thái là Finalized
+        if (decisionStatus === 'Finalized') {
+            console.log("Finalized: Lưu dữ liệu và chuyển bước...");
+            goToNextStep();
+            return;
+        }
+
+        // Kiểm tra tổng weight trong trạng thái khác
         const totalWeight = calculateTotalWeight();
         if (totalWeight === 100) {
             console.log("Tổng weight hợp lệ. Lưu dữ liệu...");
@@ -117,6 +102,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
             showErrorMessage('Tổng weight phải bằng 100');
         }
     };
+
     //////////////////////////////////// Select to Add a new Criteria ////////////////////////////////////
     const handleAddCriteria = async () => {
         const newRow = {
@@ -160,11 +146,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
                         onChange={(e) => {
                             // Chỉ cập nhật giá trị nội bộ TextField
                             const updatedValue = e.target.value;
-                            setRows((prevRows) =>
-                                prevRows.map((row) =>
-                                    row.id === params.row.id ? { ...row, weight: updatedValue } : row
-                                )
-                            );
+                            params.row[params.field] = updatedValue; // Cập nhật trực tiếp giá trị
                         }}
                         onBlur={(e) => {
                             // Gọi processRowUpdate để cập nhật chính thức
@@ -218,6 +200,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
         }
     }, [criteria]);
 
+
     return (
         <Box sx={{
             width: "100%",
@@ -251,24 +234,20 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
                             </Button>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                            {hasChanges && (
-                                <Button
-                                    variant="contained"
-                                    color="error"
-                                    onClick={handleCancelChanges}
-                                >
-                                    Cancel
-                                </Button>
-                            )}
-                            {hasChanges && (
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={handleSaveChanges}
-                                >
-                                    Save
-                                </Button>
-                            )}
+                            <Button
+                                variant="contained"
+                                color="error"
+                                onClick={handleCancelChanges}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleSaveChanges}
+                            >
+                                Save
+                            </Button>
                         </Box>
                     </Box>
                 )}
