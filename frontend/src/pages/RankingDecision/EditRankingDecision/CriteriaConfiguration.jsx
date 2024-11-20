@@ -2,12 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Box, TextField, Button } from '@mui/material';
 import { MdDeleteForever } from 'react-icons/md';
+import Select from "react-select";
 // API
-import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
+import CriteriaAPI from "../../../api/CriteriaAPI.js"
 
 const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToNextStep, showErrorMessage }) => {
     const [rows, setRows] = useState([]);
+
+    const [criteriaList, setCriteriaList] = useState([]);
+
+    const getCriteriaList = async () => {
+        const data = await CriteriaAPI.searchCriteria();
+        console.log(data);
+        setCriteriaList(data.result);
+    }
+
+    useEffect(() => {
+        getCriteriaList();
+    }, [])
 
     // Xử lý khi người dùng chỉnh sửa một ô
     const handleCellEditCriteriaCommit = (newRow, oldRow) => {
@@ -22,6 +35,7 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
             return updatedRow;
         };
     };
+
 
     // Tính tổng weight
     const calculateTotalWeight = () => {
@@ -189,8 +203,23 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
                 {/* Button criteria */}
                 {decisionStatus === 'Draft' && (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
+                        {/*Dropdown list để chọn criteria muốn add */}
                         {/* Nút Add Criteria ở bên trái */}
                         <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+                            <Select
+                                isSearchable={true}
+                                placeholder="Add New Criteria ..."
+                                options={criteriaList.map((criteria) => ({
+                                    value: criteria.criteriaId, // Assuming criteriaId is the unique identifier
+                                    label: criteria.criteriaName, // Assuming criteriaName is the name to display
+                                }))}
+                                onChange={(selectedOption) => {
+                                    console.log("Selected criteria:", selectedOption);
+                                    // Handle the selection logic here, for example:
+                                    // setSelectedCriteria(selectedOption);
+                                }}
+
+                            />
                             <Button variant="contained" color="success" onClick={handleAddCriteria}>
                                 Add Criteria
                             </Button>

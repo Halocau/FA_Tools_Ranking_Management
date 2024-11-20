@@ -58,7 +58,7 @@ const EditDecision = () => {
     const [rows, setRows] = useState([]);
     const [filter, setFilter] = useState('');
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize, setPageSize] = useState(20);
     const [totalElements, setTotalElements] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     // Use hook notification
