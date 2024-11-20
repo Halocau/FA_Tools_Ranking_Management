@@ -11,8 +11,8 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
     // Data 
     const { id } = useParams(); // Get the ID from the URL
     const [criteria, setCriteria] = useState([]);
+    const [originalCriteria, setOriginalCriteria] = useState([]);  // Lưu dữ liệu gốc
     // Row table
-    const [originalRows, setOriginalRows] = useState([]);  // Lưu dữ liệu gốc
     const [rows, setRows] = useState([]);
     // State Cancel and Save
     const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
@@ -49,9 +49,9 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
                 row.id === updatedRow.id ? updatedRow : row
             );
 
-            // Kiểm tra sự thay đổi so với `originalRows`
+            // Kiểm tra sự thay đổi so với `originalCriteria`
             const hasAnyChanges = updatedRows.some(
-                (row, index) => row.weight !== originalRows[index]?.weight
+                (row, index) => row.weight !== originalCriteria[index]?.weight
             );
             setHasChanges(hasAnyChanges);
 
@@ -72,8 +72,8 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
                 // Xóa các giá trị trong các ô, giữ lại id và các thuộc tính cố định
                 Object.keys(updatedRow).forEach((key) => {
                     if (key === "weight") {
-                        // Tìm giá trị weight ban đầu từ originalRows
-                        const originalRow = originalRows.find((row) => row.id === id);
+                        // Tìm giá trị weight ban đầu từ originalCriteria
+                        const originalRow = originalCriteria.find((row) => row.id === id);
                         if (originalRow) {
                             updatedRow[key] = originalRow.weight; // Đặt lại giá trị weight ban đầu
                         }
@@ -91,13 +91,13 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
     //////////////////////////////////// Cancel ////////////////////////////////////
     useEffect(() => {
         // Kiểm tra xem có bất kỳ ô nào đã được thay đổi không
-        const hasAnyChanges = rows.some((row, index) => row.weight !== originalRows[index]?.weight);
+        const hasAnyChanges = rows.some((row, index) => row.weight !== originalCriteria[index]?.weight);
 
         setHasChanges(hasAnyChanges);
-    }, [rows, originalRows]); // Theo dõi sự thay đổi của rows và originalRows
+    }, [rows, originalCriteria]); // Theo dõi sự thay đổi của rows và originalCriteria
     // Hàm hủy thay đổi, đặt lại cột weight về giá trị ban đầu
     const handleCancelChanges = () => {
-        setRows(originalRows);  // Đặt lại dữ liệu cũ
+        setRows(originalCriteria);  // Đặt lại dữ liệu cũ
     };
 
     //////////////////////////////////// Save ////////////////////////////////////
@@ -214,7 +214,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
                 max_score: criteria.maxScore == null ? "" : criteria.maxScore,
             }));
             setRows(mappedRows);
-            setOriginalRows(mappedRows);  // Lưu lại dữ liệu gốc
+            setOriginalCriteria(mappedRows);  // Lưu lại dữ liệu gốc
         }
     }, [criteria]);
 

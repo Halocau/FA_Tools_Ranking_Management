@@ -14,13 +14,13 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
     // // Data 
     // const { id } = useParams(); // Get the ID from the URL
     // const [title, setTitle] = useState([]);
+    const [originalTitle, setOriginalTitle] = useState([]);  // Lưu dữ liệu gốc
     const [columnsTitle, setColumnsTitle] = useState([]);
 
     // Row table
-    const [originalRows, setOriginalRows] = useState([]);  // Lưu dữ liệu gốc
     const [rows, setRows] = useState([]);
     // State Cancel and Save
-    const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
+    // const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
     //Select to Add a new Title
     const [listtitle, setListTitle] = useState([]);
 
@@ -47,11 +47,11 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
                 }
             }
 
-            // Kiểm tra nếu có thay đổi trong bảng và cập nhật hasChanges
-            const hasAnyChanges = updatedRows.some((row) =>
-                Object.keys(row).some((key) => key !== 'id' && key !== 'titleName' && row[key] !== '')
-            );
-            setHasChanges(hasAnyChanges); // Cập nhật trạng thái hasChanges
+            // // Kiểm tra nếu có thay đổi trong bảng và cập nhật hasChanges
+            // const hasAnyChanges = updatedRows.some((row) =>
+            //     Object.keys(row).some((key) => key !== 'id' && key !== 'titleName' && row[key] !== '')
+            // );
+            // setHasChanges(hasAnyChanges); // Cập nhật trạng thái hasChanges
             return updatedRows;
         });
     };
@@ -62,73 +62,58 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
             const rowIndex = prevRows.findIndex((row) => row.id === id);
 
             if (rowIndex !== -1) {
-                const updatedRow = { ...prevRows[rowIndex] };
-                const originalRow = originalRows.find((row) => row.id === id);
-
-                // Khôi phục giá trị từ originalRow nếu có
-                Object.keys(updatedRow).forEach((key) => {
-                    if (key !== 'id' && key !== 'titleName') {
-                        updatedRow[key] = originalRow ? originalRow[key] : ''; // Khôi phục giá trị gốc
-                    }
-                });
+                // Lưu hàng bị xóa vào deletedRows
+                // setDeletedRows((prevDeleted) => [...prevDeleted, prevRows[rowIndex]]);
 
                 const updatedRows = [...prevRows];
-                updatedRows[rowIndex] = updatedRow;
+                updatedRows.splice(rowIndex, 1); // Xóa hàng khỏi mảng rows
                 return updatedRows;
             }
-
-            return prevRows;
+            return prevRows; // Nếu không tìm thấy, giữ nguyên
         });
     };
-
     //////////////////////////////////// Cancel /////////////////////////////////////
-    // Theo dõi sự thay đổi của rows và originalRows
-    useEffect(() => {
-        const checkForChanges = () => {
-            // Kiểm tra sự khác biệt giữa rows và originalRows
-            const hasAnyChanges = rows.some((row, index) => {
-                const originalRow = originalRows[index];
+    // // Theo dõi sự thay đổi của rows và originalTitle
+    // useEffect(() => {
+    //     const checkForChanges = () => {
+    //         // Kiểm tra số lượng hàng thay đổi (thêm hoặc xóa)
+    //         if (rows.length !== originalTitle.length) {
+    //             setHasChanges(true);
+    //             return;
+    //         }
 
-                // Kiểm tra nếu có sự khác biệt giữa row và originalRow
-                return Object.keys(row).some((key) => {
-                    if (key !== 'id' && key !== 'titleName' && row[key] !== originalRow[key]) {
-                        return true;
-                    }
-                    return false;
-                });
-            });
+    //         // Kiểm tra nội dung của các hàng
+    //         const hasAnyChanges = rows.some((row, index) => {
+    //             const originalRow = originalTitle[index];
 
-            setHasChanges(hasAnyChanges);
-        };
+    //             // Nếu không tìm thấy hàng gốc hoặc có sự khác biệt trong giá trị
+    //             return (
+    //                 !originalRow || // Trường hợp hàng mới được thêm
+    //                 Object.keys(row).some((key) => {
+    //                     if (key !== 'id' && key !== 'titleName' && row[key] !== originalRow[key]) {
+    //                         return true; // Giá trị bị thay đổi
+    //                     }
+    //                     return false;
+    //                 })
+    //             );
+    //         });
 
-        // Gọi hàm kiểm tra thay đổi
-        checkForChanges();
-    }, [rows, originalRows]);
+    //         setHasChanges(hasAnyChanges);
+    //     };
+    //     checkForChanges();
+    // }, [rows, originalTitle]); // Theo dõi cả rows và originalTitle
+
+
+
 
     //// Hàm hủy thay đổi, đặt lại  giá trị ban đầu của tất cả
     const handleCancelChanges = () => {
-        // Đặt lại tất cả các ô trong bảng về giá trị ban đầu
-        setRows((prevRows) => {
-            // Duyệt qua tất cả các hàng và reset giá trị ô (giữ lại id và titleName)
-            const resetRows = prevRows.map((row, index) => {
-                // Lấy giá trị ban đầu từ originalRows (vì chúng đã được lưu lại)
-                const originalRow = originalRows[index];
-
-                const updatedRow = { ...row };
-
-                // Khôi phục lại giá trị của mỗi ô từ originalRow
-                Object.keys(updatedRow).forEach((key) => {
-                    if (key !== 'id' && key !== 'titleName') { // Giữ lại id và index (hoặc các cột cố định khác)
-                        updatedRow[key] = originalRow[key]; // Khôi phục giá trị gốc
-                        // updatedRow[key] = ''; // Khôi phục giá trị gốc
-                    }
-                });
-                return updatedRow;
-            });
-
-            return resetRows;
+        setRows(() => {
+            return originalTitle.map((originalRow) => ({ ...originalRow }));
         });
+        // setHasChanges(false); // Đặt lại trạng thái khi đã hủy thay đổi
     };
+
 
     //////////////////////////////////// Save ///////////////////////////////////////
     // Hàm tính toán RankScore
@@ -161,10 +146,6 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
             id: rows.length + 1,
             titleName: 'New Title',
             rankScore: '',
-            ...title.reduce((acc, title) => {
-                acc[title.titleName] = '';  // Chỗ này sẽ là ô trống cho mỗi tiêu chí mới
-                return acc;
-            }, {}),
         };
         setRows([...rows, newTitle]);
     };
@@ -249,15 +230,15 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
             // Cập nhật cột
             setColumnsTitle(columns);
 
-            // Chỉ gọi setOriginalRows nếu chưa có dữ liệu ban đầu
-            if (originalRows.length === 0) {
-                setOriginalRows(rows); // Lưu trữ dữ liệu ban đầu
+            // Chỉ gọi setOriginalTitle nếu chưa có dữ liệu ban đầu
+            if (originalTitle.length === 0) {
+                setOriginalTitle(rows); // Lưu trữ dữ liệu ban đầu
             }
 
             // Cập nhật hàng
             setRows(rows);
         }
-    }, [criteria, title, decisionStatus, originalRows]);
+    }, [criteria, title, decisionStatus, originalTitle]);
     return (
         <div>
             <Box sx={{
@@ -289,24 +270,20 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
                             </Box>
 
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                                {hasChanges && (
-                                    <Button
-                                        variant="contained"
-                                        color="error"
-                                        onClick={handleCancelChanges} // Gọi hàm hủy thay đổi
-                                    >
-                                        Cancel
-                                    </Button>
-                                )}
-                                {hasChanges && (
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={handleSaveChanges} // Gọi hàm lưu thay đổi
-                                    >
-                                        Save
-                                    </Button>
-                                )}
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    onClick={handleCancelChanges} // Gọi hàm hủy thay đổi
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleSaveChanges} // Gọi hàm lưu thay đổi
+                                >
+                                    Save
+                                </Button>
                             </Box>
                         </Box>
                     )}

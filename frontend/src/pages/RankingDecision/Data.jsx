@@ -46,27 +46,27 @@ export const initialTask = [
             { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
         ]
     },
-    // {
-    //     task_name: 'Hướng dẫn, hỗ trợ, chấm bài',
-    //     task_types: [
-    //         { task_type: 'In Working Hour', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-    //         { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-    //     ]
-    // },
-    // {
-    //     task_name: 'Tạo tài liệu',
-    //     task_types: [
-    //         { task_type: 'In Working Hour', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-    //         { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-    //     ]
-    // },
-    // {
-    //     task_name: 'Xem xét tài liệu',
-    //     task_types: [
-    //         { task_type: 'In Working Hour', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-    //         { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-    //     ]
-    // }
+    {
+        task_name: 'Hướng dẫn, hỗ trợ, chấm bài',
+        task_types: [
+            { task_type: 'In Working Hour', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+            { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+        ]
+    },
+    //     {
+    //         task_name: 'Tạo tài liệu',
+    //         task_types: [
+    //             { task_type: 'In Working Hour', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    //             { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    //         ]
+    //     },
+    //     {
+    //         task_name: 'Xem xét tài liệu',
+    //         task_types: [
+    //             { task_type: 'In Working Hour', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    //             { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    //         ]
+    //     }
 ];
 
 

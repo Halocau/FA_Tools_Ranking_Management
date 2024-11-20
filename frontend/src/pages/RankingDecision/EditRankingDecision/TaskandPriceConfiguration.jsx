@@ -14,8 +14,8 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
     // const { id } = useParams(); // Get the ID from the URL
     // const [task, setTask] = useState([]);
     const [columnsTask, setColumnsTask] = useState([]);
+    const [originalTask, setOriginalTask] = useState([]);  // Lưu dữ liệu gốc
     // Row table
-    const [originalRows, setOriginalRows] = useState([]);  // Lưu dữ liệu gốc
     const [rows, setRows] = useState([]);
     // State Cancel and Save
     const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
@@ -38,11 +38,11 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
                 row.id === updatedRow.id ? updatedRow : row
             );
 
-            // Kiểm tra sự thay đổi so với `originalRows`
-            const hasAnyChanges = updatedRows.some(
-                (row, index) => row.weight !== originalRows[index]?.weight
-            );
-            setHasChanges(hasAnyChanges);
+            // // Kiểm tra sự thay đổi so với `originalTask`
+            // const hasAnyChanges = updatedRows.some(
+            //     (row, index) => row.weight !== originalTask[index]?.weight
+            // );
+            // setHasChanges(hasAnyChanges);
 
             return updatedRows;
         });
@@ -52,74 +52,26 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
     // Hàm hủy thay đổi, đặt lại  giá trị ban đầu của 1 hàng
     const handleDeleteRowData = (id) => {
         setRows((prevRows) => {
-            const rowIndex = prevRows.findIndex((row) => row.id === id);
+            // Tìm task_name từ id
+            const taskName = id.split('_')[0]; // Giả sử id có định dạng "taskName_type"
 
-            if (rowIndex !== -1) {
-                const updatedRow = { ...prevRows[rowIndex] };
-                const originalRow = originalRows.find((row) => row.id === id);
+            // Lọc các hàng có task_name tương tự và xóa chúng
+            const updatedRows = prevRows.filter((row) => !row.id.startsWith(taskName));
 
-                // Khôi phục giá trị từ originalRow chỉ cho các cột title
-                Object.keys(updatedRow).forEach((key) => {
-                    // Kiểm tra xem cột có phải là cột 'title' hay không
-                    if (key !== 'id' && key !== 'task' && key !== 'type') {
-                        // updatedRow[key] = originalRow ? originalRow[key] : '';
-                        updatedRow[key] = '';// Khôi phục giá trị gốc cho các cột title
-                    }
-                });
-
-                const updatedRows = [...prevRows];
-                updatedRows[rowIndex] = updatedRow;
-                return updatedRows;
-            }
-
-            return prevRows;
+            return updatedRows; // Trả về mảng các hàng đã được xóa
         });
     };
 
+
     //////////////////////////////////// Cancel /////////////////////////////////////
-    // Theo dõi sự thay đổi của rows và originalRows
-    useEffect(() => {
-        const checkForChanges = () => {
-            // Kiểm tra sự khác biệt giữa rows và originalRows
-            const hasAnyChanges = rows.some((row, index) => {
-                const originalRow = originalRows[index];
 
-                // Kiểm tra nếu có sự khác biệt giữa row và originalRow
-                return Object.keys(row).some((key) => {
-                    if (key !== 'id' && key !== 'task') {
-                        return true;
-                    }
-                    return false;
-                });
-            });
-
-            setHasChanges(hasAnyChanges);
-        };
-
-        // Gọi hàm kiểm tra thay đổi
-        checkForChanges();
-    }, [rows, originalRows]);
+    //// Hàm hủy thay đổi, đặt lại  giá trị ban đầu của tất cả
     //// Hàm hủy thay đổi, đặt lại  giá trị ban đầu của tất cả
     const handleCancelChanges = () => {
-        // Đặt lại tất cả các ô trong bảng về giá trị ban đầu
-        setRows((prevRows) => {
-            const resetRows = prevRows.map((row, index) => {
-                const originalRow = originalRows[index]; // Lấy giá trị ban đầu từ originalRows
-
-                const updatedRow = { ...row };
-
-                // Khôi phục lại giá trị của mỗi ô từ originalRow, ngoại trừ cột 'task', 'type', và 'id'
-                Object.keys(updatedRow).forEach((key) => {
-                    if (key !== 'id' && key !== 'task' && key !== 'type') { // Giữ lại 'id', 'titleName', 'task', và 'type'
-                        updatedRow[key] = originalRow ? originalRow[key] : ''; // Khôi phục giá trị gốc từ originalRow, nếu có
-                    }
-                });
-
-                return updatedRow;
-            });
-
-            return resetRows;
+        setRows(() => {
+            return originalTask.map((originalRow) => ({ ...originalRow }));
         });
+        // setHasChanges(false); // Đặt lại trạng thái khi đã hủy thay đổi
     };
 
     //////////////////////////////////// Save ////////////////////////////////////
@@ -128,7 +80,7 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
         const allFieldsFilled = rows.every((row) => {
             // Kiểm tra mỗi ô trong hàng (trừ các cột cố định như 'id' và 'task')
             return Object.keys(row).every((key) => {
-                if (key !== 'id' && key !== 'task' && key !== 'type') { // Giữ lại các cột cố định
+                if (key !== 'id' && key !== 'taskName' && key !== 'taskType') { // Giữ lại các cột cố định
                     // Kiểm tra giá trị của ô không phải là undefined, null hay rỗng
                     if (row[key] === '' || row[key] === null || row[key] === undefined) {
                         console.log(`Ô thiếu dữ liệu: ${key}, Dòng: ${JSON.stringify(row)}`);
@@ -154,16 +106,23 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
 
     //////////////////////////////////// Select to Add a new Task ////////////////////////////////////
     const handleAddTask = () => {
-        const newTitle = {
-            id: rows.length + 1,
-            titleName: 'New Title',
+        const newTasks = ['In Working Hour', 'Overtime'].map((type, index) => ({
+            id: `${rows.length + 1}_${type}`,
+            taskName: index === 0 ? 'New Task' : '',
+            taskType: type,
             ...title.reduce((acc, title) => {
-                acc[title.titleName] = '';  // Chỗ này sẽ là ô trống cho mỗi tiêu chí mới
+                acc[title.titleName] = '';
                 return acc;
             }, {}),
-        };
-        setRows([...rows, newTitle]);
+        }));
+
+        console.log('Rows before adding:', rows);
+        setRows([...rows, ...newTasks]);
+        console.log('Rows after adding:', [...rows, ...newTasks]);
     };
+
+
+
 
     //////////////////////////////////// Column task ////////////////////////////////////
     // Tạo cấu hình cột và hàng
@@ -195,9 +154,33 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
 
         // Cột cố định
         const fixedColumns = [
-            { field: 'task', headerName: 'Task', width: 100 },
-            { field: 'type', headerName: 'Type', width: 100 },
+            { field: 'taskName', headerName: 'Task', width: 100 },
+            { field: 'taskType', headerName: 'Type', width: 130 },
         ];
+        // // cột action
+        // const actionColumn = [
+        //     {
+        //         field: 'action',
+        //         headerName: 'Action',
+        //         width: 130,
+        //         renderCell: (params) => {
+        //             // Tách task_name từ id (id là dạng "taskName_type")
+        //             const taskName = params.row.id.split('_')[0];
+        //             // Kiểm tra nếu đây là dòng đầu tiên của nhiệm vụ (In Working Hour)
+        //             const isFirstRow = params.row.type === 'In Working Hour';
+
+        //             return decisionStatus === 'Draft' && isFirstRow ? (
+        //                 <Button
+        //                     variant="outlined"
+        //                     color="error"
+        //                     onClick={() => handleDeleteRowData(taskName)} // Gửi taskName thay vì id cụ thể
+        //                 >
+        //                     <MdDeleteForever />
+        //                 </Button>
+        //             ) : null; // Không hiển thị nút xóa nếu không phải dòng đầu tiên
+        //         },
+        //     },
+        // ];
         // cột action
         const actionColumn = [
             {
@@ -218,9 +201,14 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
         const updatedRows = task.map((task) => {
             return ['In Working Hour', 'Overtime'].map((type, index) => ({
                 id: `${task.task_name}_${type}`,
-                task: index === 0 ? task.task_name : '',
-                type: index === 0 ? 'In Working Hour' : 'Overtime',
+                taskName: index === 0 ? task.task_name : '',
+                taskType: index === 0 ? 'In Working Hour' : 'Overtime',
+                ...title.reduce((acc, title) => {
+                    acc[title.titleName] = title.titleSelections && title.titleSelections[title.titleName] ? title.titleSelections[title.titleName] : '';
+                    return acc;
+                }, {}),
             }));
+
         }).flat().map((row) => {
             // Kiểm tra và thay thế undefined bằng chuỗi rỗng hoặc giá trị mặc định khác
             Object.keys(row).forEach((key) => {
@@ -242,7 +230,7 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
             // Cập nhật cột và hàng
             setColumnsTask(columns);
             setRows(rows);
-            setOriginalRows(rows); // Lưu lại dữ liệu gốc
+            setOriginalTask(rows); // Lưu lại dữ liệu gốc
         }
     }, [criteria, title, task, decisionStatus]);
 
@@ -281,24 +269,20 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
                             </Box>
 
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                                {hasChanges && (
-                                    <Button
-                                        variant="contained"
-                                        color="error"
-                                        onClick={handleCancelChanges} // Gọi hàm hủy thay đổi
-                                    >
-                                        Cancel
-                                    </Button>
-                                )}
-                                {hasChanges && (
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={handleSaveChanges} // Gọi hàm lưu thay đổi
-                                    >
-                                        Save
-                                    </Button>
-                                )}
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    onClick={handleCancelChanges} // Gọi hàm hủy thay đổi
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleSaveChanges} // Gọi hàm lưu thay đổi
+                                >
+                                    Save
+                                </Button>
                             </Box>
                         </Box>
                     )}

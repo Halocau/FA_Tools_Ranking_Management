@@ -42,7 +42,7 @@ const EditDecision = () => {
     const [status, setStatus] = useState("");
 
     // Step
-    const [activeStep, setActiveStep] = useState(0);
+    const [activeStep, setActiveStep] = useState(2);
     // Data
     const [criteria, setCriteria] = useState([]);
     const [title, setTitle] = useState([]);
@@ -180,7 +180,7 @@ const EditDecision = () => {
             // setDecisionStatus('In Progress'); // Bước 0: Đang tiến hành
         } else if (activeStep === 1) {
             // setDecisionStatus('In Progress'); // Bước 1: Tiến hành
-        } else if (activeStep === 2) {
+        } else if (activeStep === 4) {
             setDecisionStatus('Finalize'); // Bước 2: Hoàn thành
 
         }
