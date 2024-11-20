@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Select from "react-select";
-import { DataGrid } from '@mui/x-data-grid';
-import { Box, TextField, Button } from '@mui/material';
 import { MdDeleteForever } from 'react-icons/md';
 import { useNavigate, useParams } from "react-router-dom";
+// Mui
+import { DataGrid } from '@mui/x-data-grid';
+import { Box, TextField, Button, IconButton } from '@mui/material';
+import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
 // API
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 import CriteriaAPI from "../../../api/CriteriaAPI.js";
@@ -36,7 +38,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     useEffect(() => {
         getCriteriaConfiguration();
     }, []);
-    // console.log(criteria);
+    console.log(criteria);
 
     ///////////////////////////// Hàm cập nhập thay đổi ///////////////////////////
     // Hàm cập nhập thay đổi weight
@@ -98,7 +100,8 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             showSuccessMessage("Criteria Configuration saved successfully!");
             goToNextStep();
         } else {
-            showErrorMessage('Tổng weight phải bằng 100');
+            // showErrorMessage('Tổng weight phải bằng 100');
+            showErrorMessage('Error occurred updating Criteria Configuration. Please try again.');
         }
     };
 
@@ -136,7 +139,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
 
     //////////////////////////////////// Column Criteria ////////////////////////////////////
     const columnsCriteria = [
-        { field: 'index', headerName: 'ID', width: 20 },  // Thêm cột chỉ mục
+        // { field: 'index', headerName: 'ID', width: 20 },  // Thêm cột chỉ mục
         { field: 'criteria_name', headerName: 'Criteria Name', width: 500 },
         {
             field: 'weight',
@@ -198,7 +201,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
         if (criteria) {
             const mappedRows = criteria.map((criteria, index) => ({
                 id: criteria.criteriaId,
-                index: index + 1,  // Chỉ số thứ tự bắt đầu từ 1
+                // index: index + 1,  // Chỉ số thứ tự bắt đầu từ 1
                 criteria_name: criteria.criteriaName,
                 weight: criteria.weight || 0,
                 num_options: criteria.numOptions < 1 ? "0" : criteria.numOptions,
@@ -237,33 +240,39 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                 {/* Button criteria */}
                 {decisionStatus === 'Draft' && (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-                        <Select
-                            isSearchable={true}
-                            placeholder="Add New Criteria ..."
-                            options={listcriteria
-                                .filter(
-                                    (criteria) => !rows.some((row) => row.id === criteria.criteriaId)
-                                )
-                                .map((criteria) => ({
-                                    value: criteria.criteriaId,
-                                    label: criteria.criteriaName,
-                                }))}
-                            styles={{
-                                menu: (provided) => ({
-                                    ...provided,
-                                    maxHeight: 300,
-                                    overflowY: 'auto',
-                                    width: 300,
-                                }),
-                            }}
-                            menuPlacement="top"
-                            value={selectedCriteria} // Bind the selected option to the state
-                            onChange={(option) => setSelectedCriteria(option)} // Update state on selection
-                        />
+
                         <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                            <Button variant="contained" color="success" onClick={handleAddCriteria}>
-                                Add Criteria
-                            </Button>
+                            <Select sx={{ display: 'flex', justifyContent: 'flex-start' }}
+                                isSearchable={true}
+                                placeholder="Select to Add a new Criteria"
+                                options={listcriteria
+                                    .filter(
+                                        (criteria) => !rows.some((row) => row.id === criteria.criteriaId)
+                                    )
+                                    .map((criteria) => ({
+                                        value: criteria.criteriaId,
+                                        label: criteria.criteriaName,
+                                    }))}
+                                styles={{
+                                    menu: (provided) => ({
+                                        ...provided,
+                                        maxHeight: 300,
+                                        overflowY: 'auto',
+                                        width: 300,
+                                    }),
+                                }}
+                                menuPlacement="top"
+                                value={selectedCriteria} // Bind the selected option to the state
+                                onChange={(option) => setSelectedCriteria(option)} // Update state on selection
+                            />
+                            <IconButton
+                                onClick={handleAddCriteria}
+                                color={selectedCriteria ? 'primary' : 'default'} // Màu xanh khi có criteria được chọn
+                                disabled={!selectedCriteria} // Vô hiệu hóa khi không có criteria được chọn
+                                sx={{ marginLeft: 1, transform: 'translateY(-7px)' }} // Dịch chuyển icon lên trên
+                            >
+                                <AddCircleIcon fontSize="large" />
+                            </IconButton>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                             <Button
