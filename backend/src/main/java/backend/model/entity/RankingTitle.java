@@ -39,7 +39,7 @@ public class RankingTitle {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDate updatedAt;
-
+    //Option <-> RankingTiTle
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = {
                     CascadeType.DETACH,
@@ -53,4 +53,19 @@ public class RankingTitle {
             inverseJoinColumns = @JoinColumn(name = "option_id")
     )
     private List<Options> options;
+    //Task <-> RankingTiTle
+    @ManyToMany(
+            fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.DETACH,
+                    CascadeType.MERGE,
+                    CascadeType.PERSIST,
+                    CascadeType.REFRESH
+            })
+    @JoinTable(
+            name = "Task_Wages",
+            joinColumns = @JoinColumn(name = "ranking_title_id"),
+            inverseJoinColumns = @JoinColumn(name = "task_id")
+    )
+    private List<Task> tasks;
 }
