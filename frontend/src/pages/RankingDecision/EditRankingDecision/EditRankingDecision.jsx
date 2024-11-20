@@ -26,9 +26,10 @@ import { useAuth } from "../../../contexts/AuthContext.jsx";
 // Hooks
 import useNotification from "../../../hooks/useNotification.jsx";
 //Data
-import { rankTitles, initialCriteria, initialTitle, initialTask } from "../Data.jsx";
+import { rankTitle, initialCriteria, initialTitle, initialTask } from "../Data.jsx";
 import CriteriaConfiguration from "./CriteriaConfiguration.jsx";
 import TitleConfiguration from "./TitleConfiguration.jsx";
+import TaskandPriceConfiguration from "./TaskandPriceConfiguration.jsx";
 
 const EditDecision = () => {
     // const navigate = useNavigate(); // To navigate between pages
@@ -192,88 +193,87 @@ const EditDecision = () => {
         getCriteriaConfiguration();
     }, []);
 
-    console.log(rows);
-
+    console.log(criteria);
 
 
     //////////////////////////////////////////////////////////////////////////// Title Configuration ////////////////////////////////////////////////////////////////////////////
 
-    const [columnsTitle, setColumnsTitle] = useState([]);
-    // Tạo cấu hình cột và hàng
-    useEffect(() => {
-        if (initialCriteria && initialTitle) {
-            // Cột từ tiêu chí
-            const criteriaColumns = initialCriteria.map((criteria) => ({
-                field: criteria.criteriaName,
-                headerName: criteria.criteriaName,
-                width: 140,
-                editable: true,
-                renderCell: (params) => (
-                    <Select
-                        value={params.value || ''}
-                        onChange={(e) => handleCellEditTitleCommit({ id: params.row.id, field: params.field, value: e.target.value })}
-                        fullWidth
-                        sx={{
-                            height: '30px', // Chiều cao của box
-                            '.MuiSelect-select': {
-                                padding: '4px', // Padding trong box
-                            },
-                        }}
+    // const [columnsTitle, setColumnsTitle] = useState([]);
+    // // Tạo cấu hình cột và hàng
+    // useEffect(() => {
+    //     if (initialCriteria && initialTitle) {
+    //         // Cột từ tiêu chí
+    //         const criteriaColumns = initialCriteria.map((criteria) => ({
+    //             field: criteria.criteriaName,
+    //             headerName: criteria.criteriaName,
+    //             width: 140,
+    //             editable: true,
+    //             renderCell: (params) => (
+    //                 <Select
+    //                     value={params.value || ''}
+    //                     onChange={(e) => handleCellEditTitleCommit({ id: params.row.id, field: params.field, value: e.target.value })}
+    //                     fullWidth
+    //                     sx={{
+    //                         height: '30px', // Chiều cao của box
+    //                         '.MuiSelect-select': {
+    //                             padding: '4px', // Padding trong box
+    //                         },
+    //                     }}
 
-                    >
-                        {rankTitles.map((title, index) => (
-                            <MenuItem key={index} value={title}>
-                                {title}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                ),
-            }));
+    //                 >
+    //                     {rankTitle.map((title, index) => (
+    //                         <MenuItem key={index} value={title}>
+    //                             {title}
+    //                         </MenuItem>
+    //                     ))}
+    //                 </Select>
+    //             ),
+    //         }));
 
-            // Cột cố định
-            const fixedColumns = [
-                { field: 'titleName', headerName: 'Title Name', width: 100 },
-                {
-                    field: 'rankScore',
-                    headerName: 'Rank Score',
-                    width: 100,
-                    editable: decisionStatus === 'Draft',
-                    align: 'center',
-                    headerAlign: 'center',
-                },
-            ]
-            const actionColumn = [
-                {
-                    field: 'action', headerName: 'Action', width: 130,
-                    renderCell: (params) =>
-                        decisionStatus === 'Draft' && (
-                            <Button
-                                variant="outlined"
-                                color="error"
-                                onClick={() => handleDeleteRowData(params.row.id)}
-                            >
-                                <MdDeleteForever />
-                            </Button>
-                        ),
-                },
-            ];
+    //         // Cột cố định
+    //         const fixedColumns = [
+    //             { field: 'titleName', headerName: 'Title Name', width: 100 },
+    //             {
+    //                 field: 'rankScore',
+    //                 headerName: 'Rank Score',
+    //                 width: 100,
+    //                 editable: decisionStatus === 'Draft',
+    //                 align: 'center',
+    //                 headerAlign: 'center',
+    //             },
+    //         ]
+    //         const actionColumn = [
+    //             {
+    //                 field: 'action', headerName: 'Action', width: 130,
+    //                 renderCell: (params) =>
+    //                     decisionStatus === 'Draft' && (
+    //                         <Button
+    //                             variant="outlined"
+    //                             color="error"
+    //                             onClick={() => handleDeleteRowData(params.row.id)}
+    //                         >
+    //                             <MdDeleteForever />
+    //                         </Button>
+    //                     ),
+    //             },
+    //         ];
 
-            // Tạo hàng dữ liệu
-            const updatedRows = initialTitle.map((title) => ({
-                id: title.titleId,
-                titleName: title.titleName,
-                rankScore: '',
-                ...initialCriteria.reduce((acc, criteria) => {
-                    acc[criteria.criteriaName] = '';
-                    return acc;
-                }, {}),
-            }));
+    //         // Tạo hàng dữ liệu
+    //         const updatedRows = initialTitle.map((title) => ({
+    //             id: title.titleId,
+    //             titleName: title.titleName,
+    //             rankScore: '',
+    //             ...initialCriteria.reduce((acc, criteria) => {
+    //                 acc[criteria.criteriaName] = '';
+    //                 return acc;
+    //             }, {}),
+    //         }));
 
-            // Cập nhật cột và hàng
-            setColumnsTitle([...fixedColumns, ...criteriaColumns, ...actionColumn]);
-            setTitle(updatedRows);
-        }
-    }, [initialCriteria, initialTitle, decisionStatus]);
+    //         // Cập nhật cột và hàng
+    //         setColumnsTitle([...fixedColumns, ...criteriaColumns, ...actionColumn]);
+    //         setTitle(updatedRows);
+    //     }
+    // }, [initialCriteria, initialTitle, decisionStatus]);
 
     // Xử lý khi chỉnh sửa ô
     const handleCellEditTitleCommit = ({ id, field, value }) => {
@@ -314,7 +314,6 @@ const EditDecision = () => {
     };
 
     //////////////////////////////////////////////////////////////////////////// Task and Price Configuration ////////////////////////////////////////////////////////////////////////////
-
     const [columnsTask, setColumnsTask] = useState([]);
     // Tạo cấu hình cột và hàng
     useEffect(() => {
@@ -454,7 +453,6 @@ const EditDecision = () => {
                     <CriteriaConfiguration
                         criteria={criteria}
                         decisionStatus={decisionStatus}
-                        initialCriteria={criteria}
                         page={1}
                         pageSize={5}
                         goToNextStep={goToNextStep}
@@ -464,8 +462,9 @@ const EditDecision = () => {
             case 1:
                 return (
                     <TitleConfiguration
-                        criteria={criteria}
-                        title={title}
+                        criteria={initialCriteria}
+                        title={initialTitle}
+                        rankTitle={rankTitle}
                         decisionStatus={decisionStatus}
                         page={1}
                         pageSize={5}
@@ -473,23 +472,25 @@ const EditDecision = () => {
                         showErrorMessage={showErrorMessage}
                     />
                 );
-            // case 2:
-            //     return (
-            //         <TaskandPriceConfiguration
-            //             criteria={criteria}
-            //             title={title}
-            //             task={task}
-            //             decisionStatus={decisionStatus}
-            //             page={1}
-            //             pageSize={5}
-            //             goToNextStep={goToNextStep}
-            //             showErrorMessage={showErrorMessage}
-            //         />
-            //     );
+            case 2:
+                return (
+                    <TaskandPriceConfiguration
+                        criteria={initialCriteria}
+                        title={initialTitle}
+                        rankTitle={rankTitle}
+                        task={initialTask}
+                        decisionStatus={decisionStatus}
+                        page={1}
+                        pageSize={5}
+                        goToNextStep={goToNextStep}
+                        showErrorMessage={showErrorMessage}
+                    />
+                );
             default:
                 return <div>Unknown Step</div>;
         }
     };
+
     return (
         <div style={{ marginTop: "60px" }}>
             <Box sx={{ marginTop: 4, padding: 2 }}>
