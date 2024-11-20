@@ -57,12 +57,8 @@ public class Task {
     //Task <-> RankingTiTle
     @ManyToMany(
             fetch = FetchType.LAZY,
-            cascade = {
-                    CascadeType.DETACH,
-                    CascadeType.MERGE,
-                    CascadeType.PERSIST,
-                    CascadeType.REFRESH
-            })
+            cascade = CascadeType.ALL
+    )
     @JoinTable(
             name = "Task_Wages",
             joinColumns = @JoinColumn(name = "task_id"),
