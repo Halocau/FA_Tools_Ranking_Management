@@ -9,6 +9,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,4 +39,18 @@ public class RankingTitle {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDate updatedAt;
+
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.DETACH,
+                    CascadeType.MERGE,
+                    CascadeType.PERSIST,
+                    CascadeType.REFRESH
+            })
+    @JoinTable(
+            name = "Ranking_Title_Option",
+            joinColumns = @JoinColumn(name = "ranking_title_id"),
+            inverseJoinColumns = @JoinColumn(name = "option_id")
+    )
+    private List<Options> options;
 }

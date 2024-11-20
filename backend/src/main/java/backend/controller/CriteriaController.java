@@ -1,10 +1,8 @@
 package backend.controller;
 
 import backend.model.dto.CriteriaResponse;
-import backend.model.dto.DecisionCriteriaResponse;
-import backend.model.dto.TitleConfiguration.CriteriaDTO;
+import backend.model.dto.TitleConfiguration.DecisionCriteriaDTO;
 import backend.model.entity.Criteria;
-import backend.model.entity.DecisionCriteria;
 import backend.model.form.Criteria.AddCriteriaRequest;
 import backend.model.form.Criteria.UpdateCriteriaRequest;
 import backend.model.page.ResultPaginationDTO;
@@ -21,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.turkraft.springfilter.boot.Filter;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,13 +33,6 @@ public class CriteriaController {
     public CriteriaController(ICriteriaService criteriaService, IDecisionCriteriaService idDecisionCriteriaService) {
         this.criteriaService = criteriaService;
         this.idDecisionCriteriaService = idDecisionCriteriaService;
-    }
-
-    @GetMapping("/test")
-    public ResponseEntity<List<CriteriaDTO>> listAllCriteria() {
-        List<Criteria> test = criteriaService.getAllCriteria();
-        List<CriteriaDTO> criteriaDTOList = criteriaService.getAllCriteriaTitleConfiguration(test);
-        return new ResponseEntity<>(criteriaDTOList, HttpStatus.OK);
     }
 
     @GetMapping
@@ -80,8 +70,8 @@ public class CriteriaController {
     }
 
     @DeleteMapping("delete/{id}")
-    public ResponseEntity<String> deleteCriteria(@PathVariable("id") int criteriaId) {
+    public ResponseEntity<Void> deleteCriteria(@PathVariable("id") int criteriaId) {
         criteriaService.deleteCriteria(criteriaId);
-        return new ResponseEntity<>("Criteria deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

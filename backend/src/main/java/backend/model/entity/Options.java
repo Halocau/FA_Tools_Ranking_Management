@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -27,7 +28,7 @@ public class Options {
     private Integer criteriaId;
 
     @ManyToOne
-    @JoinColumn(name = "criteria_id",insertable = false, updatable = false)
+    @JoinColumn(name = "criteria_id", insertable = false, updatable = false)
     @JsonIgnore// Bỏ qua tham chiếu ngược khi chuyển đổi sang JSON
     private Criteria criteria;
 
@@ -50,4 +51,18 @@ public class Options {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.DETACH,
+                    CascadeType.MERGE,
+                    CascadeType.PERSIST,
+                    CascadeType.REFRESH
+            })
+    @JoinTable(
+            name = "Ranking_Title_Option",
+            joinColumns = @JoinColumn(name = "option_id"),
+            inverseJoinColumns = @JoinColumn(name = "ranking_title_id")
+    )
+    private List<RankingTitle> rankingTitles;
 }

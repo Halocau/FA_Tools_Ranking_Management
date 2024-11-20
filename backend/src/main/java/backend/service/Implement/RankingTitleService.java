@@ -1,8 +1,14 @@
 package backend.service.Implement;
 
+import backend.dao.ICriteriaRepository;
+import backend.dao.IDecisionCriteriaRepository;
+import backend.dao.IRankingDecisionRepository;
 import backend.dao.IRankingTitleRepository;
 import backend.model.dto.RankingGroupResponse;
 import backend.model.dto.RankingTitleResponse;
+import backend.model.dto.TitleConfiguration.DecisionCriteriaDTO;
+import backend.model.entity.Criteria;
+import backend.model.entity.DecisionCriteria;
 import backend.model.entity.RankingTitle;
 import backend.model.form.RankingTitle.AddRankingTitleRequest;
 import backend.service.IRankingTitleService;
@@ -19,11 +25,17 @@ import java.util.List;
 public class RankingTitleService implements IRankingTitleService {
     private IRankingTitleRepository iRankingTitleRepository;
     private ModelMapper modelMapper;
+    private IDecisionCriteriaRepository iDecisionCriteriaRepository;
+    private ICriteriaRepository iCriteriaRepository;
+    private IRankingDecisionRepository iRankingDecisionRepository;
 
     @Autowired
-    public RankingTitleService(IRankingTitleRepository iRankingTitleRepository, ModelMapper modelMapper) {
+    public RankingTitleService(IRankingTitleRepository iRankingTitleRepository, ModelMapper modelMapper, IDecisionCriteriaRepository iDecisionCriteriaRepository, ICriteriaRepository iCriteriaRepository, IRankingDecisionRepository iRankingDecisionRepository) {
         this.iRankingTitleRepository = iRankingTitleRepository;
         this.modelMapper = modelMapper;
+        this.iDecisionCriteriaRepository = iDecisionCriteriaRepository;
+        this.iCriteriaRepository = iCriteriaRepository;
+        this.iRankingDecisionRepository = iRankingDecisionRepository;
     }
 
     /**
@@ -59,6 +71,11 @@ public class RankingTitleService implements IRankingTitleService {
         iRankingTitleRepository.deleteById(id);
     }
 
+    @Override
+    public List<RankingTitle> findByDecisionId(Integer decisionId) {
+        return iRankingTitleRepository.findByDecisionId(decisionId);
+    }
+
     /**
      * Response
      */
@@ -72,6 +89,8 @@ public class RankingTitleService implements IRankingTitleService {
         }
         return rankingTitleResponses;
     }
+
+
 
     @Override
     public RankingTitleResponse findRankingTitleResponse(RankingTitle rankingTitle) {

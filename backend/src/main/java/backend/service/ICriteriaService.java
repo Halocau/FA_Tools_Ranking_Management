@@ -1,13 +1,14 @@
 package backend.service;
 
 import backend.model.dto.CriteriaResponse;
-import backend.model.dto.TitleConfiguration.CriteriaDTO;
+import backend.model.dto.TitleConfiguration.DecisionCriteriaDTO;
 import backend.model.entity.Criteria;
 import backend.model.form.Criteria.AddCriteriaRequest;
 import backend.model.form.Criteria.UpdateCriteriaRequest;
 import backend.model.page.ResultPaginationDTO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +36,4 @@ public interface ICriteriaService {
 
     //validation
     boolean existsByCriteriaName(String name);
-
-    //TitleConfiguration
-    public List<CriteriaDTO> getAllCriteriaTitleConfiguration(List<Criteria> criteriaList);
 }
