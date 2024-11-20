@@ -1,7 +1,6 @@
 package backend.controller;
 
 import backend.model.dto.DecisionCriteriaResponse;
-import backend.model.dto.TitleConfiguration.DecisionCriteriaDTO;
 import backend.model.entity.DecisionCriteria;
 import backend.model.form.DecisionCriteria.AddDecisionCriteriaRequest;
 import backend.model.form.DecisionCriteria.UpdateDecisionCriteriaRequest;
@@ -54,12 +53,7 @@ public class DecisionCriteriaController {
         find.setResult(decisionCriteriaResponses);
         return ResponseEntity.status(HttpStatus.OK).body(find);
     }
-    @GetMapping("/take/{decisionId}")
-    public ResponseEntity<List<DecisionCriteriaDTO>> getDecisionCriteriaByDecisionConfigurationId(@PathVariable(name = "decisionId") Integer decisionId){
-        List<DecisionCriteria> find = iDecisionCriteriaService.findByDecisionId(decisionId);
-        List<DecisionCriteriaDTO> list = iDecisionCriteriaService.getDecisionCriteriaConfigurationResponse(find);
-        return ResponseEntity.status(HttpStatus.OK).body(list);
-    }
+
     @PostMapping("/add")
     public ResponseEntity<String> addDecisionCriteria(@RequestBody @Valid AddDecisionCriteriaRequest form) {
         iDecisionCriteriaService.createDecisionCriteria(form);

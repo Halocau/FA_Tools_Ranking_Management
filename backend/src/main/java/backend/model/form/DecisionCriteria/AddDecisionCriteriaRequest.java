@@ -13,7 +13,5 @@ public class AddDecisionCriteriaRequest {
     private Integer decisionId;
     @NotNull
     private Integer criteriaId;
-
-
     private Float weight;
 }

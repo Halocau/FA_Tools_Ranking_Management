@@ -108,7 +108,30 @@ public class CriteriaService implements ICriteriaService {
     public boolean existsByCriteriaName(String name) {
         return criteriaRepository.existsByCriteriaName(name);
     }
-    
+
+    @Override
+    public List<DecisionCriteriaDTO> getAllCriteriaTitleConfiguration(List<Criteria> criteriaList) {
+        List<DecisionCriteriaDTO> decisionCriteriaDTO = new ArrayList<>();
+        for (Criteria criteria : criteriaList) {
+            decisionCriteriaDTO.add(convertToDto(criteria));
+        }
+        return decisionCriteriaDTO;
+    }
+
+    private DecisionCriteriaDTO convertToDto(Criteria criteria) {
+        //change CriteriaDTO
+        DecisionCriteriaDTO decisionCriteriaDTO = modelMapper.map(criteria, DecisionCriteriaDTO.class);
+
+        //change list Option -> OptionDTO
+        List<OptionDTO> optionDTOList = new ArrayList<>();
+        for (Options option : criteria.getOptions()) {
+            OptionDTO optionDTO = modelMapper.map(option, OptionDTO.class);
+            optionDTOList.add(optionDTO);
+        }
+        decisionCriteriaDTO.setOptions(optionDTOList);
+        return decisionCriteriaDTO;
+    }
+
     @Override
     public ResultPaginationDTO getAllCriteria(Specification<Criteria> spec, Pageable pageable) {
         // Page<Criteria> criteriaList = criteriaRepository.findAll(spec, pageable);

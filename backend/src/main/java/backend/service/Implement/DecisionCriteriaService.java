@@ -5,11 +5,8 @@ import backend.dao.ICriteriaRepository;
 import backend.dao.IDecisionCriteriaRepository;
 import backend.dao.IRankingDecisionRepository;
 import backend.model.dto.DecisionCriteriaResponse;
-import backend.model.dto.TitleConfiguration.DecisionCriteriaDTO;
-import backend.model.dto.TitleConfiguration.OptionDTO;
 import backend.model.entity.Criteria;
 import backend.model.entity.DecisionCriteria;
-import backend.model.entity.Options;
 import backend.model.form.DecisionCriteria.AddDecisionCriteriaRequest;
 import backend.model.form.DecisionCriteria.UpdateDecisionCriteriaRequest;
 import backend.model.page.ResultPaginationDTO;
@@ -84,40 +81,6 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
         return decisionCriteriaResponses;
     }
 
-    @Override
-    public List<DecisionCriteriaDTO> getDecisionCriteriaConfigurationResponse(List<DecisionCriteria> list) {
-        List<DecisionCriteriaDTO> decisionCriteriaDTO = new ArrayList<>();
-        if (list == null || list.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        for (DecisionCriteria dcResponse : list) {
-
-            DecisionCriteriaDTO response = modelMapper.map(dcResponse, DecisionCriteriaDTO.class);
-
-            // Get criteriaName
-            Criteria criteria = iCriteriaRepository.findById(dcResponse.getCriteriaId()).orElse(null);
-            if (criteria != null) {
-                response.setCriteriaName(criteria.getCriteriaName());
-            }
-
-            // Get List Option
-            List<OptionDTO> optionDTOList = new ArrayList<>();
-            if (criteria != null && criteria.getOptions() != null) { // Check null trước khi gọi getOptions
-                for (Options option : criteria.getOptions()) {
-                    OptionDTO optionDTO = modelMapper.map(option, OptionDTO.class);
-                    optionDTOList.add(optionDTO);
-                }
-            }
-            response.setOptions(optionDTOList);
-
-            // Add response to the list
-            decisionCriteriaDTO.add(response);
-        }
-
-        return decisionCriteriaDTO;
-    }
-
     // get have page
     @Override
     public ResultPaginationDTO findByDecisionIdAndSpecification(Integer decisionId, Specification<DecisionCriteria> spec, Pageable pageable) {
@@ -155,9 +118,9 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
         DecisionCriteria findDecisionCriteria = iDecisionCriteriaRepository.findByCriteriaIdAndDecisionId(criteriaId, decisionId);
         if (findDecisionCriteria != null) {
             iDecisionCriteriaRepository.delete(findDecisionCriteria);
-        } else {
+        }else{
             throw new EntityNotFoundException(
-                    String.format("DecisionCriteria with decisionId %d and criteriaId %d not found", decisionId, criteriaId)
+                    String.format("DecisionCriteria with decisionId %d and criteriaId %d not found", decisionId,criteriaId)
             );
         }
     }
@@ -181,13 +144,13 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
     @Transactional
     public void updateDecisionCriteria(UpdateDecisionCriteriaRequest form, Integer decisionId, Integer criteriaId) {
         DecisionCriteria find = iDecisionCriteriaRepository.findByCriteriaIdAndDecisionId(criteriaId, decisionId);
-        if (find != null) {
+        if(find != null) {
             // update form
             find.setDecisionId(form.getDecisionId());
             find.setCriteriaId(form.getCriteriaId());
             find.setWeight(form.getWeight());
             iDecisionCriteriaRepository.saveAndFlush(find);
-        } else {
+        }else{
             DecisionCriteria newCriteria = DecisionCriteria.builder()
                     .decisionId(form.getDecisionId())
                     .criteriaId(form.getCriteriaId())

@@ -1,7 +1,6 @@
 package backend.service;
 
 import backend.model.dto.DecisionCriteriaResponse;
-import backend.model.dto.TitleConfiguration.DecisionCriteriaDTO;
 import backend.model.entity.DecisionCriteria;
 import backend.model.form.DecisionCriteria.AddDecisionCriteriaRequest;
 import backend.model.form.DecisionCriteria.UpdateDecisionCriteriaRequest;
@@ -31,7 +30,7 @@ public interface IDecisionCriteriaService {
     public void deleteDecisionCriteria(Integer decisionId, Integer criteriaId);
     //response
     public List<DecisionCriteriaResponse> getDecisionCriteriaResponse(List<DecisionCriteria> list);
-    public List<DecisionCriteriaDTO> getDecisionCriteriaConfigurationResponse(List<DecisionCriteria> list);
+
     //form
     public void createDecisionCriteria(AddDecisionCriteriaRequest form);
     public void updateDecisionCriteria(UpdateDecisionCriteriaRequest form, Integer decisionId, Integer criteriaId);
