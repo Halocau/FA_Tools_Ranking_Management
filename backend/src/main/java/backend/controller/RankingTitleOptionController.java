@@ -2,6 +2,7 @@ package backend.controller;
 
 import backend.model.entity.RankingTitleOption;
 import backend.model.form.RankingTitleOption.AddRankingTitleOptionRequest;
+import backend.model.form.RankingTitleOption.UpdateRankingTitleOptionRequest;
 import backend.service.IRankingTitleOptionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,15 +34,25 @@ public class RankingTitleOptionController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Ranking Title Option added");
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<String> updateRankingTitleOption(RankingTitleOption rankingTitleOption, Integer id) {
-        RankingTitleOption find = iRankingTitleOptionService.findRankingTitleOptionById(id);
-        iRankingTitleOptionService.updateRankingTitleOption(find);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Ranking Title Option updated");
-    }
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteRankingTitleOption(@PathVariable Integer id) {
-        iRankingTitleOptionService.deleteRankingTitleOption(id);
+//    @PutMapping("/upsert/{rankingTitleId}/{optionId}")
+//    public ResponseEntity<String> updateRankingTitleOption(
+//            @Valid @RequestBody UpdateRankingTitleOptionRequest form,
+//            @PathVariable(name = "rankingTitleId") Integer rankingTitleId,
+//            @PathVariable(name = "optionId") Integer optionId
+//    ) {
+//            iRankingTitleOptionService.updateRankingTitleOption(form,rankingTitleId,optionId);
+//            return ResponseEntity.ok("Ranking Title Option updated successfully");
+//    }
+
+    @DeleteMapping("/delete/{rankingTitleId}/{optionId}")
+    public ResponseEntity<String> deleteRankingTitleOption(
+            @PathVariable(name = "rankingTitleId") Integer rankingTitleId,
+            @PathVariable(name = "optionId") Integer optionId) {
+        RankingTitleOption find = iRankingTitleOptionService.findByRankingTitleIdAndOptionId(rankingTitleId, optionId);
+        if (find == null) {
+            return new ResponseEntity<>("Ranking Title Option not found", HttpStatus.NOT_FOUND);
+        }
+        iRankingTitleOptionService.deleteRankingTitleOption(rankingTitleId, optionId);
         return ResponseEntity.status(HttpStatus.OK).body("Ranking Title Option deleted");
     }
 }

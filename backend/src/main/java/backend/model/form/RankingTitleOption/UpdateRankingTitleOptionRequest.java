@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class AddRankingTitleOptionRequest {
+public class UpdateRankingTitleOptionRequest {
     @NotNull(message = "RankingTitleId must not be null")
     private Integer rankingTitleId;
 
