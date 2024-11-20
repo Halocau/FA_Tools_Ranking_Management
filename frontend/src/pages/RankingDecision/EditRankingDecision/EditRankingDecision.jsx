@@ -42,7 +42,7 @@ const EditDecision = () => {
     const [status, setStatus] = useState("");
 
     // Step
-    const [activeStep, setActiveStep] = useState(2);
+    const [activeStep, setActiveStep] = useState(0);
     // Data
     const [criteria, setCriteria] = useState([]);
     const [title, setTitle] = useState([]);
@@ -147,16 +147,16 @@ const EditDecision = () => {
             setActiveStep(step);
         }
     };
-    // // Hàm xử lý khi lưu dữ liệu cho từng bước
-    // const handleSave = () => {
-    //     if (activeStep === 0) {
-    //         setIsCriteriaSaved(true); // Đánh dấu Criteria đã lưu
-    //     } else if (activeStep === 1) {
-    //         setIsTitleSaved(true); // Đánh dấu Title đã lưu
-    //     } else if (activeStep === 2) {
-    //         setIsTaskSaved(true); // Đánh dấu Task đã lưu
-    //     }
-    // };
+    // Hàm xử lý khi lưu dữ liệu cho từng bước
+    const handleSave = () => {
+        if (activeStep === 0) {
+            setIsCriteriaSaved(true); // Đánh dấu Criteria đã lưu
+        } else if (activeStep === 1) {
+            setIsTitleSaved(true); // Đánh dấu Title đã lưu
+        } else if (activeStep === 2) {
+            setIsTaskSaved(true); // Đánh dấu Task đã lưu
+        }
+    };
     // Màu sắc cho từng bước dựa trên trạng thái
     const getStepColor = (index) => {
         if (index === activeStep) {
@@ -177,9 +177,9 @@ const EditDecision = () => {
     const goToNextStep = () => {
         // Cập nhật decisionStatus tùy thuộc vào bước hiện tại
         if (activeStep === 0) {
-            setDecisionStatus('In Progress'); // Bước 0: Đang tiến hành
+            // setDecisionStatus('In Progress'); // Bước 0: Đang tiến hành
         } else if (activeStep === 1) {
-            setDecisionStatus('In Progress'); // Bước 1: Tiến hành
+            // setDecisionStatus('In Progress'); // Bước 1: Tiến hành
         } else if (activeStep === 2) {
             setDecisionStatus('Finalize'); // Bước 2: Hoàn thành
 
@@ -205,9 +205,9 @@ const EditDecision = () => {
 
     useEffect(() => {
         getCriteriaConfiguration();
+        console.log(criteria);
     }, []);
 
-    console.log(criteria);
 
     //////////////////////////////////////////////////////////////////////////// Title Configuration ////////////////////////////////////////////////////////////////////////////
 

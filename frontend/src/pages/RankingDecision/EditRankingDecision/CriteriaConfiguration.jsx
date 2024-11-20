@@ -34,7 +34,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage 
     useEffect(() => {
         getCriteriaConfiguration();
     }, []);
-    console.log(criteria);
+    // console.log(criteria);
 
     ///////////////////////////// Hàm cập nhập thay đổi ///////////////////////////
     // Hàm cập nhập thay đổi weight
