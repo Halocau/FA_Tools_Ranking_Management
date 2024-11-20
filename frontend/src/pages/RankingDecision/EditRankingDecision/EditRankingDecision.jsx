@@ -56,12 +56,12 @@ const EditDecision = () => {
     const [isTaskSaved, setIsTaskSaved] = useState(false);
 
     // Table  List  (page, size) 
-    const [rows, setRows] = useState([]);
-    const [filter, setFilter] = useState('');
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(5);
-    const [totalElements, setTotalElements] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
+    // const [rows, setRows] = useState([]);
+    // const [filter, setFilter] = useState('');
+    // const [page, setPage] = useState(1);
+    // const [pageSize, setPageSize] = useState(5);
+    // const [totalElements, setTotalElements] = useState(0);
+    // const [totalPages, setTotalPages] = useState(0);
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Validation error message
@@ -147,16 +147,16 @@ const EditDecision = () => {
             setActiveStep(step);
         }
     };
-    // Hàm xử lý khi lưu dữ liệu cho từng bước
-    const handleSave = () => {
-        if (activeStep === 0) {
-            setIsCriteriaSaved(true); // Đánh dấu Criteria đã lưu
-        } else if (activeStep === 1) {
-            setIsTitleSaved(true); // Đánh dấu Title đã lưu
-        } else if (activeStep === 2) {
-            setIsTaskSaved(true); // Đánh dấu Task đã lưu
-        }
-    };
+    // // Hàm xử lý khi lưu dữ liệu cho từng bước
+    // const handleSave = () => {
+    //     if (activeStep === 0) {
+    //         setIsCriteriaSaved(true); // Đánh dấu Criteria đã lưu
+    //     } else if (activeStep === 1) {
+    //         setIsTitleSaved(true); // Đánh dấu Title đã lưu
+    //     } else if (activeStep === 2) {
+    //         setIsTaskSaved(true); // Đánh dấu Task đã lưu
+    //     }
+    // };
     // Màu sắc cho từng bước dựa trên trạng thái
     const getStepColor = (index) => {
         if (index === activeStep) {
@@ -173,17 +173,31 @@ const EditDecision = () => {
         }
         return 'secondary'; // Các bước đã lưu sẽ có tick mark
     };
-    // Hàm chuyển sang bước tiếp theo
+    // Hàm chuyển sang bước tiếp theo và cập nhật decisionStatus
     const goToNextStep = () => {
+        // Cập nhật decisionStatus tùy thuộc vào bước hiện tại
+        if (activeStep === 0) {
+            setDecisionStatus('In Progress'); // Bước 0: Đang tiến hành
+        } else if (activeStep === 1) {
+            setDecisionStatus('In Progress'); // Bước 1: Tiến hành
+        } else if (activeStep === 2) {
+            setDecisionStatus('Finalize'); // Bước 2: Hoàn thành
+
+        }
+
+        // Chuyển sang bước tiếp theo
         setActiveStep(prevStep => prevStep + 1);
     };
+
+
     //////////////////////////////////////////////////////////////////////////// Criteria Configuration ////////////////////////////////////////////////////////////////////////////
     const getCriteriaConfiguration = async () => {
         try {
             const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
+            console.log(response)
             setCriteria(response.result);
-            setTotalElements(response.pageInfo.element);
-            setTotalPages(response.pageInfo.total);
+            // setTotalElements(response.pageInfo.element);
+            // setTotalPages(response.pageInfo.total);
         } catch (error) {
             console.error("Error fetching criteria:", error);
         }
@@ -195,257 +209,15 @@ const EditDecision = () => {
 
     console.log(criteria);
 
-
     //////////////////////////////////////////////////////////////////////////// Title Configuration ////////////////////////////////////////////////////////////////////////////
 
-    // const [columnsTitle, setColumnsTitle] = useState([]);
-    // // Tạo cấu hình cột và hàng
-    // useEffect(() => {
-    //     if (initialCriteria && initialTitle) {
-    //         // Cột từ tiêu chí
-    //         const criteriaColumns = initialCriteria.map((criteria) => ({
-    //             field: criteria.criteriaName,
-    //             headerName: criteria.criteriaName,
-    //             width: 140,
-    //             editable: true,
-    //             renderCell: (params) => (
-    //                 <Select
-    //                     value={params.value || ''}
-    //                     onChange={(e) => handleCellEditTitleCommit({ id: params.row.id, field: params.field, value: e.target.value })}
-    //                     fullWidth
-    //                     sx={{
-    //                         height: '30px', // Chiều cao của box
-    //                         '.MuiSelect-select': {
-    //                             padding: '4px', // Padding trong box
-    //                         },
-    //                     }}
-
-    //                 >
-    //                     {rankTitle.map((title, index) => (
-    //                         <MenuItem key={index} value={title}>
-    //                             {title}
-    //                         </MenuItem>
-    //                     ))}
-    //                 </Select>
-    //             ),
-    //         }));
-
-    //         // Cột cố định
-    //         const fixedColumns = [
-    //             { field: 'titleName', headerName: 'Title Name', width: 100 },
-    //             {
-    //                 field: 'rankScore',
-    //                 headerName: 'Rank Score',
-    //                 width: 100,
-    //                 editable: decisionStatus === 'Draft',
-    //                 align: 'center',
-    //                 headerAlign: 'center',
-    //             },
-    //         ]
-    //         const actionColumn = [
-    //             {
-    //                 field: 'action', headerName: 'Action', width: 130,
-    //                 renderCell: (params) =>
-    //                     decisionStatus === 'Draft' && (
-    //                         <Button
-    //                             variant="outlined"
-    //                             color="error"
-    //                             onClick={() => handleDeleteRowData(params.row.id)}
-    //                         >
-    //                             <MdDeleteForever />
-    //                         </Button>
-    //                     ),
-    //             },
-    //         ];
-
-    //         // Tạo hàng dữ liệu
-    //         const updatedRows = initialTitle.map((title) => ({
-    //             id: title.titleId,
-    //             titleName: title.titleName,
-    //             rankScore: '',
-    //             ...initialCriteria.reduce((acc, criteria) => {
-    //                 acc[criteria.criteriaName] = '';
-    //                 return acc;
-    //             }, {}),
-    //         }));
-
-    //         // Cập nhật cột và hàng
-    //         setColumnsTitle([...fixedColumns, ...criteriaColumns, ...actionColumn]);
-    //         setTitle(updatedRows);
-    //     }
-    // }, [initialCriteria, initialTitle, decisionStatus]);
-
-    // Xử lý khi chỉnh sửa ô
-    const handleCellEditTitleCommit = ({ id, field, value }) => {
-        setTitle((prevRows) => {
-            const updatedRows = [...prevRows];
-            const rowIndex = updatedRows.findIndex((row) => row.id === id);
-
-            if (rowIndex !== -1) {
-                // Cập nhật giá trị ô
-                updatedRows[rowIndex] = {
-                    ...updatedRows[rowIndex],
-                    [field]: value,
-                };
-
-                // Tính toán rankScore nếu tất cả các tiêu chí đã được chọn
-                const currentRow = updatedRows[rowIndex];
-                const allCriteriaFilled = initialCriteria.every((criteria) => currentRow[criteria.criteriaName]);
-
-                if (allCriteriaFilled) {
-                    // Công thức tính toán rankScore
-                    const newRankScore = initialCriteria.reduce((score, criteria) => {
-                        const chosenValue = parseInt(currentRow[criteria.criteriaName]) || 0; // Giá trị lựa chọn
-                        const weight = criteria.weight;
-                        const numOptions = criteria.numOptions;
-
-                        return score + (chosenValue * (weight / numOptions));
-                    }, 0);
-
-                    // Cập nhật rankScore
-                    updatedRows[rowIndex].rankScore = newRankScore.toFixed(2); // Làm tròn 2 chữ số
-                } else {
-                    // Xóa rankScore nếu chưa đủ điều kiện
-                    updatedRows[rowIndex].rankScore = '';
-                }
-            }
-            return updatedRows;
-        });
-    };
+    //////////////////////////////////////////////////////////////////////////// End Title Configuration ////////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////// Task and Price Configuration ////////////////////////////////////////////////////////////////////////////
-    const [columnsTask, setColumnsTask] = useState([]);
-    // Tạo cấu hình cột và hàng
-    useEffect(() => {
-        if (initialCriteria && initialTitle && initialTask) {
-            // Cột từ tiêu chí
-            const titleColumns = initialTitle.map((title) => ({
-                field: title.titleName,
-                headerName: title.titleName,
-                width: 140,
-                editable: true,
-                renderCell: (params) => (
-                    <TextField
-                        value={params.value || null}  // Giá trị mặc định là 0
-                        onChange={(e) => handleCellEditTaskCommit({ id: params.row.id, field: params.field, value: e.target.value })}
-                        variant="outlined"
-                        fullWidth
-                        sx={{
-                            marginTop: '10px',  // Áp dụng margin-top
-                            height: '30px',  // Chiều cao của ô nhập liệu
-                            '.MuiInputBase-root': {
-                                display: 'flex',
-                                alignItems: 'center',  // Căn giữa theo chiều dọc
-                            },
-                            '.MuiInputBase-input': {
-                                padding: '4px',  // Padding trong ô nhập liệu
-                                appearance: 'textfield',  // Hủy bỏ các biểu tượng tăng giảm (cho Webkit, Firefox)
-                            },
-                            // Ẩn nút tăng giảm
-                            '& input[type="number"]::-webkit-outer-spin-button, & input[type="number"]::-webkit-inner-spin-button': {
-                                display: 'none',
-                            },
-                            '& input[type="number"]': {
-                                '-moz-appearance': 'textfield', // Hủy bỏ nút tăng giảm cho Firefox
-                            },
-                        }}
-                        type="number"  // Loại số để nhập giá trị số
-                        inputMode="numeric"  // Thiết lập kiểu nhập liệu là số
-                    />
 
+    //////////////////////////////////////////////////////////////////////////// End Task and Price Configuration ////////////////////////////////////////////////////////////////////////////
 
-
-                ),
-            }));
-
-            // Cột cố định
-            const fixedColumns = [
-                { field: 'task', headerName: 'Task', width: 100 },
-                { field: 'type', headerName: 'Type', width: 100 },
-            ];
-
-            const actionColumn = [
-                {
-                    field: 'action', headerName: 'Action', width: 130,
-                    renderCell: (params) =>
-                        decisionStatus === 'Draft' && (
-                            <Button
-                                variant="outlined"
-                                color="error"
-                                onClick={() => handleDeleteRowData(params.row.id)}
-                            >
-                                <MdDeleteForever />
-                            </Button>
-                        ),
-                },
-            ];
-
-            // Tạo hàng dữ liệu
-            const updatedRows = initialTask.map((task) => {
-                return ['In Working Hour', 'Overtime'].map((type, index) => ({
-                    id: `${task.task_name}_${type}`,
-                    task: index === 0 ? task.task_name : '', // Chỉ hiển thị tên task ở hàng đầu tiên
-                    type: type,
-                    ...initialCriteria.reduce((acc, title) => {
-                        acc[title.titleName] = '';
-                        return acc;
-                    }, {}),
-                }));
-            }).flat(); // Flat để biến mảng 2 chiều thành mảng 1 chiều
-
-            // Cập nhật cột và hàng
-            setColumnsTask([...fixedColumns, ...titleColumns, ...actionColumn]);
-            setTask(updatedRows);
-        }
-    }, [initialCriteria, initialTitle, initialTask, decisionStatus]);
-
-    // Xử lý khi chỉnh sửa ô
-    const handleCellEditTaskCommit = ({ id, field, value }) => {
-        setTitle((prevRows) => {
-            // Tạo bản sao của danh sách hàng
-            const updatedRows = [...prevRows];
-
-            // Tìm chỉ số của hàng cần cập nhật
-            const rowIndex = updatedRows.findIndex((row) => row.id === id);
-
-            // Nếu tìm thấy hàng, tiến hành cập nhật
-            if (rowIndex !== -1) {
-                const currentRow = updatedRows[rowIndex];
-
-                // Kiểm tra nếu giá trị thay đổi và không bằng giá trị cũ
-                if (currentRow[field] !== value) {
-                    updatedRows[rowIndex] = {
-                        ...currentRow,
-                        [field]: value, // Cập nhật giá trị ô đã sửa
-                    };
-
-                    // Kiểm tra xem tất cả các tiêu chí đã được điền chưa
-                    const allCriteriaFilled = initialCriteria.every((title) => currentRow[title.titleName] !== '');
-
-                    if (allCriteriaFilled) {
-                        // Tính toán rankScore khi tất cả tiêu chí đã được điền
-                        const newRankScore = initialCriteria.reduce((score, title) => {
-                            const chosenValue = parseInt(currentRow[title.titleName]) || 0; // Giá trị lựa chọn từ ô nhập liệu
-                            const weight = title.weight;
-                            const numOptions = title.numOptions;
-
-                            // Cập nhật score theo công thức
-                            return score + (chosenValue * (weight / numOptions));
-                        }, 0);
-
-                        // Cập nhật rankScore, làm tròn đến 2 chữ số
-                        updatedRows[rowIndex].rankScore = newRankScore.toFixed(2);
-                    } else {
-                        // Nếu chưa đủ tiêu chí, xóa giá trị rankScore
-                        updatedRows[rowIndex].rankScore = '';
-                    }
-                }
-            }
-
-            return updatedRows;
-        });
-    };
-
+    ////////////////////////////////////////////////////////////////////////////renderStepContent////////////////////////////////////////////////////////////////////////////
     const renderStepContent = (step) => {
         switch (step) {
             case 0:
@@ -453,8 +225,6 @@ const EditDecision = () => {
                     <CriteriaConfiguration
                         criteria={criteria}
                         decisionStatus={decisionStatus}
-                        page={1}
-                        pageSize={5}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
                     />
@@ -466,8 +236,6 @@ const EditDecision = () => {
                         title={initialTitle}
                         rankTitle={rankTitle}
                         decisionStatus={decisionStatus}
-                        page={1}
-                        pageSize={5}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
                     />
@@ -480,14 +248,12 @@ const EditDecision = () => {
                         rankTitle={rankTitle}
                         task={initialTask}
                         decisionStatus={decisionStatus}
-                        page={1}
-                        pageSize={5}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
                     />
                 );
             default:
-                return <div>Unknown Step</div>;
+                return <div>No Step</div>;
         }
     };
 

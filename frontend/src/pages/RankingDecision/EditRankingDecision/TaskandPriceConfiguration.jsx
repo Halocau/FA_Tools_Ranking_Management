@@ -9,161 +9,154 @@ import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Stepper, Step, StepButton } from '@mui/material';
-const TaskandPriceConfiguration = ({ criteria, title, task, rankTitle, decisionStatus, page, pageSize, goToNextStep, showErrorMessage }) => {
-    console.log(task)
+const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goToNextStep, showErrorMessage }) => {
+    // // Data 
+    // const { id } = useParams(); // Get the ID from the URL
+    // const [task, setTask] = useState([]);
     const [columnsTask, setColumnsTask] = useState([]);
+    // Row table
+    const [originalRows, setOriginalRows] = useState([]);  // Lưu dữ liệu gốc
     const [rows, setRows] = useState([]);
-    const [hasChanges, setHasChanges] = useState(false);
-    useEffect(() => {
-        // Kiểm tra xem có bất kỳ ô nào đã được thay đổi không
-        const hasAnyChanges = rows.some((row) => {
-            return Object.keys(row).some((key) => {
-                if (key !== 'id' && key !== 'titleName' && row[key] !== '') {
-                    return true; // Nếu có ô nào không rỗng thì có thay đổi
-                }
-                return false;
-            });
-        });
+    // State Cancel and Save
+    const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
+    //Select to Add a new Task
+    const [listtask, setListTask] = useState([]);
 
-        setHasChanges(hasAnyChanges);
-    }, [rows]); // Theo dõi sự thay đổi của rows
-    // Tạo cấu hình cột và hàng
-    useEffect(() => {
-        if (criteria && title && task) {
-            // Cột từ tiêu chí
-            const titleColumns = title.map((title) => ({
-                field: title.titleName,
-                headerName: title.titleName,
-                width: 140,
-                editable: true,
-                renderCell: (params) => (
-                    <TextField
-                        value={params.value || null}  // Giá trị mặc định là 0
-                        onChange={(e) => handleCellEditTaskCommit({ id: params.row.id, field: params.field, value: e.target.value })}
-                        variant="outlined"
-                        fullWidth
-                        sx={{
-                            marginTop: '10px',  // Áp dụng margin-top
-                            height: '30px',  // Chiều cao của ô nhập liệu
-                            '.MuiInputBase-root': {
-                                display: 'flex',
-                                alignItems: 'center',  // Căn giữa theo chiều dọc
-                            },
-                            '.MuiInputBase-input': {
-                                padding: '4px',  // Padding trong ô nhập liệu
-                                appearance: 'textfield',  // Hủy bỏ các biểu tượng tăng giảm (cho Webkit, Firefox)
-                            },
-                            // Ẩn nút tăng giảm
-                            '& input[type="number"]::-webkit-outer-spin-button, & input[type="number"]::-webkit-inner-spin-button': {
-                                display: 'none',
-                            },
-                            '& input[type="number"]': {
-                                '-moz-appearance': 'textfield', // Hủy bỏ nút tăng giảm cho Firefox
-                            },
-                        }}
-                        type="number"  // Loại số để nhập giá trị số
-                        inputMode="numeric"  // Thiết lập kiểu nhập liệu là số
-                    />
+    // Load data getTitleConfiguration
+    // chưa có API
+    console.log(task)
+    ///////////////////////////// Hàm cập nhập thay đổi ///////////////////////////
+    // Hàm cập nhập thay đổi data
+    const handleCellEditTaskCommit = (newRow) => {
+        console.log(newRow)
+        // Cập nhật hàng mới
+        const updatedRow = { ...newRow };
 
-
-
-                ),
-            }));
-
-            // Cột cố định
-            const fixedColumns = [
-                { field: 'task', headerName: 'Task', width: 100 },
-                { field: 'type', headerName: 'Type', width: 100 },
-            ];
-
-            const actionColumn = [
-                {
-                    field: 'action', headerName: 'Action', width: 130,
-                    renderCell: (params) =>
-                        decisionStatus === 'Draft' && (
-                            <Button
-                                variant="outlined"
-                                color="error"
-                                onClick={() => handleDeleteRowData(params.row.id)}
-                            >
-                                <MdDeleteForever />
-                            </Button>
-                        ),
-                },
-            ];
-
-            // Tạo hàng dữ liệu
-            const updatedRows = task.map((task) => {
-                return ['In Working Hour', 'Overtime'].map((type, index) => ({
-                    id: `${task.task_name}_${type}`,
-                    task: index === 0 ? task.task_name : '', // Chỉ hiển thị tên task ở hàng đầu tiên
-                    type: type,
-                    ...criteria.reduce((acc, title) => {
-                        acc[title.titleName] = '';
-                        return acc;
-                    }, {}),
-                }));
-            }).flat(); // Flat để biến mảng 2 chiều thành mảng 1 chiều
-
-            // Cập nhật cột và hàng
-            setColumnsTask([...fixedColumns, ...titleColumns, ...actionColumn]);
-            // setTask(updatedRows);
-            setRows(updatedRows);
-        }
-    }, [criteria, title, task, decisionStatus]);
-
-    // Xử lý khi chỉnh sửa ô
-    const handleCellEditTaskCommit = ({ id, field, value }) => {
+        // Cập nhật trạng thái `rows`
         setRows((prevRows) => {
-            // Tạo bản sao của danh sách hàng
-            const updatedRows = [...prevRows];
+            const updatedRows = prevRows.map((row) =>
+                row.id === updatedRow.id ? updatedRow : row
+            );
 
-            // Tìm chỉ số của hàng cần cập nhật
-            const rowIndex = updatedRows.findIndex((row) => row.id === id);
-
-            // Nếu tìm thấy hàng, tiến hành cập nhật
-            if (rowIndex !== -1) {
-                const currentRow = updatedRows[rowIndex];
-
-                // Kiểm tra nếu giá trị thay đổi và không bằng giá trị cũ
-                if (currentRow[field] !== value) {
-                    updatedRows[rowIndex] = {
-                        ...currentRow,
-                        [field]: value, // Cập nhật giá trị ô đã sửa
-                    };
-
-                    // Kiểm tra xem tất cả các tiêu chí đã được điền chưa
-                    const allCriteriaFilled = criteria.every((title) => currentRow[title.titleName] !== '');
-
-                    if (allCriteriaFilled) {
-                        // Tính toán rankScore khi tất cả tiêu chí đã được điền
-                        const newRankScore = criteria.reduce((score, title) => {
-                            const chosenValue = parseInt(currentRow[title.titleName]) || 0; // Giá trị lựa chọn từ ô nhập liệu
-                            const weight = title.weight;
-                            const numOptions = title.numOptions;
-
-                            // Cập nhật score theo công thức
-                            return score + (chosenValue * (weight / numOptions));
-                        }, 0);
-
-                        // Cập nhật rankScore, làm tròn đến 2 chữ số
-                        updatedRows[rowIndex].rankScore = newRankScore.toFixed(2);
-                    } else {
-                        // Nếu chưa đủ tiêu chí, xóa giá trị rankScore
-                        updatedRows[rowIndex].rankScore = '';
-                    }
-                }
-            }
+            // Kiểm tra sự thay đổi so với `originalRows`
+            const hasAnyChanges = updatedRows.some(
+                (row, index) => row.weight !== originalRows[index]?.weight
+            );
+            setHasChanges(hasAnyChanges);
 
             return updatedRows;
         });
     };
-    // / Hàm thêm tiêu chí mới
+
+    //////////////////////////////////// Remove ////////////////////////////////////
+    // Hàm hủy thay đổi, đặt lại  giá trị ban đầu của 1 hàng
+    const handleDeleteRowData = (id) => {
+        setRows((prevRows) => {
+            const rowIndex = prevRows.findIndex((row) => row.id === id);
+
+            if (rowIndex !== -1) {
+                const updatedRow = { ...prevRows[rowIndex] };
+                const originalRow = originalRows.find((row) => row.id === id);
+
+                // Khôi phục giá trị từ originalRow chỉ cho các cột title
+                Object.keys(updatedRow).forEach((key) => {
+                    // Kiểm tra xem cột có phải là cột 'title' hay không
+                    if (key !== 'id' && key !== 'task' && key !== 'type') {
+                        // updatedRow[key] = originalRow ? originalRow[key] : '';
+                        updatedRow[key] = '';// Khôi phục giá trị gốc cho các cột title
+                    }
+                });
+
+                const updatedRows = [...prevRows];
+                updatedRows[rowIndex] = updatedRow;
+                return updatedRows;
+            }
+
+            return prevRows;
+        });
+    };
+
+    //////////////////////////////////// Cancel /////////////////////////////////////
+    // Theo dõi sự thay đổi của rows và originalRows
+    useEffect(() => {
+        const checkForChanges = () => {
+            // Kiểm tra sự khác biệt giữa rows và originalRows
+            const hasAnyChanges = rows.some((row, index) => {
+                const originalRow = originalRows[index];
+
+                // Kiểm tra nếu có sự khác biệt giữa row và originalRow
+                return Object.keys(row).some((key) => {
+                    if (key !== 'id' && key !== 'task') {
+                        return true;
+                    }
+                    return false;
+                });
+            });
+
+            setHasChanges(hasAnyChanges);
+        };
+
+        // Gọi hàm kiểm tra thay đổi
+        checkForChanges();
+    }, [rows, originalRows]);
+    //// Hàm hủy thay đổi, đặt lại  giá trị ban đầu của tất cả
+    const handleCancelChanges = () => {
+        // Đặt lại tất cả các ô trong bảng về giá trị ban đầu
+        setRows((prevRows) => {
+            const resetRows = prevRows.map((row, index) => {
+                const originalRow = originalRows[index]; // Lấy giá trị ban đầu từ originalRows
+
+                const updatedRow = { ...row };
+
+                // Khôi phục lại giá trị của mỗi ô từ originalRow, ngoại trừ cột 'task', 'type', và 'id'
+                Object.keys(updatedRow).forEach((key) => {
+                    if (key !== 'id' && key !== 'task' && key !== 'type') { // Giữ lại 'id', 'titleName', 'task', và 'type'
+                        updatedRow[key] = originalRow ? originalRow[key] : ''; // Khôi phục giá trị gốc từ originalRow, nếu có
+                    }
+                });
+
+                return updatedRow;
+            });
+
+            return resetRows;
+        });
+    };
+
+    //////////////////////////////////// Save ////////////////////////////////////
+    const handleSaveChanges = () => {
+        // Kiểm tra xem tất cả các ô trong bảng đã được điền (không có ô nào trống)
+        const allFieldsFilled = rows.every((row) => {
+            // Kiểm tra mỗi ô trong hàng (trừ các cột cố định như 'id' và 'task')
+            return Object.keys(row).every((key) => {
+                if (key !== 'id' && key !== 'task' && key !== 'type') { // Giữ lại các cột cố định
+                    // Kiểm tra giá trị của ô không phải là undefined, null hay rỗng
+                    if (row[key] === '' || row[key] === null || row[key] === undefined) {
+                        console.log(`Ô thiếu dữ liệu: ${key}, Dòng: ${JSON.stringify(row)}`);
+                        return false; // Nếu ô thiếu dữ liệu, trả về false
+                    }
+                    return true; // Nếu ô có dữ liệu, trả về true
+                }
+                return true; // Các cột 'id', 'task', 'type' không cần kiểm tra
+            });
+        });
+
+        // Nếu có ít nhất một ô chưa được điền, hiển thị thông báo lỗi
+        if (!allFieldsFilled) {
+            showErrorMessage('Tất cả các ô phải được điền đầy đủ');
+            console.log('Có ô chưa điền dữ liệu');
+            return; // Dừng hàm nếu có ô chưa điền
+        }
+
+        console.log("Tất cả ô đã được điền đầy đủ. Lưu dữ liệu...");
+        goToNextStep(); // Tiến hành lưu dữ liệu và chuyển sang bước tiếp theo
+    };
+
+
+    //////////////////////////////////// Select to Add a new Task ////////////////////////////////////
     const handleAddTask = () => {
         const newTitle = {
             id: rows.length + 1,
             titleName: 'New Title',
-            rankScore: '',
             ...title.reduce((acc, title) => {
                 acc[title.titleName] = '';  // Chỗ này sẽ là ô trống cho mỗi tiêu chí mới
                 return acc;
@@ -171,63 +164,88 @@ const TaskandPriceConfiguration = ({ criteria, title, task, rankTitle, decisionS
         };
         setRows([...rows, newTitle]);
     };
-    const handleDeleteRowData = (id) => {
-        setRows((prevRows) => {
-            // Tìm chỉ số của hàng cần xóa giá trị
-            const rowIndex = prevRows.findIndex((row) => row.id === id);
 
-            if (rowIndex !== -1) {
-                // Tạo một bản sao của hàng hiện tại
-                const updatedRow = { ...prevRows[rowIndex] };
+    //////////////////////////////////// Column task ////////////////////////////////////
+    // Tạo cấu hình cột và hàng
+    // Cập nhật bảng khi task, title, hoặc criteria thay đổi
+    const updateTaskTableConfig = (criteria, title, task, decisionStatus) => {
+        // Cột từ tiêu chí
+        const titleColumns = title.map((title) => ({
+            field: title.titleName,
+            headerName: title.titleName,
+            width: 140,
+            editable: true,
+            renderCell: (params) => (
+                <TextField
+                    value={params.value || ''}
+                    onChange={(e) => handleCellEditTaskCommit({ id: params.row.id, field: params.field, value: e.target.value })}
+                    variant="outlined"
+                    fullWidth
+                    sx={{
+                        marginTop: '10px',
+                        height: '30px',
+                        '.MuiInputBase-root': { display: 'flex', alignItems: 'center' },
+                        '.MuiInputBase-input': { padding: '4px' },
+                    }}
+                    type="number"
+                    inputMode="numeric"
+                />
+            ),
+        }));
 
-                // Xóa các giá trị trong các ô, giữ lại id và các thuộc tính cố định
-                Object.keys(updatedRow).forEach((key) => {
-                    if (key !== 'id' && key !== 'titleName') { // Giữ lại id và titleName (hoặc các cột cố định khác)
-                        updatedRow[key] = ''; // Đặt lại giá trị ô
-                    }
-                });
+        // Cột cố định
+        const fixedColumns = [
+            { field: 'task', headerName: 'Task', width: 100 },
+            { field: 'type', headerName: 'Type', width: 100 },
+        ];
+        // cột action
+        const actionColumn = [
+            {
+                field: 'action', headerName: 'Action', width: 130,
+                renderCell: (params) =>
+                    decisionStatus === 'Draft' && (
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => handleDeleteRowData(params.row.id)}
+                        >
+                            <MdDeleteForever />
+                        </Button>
+                    ),
+            },
+        ];
 
-                // Cập nhật lại hàng trong mảng
-                const updatedRows = [...prevRows];
-                updatedRows[rowIndex] = updatedRow;
-
-                return updatedRows;
-            }
-
-            return prevRows;
-        });
-    };
-    const handleCancelChanges = () => {
-        // Đặt lại các ô có thể chỉnh sửa về giá trị mặc định
-        setRows((prevRows) => {
-            const resetRows = prevRows.map((row) => {
-                const updatedRow = { ...row };
-                // Duyệt qua tất cả các cột có thể chỉnh sửa (như cột tiêu chí) và đặt lại giá trị về mặc định
-                Object.keys(updatedRow).forEach((key) => {
-                    if (key !== 'task' && key !== 'type' && key !== 'id') { // Giữ lại 'task', 'type', và 'id'
-                        updatedRow[key] = ''; // Đặt lại giá trị ô cho các cột có thể sửa
-                    }
-                });
-                return updatedRow;
+        const updatedRows = task.map((task) => {
+            return ['In Working Hour', 'Overtime'].map((type, index) => ({
+                id: `${task.task_name}_${type}`,
+                task: index === 0 ? task.task_name : '',
+                type: index === 0 ? 'In Working Hour' : 'Overtime',
+            }));
+        }).flat().map((row) => {
+            // Kiểm tra và thay thế undefined bằng chuỗi rỗng hoặc giá trị mặc định khác
+            Object.keys(row).forEach((key) => {
+                if (row[key] === undefined) {
+                    row[key] = ''; // Hoặc bạn có thể thay bằng một giá trị mặc định nào đó
+                }
             });
-            return resetRows;
+            return row;
         });
+
+
+        // Trả về cột và hàng
+        return { columns: [...fixedColumns, ...titleColumns, ...actionColumn], rows: updatedRows };
     };
+    useEffect(() => {
+        if (criteria && title && task) {
+            const { columns, rows } = updateTaskTableConfig(criteria, title, task, decisionStatus);
 
-
-
-    const handleSaveChanges = () => {
-        // Kiểm tra xem tất cả rankScore đã được tính toán chưa
-        const allRankScoresCalculated = rows.every(row => row.rankScore && row.rankScore !== '');
-        console.log(rows)
-        if (!allRankScoresCalculated) {
-            showErrorMessage('Tất cả Rank Score phải được tính toán');
-            return; // Dừng hàm nếu có hàng chưa tính toán rankScore
+            // Cập nhật cột và hàng
+            setColumnsTask(columns);
+            setRows(rows);
+            setOriginalRows(rows); // Lưu lại dữ liệu gốc
         }
+    }, [criteria, title, task, decisionStatus]);
 
-        console.log("Tổng weight hợp lệ và tất cả Rank Score đã được tính toán. Lưu dữ liệu...");
-        goToNextStep(); // Tiến hành lưu dữ liệu và chuyển sang bước tiếp theo
-    };
 
     return (
         <div>
@@ -248,8 +266,11 @@ const TaskandPriceConfiguration = ({ criteria, title, task, rankTitle, decisionS
                         rows={rows}
                         columns={columnsTask}
                         getRowId={(row) => row.id}
-                        pageSize={5}
-                        rowsPerPageOptions={[5]}
+                        processRowUpdate={(newRow) => {
+                            handleCellEditTaskCommit(newRow); // Lưu thay đổi chính thức
+                            return newRow; // Cần trả về `newRow` để cập nhật DataGrid
+                        }}
+                        experimentalFeatures={{ newEditingApi: true }} // Bật tính năng chỉnh sửa hàng mới
                     />
                     {decisionStatus === 'Draft' && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
@@ -269,13 +290,15 @@ const TaskandPriceConfiguration = ({ criteria, title, task, rankTitle, decisionS
                                         Cancel
                                     </Button>
                                 )}
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={handleSaveChanges} // Gọi hàm lưu thay đổi
-                                >
-                                    Save
-                                </Button>
+                                {hasChanges && (
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={handleSaveChanges} // Gọi hàm lưu thay đổi
+                                    >
+                                        Save
+                                    </Button>
+                                )}
                             </Box>
                         </Box>
                     )}

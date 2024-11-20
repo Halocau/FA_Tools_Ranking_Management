@@ -14,8 +14,21 @@ export const initialCriteria = [
 ];
 
 export const initialTitle = [
-    { titleId: 1, titleName: 'TRN1.1', rankScore: 37 },
-    { titleId: 2, titleName: 'TRN1.2', rankScore: 45 },
+    { titleId: 1, titleName: 'TRN1.1', rankScore: '' },
+    { titleId: 2, titleName: 'TRN1.2', rankScore: '' },
+    {
+        titleId: 3,
+        titleName: 'TRN1.3',
+        rankScore: 50,
+        criteriaSelections: { // Lưu các giá trị đã chọn cho từng tiêu chí
+            'Scope of Training Assignments': '2 - Normal',
+            'Technical or Professional Skills': '3 - Medium',
+            'Courseraware Development': '1 - Low',
+            'Courseware Development': '3 - Medium',
+            'Training Certificate': '2 - Normal',
+            'Years of Working and Teaching': '1 - Low',
+        }
+    },
     // { titleId: 3, titleName: 'TRN1.3', rankScore: 50 },
     // { titleId: 4, titleName: 'TRN2.1', rankScore: 61 },
     // { titleId: 5, titleName: 'TRN2.2', rankScore: 63 },
@@ -33,27 +46,27 @@ export const initialTask = [
             { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
         ]
     },
-    {
-        task_name: 'Hướng dẫn, hỗ trợ, chấm bài',
-        task_types: [
-            { task_type: 'In Working Hour', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-            { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-        ]
-    },
-    {
-        task_name: 'Tạo tài liệu',
-        task_types: [
-            { task_type: 'In Working Hour', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-            { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-        ]
-    },
-    {
-        task_name: 'Xem xét tài liệu',
-        task_types: [
-            { task_type: 'In Working Hour', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-            { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
-        ]
-    }
+    // {
+    //     task_name: 'Hướng dẫn, hỗ trợ, chấm bài',
+    //     task_types: [
+    //         { task_type: 'In Working Hour', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    //         { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    //     ]
+    // },
+    // {
+    //     task_name: 'Tạo tài liệu',
+    //     task_types: [
+    //         { task_type: 'In Working Hour', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    //         { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    //     ]
+    // },
+    // {
+    //     task_name: 'Xem xét tài liệu',
+    //     task_types: [
+    //         { task_type: 'In Working Hour', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    //         { task_type: 'Overtime', scores: initialTitle.reduce((acc, title) => ({ ...acc, [title.title_name]: '' }), {}) },
+    //     ]
+    // }
 ];
 
 

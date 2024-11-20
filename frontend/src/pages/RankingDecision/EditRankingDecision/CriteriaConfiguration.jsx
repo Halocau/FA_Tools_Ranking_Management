@@ -2,73 +2,112 @@ import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Box, TextField, Button } from '@mui/material';
 import { MdDeleteForever } from 'react-icons/md';
+import { useNavigate, useParams } from "react-router-dom";
 // API
-import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
+import CriteriaAPI from "../../../api/CriteriaAPI.js";
 
-const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToNextStep, showErrorMessage }) => {
-    const [rows, setRows] = useState([]);
-    const [hasChanges, setHasChanges] = useState(false);
+const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage }) => {
+    // Data 
+    const { id } = useParams(); // Get the ID from the URL
+    const [criteria, setCriteria] = useState([]);
+    // Row table
     const [originalRows, setOriginalRows] = useState([]);  // Lưu dữ liệu gốc
+    const [rows, setRows] = useState([]);
+    // State Cancel and Save
+    const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
+    //Select to Add a new Criteria
+    const [listcriteria, setListCriteria] = useState([]);
 
-    useEffect(() => {
-        if (criteria) {
-            const mappedRows = criteria.map((criteria, index) => ({
-                id: criteria.criteriaId,
-                index: index + 1 + (page - 1) * pageSize,
-                criteria_name: criteria.criteriaName,
-                weight: criteria.weight || 0,
-                num_options: criteria.numOptions < 1 ? "0" : criteria.numOptions,
-                max_score: criteria.maxScore == null ? "" : criteria.maxScore,
-            }));
-            setRows(mappedRows);
-            setOriginalRows(mappedRows);  // Lưu lại dữ liệu gốc
+    //// Load data getCriteriaConfiguration
+    const getCriteriaConfiguration = async () => {
+        try {
+            const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
+            console.log(response)
+            setCriteria(response.result);
+            // setTotalElements(response.pageInfo.element);
+            // setTotalPages(response.pageInfo.total);
+        } catch (error) {
+            console.error("Error fetching criteria:", error);
         }
-    }, [criteria, page, pageSize]);
+    };
+    useEffect(() => {
+        getCriteriaConfiguration();
+    }, []);
+    console.log(criteria);
 
-    // Xử lý khi người dùng chỉnh sửa một ô
+    ///////////////////////////// Hàm cập nhập thay đổi ///////////////////////////
+    // Hàm cập nhập thay đổi weight
     const handleCellEditCriteriaCommit = (newRow) => {
+        console.log(newRow)
+        // Cập nhật hàng mới
         const updatedRow = { ...newRow };
+
+        // Cập nhật trạng thái `rows`
         setRows((prevRows) => {
             const updatedRows = prevRows.map((row) =>
                 row.id === updatedRow.id ? updatedRow : row
             );
+
+            // Kiểm tra sự thay đổi so với `originalRows`
+            const hasAnyChanges = updatedRows.some(
+                (row, index) => row.weight !== originalRows[index]?.weight
+            );
+            setHasChanges(hasAnyChanges);
+
             return updatedRows;
         });
-
-        // Kiểm tra sự thay đổi và cập nhật `hasChanges`
-        const hasAnyChanges = rows.some((row, index) => row.weight !== originalRows[index]?.weight);
-        setHasChanges(hasAnyChanges);
     };
 
-    // Kiểm tra sự thay đổi của `rows` và `originalRows` trong useEffect
-    useEffect(() => {
-        const hasAnyChanges = rows.some((row, index) => row.weight !== originalRows[index]?.weight);
-        setHasChanges(hasAnyChanges);
-    }, [rows, originalRows]);  // Theo dõi sự thay đổi của rows và originalRows
+    //////////////////////////////////// Remove ////////////////////////////////////
+    // Hàm hủy thay đổi, đặt lại  giá trị ban đầu của 1 hàng
+    const handleDeleteRowData = (id) => {
+        setRows((prevRows) => {
+            // Tìm chỉ số của hàng cần xóa giá trị
+            const rowIndex = prevRows.findIndex((row) => row.id === id);
+            if (rowIndex !== -1) {
+                // Tạo một bản sao của hàng hiện tại
+                const updatedRow = { ...prevRows[rowIndex] };
 
+                // Xóa các giá trị trong các ô, giữ lại id và các thuộc tính cố định
+                Object.keys(updatedRow).forEach((key) => {
+                    if (key === "weight") {
+                        // Tìm giá trị weight ban đầu từ originalRows
+                        const originalRow = originalRows.find((row) => row.id === id);
+                        if (originalRow) {
+                            updatedRow[key] = originalRow.weight; // Đặt lại giá trị weight ban đầu
+                        }
+                    }
+                });
+                // Cập nhật lại hàng trong mảng
+                const updatedRows = [...prevRows];
+                updatedRows[rowIndex] = updatedRow;
+                return updatedRows;
+            }
+            return prevRows;
+        });
+    };
 
+    //////////////////////////////////// Cancel ////////////////////////////////////
     useEffect(() => {
         // Kiểm tra xem có bất kỳ ô nào đã được thay đổi không
-        const hasAnyChanges = rows.some((row, index) => {
-            return row.weight !== originalRows[index]?.weight;  // Chỉ kiểm tra cột weight
-        });
+        const hasAnyChanges = rows.some((row, index) => row.weight !== originalRows[index]?.weight);
 
         setHasChanges(hasAnyChanges);
     }, [rows, originalRows]); // Theo dõi sự thay đổi của rows và originalRows
-
     // Hàm hủy thay đổi, đặt lại cột weight về giá trị ban đầu
     const handleCancelChanges = () => {
         setRows(originalRows);  // Đặt lại dữ liệu cũ
     };
 
+    //////////////////////////////////// Save ////////////////////////////////////
     // Tính tổng weight
     const calculateTotalWeight = () => {
         const totalWeight = rows.reduce((total, row) => total + Number(row.weight || 0), 0);
         console.log(totalWeight)
         return totalWeight;
     };
-
+    // Hàm save, kiểm tra weight nếu bằng 100 thì chuyển sang bước tiếp
     const handleSaveChanges = () => {
         const totalWeight = calculateTotalWeight();
         if (totalWeight === 100) {
@@ -78,7 +117,7 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
             showErrorMessage('Tổng weight phải bằng 100');
         }
     };
-
+    //////////////////////////////////// Select to Add a new Criteria ////////////////////////////////////
     const handleAddCriteria = async () => {
         const newRow = {
             id: rows.length + 1,
@@ -100,51 +139,40 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
             console.error('Lỗi khi thêm tiêu chí:', error);
         }
     };
-
-    const handleDeleteRowData = (id) => {
-        setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-    };
-
+    //////////////////////////////////// Column Criteria ////////////////////////////////////
     const columnsCriteria = [
+        { field: 'index', headerName: 'ID', width: 20 },  // Thêm cột chỉ mục
         { field: 'criteria_name', headerName: 'Criteria Name', width: 500 },
         {
             field: 'weight',
             headerName: 'Weight',
             width: 150,
             align: 'center',
-            editable: decisionStatus === 'Draft',  // Chỉ cho phép chỉnh sửa khi status là 'Draft'
+            editable: decisionStatus === 'Draft', // Chỉ cho phép chỉnh sửa khi status là 'Draft'
             renderCell: (params) =>
                 decisionStatus === 'Draft' ? (
                     <TextField
                         sx={{
                             marginTop: '7px',
-                            textAlign: 'center',  // Căn giữa giá trị trong TextField
+                            textAlign: 'center',
                         }}
-                        value={params.value || ''}  // Hiển thị giá trị mặc định là 0
+                        value={params.value || ''} // Hiển thị giá trị hiện tại
                         onChange={(e) => {
-                            const newWeight = e.target.value;
-                            // Cập nhật chỉ ô hiện tại thay vì toàn bộ bảng
+                            // Chỉ cập nhật giá trị nội bộ TextField
+                            const updatedValue = e.target.value;
                             setRows((prevRows) =>
                                 prevRows.map((row) =>
-                                    row.id === params.row.id
-                                        ? { ...row, weight: newWeight }  // Chỉ thay đổi row có id khớp
-                                        : row
+                                    row.id === params.row.id ? { ...row, weight: updatedValue } : row
                                 )
                             );
                         }}
-                        onBlur={() => {
-                            // Đảm bảo giá trị được lưu khi người dùng rời khỏi ô
-                            const currentRow = rows.find((row) => row.id === params.row.id);
-                            setRows((prevRows) =>
-                                prevRows.map((row) =>
-                                    row.id === params.row.id
-                                        ? { ...row, weight: currentRow.weight }  // Lưu giá trị
-                                        : row
-                                )
-                            );
+                        onBlur={(e) => {
+                            // Gọi processRowUpdate để cập nhật chính thức
+                            const updatedRow = { ...params.row, weight: e.target.value };
+                            handleCellEditCriteriaCommit(updatedRow);
                         }}
                         onFocus={(e) => {
-                            e.target.select(); // Tự động chọn toàn bộ giá trị khi người dùng nhấp vào
+                            e.target.select(); // Tự động chọn toàn bộ văn bản
                         }}
                         variant="outlined"
                         size="small"
@@ -153,7 +181,7 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
                         inputMode="numeric"
                     />
                 ) : (
-                    params.value
+                    params.value // Hiển thị giá trị nếu không phải 'Draft'
                 ),
         },
         { field: 'num_options', headerName: 'No of Options', width: 150, align: 'center', headerAlign: 'center' },
@@ -161,7 +189,7 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
         {
             field: 'action',
             headerName: 'Action',
-            width: 200,
+            width: 150,
             renderCell: (params) =>
                 decisionStatus === 'Draft' && (
                     <Button
@@ -174,6 +202,21 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
                 ),
         },
     ];
+    // Load data to Column Criteria
+    useEffect(() => {
+        if (criteria) {
+            const mappedRows = criteria.map((criteria, index) => ({
+                id: criteria.criteriaId,
+                index: index + 1,  // Chỉ số thứ tự bắt đầu từ 1
+                criteria_name: criteria.criteriaName,
+                weight: criteria.weight || 0,
+                num_options: criteria.numOptions < 1 ? "0" : criteria.numOptions,
+                max_score: criteria.maxScore == null ? "" : criteria.maxScore,
+            }));
+            setRows(mappedRows);
+            setOriginalRows(mappedRows);  // Lưu lại dữ liệu gốc
+        }
+    }, [criteria]);
 
     return (
         <Box sx={{
@@ -192,9 +235,12 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
                 <DataGrid
                     rows={rows}
                     columns={columnsCriteria}
-                    pageSize={pageSize}
                     getRowId={(row) => row.id}
-                // processRowUpdate={(newRow) => handleCellEditCriteriaCommit(newRow, rows.find((row) => row.id === newRow.id))}
+                    processRowUpdate={(newRow) => {
+                        handleCellEditCriteriaCommit(newRow); // Lưu thay đổi chính thức
+                        return newRow; // Cần trả về `newRow` để cập nhật DataGrid
+                    }}
+                    experimentalFeatures={{ newEditingApi: true }} // Bật tính năng chỉnh sửa hàng mới
                 />
                 {/* Button criteria */}
                 {decisionStatus === 'Draft' && (
@@ -214,13 +260,15 @@ const CriteriaConfiguration = ({ criteria, decisionStatus, page, pageSize, goToN
                                     Cancel
                                 </Button>
                             )}
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleSaveChanges}
-                            >
-                                Save
-                            </Button>
+                            {hasChanges && (
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleSaveChanges}
+                                >
+                                    Save
+                                </Button>
+                            )}
                         </Box>
                     </Box>
                 )}
