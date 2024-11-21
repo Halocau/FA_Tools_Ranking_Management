@@ -9,18 +9,19 @@ import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Stepper, Step, StepButton } from '@mui/material';
+import { DataGridPro } from '@mui/x-data-grid-pro';
 
 const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNextStep, showErrorMessage }) => {
     // // Data 
     // const { id } = useParams(); // Get the ID from the URL
     // const [title, setTitle] = useState([]);
+    const [originalTitle, setOriginalTitle] = useState([]);  // Lưu dữ liệu gốc
     const [columnsTitle, setColumnsTitle] = useState([]);
 
     // Row table
-    const [originalRows, setOriginalRows] = useState([]);  // Lưu dữ liệu gốc
     const [rows, setRows] = useState([]);
     // State Cancel and Save
-    const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
+    // const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
     //Select to Add a new Title
     const [listtitle, setListTitle] = useState([]);
 
@@ -47,88 +48,40 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
                 }
             }
 
-            // Kiểm tra nếu có thay đổi trong bảng và cập nhật hasChanges
-            const hasAnyChanges = updatedRows.some((row) =>
-                Object.keys(row).some((key) => key !== 'id' && key !== 'titleName' && row[key] !== '')
-            );
-            setHasChanges(hasAnyChanges); // Cập nhật trạng thái hasChanges
+            // // Kiểm tra nếu có thay đổi trong bảng và cập nhật hasChanges
+            // const hasAnyChanges = updatedRows.some((row) =>
+            //     Object.keys(row).some((key) => key !== 'id' && key !== 'titleName' && row[key] !== '')
+            // );
+            // setHasChanges(hasAnyChanges); // Cập nhật trạng thái hasChanges
             return updatedRows;
         });
     };
     //////////////////////////////////// Remove ////////////////////////////////////
-    // Hàm hủy thay đổi, đặt lại  giá trị ban đầu của 1 hàng
+    // Hàm xóa hàng 
     const handleDeleteRowData = (id) => {
         setRows((prevRows) => {
             const rowIndex = prevRows.findIndex((row) => row.id === id);
 
             if (rowIndex !== -1) {
-                const updatedRow = { ...prevRows[rowIndex] };
-                const originalRow = originalRows.find((row) => row.id === id);
-
-                // Khôi phục giá trị từ originalRow nếu có
-                Object.keys(updatedRow).forEach((key) => {
-                    if (key !== 'id' && key !== 'titleName') {
-                        updatedRow[key] = originalRow ? originalRow[key] : ''; // Khôi phục giá trị gốc
-                    }
-                });
+                // Lưu hàng bị xóa vào deletedRows
+                // setDeletedRows((prevDeleted) => [...prevDeleted, prevRows[rowIndex]]);
 
                 const updatedRows = [...prevRows];
-                updatedRows[rowIndex] = updatedRow;
+                updatedRows.splice(rowIndex, 1); // Xóa hàng khỏi mảng rows
                 return updatedRows;
             }
-
-            return prevRows;
+            return prevRows; // Nếu không tìm thấy, giữ nguyên
         });
     };
-
-    //////////////////////////////////// Cancel /////////////////////////////////////
-    // Theo dõi sự thay đổi của rows và originalRows
-    useEffect(() => {
-        const checkForChanges = () => {
-            // Kiểm tra sự khác biệt giữa rows và originalRows
-            const hasAnyChanges = rows.some((row, index) => {
-                const originalRow = originalRows[index];
-
-                // Kiểm tra nếu có sự khác biệt giữa row và originalRow
-                return Object.keys(row).some((key) => {
-                    if (key !== 'id' && key !== 'titleName' && row[key] !== originalRow[key]) {
-                        return true;
-                    }
-                    return false;
-                });
-            });
-
-            setHasChanges(hasAnyChanges);
-        };
-
-        // Gọi hàm kiểm tra thay đổi
-        checkForChanges();
-    }, [rows, originalRows]);
-
+    //////////////////////////////////// Cancel ////////////////////////////////////
     //// Hàm hủy thay đổi, đặt lại  giá trị ban đầu của tất cả
     const handleCancelChanges = () => {
-        // Đặt lại tất cả các ô trong bảng về giá trị ban đầu
-        setRows((prevRows) => {
-            // Duyệt qua tất cả các hàng và reset giá trị ô (giữ lại id và titleName)
-            const resetRows = prevRows.map((row, index) => {
-                // Lấy giá trị ban đầu từ originalRows (vì chúng đã được lưu lại)
-                const originalRow = originalRows[index];
-
-                const updatedRow = { ...row };
-
-                // Khôi phục lại giá trị của mỗi ô từ originalRow
-                Object.keys(updatedRow).forEach((key) => {
-                    if (key !== 'id' && key !== 'titleName') { // Giữ lại id và index (hoặc các cột cố định khác)
-                        updatedRow[key] = originalRow[key]; // Khôi phục giá trị gốc
-                        // updatedRow[key] = ''; // Khôi phục giá trị gốc
-                    }
-                });
-                return updatedRow;
-            });
-
-            return resetRows;
+        setRows(() => {
+            return originalTitle.map((originalRow) => ({ ...originalRow }));
         });
+        // setHasChanges(false); // Đặt lại trạng thái khi đã hủy thay đổi
     };
+
 
     //////////////////////////////////// Save ///////////////////////////////////////
     // Hàm tính toán RankScore
@@ -143,6 +96,12 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
     };
     // Hàm save, kiểm tra weight nếu bằng 100 thì chuyển sang bước tiếp
     const handleSaveChanges = () => {
+        // Bỏ qua kiểm tra weight nếu trạng thái là Finalized
+        if (decisionStatus === 'Finalized') {
+            console.log("Finalized: Lưu dữ liệu và chuyển bước...");
+            goToNextStep();
+            return;
+        }
         // Kiểm tra xem tất cả rankScore đã được tính toán chưa
         const allRankScoresCalculated = rows.every(row => row.rankScore && row.rankScore !== '');
         console.log(rows)
@@ -161,10 +120,6 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
             id: rows.length + 1,
             titleName: 'New Title',
             rankScore: '',
-            ...title.reduce((acc, title) => {
-                acc[title.titleName] = '';  // Chỗ này sẽ là ô trống cho mỗi tiêu chí mới
-                return acc;
-            }, {}),
         };
         setRows([...rows, newTitle]);
     };
@@ -200,20 +155,13 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
 
         // Cột cố định
         const fixedColumns = [
-            { field: 'titleName', headerName: 'Title Name', width: 100 },
-            {
-                field: 'rankScore',
-                headerName: 'Rank Score',
-                width: 100,
-                editable: decisionStatus === 'Draft',
-                align: 'center',
-                headerAlign: 'center',
-            }
+            { field: 'titleName', headerName: 'Title Name', width: 100, pinned: 'left' },
+            { field: 'rankScore', headerName: 'Rank Score', width: 100, editable: decisionStatus === 'Draft', align: 'center', headerAlign: 'center', pinned: 'left' }
         ];
 
         const actionColumn = [
             {
-                field: 'action', headerName: 'Action', width: 130,
+                field: 'action', headerName: 'Action', width: 90,
                 renderCell: (params) =>
                     decisionStatus === 'Draft' && (
                         <Button
@@ -249,15 +197,15 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
             // Cập nhật cột
             setColumnsTitle(columns);
 
-            // Chỉ gọi setOriginalRows nếu chưa có dữ liệu ban đầu
-            if (originalRows.length === 0) {
-                setOriginalRows(rows); // Lưu trữ dữ liệu ban đầu
+            // Chỉ gọi setOriginalTitle nếu chưa có dữ liệu ban đầu
+            if (originalTitle.length === 0) {
+                setOriginalTitle(rows); // Lưu trữ dữ liệu ban đầu
             }
 
             // Cập nhật hàng
             setRows(rows);
         }
-    }, [criteria, title, decisionStatus, originalRows]);
+    }, [criteria, title, decisionStatus, originalTitle]);
     return (
         <div>
             <Box sx={{
@@ -273,13 +221,23 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
                 overflow: 'hidden',
             }}>
                 <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
-                    <DataGrid
+                    <DataGridPro
                         rows={rows}
                         columns={columnsTitle}
+                        // initialState={{ pinnedColumns: { left: ['titleName', 'rankScore'], right: ['action'] } }}
                         getRowId={(row) => row.id}
-                        pageSize={5}
-                        rowsPerPageOptions={[5]}
+                        sx={{
+                            '& .MuiDataGrid-columnHeaders': {
+                                backgroundColor: '#f4f4f4',
+                            },
+                            overflowX: 'auto',  // Cho phép cuộn ngang cho các cột cuộn
+                            '.MuiDataGrid-virtualScroller': {
+                                overflowX: 'auto', // Cho phép cuộn ngang trong phần cuộn
+                                overflowY: 'auto', // Ẩn cuộn dọc trong vùng cuộn
+                            },
+                        }}
                     />
+                    {/* Button */}
                     {decisionStatus === 'Draft' && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                             <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
@@ -289,24 +247,20 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
                             </Box>
 
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                                {hasChanges && (
-                                    <Button
-                                        variant="contained"
-                                        color="error"
-                                        onClick={handleCancelChanges} // Gọi hàm hủy thay đổi
-                                    >
-                                        Cancel
-                                    </Button>
-                                )}
-                                {hasChanges && (
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={handleSaveChanges} // Gọi hàm lưu thay đổi
-                                    >
-                                        Save
-                                    </Button>
-                                )}
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    onClick={handleCancelChanges} // Gọi hàm hủy thay đổi
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleSaveChanges} // Gọi hàm lưu thay đổi
+                                >
+                                    Save
+                                </Button>
                             </Box>
                         </Box>
                     )}
