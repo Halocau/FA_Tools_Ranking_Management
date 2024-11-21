@@ -19,7 +19,7 @@ const useRankingDecision = () => {
     };
 
     // Fetches all decisions from the API and updates the data state
-    const fetchAllRankingDecisions = async () => {
+    const fetchListAllRankingDecisions = async () => {
         setLoading(true);
         try {
             const response = await authClient.get('/ranking-decision');  // API call to get all decisions
@@ -50,7 +50,7 @@ const useRankingDecision = () => {
         // console.log(newDecision)
         try {
             const response = await authClient.post(`/ranking-decision/add`, newDecision);
-            await fetchAllRankingDecisions();  // Refresh the decision list
+            await fetchListAllRankingDecisions();  // Refresh the decision list
             return response.data;
         } catch (err) {
             // In ra lỗi chi tiết
@@ -98,7 +98,7 @@ const useRankingDecision = () => {
         data,
         loading,
         error,
-        fetchAllRankingDecisions,
+        fetchListAllRankingDecisions,
         fetchRankingDecisionById,
         addRankingDecision,
         updateRankingDecision,
