@@ -1,66 +1,53 @@
+// React
 import React, { useEffect, useState } from 'react';
-
 import { useNavigate, useParams } from "react-router-dom";
-
-// Components
 import Select from "react-select";
-import { DataGrid } from '@mui/x-data-grid';
-import { Box, TextField, Button } from '@mui/material';
-
-//Icon
 import { MdDeleteForever } from 'react-icons/md';
+// Mui
+import { DataGrid } from '@mui/x-data-grid';
+import { Box, TextField, Button, IconButton } from '@mui/material';
+import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
 
 // API
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
-import CriteriaAPI from "../../../api/CriteriaAPI.js";
+
+
+
+
 
 const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
     // Data
     const { id } = useParams(); // Get the ID from the URL
-    const [selectedCriteria, setSelectedCriteria] = useState(null);
-
-    // Row table
     const [originalCriteria, setOriginalCriteria] = useState([]);  // Lưu dữ liệu gốc
+    // Row table
     const [rows, setRows] = useState([]);
-
     //Select to Add a new Criteria
+    const [selectedCriteria, setSelectedCriteria] = useState(null);
     const [listcriteria, setListCriteria] = useState([]);
-
-    // Pagination for data grid
-    const [page, setPage] = useState(0);
-    const [pageSize, setPageSize] = useState(20);
-
-    const [filter, setFilter] = useState('');
-    //size of list
-    const [size, setSize] = useState(20);
 
     // Load data getCriteriaConfiguration
     const getCriteriaConfiguration = async () => {
         try {
             const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
-            setOriginalCriteria(response);
+            console.log("Dữ liệu nhận được:", response);
+
+            // Chỉ cập nhật nếu response khác với state hiện tại
+            setOriginalCriteria((prevCriteria) => {
+                if (JSON.stringify(prevCriteria) !== JSON.stringify(response)) {
+                    return response;
+                }
+                return prevCriteria;
+            });
         } catch (error) {
             console.error("Error fetching criteria:", error);
         }
     };
 
     useEffect(() => {
+        if (!id) return; // Bỏ qua nếu `id` không xác định
         getCriteriaConfiguration();
-    }, []);
+    }, [id]); // Dependency chỉ bao gồm `id`
 
-    const getCriteriaList = async () => {
-        try {
-            const response = await DecisionCriteriaAPI.getAllCriteria();
-            console.log(response);
-            setListCriteria(response);
-        } catch (error) {
-            console.error("Error fetching criteria:", error);
-        }
-    }
-
-    useEffect(() => {
-        getCriteriaList();
-    }, []);
 
 
     const updateDecisionCriteria = async (form) => {
@@ -168,6 +155,19 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     };
 
     //////////////////////////////////// Select to Add a new Criteria ////////////////////////////////////
+    const getCriteriaList = async () => {
+        try {
+            const response = await DecisionCriteriaAPI.getAllCriteria();
+            console.log(response);
+            setListCriteria(response);
+        } catch (error) {
+            console.error("Error fetching criteria:", error);
+        }
+    }
+    useEffect(() => {
+        getCriteriaList();
+    }, []);
+
     const handleAddCriteria = async () => {
         const addedCriteria = listcriteria.find(
             (criteria) => criteria.criteriaId === selectedCriteria.value
@@ -266,7 +266,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     return (
         <Box sx={{
             width: "100%",
-            height: 600,
+            height: 500,
             marginTop: '10px',
             border: '2px solid black',
             borderRadius: '8px',
@@ -313,9 +313,14 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                                 value={selectedCriteria} // Bind the selected option to the state
                                 onChange={(option) => setSelectedCriteria(option)} // Update state on selection
                             />
-                            <Button variant="contained" color="success" onClick={handleAddCriteria}>
-                                Add Criteria
-                            </Button>
+                            <IconButton
+                                onClick={handleAddCriteria}
+                                color={selectedCriteria ? 'primary' : 'default'} // Màu xanh khi có criteria được chọn
+                                disabled={!selectedCriteria} // Vô hiệu hóa khi không có criteria được chọn
+                                sx={{ marginLeft: 1, transform: 'translateY(-7px)' }} // Dịch chuyển icon lên trên
+                            >
+                                <AddCircleIcon fontSize="large" />
+                            </IconButton>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
 
@@ -328,7 +333,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                             </Button>
                             <Button
                                 variant="contained"
-                                color="success"
+                                color="primary"
                                 onClick={handleSaveChanges}
                             >
                                 Save

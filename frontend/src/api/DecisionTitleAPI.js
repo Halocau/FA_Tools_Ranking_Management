@@ -13,23 +13,16 @@ const DecisionTitleAPI = {
                 },
             })
             .then((response) => response.data),
-
-    // getDecisionTitleByDecisionId: (decisionId, filter = '', pageable = { page: 0, size: 5 }) =>
+    // getDecisionTitleByDecisionId: (decisionId) =>
     //     authClient
-    //         .get(`${decision_title_api}/get-decisionId/${decisionId}`, {
-    //             params: {
-    //                 filter,
-    //                 page: pageable.page,
-    //                 size: pageable.size,
-    //             },
-    //         })
+    //         .get(`${decision_title_api}/get-decisionId/${decisionId}`,
+    //         )
     //         .then((response) => response.data),
     getDecisionTitleByDecisionId: (decisionId) =>
         authClient
-            .get(`${decision_title_api}/get-decisionId/${decisionId}`,
+            .get(`ranking-title-option/get-decisionId/${decisionId}`,
             )
             .then((response) => response.data),
-
     addDecisionTitle: (form) =>
         authClient
             .post(`${decision_title_api}/add`, form)

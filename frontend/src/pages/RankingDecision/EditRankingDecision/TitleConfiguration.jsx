@@ -16,125 +16,131 @@ import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 
-const TitleConfiguration = ({ title, decisionStatus, goToNextStep, showErrorMessage }) => {
-    console.log(title)
+const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage }) => {
     // // Data 
     const { id } = useParams(); // Get the ID from the URL
-    // const [title, setTitle] = useState([]);
     const [originalTitle, setOriginalTitle] = useState([]);  // Lưu dữ liệu gốc
-    const [columnsTitle, setColumnsTitle] = useState([]);
     const [criteria, setCriteria] = useState([]);
-    const [rankTitle, setRankTitle] = useState([]);
+    const [columnsTitle, setColumnsTitle] = useState([]);
     // Row table
     const [rows, setRows] = useState([]);
     // State Cancel and Save
     // const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
-    //Select to Add a new Title
-    const [listtitle, setListTitle] = useState([]);
 
-    // Load data getTitleConfiguration
+    // Load data getCriteriaConfiguration 
     const getCriteriaConfiguration = async () => {
         try {
-            const response = await DecisionCriteriaAPI.takeDecisionCriteriaByDecisionId(id);
-            console.log(response)
+            const response = await DecisionCriteriaAPI.optionCriteria(id);
             setCriteria(response);
-            // setTotalElements(response.pageInfo.element);
-            // setTotalPages(response.pageInfo.total);
         } catch (error) {
             console.error("Error fetching criteria:", error);
         }
     };
-
+    // Load data getTitleConfiguration
+    const getTitleConfiguration = async () => {
+        try {
+            const response = await DecisionTitleAPI.getDecisionTitleByDecisionId(id);
+            setOriginalTitle(response);
+        } catch (error) {
+            console.error("Error fetching criteria:", error);
+        }
+    };
     useEffect(() => {
-        getCriteriaConfiguration();
-    }, []);
-    // chưa có API
+        getCriteriaConfiguration()
+        getTitleConfiguration();
+    }, [id]);
+
 
     ///////////////////////////// Hàm cập nhập thay đổi ///////////////////////////
     // Hàm cập nhập thay đổi data
     const handleCellEditTitleCommit = ({ id, field, value }) => {
+        console.log('Đang cập nhật hàng:', { id, field, value });
         setRows((prevRows) => {
             const updatedRows = [...prevRows];
             const rowIndex = updatedRows.findIndex((row) => row.id === id);
-
             if (rowIndex !== -1) {
                 updatedRows[rowIndex][field] = value;
-
                 const currentRow = updatedRows[rowIndex];
                 const allCriteriaFilled = criteria.every((criteria) => currentRow[criteria.criteriaName]);
-
                 if (allCriteriaFilled) {
                     updatedRows[rowIndex].rankScore = calculateRankScore(currentRow).toFixed(2);
                 } else {
                     updatedRows[rowIndex].rankScore = '';
                 }
             }
-
-            // // Kiểm tra nếu có thay đổi trong bảng và cập nhật hasChanges
-            // const hasAnyChanges = updatedRows.some((row) =>
-            //     Object.keys(row).some((key) => key !== 'id' && key !== 'titleName' && row[key] !== '')
-            // );
-            // setHasChanges(hasAnyChanges); // Cập nhật trạng thái hasChanges
             return updatedRows;
         });
     };
     //////////////////////////////////// Remove ////////////////////////////////////
     // Hàm xóa hàng 
     const handleDeleteRowData = (id) => {
+        console.log('delete', id)
         setRows((prevRows) => {
             const rowIndex = prevRows.findIndex((row) => row.id === id);
-
             if (rowIndex !== -1) {
-                // Lưu hàng bị xóa vào deletedRows
-                // setDeletedRows((prevDeleted) => [...prevDeleted, prevRows[rowIndex]]);
-
-                const updatedRows = [...prevRows];
-                updatedRows.splice(rowIndex, 1); // Xóa hàng khỏi mảng rows
+                const updatedRows = prevRows.filter((row) => row.id !== id);  // Lọc ra hàng cần xóa
                 return updatedRows;
             }
-            return prevRows; // Nếu không tìm thấy, giữ nguyên
+            return prevRows;
         });
     };
+
     //////////////////////////////////// Cancel ////////////////////////////////////
     //// Hàm hủy thay đổi, đặt lại  giá trị ban đầu của tất cả
     const handleCancelChanges = () => {
-        setRows(() => {
-            return originalTitle.map((originalRow) => ({ ...originalRow }));
-        });
-        // setHasChanges(false); // Đặt lại trạng thái khi đã hủy thay đổi
+        console.log('cancel')
+        setRowData(originalTitle);
     };
 
 
     //////////////////////////////////// Save ///////////////////////////////////////
-    // Hàm tính toán RankScore
     const calculateRankScore = (row) => {
-        return criteria.reduce((score, criteria) => {
-            const chosenValue = parseInt(row[criteria.criteriaName]) || 0;
-            const weight = criteria.weight;
-            const numOptions = criteria.numOptions;
+        if (!row || !criteria) {
+            console.warn("Dữ liệu không hợp lệ:", { row, criteria });
+            return 0;
+        }
+        console.log("Tính toán RankScore cho hàng:", row);
+        return criteria.reduce((totalScore, criteriaItem) => {
+            const currentValue = row[criteriaItem.criteriaName]; // Lấy giá trị từ row theo tên tiêu chí
+            // Tìm option trong criteria tương ứng với giá trị hiện tại
+            const selectedOption = criteriaItem.options?.find(
+                (option) => option.optionName === currentValue
+            );
 
-            return score + (chosenValue * (weight / numOptions));
+            if (selectedOption) {
+                const { score } = selectedOption;
+                const { weight, maxScore } = criteriaItem;
+                // Công thức tính RankScore
+                const calculatedScore = (score * weight) / (maxScore || 1); // Tránh chia 0
+                console.log(`Tiêu chí: ${criteriaItem.criteriaName}, score: ${score}, weight: ${weight}, maxScore: ${maxScore} `)
+                return totalScore + calculatedScore;
+            }
+            console.warn(`Không tìm thấy option phù hợp cho tiêu chí: ${criteriaItem.criteriaName}`);
+            return totalScore; // Không có option phù hợp, giữ nguyên điểm
         }, 0);
+
     };
-    // Hàm save, kiểm tra weight nếu bằng 100 thì chuyển sang bước tiếp
+
+    // 
     const handleSaveChanges = () => {
-        // Bỏ qua kiểm tra weight nếu trạng thái là Finalized
+        // Nếu trạng thái là Finalized, bỏ qua kiểm tra
         if (decisionStatus === 'Finalized') {
             console.log("Finalized: Lưu dữ liệu và chuyển bước...");
             goToNextStep();
             return;
         }
-        // Kiểm tra xem tất cả rankScore đã được tính toán chưa
-        const allRankScoresCalculated = rows.every(row => row.rankScore && row.rankScore !== '');
-        console.log(rows)
-        if (!allRankScoresCalculated) {
-            showErrorMessage('Tất cả Rank Score phải được tính toán');
-            return; // Dừng hàm nếu có hàng chưa tính toán rankScore
-        }
+        // Kiểm tra xem tất cả rankScore đã được tính toán
+        const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
 
-        console.log("Tổng weight hợp lệ và tất cả Rank Score đã được tính toán. Lưu dữ liệu...");
-        goToNextStep(); // Tiến hành lưu dữ liệu và chuyển sang bước tiếp theo
+        if (!allRankScoresCalculated) {
+            showErrorMessage('Tất cả Rank Score phải được tính toán.');
+            return; // Dừng lại nếu có lỗi
+        }
+        showErrorMessage('Title Configuration successfully updated.');
+        console.log("Title Configuration successfully updated.”");
+        goToNextStep(); // Chuyển bước tiếp theo
     };
+
 
     //////////////////////////////////// Select to Add a new Title //////////////////
     const handleAddTitle = () => {
@@ -145,30 +151,23 @@ const TitleConfiguration = ({ title, decisionStatus, goToNextStep, showErrorMess
         };
         setRows([...rows, newTitle]);
     };
-
-    //////////////////////////////////// Update cấu hình cột và bảng ///////////////
-    const updateTableConfig = (criteria, title, decisionStatus) => {
-        // Cột từ tiêu chí
-        // Tạo các cột từ danh sách tiêu chí
-        // Kiểm tra dữ liệu đầu vào là mảng
+    //////////////////////////////////// Column Title ////////////////////////////////////
+    const ColumnsTitle = (criteria, decisionStatus) => {
         if (!Array.isArray(criteria)) {
             console.error("Invalid criteria data:", criteria);
             return [];
         }
-
-        // Tạo cột dựa trên tiêu chí
+        // Column Criteria
         const criteriaColumns = criteria.map((criteriaItem) => ({
-            field: criteriaItem.criteriaName, // Tên trường (cột) là `criteriaName`
-            headerName: criteriaItem.criteriaName, // Hiển thị tiêu đề là `criteriaName`
+            field: criteriaItem.criteriaName,
+            headerName: criteriaItem.criteriaName,
             width: 200,
-            editable: decisionStatus === 'Draft', // Chỉ chỉnh sửa được nếu trạng thái là 'Draft'
+            editable: decisionStatus === 'Draft',
             renderCell: (params) => {
-                // Tìm tiêu chí tương ứng
                 const currentCriteria = criteria.find(
                     (c) => c.criteriaName === params.field
                 );
 
-                // Nếu không tìm thấy tiêu chí hoặc không có options, trả về null
                 if (!currentCriteria || !Array.isArray(currentCriteria.options)) {
                     console.warn(`No options found for criteria: ${params.field}`);
                     return null;
@@ -176,41 +175,43 @@ const TitleConfiguration = ({ title, decisionStatus, goToNextStep, showErrorMess
 
                 return (
                     <Select
-                        value={params.value || ''} // Giá trị hiện tại
+                        value={params.value || ''}
                         onChange={(e) =>
                             handleCellEditTitleCommit({
-                                id: params.row.id, // ID của hàng
-                                field: params.field, // Cột hiện tại
-                                value: e.target.value, // Giá trị mới
+                                id: params.row.id,
+                                field: params.field,
+                                value: e.target.value,
                             })
                         }
                         fullWidth
                         sx={{
                             height: '30px',
-                            '.MuiSelect-select': {
-                                padding: '4px',
-                            },
+                            '.MuiSelect-select': { padding: '4px' },
                         }}
                     >
                         {currentCriteria.options.map((option) => (
                             <MenuItem key={option.optionId} value={option.optionName}>
-                                {option.optionName}
+                                {`${option.score} - ${option.optionName}`} {/* Tên kèm score */}
                             </MenuItem>
                         ))}
                     </Select>
                 );
             },
         }));
-
-        // Cột cố định
+        // Column Title
         const fixedColumns = [
             { field: 'titleName', headerName: 'Title Name', width: 100, pinned: 'left' },
-            { field: 'rankScore', headerName: 'Rank Score', width: 100, editable: decisionStatus === 'Draft', align: 'center', headerAlign: 'center', pinned: 'left' }
+            {
+                field: 'rankScore', headerName: 'Rank Score', width: 100, pinned: 'left',
+                editable: decisionStatus === 'Draft', align: 'center', headerAlign: 'center',
+            },
         ];
-
+        // Column Action
         const actionColumn = [
             {
-                field: 'action', headerName: 'Action', width: 90,
+                field: 'action',
+                headerName: 'Action',
+                width: 90,
                 renderCell: (params) =>
                     decisionStatus === 'Draft' && (
                         <Button
@@ -224,37 +225,46 @@ const TitleConfiguration = ({ title, decisionStatus, goToNextStep, showErrorMess
             },
         ];
 
-        // Tạo hàng dữ liệu
-        const updatedRows = title.map((title) => ({
-            id: title.rankingTitleId,
-            titleName: title.titleName,
-            rankScore: '',
-            ...criteria.reduce((acc, criteria) => {
-                acc[criteria.criteriaName] = title.criteriaSelections && title.criteriaSelections[criteria.criteriaName] ? title.criteriaSelections[criteria.criteriaName] : '';
-                return acc;
-            }, {}),
-        }));
-
-        // Trả về cột và hàng
-        return { columns: [...fixedColumns, ...criteriaColumns, ...actionColumn], rows: updatedRows };
+        return [...fixedColumns, ...criteriaColumns, ...actionColumn];
     };
-    // Load data to  Title
+    //////////////////////////////////// Row Title ////////////////////////////////////
+    const setRowData = (title, criteria) => {
+        const mappedRows = title.map((title, index) => {
+            // Tạo các trường từ tiêu chí
+            const criteriaFields = criteria.reduce((acc, criteriaItem) => {
+                // Tìm option đã chọn tương ứng với criteriaId
+                const matchingOption = title.options?.find(
+                    (option) => option.criteriaId === criteriaItem.criteriaId
+                );
+
+                // Lưu giá trị optionName hoặc để trống nếu không tìm thấy
+                acc[criteriaItem.criteriaName] = matchingOption
+                    ? matchingOption.optionName // Tên của option đã chọn
+                    : ""; // Giá trị mặc định
+                return acc;
+            }, {});
+
+            return {
+                id: title.rankingTitleId,
+                index: index + 1,
+                titleName: title.rankingTitleName,
+                rankScore: title.totalScore || 0,
+                ...criteriaFields,
+            };
+        });
+
+        setRows(mappedRows); // Cập nhật state
+    };
     useEffect(() => {
-        if (criteria && title) {
-            const { columns, rows } = updateTableConfig(criteria, title, decisionStatus);
-
-            // Cập nhật cột
+        if (originalTitle) {
+            // Tạo cột
+            const columns = ColumnsTitle(criteria, decisionStatus);
             setColumnsTitle(columns);
-
-            // Chỉ gọi setOriginalTitle nếu chưa có dữ liệu ban đầu
-            if (originalTitle.length === 0) {
-                setOriginalTitle(rows); // Lưu trữ dữ liệu ban đầu
-            }
-
-            // Cập nhật hàng
-            setRows(rows);
+            // Tạo hàng
+            setRowData(originalTitle, criteria);
         }
-    }, [criteria, title, decisionStatus, originalTitle]);
+    }, [originalTitle, decisionStatus]);
+
     return (
         <div>
             <Box sx={{

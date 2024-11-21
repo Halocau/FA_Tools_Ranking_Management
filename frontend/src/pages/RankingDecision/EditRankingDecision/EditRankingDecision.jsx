@@ -36,6 +36,7 @@ const EditDecision = () => {
     // Step
     const [activeStep, setActiveStep] = useState(0);
     // Data
+    const [criteria, setCriteria] = useState([]);
     const [title, setTitle] = useState([]);
     const [task, setTask] = useState([]);
     const [decisionStatus, setDecisionStatus] = useState('Draft');
@@ -172,6 +173,21 @@ const EditDecision = () => {
         // Chuyển sang bước tiếp theo
         setActiveStep(prevStep => prevStep + 1);
     };
+    //////////////////////////////////////////////////////////////////////////// Criteria Configuration ////////////////////////////////////////////////////////////////////////////
+    // data criteria 
+    const getCriteriaConfiguration = async () => {
+        try {
+            const response = await DecisionCriteriaAPI.optionCriteria(id);
+            setCriteria(response);
+        } catch (error) {
+            console.error("Error fetching criteria:", error);
+        }
+    };
+    useEffect(() => {
+        getCriteriaConfiguration();
+    }, []);
+
+    //////////////////////////////////////////////////////////////////////////// End Criteria Configuration ////////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////// Title Configuration ////////////////////////////////////////////////////////////////////////////
 
@@ -196,13 +212,12 @@ const EditDecision = () => {
             case 1:
                 return (
                     <TitleConfiguration
-                        criteria={initialCriteria}
-                        title={initialTitle}
-                        rankTitle={rankTitle}
+                        criteria={criteria}
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
                         showSuccessMessage={showSuccessMessage}
+
                     />
                 );
             case 2:
