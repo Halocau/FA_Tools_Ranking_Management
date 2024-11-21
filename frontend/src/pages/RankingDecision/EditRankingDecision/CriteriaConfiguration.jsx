@@ -155,13 +155,18 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     };
 
     const handleSaveChanges = () => {
-        const totalWeight = calculateTotalWeight();
-        if (totalWeight === 100) {
-            syncDecisionCriteria(rows, originalCriteria);
-            showSuccessMessage("Criteria Configuration saved successfully!");
-            goToNextStep();
+        const checkWeight = rows.some((row) => row.weight <= 0);
+        if (checkWeight) {
+            showErrorMessage('Weight phải lớn hơn 0');
         } else {
-            showErrorMessage('Tổng weight phải bằng 100');
+            const totalWeight = calculateTotalWeight();
+            if (totalWeight === 100) {
+                syncDecisionCriteria(rows, originalCriteria);
+                showSuccessMessage("Criteria Configuration saved successfully!");
+                goToNextStep();
+            } else {
+                showErrorMessage('Tổng weight phải bằng 100');
+            }
         }
     };
 
