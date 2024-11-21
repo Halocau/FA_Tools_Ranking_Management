@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { FaAngleRight } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
-import { MdDeleteForever } from "react-icons/md";
+
 // MUI
 import {
     InputAdornment, Box, Button, Typography, TextField, Modal, IconButton, Select, MenuItem, Table, TableHead, TableBody, TableCell, TableRow
 } from "@mui/material";
-import { DataGrid } from '@mui/x-data-grid';
 import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
-import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Stepper, Step, StepButton } from '@mui/material';
 // Css 
 import "../../../assets/css/RankingGroups.css"
@@ -17,13 +15,6 @@ import '../../../assets/css/Table.css';
 // API
 import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
-import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
-//Common
-import ModalCustom from "../../../components/Common/Modal.jsx";
-import ActionButtons from "../../../components/Common/ActionButtons.jsx";
-import SearchComponent from "../../../components/Common/Search.jsx";
-// Contexts
-import { useAuth } from "../../../contexts/AuthContext.jsx";
 // Hooks
 import useNotification from "../../../hooks/useNotification.jsx";
 //Data
@@ -41,13 +32,13 @@ const EditDecision = () => {
     const [showEditDecisionInfoModal, setShowEditDecisionInfoModal] = useState(false); // Display decision editing modal
     const [newDecisionName, setNewDecisionName] = useState(""); // New decision Name
     const [status, setStatus] = useState("");
+
+    // Step
+    const [activeStep, setActiveStep] = useState(0);
     // Data
-    const [criteria, setCriteria] = useState([]);
     const [title, setTitle] = useState([]);
     const [task, setTask] = useState([]);
     const [decisionStatus, setDecisionStatus] = useState('Draft');
-    // Step
-    const [activeStep, setActiveStep] = useState(2);
     // 'Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'
     const steps = ['Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'];
     // Trạng thái lưu dữ liệu cho từng bước
@@ -72,7 +63,7 @@ const EditDecision = () => {
             setOriginalDecisionName(decisionData.decisionName || "Decision Name");
             setNewDecisionName(decisionData.decisionName || "");
             setStatus(decisionData.status || "");
-            // setDecisionStatus(decisionData.status.charAt(0).toUpperCase() + decisionStatus.slice(1).toLowerCase() || "")
+            setDecisionStatus(decisionData.status.charAt(0).toUpperCase() + decisionStatus.slice(1).toLowerCase() || "")
         } catch (error) {
             console.error("Error fetching group:", error);
         }
@@ -136,32 +127,13 @@ const EditDecision = () => {
     };
     // Hàm xử lý khi người dùng nhấn vào một bước
     const handleStepChange = (step) => {
-        if (decisionStatus === 'Finalized') {
-            handleSave()
-            // Ở trạng thái Finalized, cho phép chuyển đến bất kỳ bước nào
+        if (step < activeStep || canMoveToNextStep(step)) {  // Người dùng chỉ có thể quay lại các bước trước hoặc tiến tới bước sau nếu dữ liệu đã lưu
             setActiveStep(step);
-            return;
-        }
-
-        if (decisionStatus === 'Draft') {
-            // Kiểm tra điều kiện trước khi cho phép chuyển bước
-            // if (!canMoveToNextStep(step)) {
-            //     alert('Vui lòng hoàn thành bước hiện tại trước khi chuyển tiếp!');
-            //     return;
-            // }
-
-            // Cho phép quay lại bước trước hoặc chuyển bước tiếp theo nếu hợp lệ
-            if (step < activeStep || canMoveToNextStep(step)) {
-                setActiveStep(step);
-            }
         }
     };
-
-
     // Hàm xử lý khi lưu dữ liệu cho từng bước
     const handleSave = () => {
         if (activeStep === 0) {
-            setIsTitleSaved(true)
             setIsCriteriaSaved(true); // Đánh dấu Criteria đã lưu
         } else if (activeStep === 1) {
             setIsTitleSaved(true); // Đánh dấu Title đã lưu
@@ -192,8 +164,8 @@ const EditDecision = () => {
             // setDecisionStatus('In Progress'); // Bước 0: Đang tiến hành
         } else if (activeStep === 1) {
             // setDecisionStatus('In Progress'); // Bước 1: Tiến hành
-        } else if (activeStep === 2) {
-            setDecisionStatus('Finalized'); // Bước 2: Hoàn thành
+        } else if (activeStep === 4) {
+            setDecisionStatus('Finalize'); // Bước 2: Hoàn thành
 
         }
 
@@ -201,43 +173,8 @@ const EditDecision = () => {
         setActiveStep(prevStep => prevStep + 1);
     };
 
-
-    //////////////////////////////////////////////////////////////////////////// Criteria Configuration ////////////////////////////////////////////////////////////////////////////
-    const getCriteriaConfiguration = async () => {
-        try {
-            const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
-            console.log(response)
-            setCriteria(response.result);
-            // setTotalElements(response.pageInfo.element);
-            // setTotalPages(response.pageInfo.total);
-        } catch (error) {
-            console.error("Error fetching criteria:", error);
-        }
-    };
-
-    useEffect(() => {
-        getCriteriaConfiguration();
-        console.log(criteria);
-    }, []);
-
-
     //////////////////////////////////////////////////////////////////////////// Title Configuration ////////////////////////////////////////////////////////////////////////////
-    const getTitleConfiguration = async () => {
-        try {
-            const response = await DecisionTitleAPI.getDecisionTitleByDecisionId(id);
-            console.log(response)
-            setTitle(response);
-            // setTotalElements(response.pageInfo.element);
-            // setTotalPages(response.pageInfo.total);
-        } catch (error) {
-            console.error("Error fetching criteria:", error);
-        }
-    };
 
-    useEffect(() => {
-        getTitleConfiguration();
-        console.log(title);
-    }, []);
     //////////////////////////////////////////////////////////////////////////// End Title Configuration ////////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////// Task and Price Configuration ////////////////////////////////////////////////////////////////////////////
@@ -250,7 +187,6 @@ const EditDecision = () => {
             case 0:
                 return (
                     <CriteriaConfiguration
-                        criteria={criteria}
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
@@ -259,10 +195,9 @@ const EditDecision = () => {
                 );
             case 1:
                 return (
-
                     <TitleConfiguration
-                        criteria={criteria}
-                        title={title}
+                        criteria={initialCriteria}
+                        title={initialTitle}
                         rankTitle={rankTitle}
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
@@ -287,10 +222,7 @@ const EditDecision = () => {
                 return <div>No Step</div>;
         }
     };
-    //////////////////////////////////////////////////////////////////////////// handleSubmit////////////////////////////////////////////////////////////////////////////
-    const handleSubmit = async () => {
-        setDecisionStatus('Finalized');
-    };
+
     return (
         <div style={{ marginTop: "60px" }}>
             <Box sx={{ marginTop: 4, padding: 2 }}>
@@ -323,7 +255,7 @@ const EditDecision = () => {
                         <TextField
                             variant="outlined"
                             fullWidth
-                            value={decisionStatus}
+                            value={status}
                             disabled
                             sx={{ width: '60%' }}
                             InputProps={{
@@ -331,14 +263,6 @@ const EditDecision = () => {
                             }}
                         />
                     </Box>
-                    {/* Finalized */}
-                    {activeStep === 2 && (
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                            <Button variant="contained" color="primary" onClick={handleSubmit}>
-                                Finalized
-                            </Button>
-                        </Box>
-                    )}
                 </Box>
 
                 {/* Stepper */}

@@ -251,9 +251,9 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
             }}>
                 {/* Box chứa DataGrid */}
                 <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
-                    <DataGridPro
+                    <DataGrid
                         rows={rows}
-                        columns={columnsTask}
+                        columns={columnsTask}r
                         initialState={{ pinnedColumns: { left: ['taskName', 'taskType'], right: ['action'] } }}
                         getRowId={(row) => row.id}
                         processRowUpdate={(newRow) => {

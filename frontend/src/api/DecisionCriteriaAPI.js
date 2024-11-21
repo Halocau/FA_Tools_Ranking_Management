@@ -48,7 +48,12 @@ const DecisionCriteriaAPI = {
 
     updateDecisionCriteria: (form, decisionId, criteriaId) =>
         authClient
-            .put(`${decision_criteria_api}/upsert/${decisionId}/${criteriaId}`, form)
+            .put(`${decision_criteria_api}/upsert`, form)
+            .then((response) => response.data),
+
+    takeCriteria: (decisionId) =>
+        authClient
+            .get(`${decision_criteria_api}/take/${decisionId}`)
             .then((response) => response.data),
 };
 

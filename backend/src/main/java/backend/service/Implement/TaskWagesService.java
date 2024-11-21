@@ -6,6 +6,7 @@ import backend.dao.ITaskWagesRepository;
 import backend.model.dto.TaskWagesResponse;
 import backend.model.entity.RankingTitle;
 import backend.model.entity.TaskWages;
+import backend.model.form.TasksWage.UpsertTasksWage;
 import backend.service.ITaskWagesService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -43,27 +44,42 @@ public class TaskWagesService implements ITaskWagesService {
 
     @Override
     @Transactional
-    public TaskWages addTaskWages(TaskWages taskWages) {
-        return iTaskWagesRepository.save(taskWages);
-    }
-
-    @Override
-    @Transactional
-    public TaskWages updateTaskWages(TaskWages taskWages) {
-        return iTaskWagesRepository.saveAndFlush(taskWages);
-    }
-
-    @Override
-    @Transactional
     public void deleteTaskWages(Integer rankingTitleId, Integer taskId) {
+        if (rankingTitleId == null || taskId == null) {
+            throw new IllegalArgumentException("param RankingTitleId và TaskId not null");
+        }
+
         TaskWages find = iTaskWagesRepository.findByRankingTitleIdAndTaskId(rankingTitleId, taskId);
         if (find == null) {
-            throw new EntityNotFoundException("Task wages not found");
+            throw new EntityNotFoundException("Task wages not found with rankingTitleId: "
+                    + rankingTitleId + ", taskId: " + taskId);
         }
         iTaskWagesRepository.delete(find);
     }
 
+    /**
+     * Form
+     */
+    @Override
+    @Transactional
+    public void upsertTaskWages(UpsertTasksWage form, Integer rankingTitleId, Integer taskId) {
+        if (form == null || rankingTitleId == null || taskId == null) {
+            throw new IllegalArgumentException("Form or input param not null");
+        }
 
-
-
+        TaskWages findTaskWages = iTaskWagesRepository.findByRankingTitleIdAndTaskId(rankingTitleId, taskId);
+        if (findTaskWages == null) {
+            TaskWages newTaskWages = TaskWages.builder()
+                    .rankingTitleId(form.getRankingTitleId())
+                    .taskId(form.getTaskId())
+                    .workingHourWage(form.getWorkingHourWage())
+                    .overtimeWage(form.getOvertimeWage())
+                    .build();
+            iTaskWagesRepository.save(newTaskWages);
+        } else {
+            findTaskWages.setWorkingHourWage(form.getWorkingHourWage());
+            findTaskWages.setOvertimeWage(form.getOvertimeWage());
+            iTaskWagesRepository.saveAndFlush(findTaskWages);
+        }
+    }
 }

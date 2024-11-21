@@ -1,52 +1,135 @@
 import React, { useEffect, useState } from 'react';
-import Select from "react-select";
-import { MdDeleteForever } from 'react-icons/md';
+
 import { useNavigate, useParams } from "react-router-dom";
-// Mui
+
+// Components
+import Select from "react-select";
 import { DataGrid } from '@mui/x-data-grid';
-import { Box, TextField, Button, IconButton } from '@mui/material';
-import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
+import { Box, TextField, Button } from '@mui/material';
+
+//Icon
+import { MdDeleteForever } from 'react-icons/md';
+
 // API
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 import CriteriaAPI from "../../../api/CriteriaAPI.js";
 
 const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
-    // Data 
+    // Data
     const { id } = useParams(); // Get the ID from the URL
-    const [criteria, setCriteria] = useState([]);
-    const [originalCriteria, setOriginalCriteria] = useState([]);  // Lưu dữ liệu gốc
-    // Row table
-    const [rows, setRows] = useState([]);
-    // State Cancel and Save
-    const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
-    //Select to Add a new Criteria
     const [selectedCriteria, setSelectedCriteria] = useState(null);
+
+    // Row table
+    const [originalCriteria, setOriginalCriteria] = useState([]);  // Lưu dữ liệu gốc
+    const [rows, setRows] = useState([]);
+
+    //Select to Add a new Criteria
     const [listcriteria, setListCriteria] = useState([]);
 
-    //// Load data getCriteriaConfiguration
+    // Pagination for data grid
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(20);
+
+    const [filter, setFilter] = useState('');
+    //size of list
+    const [size, setSize] = useState(20);
+
+    // Load data getCriteriaConfiguration
     const getCriteriaConfiguration = async () => {
         try {
             const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
-            // console.log(response)
-            setCriteria(response.result);
-            // setTotalElements(response.pageInfo.element);
-            // setTotalPages(response.pageInfo.total);
+            setOriginalCriteria(response.result);
         } catch (error) {
             console.error("Error fetching criteria:", error);
         }
     };
+
     useEffect(() => {
         getCriteriaConfiguration();
     }, []);
-    // console.log(criteria);
 
-    ///////////////////////////// Hàm cập nhập thay đổi ///////////////////////////
+    const getCriteriaList = async () => {
+        try {
+            const response = await CriteriaAPI.searchCriteria(
+                filter,
+                0,
+                size
+            );
+            setListCriteria(response.result);
+        } catch (error) {
+            console.error("Error fetching criteria:", error);
+        }
+    }
+
+    useEffect(() => {
+        getCriteriaList();
+    }, [filter, size]);
+
+
+    const updateDecisionCriteria = async (form) => {
+        try {
+            await DecisionCriteriaAPI.updateDecisionCriteria(
+                form, id, form.criteriaId);
+        } catch (error) {
+            console.error("Error updating decision criteria:", error);
+        }
+    }
+
+    const deleteDecisionCriteria = async (criteriaId) => {
+        try {
+            await DecisionCriteriaAPI.deleteDecisionCriteria(id, criteriaId);
+        } catch (error) {
+            console.error("Error deleting decision criteria:", error);
+        }
+    }
+
+    const syncDecisionCriteria = async (rows, originalCriteria) => {
+        try {
+            // Create a map of original criteria for quick lookup
+            const originalCriteriaMap = new Map(
+                originalCriteria.map((item) => [item.criteriaId, item])
+            );
+
+            // Iterate through rows to handle updates and additions
+            for (const row of rows) {
+                const original = originalCriteriaMap.get(row.id);
+                if (original) {
+                    // If the row exists in originalCriteria but has a different weight, update it
+                    if (original.weight !== row.weight) {
+                        await updateDecisionCriteria({
+                            decisionId: id,
+                            criteriaId: row.id,
+                            weight: row.weight
+                        });
+                    }
+                    // Remove the item from the map to track items already processed
+                    originalCriteriaMap.delete(row.id);
+                }
+                else {
+                    // If the row is new, add it
+                    await updateDecisionCriteria({
+                        decisionId: id,
+                        criteriaId: row.id,
+                        weight: row.weight
+                    });
+                }
+            }
+
+            // Remaining items in originalCriteriaMap are to be deleted
+            for (const [criteriaId] of originalCriteriaMap) {
+                await deleteDecisionCriteria(criteriaId);
+            }
+        } catch (error) {
+            console.error("Error syncing decision criteria:", error);
+        }
+    };
+
+
+
     // Hàm cập nhập thay đổi weight
     const handleCellEditCriteriaCommit = (newRow) => {
-        console.log(newRow)
-        // Cập nhật hàng mới
         const updatedRow = { ...newRow };
-        // Cập nhật trạng thái `rows`
+
         setRows((prevRows) => {
             const updatedRows = prevRows.map((row) =>
                 row.id === updatedRow.id ? updatedRow : row
@@ -56,71 +139,38 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     };
 
     //////////////////////////////////// Remove ////////////////////////////////////
-    // Hàm hủy thay đổi, đặt lại  giá trị ban đầu của 1 hàng
-    // Hàm xóa hàng 
     const handleDeleteRowData = (id) => {
-        setRows((prevRows) => {
-            const rowIndex = prevRows.findIndex((row) => row.id === id);
-            if (rowIndex !== -1) {
-                // Lưu hàng bị xóa vào deletedRows
-                // setDeletedRows((prevDeleted) => [...prevDeleted, prevRows[rowIndex]]);
-                const updatedRows = [...prevRows];
-                updatedRows.splice(rowIndex, 1); // Xóa hàng khỏi mảng rows
-                return updatedRows;
-            }
-            return prevRows; // Nếu không tìm thấy, giữ nguyên
-        });
+        setRows((prevRows) => prevRows.filter((row) => row.id !== id));
     };
 
     //////////////////////////////////// Cancel ////////////////////////////////////
-    // Hàm hủy thay đổi, đặt lại cột weight về giá trị ban đầu
     const handleCancelChanges = () => {
-        setRows(originalCriteria);  // Đặt lại dữ liệu cũ
+        setRowData(originalCriteria);
     };
 
     //////////////////////////////////// Save ////////////////////////////////////
-    // Tính tổng weight
     const calculateTotalWeight = () => {
         const totalWeight = rows.reduce((total, row) => total + Number(row.weight || 0), 0);
-        console.log(totalWeight)
         return totalWeight;
     };
-    const handleSaveChanges = () => {
-        // Bỏ qua kiểm tra weight nếu trạng thái là Finalized
-        if (decisionStatus === 'Finalized') {
-            console.log("Finalized: Lưu dữ liệu và chuyển bước...");
-            goToNextStep();
-            return;
-        }
 
-        // Kiểm tra tổng weight trong trạng thái khác
-        const totalWeight = calculateTotalWeight();
-        if (totalWeight === 100) {
-            console.log("Tổng weight hợp lệ. Lưu dữ liệu...");
-            showSuccessMessage("Criteria Configuration saved successfully!");
-            goToNextStep();
+    const handleSaveChanges = () => {
+        const checkWeight = rows.some((row) => row.weight <= 0);
+        if (checkWeight) {
+            showErrorMessage('Weight phải lớn hơn 0');
         } else {
-            // showErrorMessage('Tổng weight phải bằng 100');
-            showErrorMessage('Error occurred updating Criteria Configuration. Please try again.');
+            const totalWeight = calculateTotalWeight();
+            if (totalWeight === 100) {
+                syncDecisionCriteria(rows, originalCriteria);
+                showSuccessMessage("Criteria Configuration saved successfully!");
+                goToNextStep();
+            } else {
+                showErrorMessage('Tổng weight phải bằng 100');
+            }
         }
     };
 
     //////////////////////////////////// Select to Add a new Criteria ////////////////////////////////////
-    const getListCriteria = async () => {
-        try {
-            const response = await CriteriaAPI.searchCriteria(
-                '',
-                0,
-                20
-            );
-            setListCriteria(response.result);
-        } catch (error) {
-            console.error("Error fetching criteria:", error);
-        }
-    }
-    useEffect(() => {
-        getListCriteria();
-    }, []);
     const handleAddCriteria = async () => {
         const addedCriteria = listcriteria.find(
             (criteria) => criteria.criteriaId === selectedCriteria.value
@@ -138,14 +188,13 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
 
     //////////////////////////////////// Column Criteria ////////////////////////////////////
     const columnsCriteria = [
-        // { field: 'index', headerName: 'ID', width: 20 },  // Thêm cột chỉ mục
         { field: 'criteria_name', headerName: 'Criteria Name', width: 500 },
         {
             field: 'weight',
             headerName: 'Weight',
             width: 150,
             align: 'center',
-            editable: decisionStatus === 'Draft', // Chỉ cho phép chỉnh sửa khi status là 'Draft'
+            editable: decisionStatus === 'Draft',
             renderCell: (params) =>
                 decisionStatus === 'Draft' ? (
                     <TextField
@@ -153,19 +202,22 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                             marginTop: '7px',
                             textAlign: 'center',
                         }}
-                        value={params.value || ''} // Hiển thị giá trị hiện tại
+                        value={params.value || ''}
                         onChange={(e) => {
-                            // Chỉ cập nhật giá trị nội bộ TextField
                             const updatedValue = e.target.value;
-                            params.row[params.field] = updatedValue; // Cập nhật trực tiếp giá trị
+                            setRows((prevRows) =>
+                                prevRows.map((row) =>
+                                    row.id === params.row.id ? { ...row, weight: updatedValue } : row
+                                )
+                            );
                         }}
+
                         onBlur={(e) => {
-                            // Gọi processRowUpdate để cập nhật chính thức
                             const updatedRow = { ...params.row, weight: e.target.value };
                             handleCellEditCriteriaCommit(updatedRow);
                         }}
                         onFocus={(e) => {
-                            e.target.select(); // Tự động chọn toàn bộ văn bản
+                            e.target.select();
                         }}
                         variant="outlined"
                         size="small"
@@ -174,7 +226,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                         inputMode="numeric"
                     />
                 ) : (
-                    params.value // Hiển thị giá trị nếu không phải 'Draft'
+                    params.value
                 ),
         },
         { field: 'num_options', headerName: 'No of Options', width: 150, align: 'center', headerAlign: 'center' },
@@ -195,27 +247,29 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                 ),
         },
     ];
-    // Load data to Column Criteria
-    useEffect(() => {
-        if (criteria) {
-            const mappedRows = criteria.map((criteria, index) => ({
-                id: criteria.criteriaId,
-                // index: index + 1,  // Chỉ số thứ tự bắt đầu từ 1
-                criteria_name: criteria.criteriaName,
-                weight: criteria.weight || 0,
-                num_options: criteria.numOptions < 1 ? "0" : criteria.numOptions,
-                max_score: criteria.maxScore == null ? "" : criteria.maxScore,
-            }));
-            setRows(mappedRows);
-            setOriginalCriteria(mappedRows);  // Lưu lại dữ liệu gốc
-        }
-    }, [criteria]);
 
+    const setRowData = (data) => {
+        const mappedRows = data.map((data, index) => ({
+            id: data.criteriaId,
+            index: index + 1,
+            criteria_name: data.criteriaName,
+            weight: data.weight || 0,
+            num_options: data.numOptions < 1 ? "0" : data.numOptions,
+            max_score: data.maxScore == null ? "" : data.maxScore,
+        }));
+        setRows(mappedRows);
+    }
+
+    useEffect(() => {
+        if (originalCriteria) {
+            setRowData(originalCriteria);
+        }
+    }, [originalCriteria]);
 
     return (
         <Box sx={{
             width: "100%",
-            height: 500,
+            height: 600,
             marginTop: '10px',
             border: '2px solid black',
             borderRadius: '8px',
@@ -223,26 +277,25 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             display: 'flex',
             flexDirection: 'column',
             gap: 2,
-            overflow: 'hidden',
         }}>
-            <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
+            <Box>
                 <DataGrid
                     rows={rows}
                     columns={columnsCriteria}
                     getRowId={(row) => row.id}
                     processRowUpdate={(newRow) => {
-                        handleCellEditCriteriaCommit(newRow); // Lưu thay đổi chính thức
-                        return newRow; // Cần trả về `newRow` để cập nhật DataGrid
+                        handleCellEditCriteriaCommit(newRow);
+                        return newRow;
                     }}
-                    experimentalFeatures={{ newEditingApi: true }} // Bật tính năng chỉnh sửa hàng mới
+                    experimentalFeatures={{ newEditingApi: true }}
+                    style={{ height: 400, width: '100%' }}
                 />
-                {/* Button criteria */}
                 {decisionStatus === 'Draft' && (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                             <Select
                                 isSearchable={true}
-                                placeholder="Select to Add a new Criteria"
+                                placeholder="Add New Criteria ..."
                                 options={listcriteria
                                     .filter(
                                         (criteria) => !rows.some((row) => row.id === criteria.criteriaId)
@@ -263,16 +316,12 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                                 value={selectedCriteria} // Bind the selected option to the state
                                 onChange={(option) => setSelectedCriteria(option)} // Update state on selection
                             />
-                            <IconButton
-                                onClick={handleAddCriteria}
-                                color={selectedCriteria ? 'primary' : 'default'} // Màu xanh khi có criteria được chọn
-                                disabled={!selectedCriteria} // Vô hiệu hóa khi không có criteria được chọn
-                                sx={{ marginLeft: 1, transform: 'translateY(-7px)' }} // Dịch chuyển icon lên trên
-                            >
-                                <AddCircleIcon fontSize="large" />
-                            </IconButton>
+                            <Button variant="contained" color="success" onClick={handleAddCriteria}>
+                                Add Criteria
+                            </Button>
                         </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, marginBottom: '10px' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+
                             <Button
                                 variant="contained"
                                 color="error"
@@ -282,7 +331,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                             </Button>
                             <Button
                                 variant="contained"
-                                color="primary"
+                                color="success"
                                 onClick={handleSaveChanges}
                             >
                                 Save

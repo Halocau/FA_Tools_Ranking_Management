@@ -3,6 +3,7 @@ package backend.controller;
 import backend.model.dto.RankingTitleResponse;
 import backend.model.entity.RankingTitle;
 import backend.model.form.RankingTitle.AddRankingTitleRequest;
+import backend.model.form.RankingTitle.UpdateRankingTitleRequest;
 import backend.service.Implement.RankingTitleService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -12,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 
 @RestController
 @RequestMapping("api/ranking-title")
@@ -27,7 +27,8 @@ public class RankingTitleController {
     @GetMapping
     public ResponseEntity<List<RankingTitleResponse>> allRankingTitle() {
         List<RankingTitle> rankingTitleList = iRankingTitleService.getRankingTitle();
-        List<RankingTitleResponse> rankingTitleResponseList = iRankingTitleService.getRankingTittleResponse(rankingTitleList);
+        List<RankingTitleResponse> rankingTitleResponseList = iRankingTitleService
+                .getRankingTittleResponse(rankingTitleList);
         return new ResponseEntity<>(rankingTitleResponseList, HttpStatus.OK);
     }
 
@@ -38,17 +39,24 @@ public class RankingTitleController {
         return new ResponseEntity<>(rankingTitleResponse, HttpStatus.OK);
     }
 
-
     @GetMapping("/get-decisionId/{id}")
     public ResponseEntity<List<RankingTitleResponse>> findRankingTitleByDecisionId(@PathVariable int id) {
         List<RankingTitle> listDecisionId = iRankingTitleService.findByDecisionId(id);
         List<RankingTitleResponse> rankingTitleResponse = iRankingTitleService.getRankingTittleResponse(listDecisionId);
         return ResponseEntity.status(HttpStatus.OK).body(rankingTitleResponse);
     }
+
     @PostMapping("/add")
     public ResponseEntity<String> addRankingTitle(@Valid @RequestBody AddRankingTitleRequest form) {
         iRankingTitleService.createRankingTitleByForm(form);
         return ResponseEntity.ok("Successfully added Ranking Title");
+    }
+
+    @PutMapping("/upsert")
+    public ResponseEntity<String> updateRankingTitle(
+            @Valid @RequestBody UpdateRankingTitleRequest form) {
+        iRankingTitleService.updateRankingTitleByForm(form);
+        return ResponseEntity.ok("Successfully updated Ranking Title");
     }
 
     @DeleteMapping("/delete/{id}")
@@ -57,5 +65,4 @@ public class RankingTitleController {
         iRankingTitleService.deleteRankingTitle(rankingTitle.getRankingTitleId());
         return ResponseEntity.ok("Successfully deleted Ranking Title");
     }
-
 }
