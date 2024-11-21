@@ -38,7 +38,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     const getCriteriaConfiguration = async () => {
         try {
             const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
-            setOriginalCriteria(response.result);
+            setOriginalCriteria(response);
         } catch (error) {
             console.error("Error fetching criteria:", error);
         }
@@ -50,12 +50,9 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
 
     const getCriteriaList = async () => {
         try {
-            const response = await CriteriaAPI.searchCriteria(
-                filter,
-                0,
-                size
-            );
-            setListCriteria(response.result);
+            const response = await DecisionCriteriaAPI.getAllCriteria();
+            console.log(response);
+            setListCriteria(response);
         } catch (error) {
             console.error("Error fetching criteria:", error);
         }
@@ -63,7 +60,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
 
     useEffect(() => {
         getCriteriaList();
-    }, [filter, size]);
+    }, []);
 
 
     const updateDecisionCriteria = async (form) => {

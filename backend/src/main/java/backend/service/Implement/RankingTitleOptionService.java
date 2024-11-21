@@ -98,8 +98,7 @@ public class RankingTitleOptionService implements IRankingTitleOptionService {
         List<TitleOptionDTO> listTitleOptionDTO = new ArrayList<>();
 
         List<RankingTitle> listRankingTitle = irankingTitleRepository.findByDecisionId(decisionId);
-        List<List<Options>> listOptions = new ArrayList<>();
-        List<List<OptionDTO>> listOptionDTO = new ArrayList<>();
+
         for (RankingTitle rankingTitle : listRankingTitle) {
             TitleOptionDTO titleOptionDTO = new TitleOptionDTO();
 
@@ -113,9 +112,6 @@ public class RankingTitleOptionService implements IRankingTitleOptionService {
                 listOption.add(option);
                 listOptionDTO1.add(modelMapper.map(option, OptionDTO.class));
             }
-
-            listOptions.add(listOption);
-            listOptionDTO.add(listOptionDTO1);
 
             titleOptionDTO.setRankingTitleId(rankingTitle.getRankingTitleId());
             titleOptionDTO.setRankingTitleName(rankingTitle.getTitleName());
