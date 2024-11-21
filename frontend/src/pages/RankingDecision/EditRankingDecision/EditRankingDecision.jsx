@@ -41,7 +41,7 @@ const EditDecision = () => {
     const [status, setStatus] = useState("");
 
     // Step
-    const [activeStep, setActiveStep] = useState(0);
+    const [activeStep, setActiveStep] = useState(2);
     // Data
     const [criteria, setCriteria] = useState([]);
     const [title, setTitle] = useState([]);
@@ -53,14 +53,6 @@ const EditDecision = () => {
     const [isCriteriaSaved, setIsCriteriaSaved] = useState(false);
     const [isTitleSaved, setIsTitleSaved] = useState(false);
     const [isTaskSaved, setIsTaskSaved] = useState(false);
-
-    // Table  List  (page, size) 
-    // const [rows, setRows] = useState([]);
-    // const [filter, setFilter] = useState('');
-    // const [page, setPage] = useState(1);
-    // const [pageSize, setPageSize] = useState(5);
-    // const [totalElements, setTotalElements] = useState(0);
-    // const [totalPages, setTotalPages] = useState(0);
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Validation error message
@@ -79,6 +71,7 @@ const EditDecision = () => {
             setOriginalDecisionName(decisionData.decisionName || "Decision Name");
             setNewDecisionName(decisionData.decisionName || "");
             setStatus(decisionData.status || "");
+            setDecisionStatus(decisionData.status.charAt(0).toUpperCase() + decisionStatus.slice(1).toLowerCase() || "")
         } catch (error) {
             console.error("Error fetching group:", error);
         }
@@ -179,7 +172,7 @@ const EditDecision = () => {
             // setDecisionStatus('In Progress'); // Bước 0: Đang tiến hành
         } else if (activeStep === 1) {
             // setDecisionStatus('In Progress'); // Bước 1: Tiến hành
-        } else if (activeStep === 2) {
+        } else if (activeStep === 4) {
             setDecisionStatus('Finalize'); // Bước 2: Hoàn thành
 
         }
@@ -238,6 +231,7 @@ const EditDecision = () => {
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
+                        showSuccessMessage={showSuccessMessage}
                     />
                 );
             case 2:
@@ -250,6 +244,7 @@ const EditDecision = () => {
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
+                        showSuccessMessage={showSuccessMessage}
                     />
                 );
             default:
