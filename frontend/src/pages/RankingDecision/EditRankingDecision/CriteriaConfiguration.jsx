@@ -27,7 +27,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     const getCriteriaConfiguration = async () => {
         try {
             const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
-            console.log(response)
+            // console.log(response)
             setCriteria(response.result);
             // setTotalElements(response.pageInfo.element);
             // setTotalPages(response.pageInfo.total);
@@ -38,7 +38,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     useEffect(() => {
         getCriteriaConfiguration();
     }, []);
-    console.log(criteria);
+    // console.log(criteria);
 
     ///////////////////////////// Hàm cập nhập thay đổi ///////////////////////////
     // Hàm cập nhập thay đổi weight
@@ -114,7 +114,6 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                 20
             );
             setListCriteria(response.result);
-            console.log(listcriteria)
         } catch (error) {
             console.error("Error fetching criteria:", error);
         }
@@ -240,9 +239,8 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                 {/* Button criteria */}
                 {decisionStatus === 'Draft' && (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-
                         <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                            <Select sx={{ display: 'flex', justifyContent: 'flex-start' }}
+                            <Select
                                 isSearchable={true}
                                 placeholder="Select to Add a new Criteria"
                                 options={listcriteria
@@ -274,7 +272,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                                 <AddCircleIcon fontSize="large" />
                             </IconButton>
                         </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, marginBottom: '10px' }}>
                             <Button
                                 variant="contained"
                                 color="error"

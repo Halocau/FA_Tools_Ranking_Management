@@ -6,11 +6,13 @@ import {
 } from "@mui/material";
 import { DataGrid } from '@mui/x-data-grid';
 import { DataGridPro, GridActionsCellItem } from '@mui/x-data-grid-pro';
+// import { LicenseInfo } from '@mui/x-data-grid';
+// LicenseInfo.setLicenseKey(process.env.NEXT_PUBLIC_API_URL);
 import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Stepper, Step, StepButton } from '@mui/material';
-const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goToNextStep, showErrorMessage }) => {
+const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
     // // Data 
     // const { id } = useParams(); // Get the ID from the URL
     // const [task, setTask] = useState([]);
@@ -77,12 +79,6 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
 
     //////////////////////////////////// Save ////////////////////////////////////
     const handleSaveChanges = () => {
-        // Bỏ qua kiểm tra weight nếu trạng thái là Finalized
-        if (decisionStatus === 'Finalized') {
-            console.log("Finalized: Lưu dữ liệu và chuyển bước...");
-            goToNextStep();
-            return;
-        }
         // Kiểm tra xem tất cả các ô trong bảng đã được điền (không có ô nào trống)
         const allFieldsFilled = rows.every((row) => {
             // Kiểm tra mỗi ô trong hàng (trừ các cột cố định như 'id' và 'task')
@@ -105,9 +101,9 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
             console.log('Có ô chưa điền dữ liệu');
             return; // Dừng hàm nếu có ô chưa điền
         }
-
+        showSuccessMessage('Task & Price Configuration successfully updated.');
         console.log("Tất cả ô đã được điền đầy đủ. Lưu dữ liệu...");
-        goToNextStep(); // Tiến hành lưu dữ liệu và chuyển sang bước tiếp theo
+        // goToNextStep(); // Tiến hành lưu dữ liệu và chuyển sang bước tiếp theo
     };
 
 
@@ -133,7 +129,6 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
 
     //////////////////////////////////// Column task ////////////////////////////////////
     const updateTaskTableConfig = (criteria, title, task, decisionStatus) => {
-        console.log(decisionStatus)
         const titleColumns = title.map((title) => ({
             field: title.titleName,
             headerName: title.titleName,
@@ -207,10 +202,12 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
                 id: `${task.task_name}_${type}`,
                 taskName: index === 0 ? task.task_name : '',
                 taskType: index === 0 ? 'In Working Hour' : 'Overtime',
+
                 ...title.reduce((acc, title) => {
                     acc[title.titleName] = title.titleSelections && title.titleSelections[title.titleName] ? title.titleSelections[title.titleName] : '';
                     return acc;
                 }, {}),
+                weight: '0',
             }));
         }).flat().map((row) => {
             // Kiểm tra và thay thế undefined bằng chuỗi rỗng hoặc giá trị mặc định khác
@@ -268,16 +265,11 @@ const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goTo
                             '& .MuiDataGrid-columnHeaders': {
                                 backgroundColor: '#f4f4f4',
                             },
-                            '.MuiDataGrid-viewport': {
-                                overflowX: 'auto', // Cho phép cuộn ngang cho phần cuộn
-                                overflowY: 'hidden', // Ẩn cuộn dọc trong vùng cuộn
-                                maxWidth: 'calc(100% - 200px)', // Giới hạn chiều rộng cho vùng cuộn ngang (bỏ đi phần cố định)
-                            },
+                            overflowX: 'auto',  // Cho phép cuộn ngang cho các cột cuộn
                             '.MuiDataGrid-virtualScroller': {
                                 overflowX: 'auto', // Cho phép cuộn ngang trong phần cuộn
-                                overflowY: 'hidden', // Ẩn cuộn dọc trong vùng cuộn
+                                overflowY: 'auto', // Ẩn cuộn dọc trong vùng cuộn
                             },
-
                         }}
                     />
 

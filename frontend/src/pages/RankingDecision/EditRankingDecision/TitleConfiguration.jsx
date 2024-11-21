@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MdDeleteForever } from 'react-icons/md';
+import { useNavigate, useParams } from "react-router-dom";
 // MUI
 import {
     InputAdornment, Box, Button, Typography, TextField, Modal, IconButton, Select, MenuItem, Table, TableHead, TableBody, TableCell, TableRow
@@ -10,14 +11,20 @@ import EditIcon from '@mui/icons-material/Edit';
 import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Stepper, Step, StepButton } from '@mui/material';
 import { DataGridPro } from '@mui/x-data-grid-pro';
+// API
+import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
+import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
+import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 
-const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNextStep, showErrorMessage }) => {
+const TitleConfiguration = ({ title, decisionStatus, goToNextStep, showErrorMessage }) => {
+    console.log(title)
     // // Data 
-    // const { id } = useParams(); // Get the ID from the URL
+    const { id } = useParams(); // Get the ID from the URL
     // const [title, setTitle] = useState([]);
     const [originalTitle, setOriginalTitle] = useState([]);  // Lưu dữ liệu gốc
     const [columnsTitle, setColumnsTitle] = useState([]);
-
+    const [criteria, setCriteria] = useState([]);
+    const [rankTitle, setRankTitle] = useState([]);
     // Row table
     const [rows, setRows] = useState([]);
     // State Cancel and Save
@@ -26,6 +33,21 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
     const [listtitle, setListTitle] = useState([]);
 
     // Load data getTitleConfiguration
+    const getCriteriaConfiguration = async () => {
+        try {
+            const response = await DecisionCriteriaAPI.takeDecisionCriteriaByDecisionId(id);
+            console.log(response)
+            setCriteria(response);
+            // setTotalElements(response.pageInfo.element);
+            // setTotalPages(response.pageInfo.total);
+        } catch (error) {
+            console.error("Error fetching criteria:", error);
+        }
+    };
+
+    useEffect(() => {
+        getCriteriaConfiguration();
+    }, []);
     // chưa có API
 
     ///////////////////////////// Hàm cập nhập thay đổi ///////////////////////////
@@ -127,30 +149,57 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
     //////////////////////////////////// Update cấu hình cột và bảng ///////////////
     const updateTableConfig = (criteria, title, decisionStatus) => {
         // Cột từ tiêu chí
-        const criteriaColumns = criteria.map((criteria) => ({
-            field: criteria.criteriaName,
-            headerName: criteria.criteriaName,
-            width: 140,
-            editable: decisionStatus === 'Draft',
-            renderCell: (params) => (
-                <Select
-                    value={params.value || ''}
-                    onChange={(e) => handleCellEditTitleCommit({ id: params.row.id, field: params.field, value: e.target.value })}
-                    fullWidth
-                    sx={{
-                        height: '30px',
-                        '.MuiSelect-select': {
-                            padding: '4px',
-                        },
-                    }}
-                >
-                    {rankTitle.map((title, index) => (
-                        <MenuItem key={index} value={title}>
-                            {title}
-                        </MenuItem>
-                    ))}
-                </Select>
-            ),
+        // Tạo các cột từ danh sách tiêu chí
+        // Kiểm tra dữ liệu đầu vào là mảng
+        if (!Array.isArray(criteria)) {
+            console.error("Invalid criteria data:", criteria);
+            return [];
+        }
+
+        // Tạo cột dựa trên tiêu chí
+        const criteriaColumns = criteria.map((criteriaItem) => ({
+            field: criteriaItem.criteriaName, // Tên trường (cột) là `criteriaName`
+            headerName: criteriaItem.criteriaName, // Hiển thị tiêu đề là `criteriaName`
+            width: 200,
+            editable: decisionStatus === 'Draft', // Chỉ chỉnh sửa được nếu trạng thái là 'Draft'
+            renderCell: (params) => {
+                // Tìm tiêu chí tương ứng
+                const currentCriteria = criteria.find(
+                    (c) => c.criteriaName === params.field
+                );
+
+                // Nếu không tìm thấy tiêu chí hoặc không có options, trả về null
+                if (!currentCriteria || !Array.isArray(currentCriteria.options)) {
+                    console.warn(`No options found for criteria: ${params.field}`);
+                    return null;
+                }
+
+                return (
+                    <Select
+                        value={params.value || ''} // Giá trị hiện tại
+                        onChange={(e) =>
+                            handleCellEditTitleCommit({
+                                id: params.row.id, // ID của hàng
+                                field: params.field, // Cột hiện tại
+                                value: e.target.value, // Giá trị mới
+                            })
+                        }
+                        fullWidth
+                        sx={{
+                            height: '30px',
+                            '.MuiSelect-select': {
+                                padding: '4px',
+                            },
+                        }}
+                    >
+                        {currentCriteria.options.map((option) => (
+                            <MenuItem key={option.optionId} value={option.optionName}>
+                                {option.optionName}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                );
+            },
         }));
 
         // Cột cố định
@@ -177,9 +226,9 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
 
         // Tạo hàng dữ liệu
         const updatedRows = title.map((title) => ({
-            id: title.titleId,
+            id: title.rankingTitleId,
             titleName: title.titleName,
-            rankScore: title.rankScore,
+            rankScore: '',
             ...criteria.reduce((acc, criteria) => {
                 acc[criteria.criteriaName] = title.criteriaSelections && title.criteriaSelections[criteria.criteriaName] ? title.criteriaSelections[criteria.criteriaName] : '';
                 return acc;
@@ -221,7 +270,7 @@ const TitleConfiguration = ({ criteria, title, rankTitle, decisionStatus, goToNe
                 overflow: 'hidden',
             }}>
                 <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
-                    <DataGridPro
+                    <DataGrid
                         rows={rows}
                         columns={columnsTitle}
                         // initialState={{ pinnedColumns: { left: ['titleName', 'rankScore'], right: ['action'] } }}

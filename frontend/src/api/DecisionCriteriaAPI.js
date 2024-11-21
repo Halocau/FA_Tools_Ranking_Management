@@ -3,7 +3,7 @@ import authClient from './baseapi/AuthorAPI';
 const decision_criteria_api = '/decision-criteria';
 
 const DecisionCriteriaAPI = {
-    getAllDecisionCriteria: (filter = '', pageable = { page: 0, size: 5 }) =>
+    getAllDecisionCriteria: (filter = '', pageable = { page: 0, size: 20 }) =>
         authClient
             .get(decision_criteria_api, {
                 params: {
@@ -14,9 +14,20 @@ const DecisionCriteriaAPI = {
             })
             .then((response) => response.data),
 
-    getDecisionCriteriaByDecisionId: (decisionId, filter = '', pageable = { page: 0, size: 5 }) =>
+    getDecisionCriteriaByDecisionId: (decisionId, filter = '', pageable = { page: 0, size: 20 }) =>
         authClient
             .get(`${decision_criteria_api}/get/${decisionId}`, {
+                params: {
+                    filter,
+                    page: pageable.page,
+                    size: pageable.size,
+                },
+            })
+            .then((response) => response.data),
+
+    takeDecisionCriteriaByDecisionId: (decisionId, filter = '', pageable = { page: 0, size: 5 }) =>
+        authClient
+            .get(`${decision_criteria_api}/take/${decisionId}`, {
                 params: {
                     filter,
                     page: pageable.page,
