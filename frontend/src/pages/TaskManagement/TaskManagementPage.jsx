@@ -32,7 +32,6 @@ const TaskManagement = () => {
   const [editTaskName, setEditTaskName] = useState("");
   //Delete many
   const [selectedTask, setSelectedTask] = useState(null); // State to store selected task for editing
-  const [groupToDelete, setGroupToDelete] = useState(null);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   // Use hook notification
   const [showSuccessMessage, showErrorMessage] = useNotification();
@@ -50,10 +49,8 @@ const TaskManagement = () => {
   // Search
   const [rows, setRows] = useState([]); // Initialize with empty array
   const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
-  const [searchValue, setSearchValue] = useState("");
 
   //Get props from useTask
-
   const fetchAllTask = async () => {
     try {
       const data = await taskApi.searchByTaskName(filter, page, pageSize);
@@ -105,7 +102,6 @@ const TaskManagement = () => {
       setValidationMessage("Task name cannot be empty !");
       return;
     }
-
     if (trimmedName.length < 3 || trimmedName.length > 20) {
       setValidationMessage("Task name must be between 3 and 20 characters.");
       return;
@@ -121,12 +117,10 @@ const TaskManagement = () => {
     const isDuplicate = task.some(
       (task) => task.taskName.toLowerCase() === trimmedName.toLowerCase()
     );
-
     if (isDuplicate) {
       setValidationMessage("Task name already exists !");
       return;
     }
-
     try {
       const newTask = {
         taskName: trimmedName,
@@ -247,12 +241,10 @@ const TaskManagement = () => {
       setValidationMessage("Task name cannot be empty!");
       return;
     }
-
     if (trimmedName.length < 3 || trimmedName.length > 20) {
       setValidationMessage("Task name must be between 3 and 20 characters.");
       return;
     }
-
     const nameRegex = /^[a-zA-Z0-9 ]+$/;
     if (!nameRegex.test(trimmedName)) {
       setValidationMessage(
@@ -260,13 +252,11 @@ const TaskManagement = () => {
       );
       return;
     }
-
     const isDuplicate = rows.some(
       (task) =>
         task.taskName.toLowerCase() === trimmedName.toLowerCase() &&
         task.id !== selectedTask.id
     );
-
     if (isDuplicate) {
       setValidationMessage(
         "Task name already exists. Please choose another name."
