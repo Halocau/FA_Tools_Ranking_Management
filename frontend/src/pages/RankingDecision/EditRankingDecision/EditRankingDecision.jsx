@@ -175,17 +175,17 @@ const EditDecision = () => {
     };
     //////////////////////////////////////////////////////////////////////////// Criteria Configuration ////////////////////////////////////////////////////////////////////////////
     // data criteria 
-    const getCriteriaConfiguration = async () => {
-        try {
-            const response = await DecisionCriteriaAPI.optionCriteria(id);
-            setCriteria(response);
-        } catch (error) {
-            console.error("Error fetching criteria:", error);
-        }
-    };
-    useEffect(() => {
-        getCriteriaConfiguration();
-    }, []);
+    // const getCriteriaConfiguration = async () => {
+    //     try {
+    //         const response = await DecisionCriteriaAPI.optionCriteria(id);
+    //         setCriteria(response);
+    //     } catch (error) {
+    //         console.error("Error fetching criteria:", error);
+    //     }
+    // };
+    // useEffect(() => {
+    //     getCriteriaConfiguration();
+    // }, []);
 
     //////////////////////////////////////////////////////////////////////////// End Criteria Configuration ////////////////////////////////////////////////////////////////////////////
 
@@ -217,7 +217,6 @@ const EditDecision = () => {
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
                         showSuccessMessage={showSuccessMessage}
-
                     />
                 );
             case 2:

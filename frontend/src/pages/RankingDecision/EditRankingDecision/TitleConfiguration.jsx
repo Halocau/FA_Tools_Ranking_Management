@@ -16,7 +16,7 @@ import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 
-const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage }) => {
+const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
     // // Data 
     const { id } = useParams(); // Get the ID from the URL
     const [originalTitle, setOriginalTitle] = useState([]);  // Lưu dữ liệu gốc
@@ -49,6 +49,85 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage }) 
         getCriteriaConfiguration()
         getTitleConfiguration();
     }, [id]);
+
+
+    const updateDecisionTitle = async (form) => {
+        try {
+            await DecisionTitleAPI.updateDecisionTitle(
+                form, id, form.titleIdId);
+        } catch (error) {
+            console.error("Error updating decision title:", error);
+        }
+    }
+
+    const deleteDecisionTitle = async (titleId) => {
+        try {
+            await DecisionTitleAPI.deleteDecisionTitle(id, titleId);
+        } catch (error) {
+            console.error("Error deleting decision title:", error);
+        }
+    }
+
+    const syncDecisionTitle = async (newTitles, originalTitles, criteria) => {
+        try {
+            // Create a map of original titles for quick lookup
+            const originalTitleMap = new Map(
+                originalTitles.map((item) => [item.rankingTitleId, item])
+            );
+
+            // Iterate through newTitles to handle updates and additions
+            for (const titleItem of newTitles) {
+                const original = originalTitleMap.get(titleItem.rankingTitleId);
+
+                if (original) {
+                    // If the title exists, check and update the totalScore
+                    if (original.totalScore !== titleItem.totalScore) {
+                        await updateDecisionTitle({
+                            decisionId: id,
+                            rankingTitleId: titleItem.rankingTitleId,
+                            totalScore: titleItem.totalScore
+                        });
+                    }
+
+                    // Iterate through criteria to sync options (if any)
+                    for (const criteriaItem of criteria) {
+                        const matchingOption = titleItem.options?.find(
+                            (option) => option.criteriaId === criteriaItem.criteriaId
+                        );
+
+                        if (matchingOption) {
+                            // You can call an API or update state here
+                            await updateDecisionTitle({
+                                decisionId: id,
+                                rankingTitleId: titleItem.rankingTitleId,
+                                criteriaId: criteriaItem.criteriaId,
+                                optionName: matchingOption.optionName,
+                                score: matchingOption.score
+                            });
+                        }
+                    }
+
+                    // Mark the title as processed
+                    originalTitleMap.delete(titleItem.rankingTitleId);
+                } else {
+                    // If it's a new title, add it
+                    await updateDecisionTitle({
+                        decisionId: id,
+                        rankingTitleId: titleItem.rankingTitleId,
+                        totalScore: titleItem.totalScore
+                    });
+                }
+            }
+
+            // Delete any remaining titles in originalTitleMap that are not in newTitles
+            for (const [rankingTitleId] of originalTitleMap) {
+                await deleteDecisionTitle(rankingTitleId);
+            }
+        } catch (error) {
+            console.error("Error syncing decision titles:", error);
+        }
+    };
+
 
 
     ///////////////////////////// Hàm cập nhập thay đổi ///////////////////////////
@@ -133,10 +212,11 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage }) 
         const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
 
         if (!allRankScoresCalculated) {
+            syncDecisionTitle(rows, originalTitle);
             showErrorMessage('Tất cả Rank Score phải được tính toán.');
             return; // Dừng lại nếu có lỗi
         }
-        showErrorMessage('Title Configuration successfully updated.');
+        showSuccessMessage('Title Configuration successfully updated.');
         console.log("Title Configuration successfully updated.”");
         goToNextStep(); // Chuyển bước tiếp theo
     };
