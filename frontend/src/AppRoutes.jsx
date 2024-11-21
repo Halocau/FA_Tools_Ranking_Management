@@ -18,11 +18,11 @@ import EditRankingGroup from './pages/RankingGroup/EditRankingGroups.jsx';
 import ViewRankingGroup from './pages/RankingGroup/ViewRankingGroup.jsx';
 import BulkRankingGroup from './pages/RankingGroup/BulkRankingGroup.jsx';
 import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
-import EditRankingDecison from "./pages/RankingDecision/EditRankingDecision.jsx";
+import EditRankingDecison from "./pages/RankingDecision/EditRankingDecision/EditRankingDecision.jsx";
 import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx';
 import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx';
 import EditCriteria from './pages/CriteriaManagement/EditCriterial.jsx';
-import CriteriaConfiguration from "./components/Rankingdecision/CriteriaConfiguration.jsx";
+import CriteriaConfiguration from "./pages/RankingDecision/EditRankingDecision/CriteriaConfiguration.jsx";
 function AppRoutes() {
   return (
     <Routes>
@@ -99,14 +99,6 @@ function AppRoutes() {
         element={
           <LayoutWrapper>
             <EditCriteria className="ml-2" />
-          </LayoutWrapper>
-        }
-      />
-      <Route
-        path="/criteria-configuration"
-        element={
-          <LayoutWrapper>
-            <CriteriaConfiguration className="ml-2" />
           </LayoutWrapper>
         }
       />

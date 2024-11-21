@@ -74,7 +74,8 @@ const BulkRankingGroup = () => {
 
     useEffect(() => {
         getBulkRankingGroup();
-    }, [id]);
+    }, [id, filter, page, pageSize]);
+
 
     useEffect(() => {
         if (bulkRankingGroup) {
@@ -108,6 +109,15 @@ const BulkRankingGroup = () => {
             console.error("Error fetching group:", error);
         }
     };
+
+    const handleSearch = (query) => {
+        console.log(query);
+        if (query) {
+            setFilter(sfAnd([sfEqual("rankingGroupId", id), sfLike("fileName", query)]).toString());
+        } else {
+            setFilter(`rankingGroupId : ${id}`);
+        }
+    }
 
     //// Fetch Ranking Group on id change
     useEffect(() => {
@@ -167,6 +177,8 @@ const BulkRankingGroup = () => {
                     marginBottom: '12px'
                 }}>
                     <Typography variant="h5">Bulk Ranking History</Typography>
+                    <SearchComponent onSearch={handleSearch} width={200} />
+
                     <Box sx={{ display: 'flex', gap: 1 }}> {/* Sử dụng gap để tạo khoảng cách giữa các nút */}
                         <Button variant="contained" color="primary" onClick={""}>
                             Export Template

@@ -20,8 +20,17 @@ const SearchComponent = ({ onSearch, placeholder = "Search ..." }) => {
     };
 
     return (
-        <div className="search-container">
+        <div
+            style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginTop: '16px',
+                width: '100%',
+            }}
+        >
             <TextField
+                className="search-container"
                 value={searchValue}
                 onChange={handleInputChange}
                 onKeyPress={(e) => e.key === "Enter" && handleSearchSubmit()}

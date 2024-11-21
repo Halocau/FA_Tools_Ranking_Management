@@ -1,5 +1,6 @@
 package backend.model.entity;
 
+import backend.model.entity.Serializable.DecisionCriteriaSerializable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@IdClass(DecisionCriteriaId.class)
+@IdClass(DecisionCriteriaSerializable.class)
 @Table(name="Decision_Criteria")
 @SuperBuilder
 public class DecisionCriteria {

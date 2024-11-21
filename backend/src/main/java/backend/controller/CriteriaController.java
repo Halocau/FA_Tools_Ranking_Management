@@ -1,9 +1,8 @@
 package backend.controller;
 
 import backend.model.dto.CriteriaResponse;
-import backend.model.dto.DecisionCriteriaResponse;
+import backend.model.dto.TitleConfiguration.DecisionCriteriaDTO;
 import backend.model.entity.Criteria;
-import backend.model.entity.DecisionCriteria;
 import backend.model.form.Criteria.AddCriteriaRequest;
 import backend.model.form.Criteria.UpdateCriteriaRequest;
 import backend.model.page.ResultPaginationDTO;
@@ -81,8 +80,8 @@ public class CriteriaController {
     }
 
     @DeleteMapping("delete/{id}")
-    public ResponseEntity<String> deleteCriteria(@PathVariable("id") int criteriaId) {
+    public ResponseEntity<Void> deleteCriteria(@PathVariable("id") int criteriaId) {
         criteriaService.deleteCriteria(criteriaId);
-        return new ResponseEntity<>("Criteria deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

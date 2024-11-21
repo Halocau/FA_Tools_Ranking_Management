@@ -1,11 +1,11 @@
 import authClient from './baseapi/AuthorAPI';
 
-const API_BASE_URL = '/decision-criteria';
+const decision_criteria_api = '/decision-criteria';
 
 const DecisionCriteriaAPI = {
     getAllDecisionCriteria: (filter = '', pageable = { page: 0, size: 5 }) =>
         authClient
-            .get(API_BASE_URL, {
+            .get(decision_criteria_api, {
                 params: {
                     filter,
                     page: pageable.page,
@@ -16,7 +16,7 @@ const DecisionCriteriaAPI = {
 
     getDecisionCriteriaByDecisionId: (decisionId, filter = '', pageable = { page: 0, size: 5 }) =>
         authClient
-            .get(`${API_BASE_URL}/get/${decisionId}`, {
+            .get(`${decision_criteria_api}/get/${decisionId}`, {
                 params: {
                     filter,
                     page: pageable.page,
@@ -27,18 +27,19 @@ const DecisionCriteriaAPI = {
 
     addDecisionCriteria: (form) =>
         authClient
-            .post(`${API_BASE_URL}/add`, form)
+            .post(`${decision_criteria_api}/add`, form)
             .then((response) => response.data),
 
     deleteDecisionCriteria: (decisionId, criteriaId) =>
         authClient
-            .delete(`${API_BASE_URL}/delete/${decisionId}/${criteriaId}`)
+            .delete(`${decision_criteria_api}/delete/${decisionId}/${criteriaId}`)
             .then((response) => response.data),
 
     updateDecisionCriteria: (form, decisionId, criteriaId) =>
         authClient
-            .put(`${API_BASE_URL}/upsert/${decisionId}/${criteriaId}`, form)
+            .put(`${decision_criteria_api}/upsert/${decisionId}/${criteriaId}`, form)
             .then((response) => response.data),
+
 };
 
 export default DecisionCriteriaAPI;

@@ -3,7 +3,10 @@ package backend.service.Implement;
 import backend.config.common.PaginationUtils;
 import backend.dao.ICriteriaRepository;
 import backend.model.dto.CriteriaResponse;
+import backend.model.dto.TitleConfiguration.DecisionCriteriaDTO;
+import backend.model.dto.TitleConfiguration.OptionDTO;
 import backend.model.entity.Criteria;
+import backend.model.entity.Options;
 import backend.model.form.Criteria.AddCriteriaRequest;
 import backend.model.form.Criteria.UpdateCriteriaRequest;
 import backend.model.page.ResultPaginationDTO;
@@ -105,7 +108,7 @@ public class CriteriaService implements ICriteriaService {
     public boolean existsByCriteriaName(String name) {
         return criteriaRepository.existsByCriteriaName(name);
     }
-
+    
     @Override
     public ResultPaginationDTO getAllCriteria(Specification<Criteria> spec, Pageable pageable) {
         // Page<Criteria> criteriaList = criteriaRepository.findAll(spec, pageable);
