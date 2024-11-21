@@ -52,17 +52,17 @@ public class Options {
         @Column(name = "updated_at")
         private LocalDateTime updatedAt;
 
-        // @ManyToMany(fetch = FetchType.LAZY,
-        // cascade = {
-        // CascadeType.DETACH,
-        // CascadeType.MERGE,
-        // CascadeType.PERSIST,
-        // CascadeType.REFRESH
-        // })
-        // @JoinTable(
-        // name = "Ranking_Title_Option",
-        // joinColumns = @JoinColumn(name = "option_id"),
-        // inverseJoinColumns = @JoinColumn(name = "ranking_title_id")
-        // )
-        // private List<RankingTitle> rankingTitles;
+         @ManyToMany(fetch = FetchType.LAZY,
+         cascade = {
+         CascadeType.DETACH,
+         CascadeType.MERGE,
+         CascadeType.PERSIST,
+         CascadeType.REFRESH
+         })
+         @JoinTable(
+         name = "Ranking_Title_Option",
+         joinColumns = @JoinColumn(name = "option_id"),
+         inverseJoinColumns = @JoinColumn(name = "ranking_title_id")
+         )
+         private List<RankingTitle> rankingTitles;
 }
