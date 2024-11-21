@@ -11,6 +11,7 @@ import backend.model.entity.Criteria;
 import backend.model.entity.DecisionCriteria;
 import backend.model.entity.RankingTitle;
 import backend.model.form.RankingTitle.AddRankingTitleRequest;
+import backend.model.form.RankingTitle.UpdateRankingTitleRequest;
 import backend.service.IRankingTitleService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -30,7 +31,9 @@ public class RankingTitleService implements IRankingTitleService {
     private IRankingDecisionRepository iRankingDecisionRepository;
 
     @Autowired
-    public RankingTitleService(IRankingTitleRepository iRankingTitleRepository, ModelMapper modelMapper, IDecisionCriteriaRepository iDecisionCriteriaRepository, ICriteriaRepository iCriteriaRepository, IRankingDecisionRepository iRankingDecisionRepository) {
+    public RankingTitleService(IRankingTitleRepository iRankingTitleRepository, ModelMapper modelMapper,
+            IDecisionCriteriaRepository iDecisionCriteriaRepository, ICriteriaRepository iCriteriaRepository,
+            IRankingDecisionRepository iRankingDecisionRepository) {
         this.iRankingTitleRepository = iRankingTitleRepository;
         this.modelMapper = modelMapper;
         this.iDecisionCriteriaRepository = iDecisionCriteriaRepository;
@@ -51,7 +54,6 @@ public class RankingTitleService implements IRankingTitleService {
         return iRankingTitleRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("RankingTitle with ID " + id + " does not exist."));
     }
-
 
     @Override
     @Transactional
@@ -83,14 +85,12 @@ public class RankingTitleService implements IRankingTitleService {
     public List<RankingTitleResponse> getRankingTittleResponse(List<RankingTitle> listRankingTitle) {
         List<RankingTitleResponse> rankingTitleResponses = new ArrayList<>();
         for (RankingTitle rankingTitle : listRankingTitle) {
-            //convert RankingTitle -> RankingTitleResponse
+            // convert RankingTitle -> RankingTitleResponse
             RankingTitleResponse response = modelMapper.map(rankingTitle, RankingTitleResponse.class);
             rankingTitleResponses.add(response);
         }
         return rankingTitleResponses;
     }
-
-
 
     @Override
     public RankingTitleResponse findRankingTitleResponse(RankingTitle rankingTitle) {
@@ -109,6 +109,33 @@ public class RankingTitleService implements IRankingTitleService {
                 .titleName(form.getTitleName())
                 .build();
         iRankingTitleRepository.save(rankingTitle);
+    }
+
+    @Override
+    @Transactional
+    public void updateRankingTitleByForm(UpdateRankingTitleRequest form) {
+        boolean check = false;
+        if (form.getId() != null) {
+            RankingTitle findRankingTitle = findRankingTitleById(form.getId());
+            if (findRankingTitle != null) {
+                findRankingTitle.setTitleName(form.getTitleName());
+                findRankingTitle.setTotalScore(form.getTotalScore());
+                iRankingTitleRepository.save(findRankingTitle);
+            } else {
+                check = true;
+            }
+        } else {
+            check = true;
+        }
+
+        if (check) {
+            RankingTitle rankingTitle = RankingTitle.builder()
+                    .decisionId(form.getDecisionId())
+                    .titleName(form.getTitleName())
+                    .totalScore(form.getTotalScore())
+                    .build();
+            iRankingTitleRepository.save(rankingTitle);
+        }
     }
 
 }

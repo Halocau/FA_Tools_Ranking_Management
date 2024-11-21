@@ -33,11 +33,11 @@ public class DecisionCriteriaController {
     @GetMapping()
     public ResponseEntity<ResultPaginationDTO> getAllDecisionCriteriaDecision(
             @Filter Specification<DecisionCriteria> spec,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         ResultPaginationDTO decisonCritaria = iDecisionCriteriaService.getAllDecisionCriteria(spec, pageable);
         List<DecisionCriteria> decisionCriteriaList = (List<DecisionCriteria>) decisonCritaria.getResult();
-        List<DecisionCriteriaResponse> decisionCriteriaResponseList = iDecisionCriteriaService.getDecisionCriteriaResponse(decisionCriteriaList);
+        List<DecisionCriteriaResponse> decisionCriteriaResponseList = iDecisionCriteriaService
+                .getDecisionCriteriaResponse(decisionCriteriaList);
         decisonCritaria.setResult(decisionCriteriaResponseList);
         return ResponseEntity.status(HttpStatus.OK).body(decisonCritaria);
     }
@@ -46,20 +46,24 @@ public class DecisionCriteriaController {
     public ResponseEntity<ResultPaginationDTO> getDecisionCriteriaByDecisionId(
             @PathVariable(name = "decisionId") Integer decisionId,
             @Filter Specification<DecisionCriteria> spec,
-            Pageable pageable
-    ) {
-        ResultPaginationDTO find = iDecisionCriteriaService.findByDecisionIdAndSpecification(decisionId, spec, pageable);
+            Pageable pageable) {
+        ResultPaginationDTO find = iDecisionCriteriaService.findByDecisionIdAndSpecification(decisionId, spec,
+                pageable);
         List<DecisionCriteria> findDecisionCriteria = (List<DecisionCriteria>) find.getResult();
-        List<DecisionCriteriaResponse> decisionCriteriaResponses = iDecisionCriteriaService.getDecisionCriteriaResponse(findDecisionCriteria);
+        List<DecisionCriteriaResponse> decisionCriteriaResponses = iDecisionCriteriaService
+                .getDecisionCriteriaResponse(findDecisionCriteria);
         find.setResult(decisionCriteriaResponses);
         return ResponseEntity.status(HttpStatus.OK).body(find);
     }
+
     @GetMapping("/take/{decisionId}")
-    public ResponseEntity<List<DecisionCriteriaDTO>> getDecisionCriteriaByDecisionConfigurationId(@PathVariable(name = "decisionId") Integer decisionId){
+    public ResponseEntity<List<DecisionCriteriaDTO>> getDecisionCriteriaByDecisionConfigurationId(
+            @PathVariable(name = "decisionId") Integer decisionId) {
         List<DecisionCriteria> find = iDecisionCriteriaService.findByDecisionId(decisionId);
         List<DecisionCriteriaDTO> list = iDecisionCriteriaService.getDecisionCriteriaConfigurationResponse(find);
         return ResponseEntity.status(HttpStatus.OK).body(list);
     }
+
     @PostMapping("/add")
     public ResponseEntity<String> addDecisionCriteria(@RequestBody @Valid AddDecisionCriteriaRequest form) {
         iDecisionCriteriaService.createDecisionCriteria(form);
@@ -74,13 +78,10 @@ public class DecisionCriteriaController {
         return ResponseEntity.ok("Decision criteria deleted successfully.");
     }
 
-    @PutMapping("/upsert/{decisionId}/{criteriaId}")
+    @PutMapping("/upsert")
     public ResponseEntity<String> updateDecisionCriteria(
-            @RequestBody @Valid UpdateDecisionCriteriaRequest form,
-            @PathVariable Integer decisionId,
-            @PathVariable Integer criteriaId
-    ) {
-        iDecisionCriteriaService.updateDecisionCriteria(form, decisionId, criteriaId);
+            @RequestBody @Valid UpdateDecisionCriteriaRequest form) {
+        iDecisionCriteriaService.updateDecisionCriteria(form, form.getDecisionId(), form.getCriteriaId());
         return ResponseEntity.ok("Decision criteria updated successfully.");
     }
 

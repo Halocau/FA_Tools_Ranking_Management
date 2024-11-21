@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { FaAngleRight } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
-import { MdDeleteForever } from "react-icons/md";
+
 // MUI
 import {
     InputAdornment, Box, Button, Typography, TextField, Modal, IconButton, Select, MenuItem, Table, TableHead, TableBody, TableCell, TableRow
 } from "@mui/material";
-import { DataGrid } from '@mui/x-data-grid';
 import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
-import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Stepper, Step, StepButton } from '@mui/material';
 // Css 
 import "../../../assets/css/RankingGroups.css"
@@ -17,11 +15,6 @@ import '../../../assets/css/Table.css';
 // API
 import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
-//Common
-import ModalCustom from "../../../components/Common/Modal.jsx";
-import ActionButtons from "../../../components/Common/ActionButtons.jsx";
-// Contexts
-import { useAuth } from "../../../contexts/AuthContext.jsx";
 // Hooks
 import useNotification from "../../../hooks/useNotification.jsx";
 //Data
@@ -41,9 +34,8 @@ const EditDecision = () => {
     const [status, setStatus] = useState("");
 
     // Step
-    const [activeStep, setActiveStep] = useState(2);
+    const [activeStep, setActiveStep] = useState(0);
     // Data
-    const [criteria, setCriteria] = useState([]);
     const [title, setTitle] = useState([]);
     const [task, setTask] = useState([]);
     const [decisionStatus, setDecisionStatus] = useState('Draft');
@@ -181,26 +173,6 @@ const EditDecision = () => {
         setActiveStep(prevStep => prevStep + 1);
     };
 
-
-    //////////////////////////////////////////////////////////////////////////// Criteria Configuration ////////////////////////////////////////////////////////////////////////////
-    const getCriteriaConfiguration = async () => {
-        try {
-            const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
-            console.log(response)
-            setCriteria(response.result);
-            // setTotalElements(response.pageInfo.element);
-            // setTotalPages(response.pageInfo.total);
-        } catch (error) {
-            console.error("Error fetching criteria:", error);
-        }
-    };
-
-    useEffect(() => {
-        getCriteriaConfiguration();
-        console.log(criteria);
-    }, []);
-
-
     //////////////////////////////////////////////////////////////////////////// Title Configuration ////////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////// End Title Configuration ////////////////////////////////////////////////////////////////////////////
@@ -215,7 +187,6 @@ const EditDecision = () => {
             case 0:
                 return (
                     <CriteriaConfiguration
-                        criteria={criteria}
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
