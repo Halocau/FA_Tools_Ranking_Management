@@ -40,7 +40,7 @@ const taskApi = {
     },
 
     // Update a task by ID
-    updateTaskByID: async (id, formData) => {
+    updateTask: async (id, formData) => {
         try {
             const response = await authClient.put(`${TASK_API}/update/${id}`, formData);
             return response.data;
@@ -65,7 +65,7 @@ const taskApi = {
     searchByTaskName: async (filter = "", page = 0, size = 5) => {
         try {
             const response = await authClient.get(`${TASK_API}`, {
-              params: { filter: filter, page: page, size: size },
+                params: { filter: filter, page: page, size: size },
             });
             return response.data;
         } catch (error) {

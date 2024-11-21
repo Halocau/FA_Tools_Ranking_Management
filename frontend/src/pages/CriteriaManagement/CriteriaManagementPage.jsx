@@ -1,29 +1,49 @@
 import React, { useEffect, useState } from "react";
+
+//Layout
 import { Box, Button, Typography, TextField, Modal } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
-import { useNavigate } from "react-router-dom";
-import useCriteria from "../../hooks/useCriteria"; // Import useCriteria hook
 import Slider from "../../layouts/Slider.jsx";
-import "../../assets/css/RankingGroups.css";
-import CriteriaAPI from "../../api/CriteriaAPI.js";
-const CriteriaManagement = () => {
-    const navigate = useNavigate();
-    const { addCriteria, fetchAllCriteria, deleteCriteria, loading, error } = useCriteria(); // Sử dụng hook
-    const apiRef = useGridApiRef();
-    const [showAddCriteriaModal, setShowAddCriteriaModal] = useState(false);
-    const [criteriaName, setCriteriaName] = useState("");
-    const [validationMessage, setValidationMessage] = useState("");
-    const [message, setMessage] = useState("");
-    const [messageType, setMessageType] = useState("success");
+import SearchComponent from "../../components/Common/Search.jsx";
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+//Hooks
+import { useNavigate } from "react-router-dom";
+import useNotification from "../../hooks/useNotification.jsx";
 
+//API
+import CriteriaAPI from "../../api/CriteriaAPI.js";
+
+//Filter Query Builder
+import { sfLike } from 'spring-filter-query-builder';
+
+const CriteriaManagement = () => {
+    //Use for navigation
+    const navigate = useNavigate();
+    //Use for table
+    const apiRef = useGridApiRef();
+    //Use for control form add criteria
+    const [showAddCriteriaModal, setShowAddCriteriaModal] = useState(false);
+    //Use for save criteria name for add criteria
+    const [criteriaName, setCriteriaName] = useState("");
+
+    const [validationMessage, setValidationMessage] = useState("");
+
+    //Use to show notification
+    const [showSuccessMessage, showErrorMessage] = useNotification();
+    //Use for save data of criteria
     const [criteria, setCriteria] = useState([]);
+    //Use for pagination
     const [pageSize, setpageSize] = useState(5);
     const [page, setPage] = useState(1);
     const [filter, setFilter] = useState("");
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
+
+    //Use for pass data in data grid
     const [rows, setRows] = useState([]);
 
+    //Use for get all criteria with pagination and filter
     const getAllCriteria = async () => {
         try {
             const data = await CriteriaAPI.searchCriteria(
@@ -39,18 +59,18 @@ const CriteriaManagement = () => {
         }
     }
 
-
+    //Use to get all criteria when first load and when page or pageSize or filter change.
     useEffect(() => {
         getAllCriteria();
     }, [page, pageSize, filter]);
 
-    console.log(criteria, totalPages, totalElements, page, pageSize);
 
+    //Use for map data in data grid
     useEffect(() => {
         if (criteria) {
             const mappedRows = criteria.map((criteria, index) => ({
                 id: criteria.criteriaId,
-                index: index + 1,
+                index: index + 1 + (page - 1) * 5,
                 criteriaName: criteria.criteriaName,
                 noOfOption: criteria.numOptions ? criteria.numOptions : 0,
                 maxScore: criteria.maxScore ? criteria.maxScore : 0,
@@ -59,18 +79,31 @@ const CriteriaManagement = () => {
         }
     }, [criteria]);
 
+    //Use for open form add criteria
     const handleOpenAddCriteriaModal = () => {
         setShowAddCriteriaModal(true);
         setCriteriaName("");
         setValidationMessage("");
     };
 
+    //Use for close form add criteria
     const handleCloseAddCriteriaModal = () => {
         setShowAddCriteriaModal(false);
         setCriteriaName("");
         setValidationMessage("");
     };
 
+    //Use for search
+    const handleSearch = (event) => {
+        if (event) {
+            setFilter(sfLike("criteriaName", event).toString());
+        } else {
+            setFilter("");
+        }
+        setPage(1);
+    };
+
+    //Use for add criteria
     const handleAddCriteria = async () => {
         setValidationMessage("");
         let trimmedName = criteriaName.trim();
@@ -95,9 +128,6 @@ const CriteriaManagement = () => {
 
         try {
             const newCriteria = await CriteriaAPI.createCriteria({ criteriaName: trimmedName, createdBy: localStorage.getItem("userId") });
-            setMessageType("success");
-            setMessage("Criteria added successfully!");
-            setTimeout(() => setMessage(null), 2000);
             handleCloseAddCriteriaModal();
             setTotalElements(totalElements + 1);
             if (criteria.length < pageSize) {
@@ -106,36 +136,32 @@ const CriteriaManagement = () => {
             } else {
                 setTotalPages(totalPages + 1);
             }
-            // setCriteriaList(updatedCriteria);
+            showSuccessMessage("Criteria added successfully!");
         } catch (error) {
-            console.error("Failed to add criteria:", error);
-            setMessageType("error");
-            setMessage("Failed to add criteria. Please try again.");
-            setTimeout(() => setMessage(null), 2000);
+            showErrorMessage("Failed to add criteria. Please try again.");
         }
     };
 
+    //Use for delete criteria
     const handleDeleteCriteria = async (criteriaId) => {
         try {
             const response = await CriteriaAPI.deleteCriteria(criteriaId);
             console.log("Response:", response);
             setCriteria(criteria.filter((criteria) => criteria.criteriaId !== criteriaId));
-
+            if (criteria.length === 5) {
+                getAllCriteria();
+            }
             if (criteria.length === 1) {
                 setPage(page - 1);
             }
-            setMessageType("success");
-            setMessage("Criteria deleted successfully!");
-            setTimeout(() => setMessage(null), 2000);
+            setTotalElements(totalElements - 1);
+            showSuccessMessage("Criteria deleted successfully!");
         } catch (error) {
-            // console.log("Error:", error.response.data.detailMessage);
-            // console.error("Failed to delete criteria message: ", error);
-            setMessageType("error");
-            setMessage("Failed to delete criteria. Please try again.");
-            setTimeout(() => setMessage(null), 2000);
+            showErrorMessage("Failed to delete criteria. Please try again.");
         }
     };
 
+    //Use for map data header in data grid
     const columns = [
         { field: "index", headerName: "ID", width: 80 },
         { field: "criteriaName", headerName: "Criteria Name", width: 300 },
@@ -150,7 +176,7 @@ const CriteriaManagement = () => {
                             navigate(`/criteria/edit/${params.row.id}`);
                         }}
                     >
-                        Edit
+                        <EditIcon />
                     </Button>
                     <Button
                         variant="outlined"
@@ -159,13 +185,13 @@ const CriteriaManagement = () => {
                         onClick={() => handleDeleteCriteria(params.row.id)}
                         sx={{ marginLeft: 1 }}
                     >
-                        Delete
+                        <DeleteIcon />
                     </Button>
                 </>
             ),
         },
     ];
-    console.log(rows);
+
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
@@ -175,12 +201,13 @@ const CriteriaManagement = () => {
                 </Typography>
                 <Box sx={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                     <Typography variant="h5">Criteria List</Typography>
-                    <Button variant="contained" color="primary" onClick={handleOpenAddCriteriaModal} disabled={loading}>
+                    <SearchComponent onSearch={handleSearch} />
+                    <Button variant="contained" color="primary" onClick={handleOpenAddCriteriaModal} >
                         Add New Criteria
                     </Button>
                 </Box>
 
-                <Box sx={{ width: "100%" }}>
+                <Box sx={{ width: "100%", height: "80vh" }}>
                     <DataGrid
                         apiRef={apiRef}
                         rows={rows}
@@ -188,7 +215,6 @@ const CriteriaManagement = () => {
                         checkboxSelection
                         pagination
                         pageSizeOptions={[5, 10, 20]}
-                        loading={loading}
                         getRowId={(row) => row.id}
                         rowCount={totalElements}
                         paginationMode="server" // Kích hoạt phân trang phía server
@@ -226,7 +252,7 @@ const CriteriaManagement = () => {
                         />
                         <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
                             <Button variant="outlined" onClick={handleCloseAddCriteriaModal}>Cancel</Button>
-                            <Button variant="contained" color="success" onClick={handleAddCriteria} disabled={loading}>Add</Button>
+                            <Button variant="contained" color="success" onClick={handleAddCriteria} >Add</Button>
                         </Box>
                     </Box>
                 </Modal>

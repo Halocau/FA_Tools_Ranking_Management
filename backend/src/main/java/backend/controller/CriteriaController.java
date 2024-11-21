@@ -1,9 +1,8 @@
 package backend.controller;
 
 import backend.model.dto.CriteriaResponse;
-import backend.model.dto.DecisionCriteriaResponse;
+import backend.model.dto.TitleConfiguration.DecisionCriteriaDTO;
 import backend.model.entity.Criteria;
-import backend.model.entity.DecisionCriteria;
 import backend.model.form.Criteria.AddCriteriaRequest;
 import backend.model.form.Criteria.UpdateCriteriaRequest;
 import backend.model.page.ResultPaginationDTO;
@@ -45,14 +44,6 @@ public class CriteriaController {
         // criteriaService.convertToCriteriaResponseList(criteriaList);
         return new ResponseEntity<>(criteriaList, HttpStatus.OK);
     }
-
-    @GetMapping("/test")
-    public ResponseEntity<List<DecisionCriteriaResponse>> alltest() {
-        List<Criteria> criteria = criteriaService.getAllCriteria();
-        List<DecisionCriteriaResponse> test = idDecisionCriteriaService.getDecisionCriteriaResponse(criteria);
-        return ResponseEntity.status(HttpStatus.OK).body(test);
-    }
-
 
     @GetMapping("/get/{id}")
     public ResponseEntity<CriteriaResponse> getCriteriaById(@PathVariable("id") int criteriaId) {
