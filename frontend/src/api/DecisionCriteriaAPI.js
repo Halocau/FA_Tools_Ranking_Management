@@ -14,20 +14,14 @@ const DecisionCriteriaAPI = {
             })
             .then((response) => response.data),
 
-    getDecisionCriteriaByDecisionId: (decisionId, filter = '', pageable = { page: 0, size: 20 }) =>
+    getDecisionCriteriaByDecisionId: (decisionId) =>
         authClient
-            .get(`${decision_criteria_api}/get/${decisionId}`, {
-                params: {
-                    filter,
-                    page: pageable.page,
-                    size: pageable.size,
-                },
-            })
+            .get(`${decision_criteria_api}/get/${decisionId}`)
             .then((response) => response.data),
 
     takeDecisionCriteriaByDecisionId: (decisionId, filter = '', pageable = { page: 0, size: 5 }) =>
         authClient
-            .get(`${decision_criteria_api}/take/${decisionId}`, {
+            .get(`${decision_criteria_api}/opitions/${decisionId}`, {
                 params: {
                     filter,
                     page: pageable.page,
