@@ -3,7 +3,13 @@ import authClient from './baseapi/AuthorAPI';
 const decision_criteria_api = '/decision-criteria';
 
 const DecisionCriteriaAPI = {
-    getAllDecisionCriteria: (filter = '', pageable = { page: 0, size: 20 }) =>
+
+    getAllCriteria: async () => {
+        const response = await authClient.get('/criteria/all');
+        return response.data;
+    },
+
+    getAllDecisionCriteria: (filter = '', pageable = { page: 0, size: 5 }) =>
         authClient
             .get(decision_criteria_api, {
                 params: {
@@ -14,14 +20,9 @@ const DecisionCriteriaAPI = {
             })
             .then((response) => response.data),
 
-    getDecisionCriteriaByDecisionId: (decisionId) =>
+    getDecisionCriteriaByDecisionIdWithPagination: (decisionId, filter = '', pageable = { page: 0, size: 5 }) =>
         authClient
-            .get(`${decision_criteria_api}/get/${decisionId}`)
-            .then((response) => response.data),
-
-    takeDecisionCriteriaByDecisionId: (decisionId, filter = '', pageable = { page: 0, size: 5 }) =>
-        authClient
-            .get(`${decision_criteria_api}/opitions/${decisionId}`, {
+            .get(`${decision_criteria_api}/get/${decisionId}`, {
                 params: {
                     filter,
                     page: pageable.page,
@@ -29,6 +30,12 @@ const DecisionCriteriaAPI = {
                 },
             })
             .then((response) => response.data),
+
+    getDecisionCriteriaByDecisionId: (decisionId) =>
+        authClient
+            .get(`${decision_criteria_api}/get-all/${decisionId}`)
+            .then((response) => response.data),
+
 
     addDecisionCriteria: (form) =>
         authClient

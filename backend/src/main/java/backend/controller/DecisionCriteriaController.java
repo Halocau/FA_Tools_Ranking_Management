@@ -42,6 +42,18 @@ public class DecisionCriteriaController {
         return ResponseEntity.status(HttpStatus.OK).body(decisonCritaria);
     }
 
+    // @GetMapping("/all")
+    // public ResponseEntity<List<DecisionCriteriaResponse>>
+    // getAllDecisionCriteria() {
+    // List<DecisionCriteria> decisionCriteriaList =
+    // iDecisionCriteriaService.findAll();
+    // List<DecisionCriteriaResponse> decisionCriteriaResponseList =
+    // iDecisionCriteriaService
+    // .getDecisionCriteriaResponse(decisionCriteriaList);
+    // return
+    // ResponseEntity.status(HttpStatus.OK).body(decisionCriteriaResponseList);
+    // }
+
     @GetMapping("/get/{decisionId}")
     public ResponseEntity<ResultPaginationDTO> getDecisionCriteriaByDecisionId(
             @PathVariable(name = "decisionId") Integer decisionId,
@@ -56,7 +68,16 @@ public class DecisionCriteriaController {
         return ResponseEntity.status(HttpStatus.OK).body(find);
     }
 
-    @GetMapping("/opitions/{decisionId}")
+    @GetMapping("/get-all/{decisionId}")
+    public ResponseEntity<List<DecisionCriteriaResponse>> getDecisionCriteriaByDecisionId(
+            @PathVariable(name = "decisionId") Integer decisionId) {
+        List<DecisionCriteria> findDecisionCriteria = iDecisionCriteriaService.findByDecisionId(decisionId);
+        List<DecisionCriteriaResponse> decisionCriteriaResponses = iDecisionCriteriaService
+                .getDecisionCriteriaResponse(findDecisionCriteria);
+        return ResponseEntity.status(HttpStatus.OK).body(decisionCriteriaResponses);
+    }
+
+    @GetMapping("/options/{decisionId}")
     public ResponseEntity<List<DecisionCriteriaDTO>> getDecisionCriteriaByDecisionConfigurationId(
             @PathVariable(name = "decisionId") Integer decisionId) {
         List<DecisionCriteria> find = iDecisionCriteriaService.findByDecisionId(decisionId);
