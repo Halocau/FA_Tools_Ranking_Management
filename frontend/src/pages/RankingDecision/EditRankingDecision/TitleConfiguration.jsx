@@ -11,6 +11,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Stepper, Step, StepButton } from '@mui/material';
 import { DataGridPro } from '@mui/x-data-grid-pro';
+import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
 // API
 import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
@@ -26,6 +27,9 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     const [rows, setRows] = useState([]);
     // State Cancel and Save
     // const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
+    // Add Title 
+    const [statusAddTitle, setstatusAddTitle] = useState(null);
+    const [newTitleName, setNewTitleName] = useState(''); // State lưu tên tiêu đề mới
 
     // Load data getCriteriaConfiguration 
     const getCriteriaConfiguration = async () => {
@@ -49,84 +53,97 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         getCriteriaConfiguration()
         getTitleConfiguration();
     }, [id]);
+    console.log(originalTitle)
 
-
-    const updateDecisionTitle = async (form) => {
+    const updateDecisionTitle = async (form, decisionId, titleId) => {
+        console.log(form, decisionId, titleId)
         try {
-            await DecisionTitleAPI.updateDecisionTitle(
-                form, id, form.titleIdId);
+            await DecisionTitleAPI.updateDecisionTitle(form, decisionId, titleId);
         } catch (error) {
             console.error("Error updating decision title:", error);
         }
-    }
+    };
 
-    const deleteDecisionTitle = async (titleId) => {
+    const deleteDecisionTitle = async (decisionId, titleId) => {
         try {
-            await DecisionTitleAPI.deleteDecisionTitle(id, titleId);
+            await DecisionTitleAPI.deleteDecisionTitle(decisionId, titleId);
         } catch (error) {
             console.error("Error deleting decision title:", error);
         }
-    }
+    };
 
-    const syncDecisionTitle = async (newTitles, originalTitles, criteria) => {
+    const syncDecisionTitle = async (rows, originalTitle) => {
         try {
-            // Create a map of original titles for quick lookup
-            const originalTitleMap = new Map(
-                originalTitles.map((item) => [item.rankingTitleId, item])
-            );
+            const originalTitlesMap = new Map(originalTitle.map((item) => [item.id, item]));
 
-            // Iterate through newTitles to handle updates and additions
-            for (const titleItem of newTitles) {
-                const original = originalTitleMap.get(titleItem.rankingTitleId);
-
+            for (const row of rows) {
+                const original = originalTitlesMap.get(row.id);
                 if (original) {
-                    // If the title exists, check and update the totalScore
-                    if (original.totalScore !== titleItem.totalScore) {
+                    if (original.titleName !== row.titleName || original.rankScore !== row.rankScore) {
                         await updateDecisionTitle({
                             decisionId: id,
-                            rankingTitleId: titleItem.rankingTitleId,
-                            totalScore: titleItem.totalScore
+                            titleId: row.id,
+                            titleName: row.titleName,
+                            rankScore: row.rankScore,
+                            options: row.options
                         });
                     }
-
-                    // Iterate through criteria to sync options (if any)
-                    for (const criteriaItem of criteria) {
-                        const matchingOption = titleItem.options?.find(
-                            (option) => option.criteriaId === criteriaItem.criteriaId
-                        );
-
-                        if (matchingOption) {
-                            // You can call an API or update state here
-                            await updateDecisionTitle({
-                                decisionId: id,
-                                rankingTitleId: titleItem.rankingTitleId,
-                                criteriaId: criteriaItem.criteriaId,
-                                optionName: matchingOption.optionName,
-                                score: matchingOption.score
-                            });
-                        }
-                    }
-
-                    // Mark the title as processed
-                    originalTitleMap.delete(titleItem.rankingTitleId);
+                    originalTitlesMap.delete(row.id);
                 } else {
-                    // If it's a new title, add it
                     await updateDecisionTitle({
                         decisionId: id,
-                        rankingTitleId: titleItem.rankingTitleId,
-                        totalScore: titleItem.totalScore
+                        titleId: row.id,
+                        titleName: row.titleName,
+                        rankScore: row.rankScore,
+                        options: row.options
                     });
                 }
             }
 
-            // Delete any remaining titles in originalTitleMap that are not in newTitles
-            for (const [rankingTitleId] of originalTitleMap) {
-                await deleteDecisionTitle(rankingTitleId);
+            for (const [titleId] of originalTitlesMap) {
+                await deleteDecisionTitle(id, titleId);  // Use decisionId correctly here
             }
         } catch (error) {
-            console.error("Error syncing decision titles:", error);
+            console.error("Error syncing decision title:", error);
         }
     };
+
+    const handleAddTitle = async () => {
+        const decisionId = id;  // Ensure this id is valid
+        if (!decisionId) {
+            console.error("decisionId không hợp lệ");
+            return;
+        }
+
+        const newTitle = {
+            id: rows.length + 1,  // Or get the real ID from the server
+            titleName: newTitleName,
+            rankScore: '',
+            options: criteria.map((criteriaItem) => ({
+                criteriaId: criteriaItem.criteriaId,
+                optionName: "",
+                score: 0,
+            })),
+        };
+
+        const titleId = `new-${Date.now()}`;
+
+        if (!titleId) {
+            console.error("titleId không hợp lệ");
+            return;
+        }
+
+        try {
+            await updateDecisionTitle(newTitle, decisionId, titleId);
+            setRows([...rows, newTitle]);
+            setNewTitleName('');
+            setstatusAddTitle(null);
+            console.log("New title added:", newTitle);
+        } catch (error) {
+            console.error("Error adding new title:", error);
+        }
+    };
+
 
 
 
@@ -163,15 +180,18 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             return prevRows;
         });
     };
-
     //////////////////////////////////// Cancel ////////////////////////////////////
     //// Hàm hủy thay đổi, đặt lại  giá trị ban đầu của tất cả
     const handleCancelChanges = () => {
-        console.log('cancel')
-        setRowData(originalTitle);
+        console.log('cancel');
+
+        // Kiểm tra nếu originalTitle và criteria có giá trị hợp lệ
+        if (originalTitle && criteria) {
+            setRowData(originalTitle, criteria);
+        } else {
+            console.error("Không có dữ liệu ban đầu để load lại.");
+        }
     };
-
-
     //////////////////////////////////// Save ///////////////////////////////////////
     const calculateRankScore = (row) => {
         if (!row || !criteria) {
@@ -221,16 +241,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         goToNextStep(); // Chuyển bước tiếp theo
     };
 
-
-    //////////////////////////////////// Select to Add a new Title //////////////////
-    const handleAddTitle = () => {
-        const newTitle = {
-            id: rows.length + 1,
-            titleName: 'New Title',
-            rankScore: '',
-        };
-        setRows([...rows, newTitle]);
-    };
     //////////////////////////////////// Column Title ////////////////////////////////////
     const ColumnsTitle = (criteria, decisionStatus) => {
         if (!Array.isArray(criteria)) {
@@ -340,10 +350,10 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             // Tạo cột
             const columns = ColumnsTitle(criteria, decisionStatus);
             setColumnsTitle(columns);
-            // Tạo hàng
-            setRowData(originalTitle, criteria);
+            const rows = setRowData(originalTitle, criteria);
+            setRows(rows);
         }
-    }, [originalTitle, decisionStatus]);
+    }, [originalTitle, criteria, decisionStatus]);
 
     return (
         <div>
@@ -380,9 +390,35 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                     {decisionStatus === 'Draft' && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                             <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                                <Button variant="contained" color="success" onClick={handleAddTitle}>
-                                    Add Title
-                                </Button>
+                                <input
+                                    type="text"
+                                    value={newTitleName}
+                                    onChange={(e) => {
+                                        setstatusAddTitle(e.target.value);
+                                        setNewTitleName(e.target.value);
+                                    }}
+                                    placeholder="Input name for new Ranking Title"
+                                    style={{
+                                        height: '30px',      // Giảm chiều cao
+                                        width: '300px',      // Tăng chiều rộng (dài ra)
+                                        padding: '5px',      // Điều chỉnh padding để không bị quá chật
+                                        fontSize: '16px',    // Tăng kích thước font nếu cần thiết
+                                        borderRadius: '5px', // Thêm bo góc (tùy chọn)
+                                    }}
+                                />
+                                <IconButton
+                                    onClick={handleAddTitle}
+                                    color={statusAddTitle ? 'primary' : 'default'} // Màu xanh khi có criteria được chọn
+                                    disabled={!statusAddTitle} // Vô hiệu hóa khi không có criteria được chọn
+                                    sx={{
+                                        marginLeft: 1,          // Tạo khoảng cách giữa input và icon
+                                        height: '30px',         // Đảm bảo chiều cao của icon button là 30px giống input
+                                        display: 'flex',        // Đảm bảo icon canh giữa trong button
+                                        alignItems: 'center',   // Căn giữa icon theo chiều dọc
+                                    }}
+                                >
+                                    <AddCircleIcon sx={{ fontSize: 30 }} />  {/* Điều chỉnh kích thước của icon */}
+                                </IconButton>
                             </Box>
 
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>

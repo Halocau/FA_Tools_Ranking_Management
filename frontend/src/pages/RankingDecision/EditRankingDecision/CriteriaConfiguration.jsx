@@ -51,6 +51,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
 
 
     const updateDecisionCriteria = async (form) => {
+        console.log(form)
         try {
             await DecisionCriteriaAPI.updateDecisionCriteria(
                 form, id, form.criteriaId);
@@ -289,7 +290,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                 />
                 {decisionStatus === 'Draft' && (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
                             <Select
                                 isSearchable={true}
                                 placeholder="Add New Criteria ..."
@@ -310,18 +311,31 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                                     }),
                                 }}
                                 menuPlacement="top"
-                                value={selectedCriteria} // Bind the selected option to the state
-                                onChange={(option) => setSelectedCriteria(option)} // Update state on selection
+                                value={selectedCriteria}
+                                onChange={(option) => setSelectedCriteria(option)}
+                                style={{
+                                    height: '30px',
+                                    width: '300px',
+                                    padding: '5px',
+                                    fontSize: '16px',
+                                    borderRadius: '5px',
+                                }}
                             />
                             <IconButton
                                 onClick={handleAddCriteria}
-                                color={selectedCriteria ? 'primary' : 'default'} // Màu xanh khi có criteria được chọn
-                                disabled={!selectedCriteria} // Vô hiệu hóa khi không có criteria được chọn
-                                sx={{ marginLeft: 1, transform: 'translateY(-7px)' }} // Dịch chuyển icon lên trên
+                                color={selectedCriteria ? 'primary' : 'default'}
+                                disabled={!selectedCriteria}
+                                sx={{
+                                    marginLeft: 1,
+                                    height: '30px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                }}
                             >
-                                <AddCircleIcon fontSize="large" />
+                                <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
                             </IconButton>
                         </Box>
+
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
 
                             <Button

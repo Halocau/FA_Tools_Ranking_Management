@@ -34,7 +34,7 @@ const EditDecision = () => {
     const [status, setStatus] = useState("");
 
     // Step
-    const [activeStep, setActiveStep] = useState(0);
+    const [activeStep, setActiveStep] = useState(2);
     // Data
     const [criteria, setCriteria] = useState([]);
     const [title, setTitle] = useState([]);
