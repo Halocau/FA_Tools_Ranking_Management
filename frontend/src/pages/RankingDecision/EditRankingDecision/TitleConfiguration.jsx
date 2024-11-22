@@ -3,17 +3,11 @@ import { MdDeleteForever } from 'react-icons/md';
 import { useNavigate, useParams } from "react-router-dom";
 // MUI
 import {
-    InputAdornment, Box, Button, Typography, TextField, Modal, IconButton, Select, MenuItem, Table, TableHead, TableBody, TableCell, TableRow
+    Box, Button, Typography, TextField, IconButton, Select, MenuItem
 } from "@mui/material";
 import { DataGrid } from '@mui/x-data-grid';
-import ClearIcon from '@mui/icons-material/Clear';
-import EditIcon from '@mui/icons-material/Edit';
-import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
-import { Stepper, Step, StepButton } from '@mui/material';
-import { DataGridPro } from '@mui/x-data-grid-pro';
 import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
 // API
-import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 
@@ -49,12 +43,12 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             console.error("Error fetching criteria:", error);
         }
     };
+    // Load update
     useEffect(() => {
         getCriteriaConfiguration()
         getTitleConfiguration();
     }, [id]);
-    console.log(originalTitle)
-
+    /////////////////////////////////// Xử Lý backend //////////////////////////////////
     const updateDecisionTitle = async (form, decisionId, titleId) => {
         console.log(form, decisionId, titleId)
         try {
@@ -144,11 +138,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         }
     };
 
-
-
-
-    ///////////////////////////// Hàm cập nhập thay đổi ///////////////////////////
-    // Hàm cập nhập thay đổi data
+    ///////////////////////////// The update function changes //////////////////////////
     const handleCellEditTitleCommit = ({ id, field, value }) => {
         console.log('Đang cập nhật hàng:', { id, field, value });
         setRows((prevRows) => {
@@ -167,8 +157,8 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             return updatedRows;
         });
     };
-    //////////////////////////////////// Remove ////////////////////////////////////
-    // Hàm xóa hàng 
+    // End 
+    //////////////////////////////////// Remove row ////////////////////////////////////
     const handleDeleteRowData = (id) => {
         console.log('delete', id)
         setRows((prevRows) => {
@@ -180,19 +170,18 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             return prevRows;
         });
     };
-    //////////////////////////////////// Cancel ////////////////////////////////////
-    //// Hàm hủy thay đổi, đặt lại  giá trị ban đầu của tất cả
+    // End 
+    //////////////////////////////////// Cancel ///////////////////////////////////////
     const handleCancelChanges = () => {
         console.log('cancel');
-
-        // Kiểm tra nếu originalTitle và criteria có giá trị hợp lệ
         if (originalTitle && criteria) {
             setRowData(originalTitle, criteria);
         } else {
             console.error("Không có dữ liệu ban đầu để load lại.");
         }
     };
-    //////////////////////////////////// Save ///////////////////////////////////////
+    // End 
+    //////////////////////////////////// Save ////////////////////////////////////////
     const calculateRankScore = (row) => {
         if (!row || !criteria) {
             console.warn("Dữ liệu không hợp lệ:", { row, criteria });
@@ -219,8 +208,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         }, 0);
 
     };
-
-    // 
+    // End 
     const handleSaveChanges = () => {
         // Nếu trạng thái là Finalized, bỏ qua kiểm tra
         if (decisionStatus === 'Finalized') {
@@ -240,8 +228,8 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         console.log("Title Configuration successfully updated.”");
         goToNextStep(); // Chuyển bước tiếp theo
     };
-
-    //////////////////////////////////// Column Title ////////////////////////////////////
+    // End 
+    ///////////////////////////////// Column Title ///////////////////////////////////
     const ColumnsTitle = (criteria, decisionStatus) => {
         if (!Array.isArray(criteria)) {
             console.error("Invalid criteria data:", criteria);
@@ -317,23 +305,18 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
         return [...fixedColumns, ...criteriaColumns, ...actionColumn];
     };
+    // End 
     //////////////////////////////////// Row Title ////////////////////////////////////
     const setRowData = (title, criteria) => {
         const mappedRows = title.map((title, index) => {
             // Tạo các trường từ tiêu chí
             const criteriaFields = criteria.reduce((acc, criteriaItem) => {
                 // Tìm option đã chọn tương ứng với criteriaId
-                const matchingOption = title.options?.find(
-                    (option) => option.criteriaId === criteriaItem.criteriaId
-                );
-
+                const matchingOption = title.options?.find((option) => option.criteriaId === criteriaItem.criteriaId);
                 // Lưu giá trị optionName hoặc để trống nếu không tìm thấy
-                acc[criteriaItem.criteriaName] = matchingOption
-                    ? matchingOption.optionName // Tên của option đã chọn
-                    : ""; // Giá trị mặc định
+                acc[criteriaItem.criteriaName] = matchingOption ? matchingOption.optionName : ""; // Giá trị mặc định
                 return acc;
             }, {});
-
             return {
                 id: title.rankingTitleId,
                 index: index + 1,
@@ -342,21 +325,21 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 ...criteriaFields,
             };
         });
-
-        setRows(mappedRows); // Cập nhật state
+        setRows(mappedRows); // Update state
     };
+    // End 
     useEffect(() => {
         if (originalTitle) {
             // Tạo cột
             const columns = ColumnsTitle(criteria, decisionStatus);
             setColumnsTitle(columns);
-            const rows = setRowData(originalTitle, criteria);
-            setRows(rows);
+            setRowData(originalTitle, criteria);
         }
     }, [originalTitle, criteria, decisionStatus]);
 
     return (
         <div>
+            {/* Surrounding border */}
             <Box sx={{
                 width: "100%",
                 height: 500,
@@ -370,25 +353,27 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 overflow: 'hidden',
             }}>
                 <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
+                    {/* Table DataGrid */}
                     <DataGrid
                         rows={rows}
                         columns={columnsTitle}
                         // initialState={{ pinnedColumns: { left: ['titleName', 'rankScore'], right: ['action'] } }}
                         getRowId={(row) => row.id}
-                        sx={{
-                            '& .MuiDataGrid-columnHeaders': {
-                                backgroundColor: '#f4f4f4',
-                            },
-                            overflowX: 'auto',  // Cho phép cuộn ngang cho các cột cuộn
-                            '.MuiDataGrid-virtualScroller': {
-                                overflowX: 'auto', // Cho phép cuộn ngang trong phần cuộn
-                                overflowY: 'auto', // Ẩn cuộn dọc trong vùng cuộn
-                            },
-                        }}
+                    // sx={{
+                    //     '& .MuiDataGrid-columnHeaders': {
+                    //         backgroundColor: '#f4f4f4',
+                    //     },
+                    //     overflowX: 'auto',  // Cho phép cuộn ngang cho các cột cuộn
+                    //     '.MuiDataGrid-virtualScroller': {
+                    //         overflowX: 'auto', // Cho phép cuộn ngang trong phần cuộn
+                    //         overflowY: 'auto', // Ẩn cuộn dọc trong vùng cuộn
+                    //     },
+                    // }}
                     />
                     {/* Button */}
                     {decisionStatus === 'Draft' && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
+                            {/* Add a new Title */}
                             <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                                 <input
                                     type="text"
@@ -398,41 +383,30 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                                         setNewTitleName(e.target.value);
                                     }}
                                     placeholder="Input name for new Ranking Title"
-                                    style={{
-                                        height: '30px',      // Giảm chiều cao
-                                        width: '300px',      // Tăng chiều rộng (dài ra)
-                                        padding: '5px',      // Điều chỉnh padding để không bị quá chật
-                                        fontSize: '16px',    // Tăng kích thước font nếu cần thiết
-                                        borderRadius: '5px', // Thêm bo góc (tùy chọn)
-                                    }}
+                                    style={{ height: '30px', width: '300px', padding: '5px', fontSize: '16px', borderRadius: '5px' }}
                                 />
                                 <IconButton
                                     onClick={handleAddTitle}
-                                    color={statusAddTitle ? 'primary' : 'default'} // Màu xanh khi có criteria được chọn
-                                    disabled={!statusAddTitle} // Vô hiệu hóa khi không có criteria được chọn
-                                    sx={{
-                                        marginLeft: 1,          // Tạo khoảng cách giữa input và icon
-                                        height: '30px',         // Đảm bảo chiều cao của icon button là 30px giống input
-                                        display: 'flex',        // Đảm bảo icon canh giữa trong button
-                                        alignItems: 'center',   // Căn giữa icon theo chiều dọc
-                                    }}
+                                    color={statusAddTitle ? 'primary' : 'default'}
+                                    disabled={!statusAddTitle}
+                                    sx={{ marginLeft: 1, height: '30px', display: 'flex', alignItems: 'center' }}
                                 >
-                                    <AddCircleIcon sx={{ fontSize: 30 }} />  {/* Điều chỉnh kích thước của icon */}
+                                    <AddCircleIcon sx={{ fontSize: 30 }} />
                                 </IconButton>
                             </Box>
-
+                            {/* Cancel and Save */}
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                                 <Button
                                     variant="contained"
                                     color="error"
-                                    onClick={handleCancelChanges} // Gọi hàm hủy thay đổi
+                                    onClick={handleCancelChanges}
                                 >
                                     Cancel
                                 </Button>
                                 <Button
                                     variant="contained"
                                     color="primary"
-                                    onClick={handleSaveChanges} // Gọi hàm lưu thay đổi
+                                    onClick={handleSaveChanges}
                                 >
                                     Save
                                 </Button>

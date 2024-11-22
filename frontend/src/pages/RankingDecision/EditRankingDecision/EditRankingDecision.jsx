@@ -4,20 +4,18 @@ import { useNavigate, useParams } from "react-router-dom";
 
 // MUI
 import {
-    InputAdornment, Box, Button, Typography, TextField, Modal, IconButton, Select, MenuItem, Table, TableHead, TableBody, TableCell, TableRow
+    InputAdornment, Box, Button, Typography, TextField, Modal, IconButton,
 } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import { Stepper, Step, StepButton } from '@mui/material';
 // Css 
 import "../../../assets/css/RankingGroups.css"
-import '../../../assets/css/Table.css';
 // API
 import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
-import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 // Hooks
 import useNotification from "../../../hooks/useNotification.jsx";
-//Data
+//Steper
 import { rankTitle, initialCriteria, initialTitle, initialTask } from "../Data.jsx";
 import CriteriaConfiguration from "./CriteriaConfiguration.jsx";
 import TitleConfiguration from "./TitleConfiguration.jsx";
@@ -31,15 +29,10 @@ const EditDecision = () => {
     const [originalDecisionName, setOriginalDecisionName] = useState('');
     const [showEditDecisionInfoModal, setShowEditDecisionInfoModal] = useState(false); // Display decision editing modal
     const [newDecisionName, setNewDecisionName] = useState(""); // New decision Name
-    const [status, setStatus] = useState("");
-
     // Step
     const [activeStep, setActiveStep] = useState(2);
     // Data
-    const [criteria, setCriteria] = useState([]);
-    const [title, setTitle] = useState([]);
-    const [task, setTask] = useState([]);
-    const [decisionStatus, setDecisionStatus] = useState('Draft');
+    const [decisionStatus, setDecisionStatus] = useState('');
     // 'Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'
     const steps = ['Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'];
     // Trạng thái lưu dữ liệu cho từng bước
@@ -63,8 +56,7 @@ const EditDecision = () => {
             console.log(decisionData)
             setOriginalDecisionName(decisionData.decisionName || "Decision Name");
             setNewDecisionName(decisionData.decisionName || "");
-            setStatus(decisionData.status || "");
-            setDecisionStatus(decisionData.status.charAt(0).toUpperCase() + decisionStatus.slice(1).toLowerCase() || "")
+            setDecisionStatus(decisionData.status)
         } catch (error) {
             console.error("Error fetching group:", error);
         }
@@ -174,18 +166,6 @@ const EditDecision = () => {
         setActiveStep(prevStep => prevStep + 1);
     };
     //////////////////////////////////////////////////////////////////////////// Criteria Configuration ////////////////////////////////////////////////////////////////////////////
-    // data criteria 
-    // const getCriteriaConfiguration = async () => {
-    //     try {
-    //         const response = await DecisionCriteriaAPI.optionCriteria(id);
-    //         setCriteria(response);
-    //     } catch (error) {
-    //         console.error("Error fetching criteria:", error);
-    //     }
-    // };
-    // useEffect(() => {
-    //     getCriteriaConfiguration();
-    // }, []);
 
     //////////////////////////////////////////////////////////////////////////// End Criteria Configuration ////////////////////////////////////////////////////////////////////////////
 
@@ -212,7 +192,6 @@ const EditDecision = () => {
             case 1:
                 return (
                     <TitleConfiguration
-                        criteria={criteria}
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
@@ -222,10 +201,6 @@ const EditDecision = () => {
             case 2:
                 return (
                     <TaskandPriceConfiguration
-                        criteria={initialCriteria}
-                        title={initialTitle}
-                        rankTitle={rankTitle}
-                        task={initialTask}
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
@@ -236,7 +211,10 @@ const EditDecision = () => {
                 return <div>No Step</div>;
         }
     };
-
+    const handleSubmit = () => {
+        setDecisionStatus('Finalized')
+        showSuccessMessage('Submit successfully ');
+    };
     return (
         <div style={{ marginTop: "60px" }}>
             <Box sx={{ marginTop: 4, padding: 2 }}>
@@ -248,7 +226,8 @@ const EditDecision = () => {
                 </Typography>
                 {/* Box Decision Info */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%' }}>
+                    {/* Ranking Decision Name */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-start' }}>
                         <Typography sx={{ marginRight: 1 }}>Ranking Decision Name:</Typography>
                         <TextField
                             variant="outlined"
@@ -264,18 +243,29 @@ const EditDecision = () => {
                             <EditIcon />
                         </IconButton>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%' }}>
+                    {/* Status */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-end', marginRight: -5 }}>
                         <Typography sx={{ marginRight: 1 }}>Status:</Typography>
                         <TextField
                             variant="outlined"
                             fullWidth
-                            value={status}
+                            value={decisionStatus}
                             disabled
                             sx={{ width: '60%' }}
                             InputProps={{
                                 sx: { height: '30px' }
                             }}
                         />
+                    </Box>
+                    {/* Submit */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-end' }}>
+                        <Button
+                            variant="contained"
+                            color='primary'
+                            onClick={handleSubmit}
+                        >
+                            Submit
+                        </Button>
                     </Box>
                 </Box>
 
