@@ -114,15 +114,21 @@ const EditDecision = () => {
     /////////////////////////////////////////////////////// Stepp /////////////////////////////////////////////////////////////////
     // Hàm kiểm tra xem có thể chuyển sang bước khác không
     const canMoveToNextStep = (step) => {
+        // Nếu trạng thái là 'Finalized', cho phép chuyển bước bất chấp trạng thái lưu
+        if (decisionStatus === 'Finalized') {
+            return true;
+        }
         if (step === 1 && !isCriteriaSaved) return false;  // Không chuyển sang Title Configuration nếu Criteria chưa lưu
         if (step === 2 && !isTitleSaved) return false;  // Không chuyển sang Task & Price Configuration nếu Title chưa lưu
         return true;
     };
     // Hàm xử lý khi người dùng nhấn vào một bước
     const handleStepChange = (step) => {
-        if (step < activeStep || canMoveToNextStep(step)) {  // Người dùng chỉ có thể quay lại các bước trước hoặc tiến tới bước sau nếu dữ liệu đã lưu
-            setActiveStep(step);
-        }
+        // Người dùng chỉ có thể quay lại các bước trước hoặc tiến tới bước sau nếu dữ liệu đã lưu, hoặc nếu trạng thái là 'Finalized'
+        // if (step < activeStep || canMoveToNextStep(step)) {
+        //     setActiveStep(step);
+        // }
+        setActiveStep(step);
     };
     // Hàm xử lý khi lưu dữ liệu cho từng bước
     const handleSave = () => {
@@ -136,30 +142,42 @@ const EditDecision = () => {
     };
     // Màu sắc cho từng bước dựa trên trạng thái
     const getStepColor = (index) => {
-        if (index === activeStep) {
-            return 'primary';  // Bước hiện tại sẽ có màu chính
+        // Nếu trạng thái là 'Finalize', tất cả các bước sẽ có màu xanh
+        if (decisionStatus === 'Finalize') {
+            setIsTaskSaved(true)
+            return 'primary';  // Màu xanh cho tất cả các bước khi trạng thái là 'Finalize'
         }
+
+        // Kiểm tra bước hiện tại và trạng thái 'Draft'
+        if (index === activeStep) {
+            return 'primary';  // Bước hiện tại có màu chính (xanh)
+        }
+
+        // Kiểm tra nếu trạng thái là 'Draft' và bước chưa được lưu
         if (index === 0 && !isCriteriaSaved) {
-            return 'default';  // Criteria chưa lưu thì không có tick mark
+            return 'default';  // Màu xám cho Criteria nếu chưa lưu
         }
         if (index === 1 && !isTitleSaved) {
-            return 'default';  // Title chưa lưu thì không có tick mark
+            return 'default';  // Màu xám cho Title nếu chưa lưu
         }
         if (index === 2 && !isTaskSaved) {
-            return 'default';  // Task chưa lưu thì không có tick mark
+            return 'default';  // Màu xám cho Task nếu chưa lưu
         }
-        return 'secondary'; // Các bước đã lưu sẽ có tick mark
+
+        return 'secondary';  // Các bước đã lưu có màu phụ (xanh nhẹ)
     };
+
     // Hàm chuyển sang bước tiếp theo và cập nhật decisionStatus
     const goToNextStep = () => {
-        // Cập nhật decisionStatus tùy thuộc vào bước hiện tại
+        // Chuyển sang bước tiếp theo và cập nhật decisionStatus
         if (activeStep === 0) {
             // setDecisionStatus('In Progress'); // Bước 0: Đang tiến hành
         } else if (activeStep === 1) {
             // setDecisionStatus('In Progress'); // Bước 1: Tiến hành
-        } else if (activeStep === 4) {
-            setDecisionStatus('Finalize'); // Bước 2: Hoàn thành
-
+        } else if (activeStep === 2) {
+            // setDecisionStatus('In Progress'); // Bước 2: Tiến hành
+        } else if (activeStep === 3) {
+            setDecisionStatus('Finalized'); // Bước 3: Hoàn thành
         }
 
         // Chuyển sang bước tiếp theo
@@ -227,7 +245,7 @@ const EditDecision = () => {
                 {/* Box Decision Info */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: 2 }}>
                     {/* Ranking Decision Name */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-start' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%' }}>
                         <Typography sx={{ marginRight: 1 }}>Ranking Decision Name:</Typography>
                         <TextField
                             variant="outlined"
@@ -243,8 +261,9 @@ const EditDecision = () => {
                             <EditIcon />
                         </IconButton>
                     </Box>
+
                     {/* Status */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-end', marginRight: -5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-end' }}> {/* Giãn khoảng cách ở đây */}
                         <Typography sx={{ marginRight: 1 }}>Status:</Typography>
                         <TextField
                             variant="outlined"
@@ -257,17 +276,26 @@ const EditDecision = () => {
                             }}
                         />
                     </Box>
+
                     {/* Submit */}
                     <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-end' }}>
-                        <Button
-                            variant="contained"
-                            color='primary'
-                            onClick={handleSubmit}
-                        >
-                            Submit
-                        </Button>
+                        {activeStep === 2 && (  // Chỉ hiển thị nút Submit khi activeStep = 2
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleSubmit}
+                                sx={{
+                                    visibility: decisionStatus === 'Draft' ? 'visible' : 'hidden', // Giữ không gian cho nút nếu là Draft
+                                }}
+                            >
+                                Submit
+                            </Button>
+                        )}
                     </Box>
+
                 </Box>
+
+
 
                 {/* Stepper */}
                 <Box sx={{ width: '100%', marginTop: 2 }}>
