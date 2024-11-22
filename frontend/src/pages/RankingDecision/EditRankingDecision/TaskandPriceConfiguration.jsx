@@ -34,7 +34,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     const getTaskConfiguration = async () => {
         try {
             const response = await DecisionTaskAPI.getDecisionTaskByDecisionId(id);
-            console.log(response)
+            // console.log(response)
             setOriginalTask(response);
         } catch (error) {
             console.error("Error fetching task:", error);
@@ -44,7 +44,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     const getTitleConfiguration = async () => {
         try {
             const response = await DecisionTitleAPI.getDecisionTitleByDecisionId(id);
-            console.log(response)
+            // console.log(response)
             setTitle(response);
         } catch (error) {
             console.error("Error fetching task:", error);
@@ -60,7 +60,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
     ///////////////////////////// The update function changes //////////////////////////
     const handleCellEditTaskCommit = (newRow) => {
-        console.log(newRow)
+        // console.log(newRow)
         // Cập nhật hàng mới
         const updatedRow = { ...newRow };
         // Cập nhật trạng thái `rows`
@@ -102,7 +102,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         setRows([...rows, ...newRows]);
         setSelectedTask(null)
     };
-    console.log(rows)
+    // console.log(rows)
     // End 
     //////////////////////////////////// Cancel ///////////////////////////////////////
     const handleCancelChanges = () => {
@@ -119,30 +119,30 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     //////////////////////////////////// Save /////////////////////////////////////////
     const handleSaveChanges = () => {
         // Kiểm tra xem tất cả các ô trong bảng đã được điền (không có ô nào trống)
-        // const allFieldsFilled = rows.every((row) => {
-        //     // Kiểm tra mỗi ô trong hàng (trừ các cột cố định như 'id' và 'task')
-        //     return Object.keys(row).every((key) => {
-        //         if (key !== 'id' && key !== 'taskName' && key !== 'taskType') {
-        //             // Kiểm tra giá trị của ô không phải là undefined, null hay rỗng
-        //             if (row[key] === '' || row[key] === null || row[key] === undefined) {
-        //                 console.log(`Ô thiếu dữ liệu: ${key}, Dòng: ${JSON.stringify(row)}`);
-        //                 return false;
-        //             }
-        //             return true;
-        //         }
-        //         return true;
-        //     });
-        // });
+        const allFieldsFilled = rows.every((row) => {
+            // Kiểm tra mỗi ô trong hàng (trừ các cột cố định như 'id' và 'task')
+            return Object.keys(row).every((key) => {
+                if (key !== 'id' && key !== 'taskName' && key !== 'taskType') {
+                    // Kiểm tra giá trị của ô không phải là undefined, null hay rỗng
+                    if (row[key] === '' || row[key] === null || row[key] === undefined) {
+                        console.log(`Ô thiếu dữ liệu: ${key}, Dòng: ${JSON.stringify(row)}`);
+                        return false;
+                    }
+                    return true;
+                }
+                return true;
+            });
+        });
 
-        // // Nếu có ít nhất một ô chưa được điền, hiển thị thông báo lỗi
-        // if (!allFieldsFilled) {
-        //     showErrorMessage('Tất cả các ô phải được điền đầy đủ');
-        //     console.log('Có ô chưa điền dữ liệu');
-        //     return; // Dừng hàm nếu có ô chưa điền
-        // }
+        // Nếu có ít nhất một ô chưa được điền, hiển thị thông báo lỗi
+        if (!allFieldsFilled) {
+            showErrorMessage('Tất cả các ô phải được điền đầy đủ');
+            console.log('Có ô chưa điền dữ liệu');
+            return; // Dừng hàm nếu có ô chưa điền
+        }
         showSuccessMessage('Task & Price Configuration successfully updated.');
-        console.log("Tất cả ô đã được điền đầy đủ. Lưu dữ liệu...");
-        // goToNextStep(); // Tiến hành lưu dữ liệu và chuyển sang bước tiếp theo
+        // console.log("Tất cả ô đã được điền đầy đủ. Lưu dữ liệu...");
+        goToNextStep({ stayOnCurrentStep: true }); // Tiến hành lưu dữ liệu và chuyển sang bước tiếp theo
     };
     // End 
     //////////////////////////////////// Column Task////////////////////////////////////
@@ -152,9 +152,9 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             field: titleItem.rankingTitleName, // Use rankingTitleName as field
             headerName: titleItem.rankingTitleName, // Display the name
             width: 150, // Adjust column width
-            editable: decisionStatus === 'Draft', // Only editable in Draft
+            editable: decisionStatus === 'Draft' || decisionStatus === 'Finalized', // Only editable in Draft
             renderCell: (params) =>
-                decisionStatus === 'Draft' ? (
+                decisionStatus === 'Draft' || decisionStatus === 'Finalized' ? (
                     <TextField
                         sx={{
                             marginTop: '7px',
@@ -241,7 +241,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             const columns = ColumnsTask(title, decisionStatus);
             setColumnsTask(columns);
             setRowData(originalTask, title);
-            console.log(rows)
+            // console.log(rows)
         }
     }, [originalTask, title, decisionStatus]);
     // End 
@@ -285,56 +285,54 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                         }}
                     />
                     {/* Button */}
-                    {decisionStatus === 'Draft' && (
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-                            {/* Select to Add a new Task*/}
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                                <Select
-                                    isSearchable={true}
-                                    placeholder="Select to Add a new Task"
-                                    options={listtask
-                                        .filter((task) => !rows.some((row) => row.id === task.taskId))
-                                        .map((task) => ({ value: task.taskId, label: task.taskName, }))}
-                                    styles={{
-                                        container: (provided) => ({ ...provided, width: '300px', }),
-                                        control: (provided) => ({ ...provided, height: '40px', fontSize: '16px', display: 'flex', alignItems: 'center', }),
-                                        placeholder: (provided) => ({ ...provided, color: '#888', }),
-                                        menu: (provided) => ({ ...provided, maxHeight: 300, overflowY: 'auto', }),
-                                    }}
-                                    menuPlacement="top"
-                                    value={selectedTask}
-                                    onChange={(option) => setSelectedTask(option)}
-                                />
-                                <IconButton
-                                    onClick={handleAddTask}
-                                    color={selectedTask ? 'primary' : 'default'}
-                                    // disabled={!selectedTask}
-                                    sx={{ marginLeft: 1, height: '30px', display: 'flex', alignItems: 'center', }}
-                                >
-                                    <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
-                                </IconButton>
-                            </Box>
-                            {/* Cancel and Save */}
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                                {/* Cancel*/}
-                                <Button
-                                    variant="contained"
-                                    color="error"
-                                    onClick={handleCancelChanges}
-                                >
-                                    Cancel
-                                </Button>
-                                {/* Save */}
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={handleSaveChanges}
-                                >
-                                    Save
-                                </Button>
-                            </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
+                        {/* Select to Add a new Task*/}
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+                            <Select
+                                isSearchable={true}
+                                placeholder="Select to Add a new Task"
+                                options={listtask
+                                    .filter((task) => !rows.some((row) => row.id === task.taskId))
+                                    .map((task) => ({ value: task.taskId, label: task.taskName, }))}
+                                styles={{
+                                    container: (provided) => ({ ...provided, width: '300px', }),
+                                    control: (provided) => ({ ...provided, height: '40px', fontSize: '16px', display: 'flex', alignItems: 'center', }),
+                                    placeholder: (provided) => ({ ...provided, color: '#888', }),
+                                    menu: (provided) => ({ ...provided, maxHeight: 300, overflowY: 'auto', }),
+                                }}
+                                menuPlacement="top"
+                                value={selectedTask}
+                                onChange={(option) => setSelectedTask(option)}
+                            />
+                            <IconButton
+                                onClick={handleAddTask}
+                                color={selectedTask ? 'primary' : 'default'}
+                                // disabled={!selectedTask}
+                                sx={{ marginLeft: 1, height: '30px', display: 'flex', alignItems: 'center', }}
+                            >
+                                <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
+                            </IconButton>
                         </Box>
-                    )}
+                        {/* Cancel and Save */}
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                            {/* Cancel*/}
+                            <Button
+                                variant="contained"
+                                color="error"
+                                onClick={handleCancelChanges}
+                            >
+                                Cancel
+                            </Button>
+                            {/* Save */}
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleSaveChanges}
+                            >
+                                Save
+                            </Button>
+                        </Box>
+                    </Box>
                 </Box>
             </Box>
         </div>

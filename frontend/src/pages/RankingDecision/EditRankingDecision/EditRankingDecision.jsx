@@ -9,6 +9,8 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import { Stepper, Step, StepButton } from '@mui/material';
+import { CheckCircle } from '@mui/icons-material'; // You can also use other icons if needed
+
 // Css 
 import "../../../assets/css/RankingGroups.css"
 // API
@@ -30,12 +32,10 @@ const EditDecision = () => {
     const [showEditDecisionInfoModal, setShowEditDecisionInfoModal] = useState(false); // Display decision editing modal
     const [newDecisionName, setNewDecisionName] = useState(""); // New decision Name
     // Step
-    const [activeStep, setActiveStep] = useState(2);
-    // Data
+    const [activeStep, setActiveStep] = useState(0);
     const [decisionStatus, setDecisionStatus] = useState('');
-    // 'Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'
     const steps = ['Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'];
-    // Trạng thái lưu dữ liệu cho từng bước
+    // State saves data for each step
     const [isCriteriaSaved, setIsCriteriaSaved] = useState(false);
     const [isTitleSaved, setIsTitleSaved] = useState(false);
     const [isTaskSaved, setIsTaskSaved] = useState(false);
@@ -112,88 +112,70 @@ const EditDecision = () => {
 
 
     /////////////////////////////////////////////////////// Stepp /////////////////////////////////////////////////////////////////
+    // Trạng thái hoàn thành của từng bước
+    const [completed, setCompleted] = useState({
+        0: isCriteriaSaved,
+        1: isTitleSaved,
+        2: isTaskSaved,
+    });
+    useEffect(() => {
+        if (decisionStatus === 'Finalized') {
+            setIsCriteriaSaved(true);
+            setIsTitleSaved(true);
+            setIsTaskSaved(true);
+            setCompleted({
+                0: true,
+                1: true,
+                2: true,
+            });
+        }
+    }, [decisionStatus]);
     // Hàm kiểm tra xem có thể chuyển sang bước khác không
     const canMoveToNextStep = (step) => {
-        // Nếu trạng thái là 'Finalized', cho phép chuyển bước bất chấp trạng thái lưu
         if (decisionStatus === 'Finalized') {
             return true;
+        } else if (decisionStatus === 'Draft') {
+            if (step === 1 && !isCriteriaSaved) return false;
+            if (step === 2 && !isTitleSaved) return false;
         }
-        if (step === 1 && !isCriteriaSaved) return false;  // Không chuyển sang Title Configuration nếu Criteria chưa lưu
-        if (step === 2 && !isTitleSaved) return false;  // Không chuyển sang Task & Price Configuration nếu Title chưa lưu
         return true;
     };
     // Hàm xử lý khi người dùng nhấn vào một bước
     const handleStepChange = (step) => {
-        // Người dùng chỉ có thể quay lại các bước trước hoặc tiến tới bước sau nếu dữ liệu đã lưu, hoặc nếu trạng thái là 'Finalized'
-        // if (step < activeStep || canMoveToNextStep(step)) {
-        //     setActiveStep(step);
-        // }
-        setActiveStep(step);
-    };
-    // Hàm xử lý khi lưu dữ liệu cho từng bước
-    const handleSave = () => {
-        if (activeStep === 0) {
-            setIsCriteriaSaved(true); // Đánh dấu Criteria đã lưu
-        } else if (activeStep === 1) {
-            setIsTitleSaved(true); // Đánh dấu Title đã lưu
-        } else if (activeStep === 2) {
-            setIsTaskSaved(true); // Đánh dấu Task đã lưu
+        console.log(step)
+        if (step < activeStep || canMoveToNextStep(step)) {
+            setActiveStep(step);
         }
     };
-    // Màu sắc cho từng bước dựa trên trạng thái
-    const getStepColor = (index) => {
-        // Nếu trạng thái là 'Finalize', tất cả các bước sẽ có màu xanh
-        if (decisionStatus === 'Finalize') {
-            setIsTaskSaved(true)
-            return 'primary';  // Màu xanh cho tất cả các bước khi trạng thái là 'Finalize'
+
+    // Hàm chuyển sang bước tiếp theo
+    const goToNextStep = ({ stayOnCurrentStep = false } = {}) => {
+        if (decisionStatus === 'Draft') {
+            if (activeStep === 0 && !isCriteriaSaved) {
+                setIsCriteriaSaved(true);
+                setCompleted((prev) => ({ ...prev, 0: true }));
+            }
+            if (activeStep === 1 && !isTitleSaved) {
+                setIsTitleSaved(true);
+                setCompleted((prev) => ({ ...prev, 1: true }));
+            }
+            if (activeStep === 2 && !isTaskSaved) {
+                setIsTaskSaved(true);
+                setCompleted((prev) => ({ ...prev, 2: true }));
+            }
+        } else if (decisionStatus === 'Finalized') {
+            setIsCriteriaSaved(true);
+            setIsTitleSaved(true);
+            setIsTaskSaved(true);
+            setCompleted({ 0: true, 1: true, 2: true });
         }
 
-        // Kiểm tra bước hiện tại và trạng thái 'Draft'
-        if (index === activeStep) {
-            return 'primary';  // Bước hiện tại có màu chính (xanh)
+        // Nếu `stayOnCurrentStep` là false, chuyển bước
+        if (!stayOnCurrentStep) {
+            setActiveStep((prevStep) => prevStep + 1);
         }
-
-        // Kiểm tra nếu trạng thái là 'Draft' và bước chưa được lưu
-        if (index === 0 && !isCriteriaSaved) {
-            return 'default';  // Màu xám cho Criteria nếu chưa lưu
-        }
-        if (index === 1 && !isTitleSaved) {
-            return 'default';  // Màu xám cho Title nếu chưa lưu
-        }
-        if (index === 2 && !isTaskSaved) {
-            return 'default';  // Màu xám cho Task nếu chưa lưu
-        }
-
-        return 'secondary';  // Các bước đã lưu có màu phụ (xanh nhẹ)
     };
 
-    // Hàm chuyển sang bước tiếp theo và cập nhật decisionStatus
-    const goToNextStep = () => {
-        // Chuyển sang bước tiếp theo và cập nhật decisionStatus
-        if (activeStep === 0) {
-            // setDecisionStatus('In Progress'); // Bước 0: Đang tiến hành
-        } else if (activeStep === 1) {
-            // setDecisionStatus('In Progress'); // Bước 1: Tiến hành
-        } else if (activeStep === 2) {
-            // setDecisionStatus('In Progress'); // Bước 2: Tiến hành
-        } else if (activeStep === 3) {
-            setDecisionStatus('Finalized'); // Bước 3: Hoàn thành
-        }
-
-        // Chuyển sang bước tiếp theo
-        setActiveStep(prevStep => prevStep + 1);
-    };
-    //////////////////////////////////////////////////////////////////////////// Criteria Configuration ////////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////// End Criteria Configuration ////////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////// Title Configuration ////////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////// End Title Configuration ////////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////// Task and Price Configuration ////////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////// End Task and Price Configuration ////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////renderStepContent////////////////////////////////////////////////////////////////////////////
     const renderStepContent = (step) => {
@@ -295,23 +277,27 @@ const EditDecision = () => {
 
                 </Box>
 
-
-
                 {/* Stepper */}
                 <Box sx={{ width: '100%', marginTop: 2 }}>
-                    <Stepper activeStep={activeStep} alternativeLabel>
+                    <Stepper
+                        activeStep={activeStep}
+                        alternativeLabel={true}
+                        nonLinear={decisionStatus === 'Finalized'}
+                    >
                         {steps.map((label, index) => (
-                            <Step key={label}>
+                            <Step key={label} completed={completed[index]}>
                                 <StepButton
                                     onClick={() => handleStepChange(index)}
                                     sx={{
-                                        color: getStepColor(index),
-                                        textAlign: 'center',  // Ensure the label is centered
-                                        fontSize: '16px',  // Customize font size as needed
-                                        fontWeight: 'bold'  // Optional: Make the label bold
+                                        textAlign: 'center',
+                                        fontSize: '16px',
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
                                     }}
                                 >
-                                    {label}  {/* Only display the step label */}
+                                    {label}
                                 </StepButton>
                             </Step>
                         ))}

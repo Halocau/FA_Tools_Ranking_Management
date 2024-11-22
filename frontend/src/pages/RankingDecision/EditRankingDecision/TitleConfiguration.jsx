@@ -208,14 +208,9 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         }, 0);
 
     };
+
     // End 
     const handleSaveChanges = () => {
-        // Nếu trạng thái là Finalized, bỏ qua kiểm tra
-        if (decisionStatus === 'Finalized') {
-            console.log("Finalized: Lưu dữ liệu và chuyển bước...");
-            goToNextStep();
-            return;
-        }
         // Kiểm tra xem tất cả rankScore đã được tính toán
         const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
 
