@@ -1,69 +1,57 @@
+// React
 import React, { useEffect, useState } from 'react';
-
 import { useNavigate, useParams } from "react-router-dom";
-
-// Components
 import Select from "react-select";
-import { DataGrid } from '@mui/x-data-grid';
-import { Box, TextField, Button } from '@mui/material';
-
-//Icon
 import { MdDeleteForever } from 'react-icons/md';
+// Mui
+import { DataGrid } from '@mui/x-data-grid';
+import { Box, TextField, Button, IconButton } from '@mui/material';
+import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
 
 // API
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
-import CriteriaAPI from "../../../api/CriteriaAPI.js";
+
+
+
+
 
 const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
     // Data
     const { id } = useParams(); // Get the ID from the URL
-    const [selectedCriteria, setSelectedCriteria] = useState(null);
-
-    // Row table
     const [originalCriteria, setOriginalCriteria] = useState([]);  // Lưu dữ liệu gốc
+    // Row table
     const [rows, setRows] = useState([]);
-
     //Select to Add a new Criteria
+    const [selectedCriteria, setSelectedCriteria] = useState(null);
     const [listcriteria, setListCriteria] = useState([]);
-
-    // Pagination for data grid
-    const [page, setPage] = useState(0);
-    const [pageSize, setPageSize] = useState(20);
-
-    const [filter, setFilter] = useState('');
-    //size of list
-    const [size, setSize] = useState(20);
 
     // Load data getCriteriaConfiguration
     const getCriteriaConfiguration = async () => {
         try {
             const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
-            setOriginalCriteria(response);
+            console.log("Dữ liệu nhận được:", response);
+
+            // Chỉ cập nhật nếu response khác với state hiện tại
+            setOriginalCriteria((prevCriteria) => {
+                if (JSON.stringify(prevCriteria) !== JSON.stringify(response)) {
+                    return response;
+                }
+                return prevCriteria;
+            });
         } catch (error) {
             console.error("Error fetching criteria:", error);
         }
     };
 
     useEffect(() => {
+        if (!id) return; // Bỏ qua nếu `id` không xác định
         getCriteriaConfiguration();
-    }, []);
+    }, [id]); // Dependency chỉ bao gồm `id`
 
-    const getCriteriaList = async () => {
-        try {
-            const response = await DecisionCriteriaAPI.getAllCriteria();
-            console.log(response);
-            setListCriteria(response);
-        } catch (error) {
-            console.error("Error fetching criteria:", error);
-        }
-    }
-
-    useEffect(() => {
-        getCriteriaList();
-    }, []);
 
 
     const updateDecisionCriteria = async (form) => {
+        console.log(form)
         try {
             await DecisionCriteriaAPI.updateDecisionCriteria(
                 form, id, form.criteriaId);
@@ -168,6 +156,19 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     };
 
     //////////////////////////////////// Select to Add a new Criteria ////////////////////////////////////
+    const getCriteriaList = async () => {
+        try {
+            const response = await DecisionCriteriaAPI.getAllCriteria();
+            console.log(response);
+            setListCriteria(response);
+        } catch (error) {
+            console.error("Error fetching criteria:", error);
+        }
+    }
+    useEffect(() => {
+        getCriteriaList();
+    }, []);
+
     const handleAddCriteria = async () => {
         const addedCriteria = listcriteria.find(
             (criteria) => criteria.criteriaId === selectedCriteria.value
@@ -266,7 +267,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     return (
         <Box sx={{
             width: "100%",
-            height: 600,
+            height: 500,
             marginTop: '10px',
             border: '2px solid black',
             borderRadius: '8px',
@@ -289,7 +290,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                 />
                 {decisionStatus === 'Draft' && (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
                             <Select
                                 isSearchable={true}
                                 placeholder="Add New Criteria ..."
@@ -310,13 +311,31 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                                     }),
                                 }}
                                 menuPlacement="top"
-                                value={selectedCriteria} // Bind the selected option to the state
-                                onChange={(option) => setSelectedCriteria(option)} // Update state on selection
+                                value={selectedCriteria}
+                                onChange={(option) => setSelectedCriteria(option)}
+                                style={{
+                                    height: '30px',
+                                    width: '300px',
+                                    padding: '5px',
+                                    fontSize: '16px',
+                                    borderRadius: '5px',
+                                }}
                             />
-                            <Button variant="contained" color="success" onClick={handleAddCriteria}>
-                                Add Criteria
-                            </Button>
+                            <IconButton
+                                onClick={handleAddCriteria}
+                                color={selectedCriteria ? 'primary' : 'default'}
+                                disabled={!selectedCriteria}
+                                sx={{
+                                    marginLeft: 1,
+                                    height: '30px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
+                            </IconButton>
                         </Box>
+
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
 
                             <Button
@@ -328,7 +347,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                             </Button>
                             <Button
                                 variant="contained"
-                                color="success"
+                                color="primary"
                                 onClick={handleSaveChanges}
                             >
                                 Save

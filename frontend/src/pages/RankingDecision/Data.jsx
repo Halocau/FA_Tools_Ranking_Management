@@ -7,13 +7,10 @@ export const rankTitle = [
 export const initialCriteria = [
     { criteriaId: 1, criteriaName: 'Scope of Training Assignments', weight: 10, maxScore: 4, numOptions: 4 },
     { criteriaId: 2, criteriaName: 'Technical or Professional Skills', weight: 10, maxScore: 6, numOptions: 6 },
-    { criteriaId: 3, criteriaName: 'Courseraware Development', weight: 30, maxScore: 4, numOptions: 4 },
-    { criteriaId: 4, criteriaName: 'Courseware Development', weight: 10, maxScore: 3, numOptions: 3 },
-    { criteriaId: 5, criteriaName: 'Training Certificate', weight: 30, maxScore: 4, numOptions: 4 },
-    { criteriaId: 6, criteriaName: 'Years of Working and Teaching', weight: 10, maxScore: 4, numOptions: 4 },
-    // { criteriaId: 8, criteriaName: 'Years of Working and Teaching', weight: 10, maxScore: 4, numOptions: 4 },
-    // { criteriaId: 9, criteriaName: 'Years of Working and Teaching', weight: 10, maxScore: 4, numOptions: 4 },
-    // { criteriaId: 10, criteriaName: 'Years of Working and Teaching', weight: 10, maxScore: 4, numOptions: 4 },
+    { criteriaId: 3, criteriaName: 'Courseraware Development', weight: 30, maxScore: 6, numOptions: 6 },
+    { criteriaId: 5, criteriaName: 'Training and Mentoring Skills', weight: 10, maxScore: 6, numOptions: 6 },
+    { criteriaId: 5, criteriaName: 'Training Certificate', weight: 30, maxScore: 6, numOptions: 6 },
+    { criteriaId: 10, criteriaName: 'Years of Working and Teaching', weight: 10, maxScore: 5, numOptions: 5 },
 
 ];
 
