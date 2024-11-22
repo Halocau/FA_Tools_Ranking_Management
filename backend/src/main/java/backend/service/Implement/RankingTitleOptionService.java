@@ -8,6 +8,7 @@ import backend.model.dto.TitleConfiguration.TitleOptionDTO;
 import backend.model.entity.Options;
 import backend.model.entity.RankingTitle;
 import backend.model.entity.RankingTitleOption;
+import backend.model.entity.Serializable.RankingTitleOptionSerializable;
 import backend.model.form.RankingTitleOption.AddRankingTitleOptionRequest;
 import backend.model.form.RankingTitleOption.UpdateRankingTitleOptionRequest;
 import backend.service.IRankingTitleOptionService;
@@ -20,18 +21,21 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RankingTitleOptionService implements IRankingTitleOptionService {
 
-    private IRankingTitleOptionRepository irankingTitleOptionRepository;
-    private IRankingTitleRepository irankingTitleRepository;
-    private IOptionRepository iOptionRepository;
-    private ModelMapper modelMapper;
+    private final IRankingTitleOptionRepository irankingTitleOptionRepository;
+    private final IRankingTitleRepository irankingTitleRepository;
+    private final IOptionRepository iOptionRepository;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public RankingTitleOptionService(IRankingTitleOptionRepository irankingTitleOptionRepository,
-            IRankingTitleRepository irankingTitleRepository, IOptionRepository iOptionRepository,
+    public RankingTitleOptionService(
+            IRankingTitleOptionRepository irankingTitleOptionRepository,
+            IRankingTitleRepository irankingTitleRepository,
+            IOptionRepository iOptionRepository,
             ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
         this.irankingTitleOptionRepository = irankingTitleOptionRepository;
@@ -49,13 +53,6 @@ public class RankingTitleOptionService implements IRankingTitleOptionService {
         return irankingTitleOptionRepository.findByRankingTitleIdAndOptionId(rankingTitleId, optionId);
     }
 
-    // @Override
-    // public RankingTitleOption findRankingTitleOptionById(int id) {
-    // return irankingTitleOptionRepository.findById(id)
-    // .orElseThrow(() -> new EntityNotFoundException("Ranking Title Option with ID
-    // " + id + " Not Found"));
-    // }
-
     @Override
     @Transactional
     public RankingTitleOption addRankingTitleOption(RankingTitleOption rankingTitleOption) {
@@ -71,15 +68,15 @@ public class RankingTitleOptionService implements IRankingTitleOptionService {
     @Override
     @Transactional
     public void deleteRankingTitleOption(Integer rankingTitleId, Integer optionId) {
-        RankingTitleOption find = irankingTitleOptionRepository.findByRankingTitleIdAndOptionId(rankingTitleId,
-                optionId);
-        if (find != null) {
-            irankingTitleOptionRepository.delete(find);
+        RankingTitleOptionSerializable id = new RankingTitleOptionSerializable(rankingTitleId, optionId);
+        Optional<RankingTitleOption> find = irankingTitleOptionRepository.findById(id);
+        if (find.isPresent()) {
+            irankingTitleOptionRepository.delete(find.get());
         } else {
-            throw new EntityNotFoundException("Ranking Title Option with rankingTitleId " + rankingTitleId
-                    + " and optionId " + optionId + " Not Found");
+            throw new EntityNotFoundException(
+                    "Ranking Title Option with rankingTitleId " + rankingTitleId + " and optionId " + optionId
+                            + " not found.");
         }
-
     }
 
     @Override
@@ -94,7 +91,6 @@ public class RankingTitleOptionService implements IRankingTitleOptionService {
 
     @Override
     public List<TitleOptionDTO> getRankingTitleOptionByDecisionId(Integer decisionId) {
-
         List<TitleOptionDTO> listTitleOptionDTO = new ArrayList<>();
 
         List<RankingTitle> listRankingTitle = irankingTitleRepository.findByDecisionId(decisionId);
@@ -108,7 +104,8 @@ public class RankingTitleOptionService implements IRankingTitleOptionService {
             List<Options> listOption = new ArrayList<>();
             List<OptionDTO> listOptionDTO1 = new ArrayList<>();
             for (RankingTitleOption rto : listRankingTitleOption) {
-                Options option = iOptionRepository.findById(rto.getOptionId()).get();
+                Options option = iOptionRepository.findById(rto.getOptionId()).orElseThrow(
+                        () -> new EntityNotFoundException("Option with ID " + rto.getOptionId() + " not found"));
                 listOption.add(option);
                 listOptionDTO1.add(modelMapper.map(option, OptionDTO.class));
             }
@@ -122,31 +119,47 @@ public class RankingTitleOptionService implements IRankingTitleOptionService {
         return listTitleOptionDTO;
     }
 
-    // @Override
-    // @Transactional
-    // public void updateRankingTitleOption(UpdateRankingTitleOptionRequest form,
-    // Integer rankingTitleId, Integer optionId) {
-    // if (form == null) {
-    // throw new IllegalArgumentException("Form cannot be null");
-    // }
-    //
-    // RankingTitleOption existingOption =
-    // irankingTitleOptionRepository.findByRankingTitleIdAndOptionId(rankingTitleId,
-    // optionId);
-    //
-    // if (existingOption != null) {
-    // // Nếu tìm thấy, cập nhật giá trị
-    // existingOption.setRankingTitleId(form.getRankingTitleId());
-    // existingOption.setOptionId(form.getOptionId());
-    // irankingTitleOptionRepository.save(existingOption);
-    // } else {
-    // // Nếu không tìm thấy, tạo mới bản ghi
-    // RankingTitleOption newOption = RankingTitleOption.builder()
-    // .rankingTitleId(form.getRankingTitleId())
-    // .optionId(form.getOptionId())
-    // .build();
-    // irankingTitleOptionRepository.save(newOption);
-    // }
-    // }
+    @Override
+    @Transactional
+    public RankingTitleOption upsertRankingTitleOption(UpdateRankingTitleOptionRequest request) {
 
+        // Validate inputs
+        if (request.getRankingTitleId() == null || request.getOptionId() == null) {
+            RankingTitleOption newOption = RankingTitleOption.builder()
+                    .rankingTitleId(request.getNewRankingTitleId())
+                    .optionId(request.getNewOptionId())
+                    .build();
+            return irankingTitleOptionRepository.save(newOption);
+        }
+
+        // Check if an existing record with the old keys exists
+        RankingTitleOption existingOption = irankingTitleOptionRepository.findByRankingTitleIdAndOptionId(
+                request.getRankingTitleId(), request.getOptionId());
+
+        if (existingOption != null) {
+            // Check if the primary key needs to change
+            if (!existingOption.getRankingTitleId().equals(request.getNewRankingTitleId()) ||
+                    !existingOption.getOptionId().equals(request.getNewOptionId())) {
+                // If yes, delete the old record
+                irankingTitleOptionRepository.delete(existingOption);
+
+                // Create a new record with the new keys
+                RankingTitleOption newOption = RankingTitleOption.builder()
+                        .rankingTitleId(request.getNewRankingTitleId())
+                        .optionId(request.getNewOptionId())
+                        .build();
+                return irankingTitleOptionRepository.save(newOption);
+            } else {
+                // If no, return the existing record as no changes are necessary
+                return existingOption;
+            }
+        } else {
+            // Create a new record if no matching old record is found
+            RankingTitleOption newOption = RankingTitleOption.builder()
+                    .rankingTitleId(request.getNewRankingTitleId())
+                    .optionId(request.getNewOptionId())
+                    .build();
+            return irankingTitleOptionRepository.save(newOption);
+        }
+    }
 }

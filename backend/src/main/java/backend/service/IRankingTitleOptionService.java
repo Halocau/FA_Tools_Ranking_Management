@@ -7,6 +7,7 @@ import backend.model.entity.RankingTitle;
 import backend.model.entity.RankingTitleOption;
 import backend.model.form.RankingTitleOption.AddRankingTitleOptionRequest;
 import backend.model.form.RankingTitleOption.UpdateRankingTitleOptionRequest;
+import jakarta.persistence.criteria.CriteriaBuilder.In;
 
 import java.util.List;
 
@@ -28,4 +29,6 @@ public interface IRankingTitleOptionService {
     // form,Integer rankingTitleId, Integer optionId);
 
     public List<TitleOptionDTO> getRankingTitleOptionByDecisionId(Integer decisionId);
+
+    public RankingTitleOption upsertRankingTitleOption(UpdateRankingTitleOptionRequest form);
 }
