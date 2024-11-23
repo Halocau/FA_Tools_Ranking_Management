@@ -31,4 +31,6 @@ public interface IRankingTitleOptionService {
     public List<TitleOptionDTO> getRankingTitleOptionByDecisionId(Integer decisionId);
 
     public RankingTitleOption upsertRankingTitleOption(UpdateRankingTitleOptionRequest form);
+
+    public void updateRankingTitleOptions(List<UpdateRankingTitleOptionRequest> requests);
 }

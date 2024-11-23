@@ -52,6 +52,13 @@ public class RankingTitleOptionController {
         return ResponseEntity.ok("Ranking Title Option updated successfully");
     }
 
+    @PutMapping("/update")
+    public ResponseEntity<String> updateRankingTitleOptions(
+            @RequestBody List<UpdateRankingTitleOptionRequest> requests) {
+        iRankingTitleOptionService.updateRankingTitleOptions(requests);
+        return ResponseEntity.ok("Ranking Title Options updated successfully");
+    }
+
     @DeleteMapping("/delete/{rankingTitleId}/{optionId}")
     public ResponseEntity<String> deleteRankingTitleOption(
             @PathVariable(name = "rankingTitleId") Integer rankingTitleId,

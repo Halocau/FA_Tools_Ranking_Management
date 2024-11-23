@@ -162,4 +162,29 @@ public class RankingTitleOptionService implements IRankingTitleOptionService {
             return irankingTitleOptionRepository.save(newOption);
         }
     }
+
+    @Override
+    @Transactional
+    public void updateRankingTitleOptions(List<UpdateRankingTitleOptionRequest> requests) {
+
+        for (UpdateRankingTitleOptionRequest request : requests) {
+            // Check if an existing record with the old keys exists
+            if (request.getRankingTitleId() != null && request.getOptionId() != null) {
+                RankingTitleOption existingOption = irankingTitleOptionRepository.findByRankingTitleIdAndOptionId(
+                        request.getRankingTitleId(), request.getOptionId());
+
+                // Delete the existing entry
+                irankingTitleOptionRepository.delete(existingOption);
+            }
+
+            // Create a new entity with updated IDs
+            RankingTitleOption updatedOption = RankingTitleOption.builder()
+                    .rankingTitleId(request.getNewRankingTitleId())
+                    .optionId(request.getNewOptionId())
+                    .build();
+
+            // Save the new entity
+            irankingTitleOptionRepository.save(updatedOption);
+        }
+    }
 }
