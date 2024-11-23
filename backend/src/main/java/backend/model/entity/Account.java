@@ -1,6 +1,7 @@
 package backend.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -24,6 +25,7 @@ public class Account {
     private String password;
 
     @Column(name = "email", length = 100, nullable = true)
+    @Email
     private String email;
 
     @Column(name = "role", length = 50)
