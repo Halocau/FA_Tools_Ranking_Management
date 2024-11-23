@@ -45,19 +45,15 @@ public class RankingTitleOptionController {
         return ResponseEntity.status(HttpStatus.OK).body(listDecisionId);
     }
 
-    @PutMapping("/upsert")
-    public ResponseEntity<String> updateRankingTitleOption(
-            @Valid @RequestBody UpdateRankingTitleOptionRequest form) {
-        iRankingTitleOptionService.upsertRankingTitleOption(form);
-        return ResponseEntity.ok("Ranking Title Option updated successfully");
-    }
-
-    @PutMapping("/update")
-    public ResponseEntity<String> updateRankingTitleOptions(
-            @RequestBody List<UpdateRankingTitleOptionRequest> requests) {
-        iRankingTitleOptionService.updateRankingTitleOptions(requests);
-        return ResponseEntity.ok("Ranking Title Options updated successfully");
-    }
+    // @PutMapping("/upsert/{rankingTitleId}/{optionId}")
+    // public ResponseEntity<String> updateRankingTitleOption(
+    // @Valid @RequestBody UpdateRankingTitleOptionRequest form,
+    // @PathVariable(name = "rankingTitleId") Integer rankingTitleId,
+    // @PathVariable(name = "optionId") Integer optionId
+    // ) {
+    // iRankingTitleOptionService.updateRankingTitleOption(form,rankingTitleId,optionId);
+    // return ResponseEntity.ok("Ranking Title Option updated successfully");
+    // }
 
     @DeleteMapping("/delete/{rankingTitleId}/{optionId}")
     public ResponseEntity<String> deleteRankingTitleOption(

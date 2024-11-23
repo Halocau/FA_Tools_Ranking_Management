@@ -5,14 +5,9 @@ import lombok.Data;
 
 @Data
 public class UpdateRankingTitleOptionRequest {
-
+    @NotNull(message = "RankingTitleId must not be null")
     private Integer rankingTitleId;
 
+    @NotNull(message = "OptionId must not be null")
     private Integer optionId;
-
-    @NotNull(message = "NewRankingTitleId must not be null")
-    private Integer newRankingTitleId;
-
-    @NotNull(message = "NewOptionId must not be null")
-    private Integer newOptionId;
 }
