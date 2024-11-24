@@ -46,7 +46,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     const updateDecisionCriteria = async (form) => {
         console.log(form)
         try {
-            await DecisionCriteriaAPI.updateDecisionCriteria(
+            DecisionCriteriaAPI.updateDecisionCriteria(
                 form, id, form.criteriaId);
         } catch (error) {
             console.error("Error updating decision criteria:", error);
@@ -164,6 +164,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             if (totalWeight === 100) {
                 syncDecisionCriteria(rows, originalCriteria);
                 showSuccessMessage("Criteria Configuration saved successfully!");
+                getCriteriaConfiguration()
                 goToNextStep();
             } else {
                 showErrorMessage('Tổng weight phải bằng 100');
