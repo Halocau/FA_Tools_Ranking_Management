@@ -7,10 +7,11 @@ import backend.model.form.TasksWage.UpsertTasksWage;
 
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ITaskWagesService {
     //crud
-    public TaskWages findByRankingTitleIdAndTaskId(Integer rankingTitleId, Integer taskId);
+    public Optional<TaskWages> findByRankingTitleIdAndTaskId(Integer rankingTitleId, Integer taskId);
 
     public List<TaskWages> getTaskWages();
 
@@ -18,4 +19,5 @@ public interface ITaskWagesService {
 
     //form
     public void upsertTaskWages(UpsertTasksWage form, Integer rankingTitleId, Integer taskId);
+    public void upsertTaskWagesList(List<UpsertTasksWage> forms);
 }
