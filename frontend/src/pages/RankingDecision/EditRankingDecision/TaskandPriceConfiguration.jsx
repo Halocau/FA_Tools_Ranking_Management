@@ -11,10 +11,11 @@ import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
 // API
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 import DecisionTaskAPI from "../../../api/DecisionTaskAPI.js";
+import taskApi from '../../../api/TaskAPI.js';
 import { initialTask } from "../Data.jsx";
 
 const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
-    // // Data 
+    // Data
     const { id } = useParams(); // Get the ID from the URL
     const [originalTask, setOriginalTask] = useState([]);  // Lưu dữ liệu gốc
     const [title, setTitle] = useState([]);  // Lưu dữ liệu gốc
@@ -25,10 +26,24 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     const [selectedTask, setSelectedTask] = useState(null);
     // data tạm 
     // Sử dụng useState để lưu danh sách tên task
-    const [listtask, setListTask] = useState(initialTask.map(task => ({
-        taskId: task.taskId,
-        taskName: task.taskName
-    })));
+
+    console.log("Original Task:", originalTask);
+    console.log("Rows:", rows);
+
+    const [listtask, setListTask] = useState([]);
+
+    const getListTask = async () => {
+        try {
+            const response = await taskApi.getAllTaskWihtOutPagination();
+            setListTask(response);
+        } catch (error) {
+            console.error("Error fetching task:", error);
+        }
+    }
+
+    useEffect(() => {
+        getListTask();
+    }, []);
 
     // Load data getTaskConfiguration
     const getTaskConfiguration = async () => {
@@ -215,9 +230,10 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     //////////////////////////////////// Row Task /////////////////////////////////////
     const setRowData = (task, title) => {
         const mappedRows = task.flatMap((taskItem) => {
-            return ["In Working Hour", "Overtime"].map((type) => {
+            return ["In Working Hour", "Overtime"].map((type, index) => {
                 return {
                     id: `${taskItem.taskId}_${type}`, // Id lấy taskId + type
+                    index: `${index + 1}_${type}`,
                     taskName: type === "In Working Hour" ? taskItem.taskName : "",
                     taskType: type,
                     ...title.reduce((acc, titleItem) => {
@@ -292,13 +308,14 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                 isSearchable={true}
                                 placeholder="Select to Add a new Task"
                                 options={listtask
-                                    .filter((task) => !rows.some((row) => row.id === task.taskId))
+                                    .filter((task) => !rows.some((row) => row.id.split('_')[0] == task.taskId))
                                     .map((task) => ({ value: task.taskId, label: task.taskName, }))}
                                 styles={{
                                     container: (provided) => ({ ...provided, width: '300px', }),
                                     control: (provided) => ({ ...provided, height: '40px', fontSize: '16px', display: 'flex', alignItems: 'center', }),
                                     placeholder: (provided) => ({ ...provided, color: '#888', }),
-                                    menu: (provided) => ({ ...provided, maxHeight: 300, overflowY: 'auto', }),
+                                    menu: (provided) => ({ ...provided, maxHeight: 300, overflowY: 'auto', zIndex: 9999 }),
+
                                 }}
                                 menuPlacement="top"
                                 value={selectedTask}
