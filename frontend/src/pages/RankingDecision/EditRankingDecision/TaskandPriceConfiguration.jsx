@@ -3,6 +3,8 @@ import { MdDeleteForever } from 'react-icons/md';
 import { useNavigate, useParams } from "react-router-dom";
 import Select from "react-select";
 // MUI
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+
 import {
     Box, Button, Typography, TextField, IconButton,
 } from "@mui/material";
@@ -240,10 +242,13 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         if (originalTask) {
             const columns = ColumnsTask(title, decisionStatus);
             setColumnsTask(columns);
+            console.log(columnsTask)
             setRowData(originalTask, title);
             // console.log(rows)
         }
     }, [originalTask, title, decisionStatus]);
+    console.log(columnsTask)
+    console.log(rows)
     // End 
     //////////////////////////////////// Return //////////////////////////////////////
     return (
@@ -263,7 +268,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                 }}>
                 <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
                     {/* Table DataGrid */}
-                    <DataGrid
+                    {/* <DataGrid
                         rows={rows}
                         columns={columnsTask}
                         // initialState={{ pinnedColumns: { left: ['taskName', 'taskType'], right: ['action'] } }}
@@ -283,7 +288,107 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                 overflowY: 'auto',
                             },
                         }}
-                    />
+                    /> */}
+                    <TableContainer>
+                        <Table>
+                            {/* Header */}
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell
+                                        style={{
+                                            position: "sticky",
+                                            left: 0,
+                                            background: "#fff",
+                                            minWidth: 150,
+                                        }}
+                                    >
+                                        Task
+                                    </TableCell>
+                                    <TableCell
+                                        style={{
+                                            position: "sticky",
+                                            left: 150,
+                                            background: "#fff",
+                                            minWidth: 150,
+                                        }}
+                                    >
+                                        Type
+                                    </TableCell>
+                                    {title.map((title, idx) => (
+                                        <TableCell key={idx} align="center">
+                                            {title}
+                                        </TableCell>
+                                    ))}
+                                    <TableCell align="center">Action</TableCell>
+                                </TableRow>
+                            </TableHead>
+
+                            {/* Body */}
+                            <TableBody>
+                                {rows.map((row, index) => (
+                                    <React.Fragment key={index}>
+                                        {/* Task Row */}
+                                        <TableRow>
+                                            <TableCell
+                                                rowSpan={2}
+                                                style={{
+                                                    position: "sticky",
+                                                    left: 0,
+                                                    background: "#fff",
+                                                    minWidth: 150,
+                                                }}
+                                            >
+                                                {row.taskName}
+                                            </TableCell>
+                                            <TableCell
+                                                style={{
+                                                    position: "sticky",
+                                                    left: 150,
+                                                    background: "#fff",
+                                                    minWidth: 150,
+                                                }}
+                                            >
+                                                In Working Hour
+                                            </TableCell>
+                                            {title.map((title, idx) => {
+                                                const wage = row.taskWages.find((w) => w.titleName === title);
+                                                return (
+                                                    <TableCell key={idx} align="center">
+                                                        {wage?.workingHourWage ? wage.workingHourWage.toLocaleString() : "N/A"}
+                                                    </TableCell>
+                                                );
+                                            })}
+                                            <TableCell rowSpan={2} align="center">
+                                                <button onClick={() => alert("Deleted")}>🗑</button>
+                                            </TableCell>
+                                        </TableRow>
+
+                                        {/* Type Row */}
+                                        <TableRow>
+                                            <TableCell
+                                                style={{
+                                                    position: "sticky",
+                                                    left: 150,
+                                                    background: "#fff",
+                                                    minWidth: 150,
+                                                }}
+                                            >
+                                                Overtime
+                                            </TableCell>
+                                            {title.map((title, idx) => {
+                                                const wage = row.taskWages.find((w) => w.titleName === title);
+                                                return (
+                                                    <TableCell key={idx} align="center">
+                                                        {wage?.overtimeWage ? wage.overtimeWage.toLocaleString() : "N/A"}
+                                                    </TableCell>
+                                                );
+                                            })}
+                                        </TableRow>
+                                    </React.Fragment>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                     {/* Button */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                         {/* Select to Add a new Task*/}

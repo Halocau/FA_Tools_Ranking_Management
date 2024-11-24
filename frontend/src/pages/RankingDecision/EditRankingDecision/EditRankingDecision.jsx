@@ -9,7 +9,6 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import { Stepper, Step, StepButton } from '@mui/material';
-import { CheckCircle } from '@mui/icons-material'; // You can also use other icons if needed
 
 // Css 
 import "../../../assets/css/RankingGroups.css"
@@ -32,7 +31,7 @@ const EditDecision = () => {
     const [showEditDecisionInfoModal, setShowEditDecisionInfoModal] = useState(false); // Display decision editing modal
     const [newDecisionName, setNewDecisionName] = useState(""); // New decision Name
     // Step
-    const [activeStep, setActiveStep] = useState(0);
+    const [activeStep, setActiveStep] = useState(2);
     const [decisionStatus, setDecisionStatus] = useState('');
     const steps = ['Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'];
     // State saves data for each step

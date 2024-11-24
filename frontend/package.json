@@ -10,10 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@emotion/react": "^11.13.3",
-    "@emotion/styled": "^11.13.0",
+    "@ag-grid-community/core": "^32.3.3",
+    "@ag-grid-community/react": "^32.3.3",
+    "@emotion/react": "^11.13.5",
+    "@emotion/styled": "^11.13.5",
     "@mui/icons-material": "^6.1.6",
-    "@mui/material": "^6.1.5",
+    "@mui/material": "^6.1.8",
     "@mui/x-data-grid": "^7.21.0",
     "@mui/x-data-grid-pro": "^7.22.2",
     "@typescript-eslint/eslint-plugin": "^8.9.0",
@@ -26,6 +28,7 @@
     "file-saver": "^2.0.5",
     "frontend": "file:",
     "json-server": "^1.0.0-beta.3",
+    "material-react-table": "^3.0.1",
     "notyf": "^3.10.0",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.5",
