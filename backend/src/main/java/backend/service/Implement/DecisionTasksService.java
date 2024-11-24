@@ -10,6 +10,7 @@ import backend.model.entity.DecisionTasks;
 import backend.model.entity.RankingTitle;
 import backend.model.entity.Task;
 import backend.model.entity.TaskWages;
+import backend.model.form.DecisionTasks.AddDecisionTasks;
 import backend.service.IDecisionTasksService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -42,7 +43,7 @@ public class DecisionTasksService implements IDecisionTasksService {
     }
 
     @Override
-    public DecisionTasks findByDecisionIdAndTaskId(int decisionId, int taskId) {
+    public Optional<DecisionTasks> findByDecisionIdAndTaskId(int decisionId, int taskId) {
         return iDecisionTasksRepository.findByDecisionIdAndTaskId(decisionId, taskId);
     }
 
@@ -51,11 +52,6 @@ public class DecisionTasksService implements IDecisionTasksService {
         return iDecisionTasksRepository.findAll();
     }
 
-    @Override
-    @Transactional
-    public DecisionTasks addDecisionTask(DecisionTasks decisionTasks) {
-        return iDecisionTasksRepository.save(decisionTasks);
-    }
 
     @Override
     @Transactional
@@ -66,11 +62,11 @@ public class DecisionTasksService implements IDecisionTasksService {
     @Override
     @Transactional
     public void deleteDecisionTask(int decisionId, int taskId) {
-        DecisionTasks decisionTasks = findByDecisionIdAndTaskId(decisionId, taskId);
-        if (decisionTasks == null) {
+        Optional<DecisionTasks> decisionTasks = findByDecisionIdAndTaskId(decisionId, taskId);
+        if (decisionTasks.isEmpty()) {
             throw new EntityNotFoundException("Decision Task Not Found");
         }
-        iDecisionTasksRepository.delete(decisionTasks);
+        iDecisionTasksRepository.delete(decisionTasks.get());
     }
 
     @Override
@@ -146,6 +142,55 @@ public class DecisionTasksService implements IDecisionTasksService {
         }
 
         return response;
+    }
+
+    //UPDATE AND ADD
+    @Override
+    @Transactional
+    public void addDecisionTasks(AddDecisionTasks form, Integer decisionId, Integer taskId) {
+        if (form == null || decisionId == null || taskId == null) {
+            throw new IllegalArgumentException("Form or input param must not be null");
+        }
+
+        // Kiểm tra xem đã có DecisionTask với decisionId và taskId chưa
+        Optional<DecisionTasks> decisionTasks = findByDecisionIdAndTaskId(decisionId, taskId);
+
+        // Nếu không có, tiến hành thêm mới
+        if (decisionTasks.isEmpty()) {
+            DecisionTasks decisionTask = DecisionTasks.builder()
+                    .decisionId(form.getDecisionId())
+                    .taskId(form.getTaskId())
+                    .build();
+            iDecisionTasksRepository.save(decisionTask);
+        }
+        // Nếu đã có rồi thì có thể tùy chọn xử lý thêm, ví dụ như trả về thông báo hoặc không làm gì
+    }
+
+
+    @Override
+    @Transactional
+    public void addDecisionTasksList(List<AddDecisionTasks> forms) {
+        if (forms == null || forms.isEmpty()) {
+            throw new IllegalArgumentException("The list of forms cannot be null or empty");
+        }
+        // Lặp qua từng form trong danh sách và thêm vào cơ sở dữ liệu nếu chưa tồn tại
+        for (AddDecisionTasks form : forms) {
+            if (form == null || form.getDecisionId() == null || form.getTaskId() == null) {
+                throw new IllegalArgumentException("Form or input param must not be null");
+            }
+
+            // Kiểm tra xem có tồn tại DecisionTasks với decisionId và taskId không
+            Optional<DecisionTasks> decisionTasks = findByDecisionIdAndTaskId(form.getDecisionId(), form.getTaskId());
+
+            // Nếu không có, tiến hành thêm mới
+            if (decisionTasks.isEmpty()) {
+                DecisionTasks decisionTask = DecisionTasks.builder()
+                        .decisionId(form.getDecisionId())
+                        .taskId(form.getTaskId())
+                        .build();
+                iDecisionTasksRepository.save(decisionTask);
+            }
+        }
     }
 
 

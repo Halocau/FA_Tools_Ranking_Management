@@ -59,12 +59,10 @@ public class TaskWagesService implements ITaskWagesService {
         // Giải nén Optional và xóa đối tượng
         iTaskWagesRepository.delete(find.get());
     }
-
-
     /**
      * Form
      */
-    @Override
+    @Override //UPDATE AND ADD tasksWage
     @Transactional
     public void upsertTaskWages(UpsertTasksWage form, Integer rankingTitleId, Integer taskId) {
         if (form == null || rankingTitleId == null || taskId == null) {
@@ -89,7 +87,7 @@ public class TaskWagesService implements ITaskWagesService {
             iTaskWagesRepository.save(existingTaskWages);
         }
     }
-    @Override
+    @Override  //UPDATE AND ADD LIST tasksWage
     @Transactional
     public void upsertTaskWagesList(List<UpsertTasksWage> forms) {
         if (forms == null || forms.isEmpty()) {
