@@ -14,7 +14,7 @@ import DecisionTaskAPI from "../../../api/DecisionTaskAPI.js";
 import { initialTask } from "../Data.jsx";
 
 const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
-    // // Data 
+    // Data
     const { id } = useParams(); // Get the ID from the URL
     const [originalTask, setOriginalTask] = useState([]);  // Lưu dữ liệu gốc
     const [title, setTitle] = useState([]);  // Lưu dữ liệu gốc
@@ -25,6 +25,10 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     const [selectedTask, setSelectedTask] = useState(null);
     // data tạm 
     // Sử dụng useState để lưu danh sách tên task
+
+    console.log("Original Task:", originalTask);
+    console.log("Rows:", rows);
+
     const [listtask, setListTask] = useState(initialTask.map(task => ({
         taskId: task.taskId,
         taskName: task.taskName
@@ -215,9 +219,10 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     //////////////////////////////////// Row Task /////////////////////////////////////
     const setRowData = (task, title) => {
         const mappedRows = task.flatMap((taskItem) => {
-            return ["In Working Hour", "Overtime"].map((type) => {
+            return ["In Working Hour", "Overtime"].map((type, index) => {
                 return {
                     id: `${taskItem.taskId}_${type}`, // Id lấy taskId + type
+                    index: `${index + 1}_${type}`,
                     taskName: type === "In Working Hour" ? taskItem.taskName : "",
                     taskType: type,
                     ...title.reduce((acc, titleItem) => {

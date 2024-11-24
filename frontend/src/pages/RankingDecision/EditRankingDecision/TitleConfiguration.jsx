@@ -26,7 +26,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     // Add Title 
     const [statusAddTitle, setstatusAddTitle] = useState(null);
     const [newTitleName, setNewTitleName] = useState(''); // State lưu tên tiêu đề mới
-
+    const [newAddedTitle, setNewAddedTitle] = useState(null); // State lưu tên tiêu đề mới
     // Load data of table header
     const getCriteriaConfiguration = async () => {
         try {
@@ -56,7 +56,9 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     /////////////////////////////////// Xử Lý backend //////////////////////////////////
     const upsertRankingTitle = async (form) => {
         try {
-            await RankingTitleAPI.upsertRankingTitle(form);
+            const response = await RankingTitleAPI.upsertRankingTitle(form);
+            setNewAddedTitle(response);
+            return response;
         } catch (error) {
             console.error("Error adding new ranking title:", error);
         }
@@ -74,6 +76,14 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         // console.log(form, decisionId, titleId);
         try {
             await DecisionTitleAPI.upsertDecisionTitle(form);
+        } catch (error) {
+            console.error("Error updating decision title:", error);
+        }
+    };
+
+    const updateDecisionTitle = async (form) => {
+        try {
+            await DecisionTitleAPI.updateDecisionTitleOption(form);
         } catch (error) {
             console.error("Error updating decision title:", error);
         }
@@ -103,15 +113,16 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 totalScore: parseFloat(row.rankScore) || 0,
             };
 
+            let newTitle;
             // Handle ranking title
             if (
                 !original ||
                 original.rankingTitleName !== row.titleName ||
                 (original.totalScore || 0).toString() !== (row.rankScore || 0).toString()
             ) {
-                console.log("Update ranking title:", rankingTitleForm);
-                await upsertRankingTitle(rankingTitleForm);
+                newTitle = await upsertRankingTitle(rankingTitleForm);
             }
+            console.log("New ranking title:", newTitle);
 
             // Compare and update options
             const originalOptionsMap = new Map(
@@ -124,7 +135,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 if (!originalOption) {
                     // Add new option
                     await upsertDecisionTitle({
-                        newRankingTitleId: row.id,
+                        newRankingTitleId: newTitle ? newTitle.rankingTitleId : row.id,
                         newOptionId: option.optionId,
                     });
                     console.log("Add new option:", { newRankingTitleId: row.id, newOptionId: option.optionId });
@@ -169,7 +180,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         }
 
         const newTitle = {
-            id: rows.length + 1,  // Or get the real ID from the server
+            id: null,  // Or get the real ID from the server
             index: rows.length + 1,  // Or get the real ID from the server
             titleName: newTitleName,
             rankScore: 0,
