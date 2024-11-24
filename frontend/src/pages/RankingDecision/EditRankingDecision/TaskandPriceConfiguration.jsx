@@ -69,6 +69,44 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         getTaskConfiguration()
         getTitleConfiguration();
     }, [id]);
+
+    //////////////////////////////////// Column Task//////////////////////////////////
+    // Lấy danh sách các titleName từ rankingTitles
+    const allTitle = title.map((title) => ({
+        rankingTitleId: title.rankingTitleId,
+        titleName: title.rankingTitleName,
+    }));
+    // Hàm chuẩn hóa rows
+    const normalizeRows = (rows, allTitles) => {
+        return rows.map((row) => {
+            const updatedRow = { ...row };
+            const existingTitleIds = new Set((updatedRow.taskWages || []).map((wage) => wage.rankingTitleId));
+
+            // Thêm `rankingTitleId` và `titleName` còn thiếu
+            allTitles.forEach(({ rankingTitleId, titleName }) => {
+                if (!existingTitleIds.has(rankingTitleId)) {
+                    updatedRow.taskWages.push({
+                        rankingTitleId,
+                        titleName,
+                        workingHourWage: null,
+                        overtimeWage: null,
+                    });
+                }
+            });
+
+            // Sắp xếp lại `taskWages` theo `titleName`
+            updatedRow.taskWages = updatedRow.taskWages.sort((a, b) => a.titleName.localeCompare(b.titleName));
+
+            return updatedRow;
+        });
+    };
+
+
+    useEffect(() => {
+        const normalized = normalizeRows(originalTask, allTitle);
+        setRows(normalized);
+    }, [originalTask]);
+    console.log(rows)
     //////////////////////////////////// Xử Lý backend /////////////////////////////////
     //
 
@@ -151,75 +189,48 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     // End 
     //////////////////////////////////// Save ///////////////////////////////////////
     const handleSaveChanges = () => {
-        console.log('save', rows)
-        console.log(title)
-        // // Hàm kiểm tra giá trị của từng ô trong hàng
-        // const isRowValid = (row) => {
-        //     return Object.keys(row).every((key) => {
-        //         if (['taskId', 'taskName', 'taskType'].includes(key)) {
-        //             return true; // Bỏ qua các cột cố định
-        //         }
-        //         const value = row[key];
-        //         // Kiểm tra ô có giá trị hợp lệ (không phải rỗng, null, hoặc undefined)
-        //         if (value === '' || value === null || value === undefined) {
-        //             console.log(`Ô thiếu dữ liệu: ${key}, Dòng: ${JSON.stringify(row)}`);
-        //             return false;
-        //         }
-        //         return true;
-        //     });
-        // };
+        console.log('Bắt đầu lưu dữ liệu:', rows);
 
-        // // Kiểm tra tất cả các hàng
-        // const allFieldsFilled = rows.every(isRowValid);
+        // Hàm kiểm tra giá trị của từng ô trong hàng
+        const isRowValid = (row) => {
+            return row.taskWages.every((wage) =>
+                Object.keys(wage).every((key) => {
+                    const value = wage[key];
 
-        // if (!allFieldsFilled) {
-        //     showErrorMessage('Tất cả các ô phải được điền đầy đủ');
-        //     console.log('Có ô chưa điền dữ liệu');
-        //     return; // Dừng nếu có lỗi
-        // }
+                    // Kiểm tra các cột cố định hoặc giá trị không được phép null/undefined/rỗng
+                    if (value === null || value === undefined || value === '') {
+                        console.error(`Dữ liệu không hợp lệ tại key: ${key}, row: ${JSON.stringify(row)}`);
+                        return false;
+                    }
 
-        // // Hiển thị thông báo thành công và tiếp tục bước tiếp theo
-        // showSuccessMessage('Task & Price Configuration successfully updated.');
+                    return true;
+                })
+            );
+        };
+
+        // Kiểm tra toàn bộ hàng trong `rows`
+        const allRowsValid = rows.every(isRowValid);
+
+        if (!allRowsValid) {
+            showErrorMessage('Tất cả các ô phải được điền đầy đủ trước khi lưu.');
+            console.log('Không thể lưu do thiếu dữ liệu.');
+            return; // Dừng quá trình lưu nếu dữ liệu không hợp lệ
+        }
+
+        // Nếu tất cả hợp lệ, tiếp tục lưu dữ liệu
+        console.log('Dữ liệu hợp lệ, lưu thành công:', rows);
+
+        // Hiển thị thông báo thành công
+        showSuccessMessage('Dữ liệu đã được lưu thành công.');
+
+        // Tiếp tục bước tiếp theo (nếu có)
+        goToNextStep({ stayOnCurrentStep: true });
+
+
+        // Nếu tất cả ô đều có dữ liệu, hiển thị thông báo thành công và tiếp tục bước tiếp theo
+        showSuccessMessage('Task & Price Configuration successfully updated.');
         goToNextStep({ stayOnCurrentStep: true });
     };
-
-    //////////////////////////////////// Column Task//////////////////////////////////
-    // Lấy danh sách các titleName từ rankingTitles
-    const allTitle = title.map((title) => ({
-        rankingTitleId: title.rankingTitleId,
-        titleName: title.rankingTitleName,
-    }));
-    // Hàm chuẩn hóa rows
-    const normalizeRows = (rows, allTitles) => {
-        return rows.map((row) => {
-            const updatedRow = { ...row };
-            const existingTitleIds = new Set((updatedRow.taskWages || []).map((wage) => wage.rankingTitleId));
-
-            // Thêm `rankingTitleId` và `titleName` còn thiếu
-            allTitles.forEach(({ rankingTitleId, titleName }) => {
-                if (!existingTitleIds.has(rankingTitleId)) {
-                    updatedRow.taskWages.push({
-                        rankingTitleId,
-                        titleName,
-                        workingHourWage: null,
-                        overtimeWage: null,
-                    });
-                }
-            });
-
-            // Sắp xếp lại `taskWages` theo `titleName`
-            updatedRow.taskWages = updatedRow.taskWages.sort((a, b) => a.titleName.localeCompare(b.titleName));
-
-            return updatedRow;
-        });
-    };
-
-
-    useEffect(() => {
-        const normalized = normalizeRows(originalTask, allTitle);
-        setRows(normalized);
-    }, [originalTask]);
-
 
 
 
@@ -479,7 +490,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                         {/* Cancel and Save */}
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                             {/* Cancel*/}
-                            <Button
+                            <Button sx={{ display: 'flex', justifyContent: 'flex-end' }}
                                 variant="contained"
                                 color="error"
                                 onClick={handleCancelChanges}
@@ -487,7 +498,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                 Cancel
                             </Button>
                             {/* Save */}
-                            <Button
+                            <Button sx={{ display: 'flex', justifyContent: 'flex-end' }}
                                 variant="contained"
                                 color="primary"
                                 onClick={handleSaveChanges}
