@@ -8,7 +8,7 @@ const RankingGroupAPI = {
     // Get all ranking groups with pagination
     searchRankingGroups: async (filter = "", page = 1, size = 5) => {
         try {
-            const response = await authClient.get(`${ranking_group_api}`, {
+            const response = await authClient.get(`${ranking_group_api}.all`, {
                 params: {
                     filter: filter,
                     page: page,
