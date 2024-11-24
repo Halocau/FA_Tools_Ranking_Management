@@ -145,7 +145,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             }
 
             // Handle deleted options
-            for (const [criteriaId, opt] of originalOptionsMap) {
+            for (const [opt] of originalOptionsMap) {
                 await deleteDecisionTitle(row.id, opt.optionId); // Delete unused options
             }
 
@@ -297,11 +297,9 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     const handleSaveChanges = () => {
         // Kiểm tra xem tất cả rankScore đã được tính toán
         const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
-        // console.log("Original Title:", originalTitle);
-        // console.log("Rows:", rows);
         if (!allRankScoresCalculated) {
             showErrorMessage('Tất cả Rank Score phải được tính toán.');
-            return; // Dừng lại nếu có lỗi
+            // return; // Dừng lại nếu có lỗi
         }
         syncDecisionTitle(rows, originalTitle);
 
@@ -309,9 +307,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         console.log("Title Configuration successfully updated.”");
         goToNextStep(); // Chuyển bước tiếp theo
     };
-
-    // console.log("Rows:", rows);
-    // console.log("Original Title:", originalTitle);
     // End 
     ///////////////////////////////// Column Title ///////////////////////////////////
     const ColumnsTitle = (criteria, decisionStatus) => {
