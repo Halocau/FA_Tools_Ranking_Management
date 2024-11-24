@@ -14,7 +14,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 import DecisionTaskAPI from "../../../api/DecisionTaskAPI.js";
 import taskApi from '../../../api/TaskAPI.js';
-import { initialTask } from "../Data.jsx";
+
 
 const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
     // Data
@@ -40,8 +40,9 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         }
     }
 
-    console.log('listtask', listtask);
-    console.log('rows', rows);
+    console.log('originalTask', originalTask);
+    console.log('title', title);
+
 
     useEffect(() => {
         getListTask();
@@ -85,6 +86,35 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         });
     }
     // End 
+
+
+    const mergedData = (originalTask, title) => {
+        const mergedTask = originalTask.map((task) => {
+            // Map taskWages to match the Title data
+            const updatedTaskWages = task.taskWages.map((wage) => {
+                const matchingTitle = title.find(
+                    (title) => title.rankingTitleId === wage.rankingTitleId
+                );
+
+                return {
+                    ...wage,
+                    "In Working Hour": matchingTitle ? matchingTitle.totalScore : null,
+                    Overtime: matchingTitle ? matchingTitle.totalScore : null,
+                };
+            });
+
+            return {
+                ...task,
+                taskWages: updatedTaskWages,
+            };
+        });
+
+        return mergedTask;
+    }
+
+
+    console.log(mergedData(originalTask, title));
+
     //////////////////////////////////// Remove row ///////////////////////////////////////
     const handleDeleteRowData = (taskId) => {
         setRows((prevRows) => {
@@ -101,13 +131,28 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     //////////////////////////////////// Select to Add a new Task //////////////////////
     const handleAddTask = () => {
         const addedTask = listtask.find(
-            (task) => task.taskId === selectedTask.value
-        )
-        console.log(addedTask)
-        // setRows([...rows, addedTask]);
-        setSelectedTask(null)
+            (task) => task.taskId === selectedTask.value // Chắc chắn rằng bạn sử dụng đúng key (ở đây là selectedTask.value)
+        );
+        console.log(addedTask);
+        const newRow = {
+            taskId: addedTask.taskId,  // Or get the real ID from the server
+            taskName: addedTask.taskName,
+            taskWages: title.map((titleItem) => ({
+                rankingTitleId: titleItem.rankingTitleId,
+                titleName: titleItem.titleName,
+                workingHourWage: '',
+                overtimeWage: '',
+            })),
+        };
+
+        // Thêm object vào mảng rows
+        setRows([...rows, newRow]);
+        console.log(rows)
+        // Đặt lại selectedTask về null
+        setSelectedTask(null);
     };
-    // console.log(rows)
+
+
     // End 
     //////////////////////////////////// Cancel ///////////////////////////////////////
     const handleCancelChanges = () => {
@@ -147,6 +192,8 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     // End 
     //////////////////////////////////// Column Task//////////////////////////////////
     const allTitleNames = title.map(t => t.rankingTitleName);
+
+    console.log(editedWages);
 
     //////////////////////////////////// Return //////////////////////////////////////
     return (
@@ -247,7 +294,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                                 {/* Cột Dynamic cho Working Hour */}
                                                 {allTitleNames.map((titleName, index) => {
                                                     const titleData = task.taskWages.find(wage => wage.titleName === titleName);
-                                                    const workingHourWage = titleData ? titleData.workingHourWage : "-";
+                                                    const workingHourWage = titleData ? titleData.workingHourWage : "";
                                                     return (
                                                         <TableCell key={`wh-${index}`}>
                                                             <TextField
@@ -293,7 +340,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                                 {/* Cột Dynamic cho Overtime */}
                                                 {allTitleNames.map((titleName, index) => {
                                                     const titleData = task.taskWages.find(wage => wage.titleName === titleName);
-                                                    const overtimeWage = titleData ? titleData.overtimeWage : "-";
+                                                    const overtimeWage = titleData ? titleData.overtimeWage : "";
                                                     return (
                                                         <TableCell key={`ot-${index}`}>
                                                             <TextField
@@ -317,33 +364,55 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                     {/* Button */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                         {/* Select to Add a new Task*/}
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                            <Select
-                                isSearchable={true}
-                                placeholder="Select to Add a new Task"
-                                options={listtask
-                                    .filter((task) => !rows.some((row) => row.taskId == task.taskId))
-                                    .map((task) => ({ value: task.taskId, label: task.taskName, }))}
-                                styles={{
-                                    container: (provided) => ({ ...provided, width: '300px', }),
-                                    control: (provided) => ({ ...provided, height: '40px', fontSize: '16px', display: 'flex', alignItems: 'center', }),
-                                    placeholder: (provided) => ({ ...provided, color: '#888', }),
-                                    menu: (provided) => ({ ...provided, maxHeight: 300, overflowY: 'auto', zIndex: 9999 }),
+                        {/* Select to Add a new Task */}
+                        {decisionStatus === 'Draft' && (
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+                                <Select
+                                    isSearchable={true}
+                                    placeholder="Select to Add a new Task"
+                                    options={listtask
+                                        .filter((task) => !rows.some((row) => row.taskId === task.taskId))
+                                        .map((task) => ({ value: task.taskId, label: task.taskName }))}
+                                    styles={{
+                                        container: (provided) => ({ ...provided, width: '300px' }),
+                                        control: (provided) => ({
+                                            ...provided,
+                                            height: '40px',
+                                            fontSize: '16px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                        }),
+                                        placeholder: (provided) => ({ ...provided, color: '#888' }),
+                                        menu: (provided) => ({
+                                            ...provided,
+                                            maxHeight: 300,
+                                            overflowY: 'auto',
+                                            zIndex: 9999,
+                                        }),
+                                    }}
+                                    menuPlacement="top"
+                                    value={selectedTask}
 
-                                }}
-                                menuPlacement="top"
-                                value={selectedTask}
-                                onChange={(option) => setSelectedTask(option)}
-                            />
-                            <IconButton
-                                onClick={handleAddTask}
-                                color={selectedTask ? 'primary' : 'default'}
-                                // disabled={!selectedTask}
-                                sx={{ marginLeft: 1, height: '30px', display: 'flex', alignItems: 'center', }}
-                            >
-                                <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
-                            </IconButton>
-                        </Box>
+                                    onChange={(option) => {
+                                        console.log(option)
+                                        setSelectedTask(option)
+                                    }}
+                                />
+                                <IconButton
+                                    onClick={handleAddTask}
+                                    color={selectedTask ? 'primary' : 'default'}
+                                    sx={{
+                                        marginLeft: 1,
+                                        height: '30px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
+                                </IconButton>
+                            </Box>
+                        )}
+
                         {/* Cancel and Save */}
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                             {/* Cancel*/}
