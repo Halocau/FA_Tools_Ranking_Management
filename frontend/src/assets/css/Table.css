@@ -1,0 +1,26 @@
+/* customTable.css */
+.custom-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.custom-table-row {
+    &:nth-of-type(odd) {
+        background-color: #f5f5f5;
+    }
+}
+
+.custom-table-cell {
+    border-bottom: 1px solid #ccc;
+    padding: 8px;
+}
+
+.custom-header-cell {
+    background-color: #607d8b;
+    color: #fff;
+    font-weight: bold;
+    text-align: center;
+}
