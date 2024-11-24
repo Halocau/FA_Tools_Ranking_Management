@@ -3,17 +3,27 @@ import authClient from './baseapi/AuthorAPI';
 const decision_criteria_api = '/decision-criteria';
 
 const DecisionCriteriaAPI = {
-    // 
-    getAllCriteria: async () => {
-        const response = await authClient.get('/criteria/all');
-        return response.data;
-    },
-
-    getDecisionCriteriaByDecisionId: (decisionId) =>
+    getAllDecisionCriteria: (filter = '', pageable = { page: 0, size: 5 }) =>
         authClient
-            .get(`${decision_criteria_api}/get-all/${decisionId}`)
+            .get(decision_criteria_api, {
+                params: {
+                    filter,
+                    page: pageable.page,
+                    size: pageable.size,
+                },
+            })
             .then((response) => response.data),
 
+    getDecisionCriteriaByDecisionId: (decisionId, filter = '', pageable = { page: 0, size: 5 }) =>
+        authClient
+            .get(`${decision_criteria_api}/get/${decisionId}`, {
+                params: {
+                    filter,
+                    page: pageable.page,
+                    size: pageable.size,
+                },
+            })
+            .then((response) => response.data),
 
     addDecisionCriteria: (form) =>
         authClient
@@ -30,9 +40,9 @@ const DecisionCriteriaAPI = {
             .put(`${decision_criteria_api}/upsert`, form)
             .then((response) => response.data),
 
-    optionCriteria: (decisionId) =>
+    takeCriteria: (decisionId) =>
         authClient
-            .get(`${decision_criteria_api}/options/${decisionId}`)
+            .get(`${decision_criteria_api}/take/${decisionId}`)
             .then((response) => response.data),
 };
 

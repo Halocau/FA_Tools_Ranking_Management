@@ -24,10 +24,6 @@ const RankingTitleAPI = {
     // Delete a ranking title by ID
     deleteRankingTitle: (id) =>
         authClient.delete(`${API_BASE_URL}/delete/${id}`).then((response) => response.data),
-
-    // Upsert a ranking title
-    upsertRankingTitle: (form) =>
-        authClient.put(`${API_BASE_URL}/upsert`, form).then((response) => response.data),
 };
 
 export default RankingTitleAPI;

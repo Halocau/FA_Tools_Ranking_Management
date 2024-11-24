@@ -111,8 +111,8 @@ const EditRankingGroup = () => {
     //// Fetch all ranking decisions when component mounts
     useEffect(() => {
         fetchAllRankingDecisions();
-    }, [page, pageSize, filter, id]);
-
+    }, [page, pageSize, filter]);
+    ;
     // Map decision data to rows for DataGrid when rows are fetched
     useEffect(() => {
         if (rankingDecisions) {
