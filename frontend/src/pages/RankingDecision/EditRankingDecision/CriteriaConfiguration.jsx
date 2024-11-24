@@ -22,7 +22,6 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     const [selectedCriteria, setSelectedCriteria] = useState(null);
     const [listcriteria, setListCriteria] = useState([]);
 
-    console.log(decisionStatus);
 
     // Load data getCriteriaConfiguration
     const getCriteriaConfiguration = async () => {
@@ -60,7 +59,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             console.error("Error deleting decision criteria:", error);
         }
     }
-    const syncDecisionCriteria = (rows, originalCriteria) => {
+    const syncDecisionCriteria = async (rows, originalCriteria) => {
         try {
             // Create a map of original criteria for quick lookup
             const originalCriteriaMap = new Map(
@@ -73,7 +72,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                 if (original) {
                     // If the row exists in originalCriteria but has a different weight, update it
                     if (original.weight !== row.weight) {
-                        updateDecisionCriteria({
+                        await updateDecisionCriteria({
                             decisionId: id,
                             criteriaId: row.id,
                             weight: row.weight
@@ -84,7 +83,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                 }
                 else {
                     // If the row is new, add it
-                    updateDecisionCriteria({
+                    await updateDecisionCriteria({
                         decisionId: id,
                         criteriaId: row.id,
                         weight: row.weight
@@ -94,7 +93,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
 
             // Remaining items in originalCriteriaMap are to be deleted
             for (const [criteriaId] of originalCriteriaMap) {
-                deleteDecisionCriteria(criteriaId);
+                await deleteDecisionCriteria(criteriaId);
             }
         } catch (error) {
             console.error("Error syncing decision criteria:", error);
@@ -155,7 +154,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
         const totalWeight = rows.reduce((total, row) => total + Number(row.weight || 0), 0);
         return totalWeight;
     };
-    // End
+    // End 
     const handleSaveChanges = () => {
         const checkWeight = rows.some((row) => row.weight <= 0);
         if (checkWeight) {
@@ -165,7 +164,6 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             if (totalWeight === 100) {
                 syncDecisionCriteria(rows, originalCriteria);
                 showSuccessMessage("Criteria Configuration saved successfully!");
-                getCriteriaList();
                 goToNextStep();
             } else {
                 showErrorMessage('Tổng weight phải bằng 100');

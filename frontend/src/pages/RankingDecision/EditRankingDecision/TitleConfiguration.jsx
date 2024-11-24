@@ -7,27 +7,25 @@ import {
 } from "@mui/material";
 import { DataGrid } from '@mui/x-data-grid';
 import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
-
 // API
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
-import RankingTitleAPI from '../../../api/RankingTitleAPI.js';
 
 const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
-    // Data 
+    // // Data 
     const { id } = useParams(); // Get the ID from the URL
     const [originalTitle, setOriginalTitle] = useState([]);  // Lưu dữ liệu gốc
     const [criteria, setCriteria] = useState([]);
     const [columnsTitle, setColumnsTitle] = useState([]);
-
     // Row table
     const [rows, setRows] = useState([]);
-
+    // State Cancel and Save
+    // const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
     // Add Title 
     const [statusAddTitle, setstatusAddTitle] = useState(null);
     const [newTitleName, setNewTitleName] = useState(''); // State lưu tên tiêu đề mới
 
-    // Load data of table header
+    // Load data getCriteriaConfiguration 
     const getCriteriaConfiguration = async () => {
         try {
             const response = await DecisionCriteriaAPI.optionCriteria(id);
@@ -36,7 +34,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             console.error("Error fetching criteria:", error);
         }
     };
-
     // Load data getTitleConfiguration
     const getTitleConfiguration = async () => {
         try {
@@ -46,34 +43,16 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             console.error("Error fetching criteria:", error);
         }
     };
-
     // Load update
     useEffect(() => {
         getCriteriaConfiguration()
         getTitleConfiguration();
     }, [id]);
-
     /////////////////////////////////// Xử Lý backend //////////////////////////////////
-    const upsertRankingTitle = async (form) => {
+    const updateDecisionTitle = async (form, decisionId, titleId) => {
+        console.log(form, decisionId, titleId)
         try {
-            await RankingTitleAPI.upsertRankingTitle(form);
-        } catch (error) {
-            console.error("Error adding new ranking title:", error);
-        }
-    }
-
-    const deleteRankingTitle = async (id) => {
-        try {
-            await RankingTitleAPI.deleteRankingTitle(id);
-        } catch (error) {
-            console.error("Error deleting ranking title:", error);
-        }
-    }
-
-    const upsertDecisionTitle = async (form) => {
-        // console.log(form, decisionId, titleId);
-        try {
-            await DecisionTitleAPI.upsertDecisionTitle(form);
+            await DecisionTitleAPI.updateDecisionTitle(form, decisionId, titleId);
         } catch (error) {
             console.error("Error updating decision title:", error);
         }
@@ -88,76 +67,38 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     };
 
     const syncDecisionTitle = async (rows, originalTitle) => {
-        const originalMap = new Map(originalTitle.map((item) => [item.rankingTitleId, item]));
-        const processedIds = new Set(); // Track processed titles
+        try {
+            const originalTitlesMap = new Map(originalTitle.map((item) => [item.id, item]));
 
-        // Process rows
-        for (const row of rows) {
-            const original = originalMap.get(row.id);
-
-            // Prepare data for upsertRankingTitle
-            const rankingTitleForm = {
-                id: row.id,
-                decisionId: id,
-                titleName: row.titleName,
-                totalScore: parseFloat(row.rankScore) || 0,
-            };
-
-            // Handle ranking title
-            if (
-                !original ||
-                original.rankingTitleName !== row.titleName ||
-                (original.totalScore || 0).toString() !== (row.rankScore || 0).toString()
-            ) {
-                console.log("Update ranking title:", rankingTitleForm);
-                await upsertRankingTitle(rankingTitleForm);
-            }
-
-            // Compare and update options
-            const originalOptionsMap = new Map(
-                (original?.options || []).map((opt) => [opt.criteriaId, opt])
-            );
-
-            for (const option of row.options) {
-                const originalOption = originalOptionsMap.get(option.criteriaId);
-
-                if (!originalOption) {
-                    // Add new option
-                    await upsertDecisionTitle({
-                        newRankingTitleId: row.id,
-                        newOptionId: option.optionId,
-                    });
-                    console.log("Add new option:", { newRankingTitleId: row.id, newOptionId: option.optionId });
-                } else if (originalOption.optionId !== option.optionId) {
-                    // Update existing option
-                    console.log("Update option:", { rankingTitleId: row.id, optionId: originalOption.optionId, newRankingTitleId: row.id, newOptionId: option.optionId });
-                    await upsertDecisionTitle({
-                        rankingTitleId: row.id,
-                        optionId: originalOption.optionId,
-                        newRankingTitleId: row.id,
-                        newOptionId: option.optionId,
+            for (const row of rows) {
+                const original = originalTitlesMap.get(row.id);
+                if (original) {
+                    if (original.titleName !== row.titleName || original.rankScore !== row.rankScore) {
+                        await updateDecisionTitle({
+                            decisionId: id,
+                            titleId: row.id,
+                            titleName: row.titleName,
+                            rankScore: row.rankScore,
+                            options: row.options
+                        });
+                    }
+                    originalTitlesMap.delete(row.id);
+                } else {
+                    await updateDecisionTitle({
+                        decisionId: id,
+                        titleId: row.id,
+                        titleName: row.titleName,
+                        rankScore: row.rankScore,
+                        options: row.options
                     });
                 }
-
-                // Remove processed options
-                originalOptionsMap.delete(option.criteriaId);
             }
 
-            // Handle deleted options
-            for (const [criteriaId, opt] of originalOptionsMap) {
-                await deleteDecisionTitle(row.id, opt.optionId); // Modified to include rankingTitleId and optionId
+            for (const [titleId] of originalTitlesMap) {
+                await deleteDecisionTitle(id, titleId);  // Use decisionId correctly here
             }
-
-            // Mark title as processed
-            processedIds.add(row.id);
-        }
-
-        // Handle deleted titles
-        for (const original of originalTitle) {
-            if (!processedIds.has(original.rankingTitleId)) {
-                console.log("Delete ranking title:", original.rankingTitleId);
-                await deleteRankingTitle(original.rankingTitleId);
-            }
+        } catch (error) {
+            console.error("Error syncing decision title:", error);
         }
     };
 
@@ -170,72 +111,52 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
         const newTitle = {
             id: rows.length + 1,  // Or get the real ID from the server
-            index: rows.length + 1,  // Or get the real ID from the server
             titleName: newTitleName,
-            rankScore: 0,
+            rankScore: '',
             options: criteria.map((criteriaItem) => ({
                 criteriaId: criteriaItem.criteriaId,
                 optionName: "",
                 score: 0,
-                optionId: null,
             })),
         };
 
-        setRows([...rows, newTitle]);
-        setNewTitleName('');
-        setstatusAddTitle(null);
+        const titleId = `new-${Date.now()}`;
+
+        if (!titleId) {
+            console.error("titleId không hợp lệ");
+            return;
+        }
+
+        try {
+            await updateDecisionTitle(newTitle, decisionId, titleId);
+            setRows([...rows, newTitle]);
+            setNewTitleName('');
+            setstatusAddTitle(null);
+            console.log("New title added:", newTitle);
+        } catch (error) {
+            console.error("Error adding new title:", error);
+        }
     };
 
     ///////////////////////////// The update function changes //////////////////////////
     const handleCellEditTitleCommit = ({ id, field, value }) => {
-        console.log('Updating row:', { id, field, value });
-
+        console.log('Đang cập nhật hàng:', { id, field, value });
         setRows((prevRows) => {
             const updatedRows = [...prevRows];
             const rowIndex = updatedRows.findIndex((row) => row.id === id);
-
             if (rowIndex !== -1) {
+                updatedRows[rowIndex][field] = value;
                 const currentRow = updatedRows[rowIndex];
-
-                // Update the value for the criteria field
-                currentRow[field] = value;
-
-                // Find the corresponding criteria and update its option in the options array
-                const criteriaIndex = criteria.findIndex(
-                    (criteriaItem) => criteriaItem.criteriaName === field
-                );
-
-                if (criteriaIndex !== -1) {
-                    const matchingOption = criteria[criteriaIndex].options.find(
-                        (option) => option.optionName === value
-                    );
-
-                    if (matchingOption) {
-                        currentRow.options[criteriaIndex] = {
-                            criteriaId: criteria[criteriaIndex].criteriaId,
-                            optionName: matchingOption.optionName,
-                            score: matchingOption.score,
-                            optionId: matchingOption.optionId,
-                        };
-                    }
-                }
-
-                // Recalculate the rankScore if all criteria are filled
-                const allCriteriaFilled = criteria.every(
-                    (criteriaItem) => currentRow[criteriaItem.criteriaName]
-                );
-
+                const allCriteriaFilled = criteria.every((criteria) => currentRow[criteria.criteriaName]);
                 if (allCriteriaFilled) {
-                    currentRow.rankScore = calculateRankScore(currentRow).toFixed(2);
+                    updatedRows[rowIndex].rankScore = calculateRankScore(currentRow).toFixed(2);
                 } else {
-                    currentRow.rankScore = '';
+                    updatedRows[rowIndex].rankScore = '';
                 }
             }
-
             return updatedRows;
         });
     };
-
     // End 
     //////////////////////////////////// Remove row ////////////////////////////////////
     const handleDeleteRowData = (id) => {
@@ -292,21 +213,16 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     const handleSaveChanges = () => {
         // Kiểm tra xem tất cả rankScore đã được tính toán
         const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
-        // console.log("Original Title:", originalTitle);
-        // console.log("Rows:", rows);
+
         if (!allRankScoresCalculated) {
+            syncDecisionTitle(rows, originalTitle);
             showErrorMessage('Tất cả Rank Score phải được tính toán.');
             return; // Dừng lại nếu có lỗi
         }
-        syncDecisionTitle(rows, originalTitle);
-
         showSuccessMessage('Title Configuration successfully updated.');
         console.log("Title Configuration successfully updated.”");
-        // goToNextStep(); // Chuyển bước tiếp theo
+        goToNextStep(); // Chuyển bước tiếp theo
     };
-
-    // console.log("Rows:", rows);
-    // console.log("Original Title:", originalTitle);
     // End 
     ///////////////////////////////// Column Title ///////////////////////////////////
     const ColumnsTitle = (criteria, decisionStatus) => {
@@ -387,50 +303,25 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     // End 
     //////////////////////////////////// Row Title ////////////////////////////////////
     const setRowData = (title, criteria) => {
-        const mappedRows = title.map((titleItem, index) => {
-            // Create fields for criteria columns, ensuring every criteria is included
+        const mappedRows = title.map((title, index) => {
+            // Tạo các trường từ tiêu chí
             const criteriaFields = criteria.reduce((acc, criteriaItem) => {
-                // Find the option corresponding to this criteria
-                const matchingOption = titleItem.options?.find(
-                    (option) => option.criteriaId === criteriaItem.criteriaId
-                );
-
-                // Set the field value to the matched optionName or an empty string if not found
-                acc[criteriaItem.criteriaName] = matchingOption ? matchingOption.optionName : "";
-                acc[`${criteriaItem.criteriaName}_id`] = criteriaItem.criteriaId;
-
+                // Tìm option đã chọn tương ứng với criteriaId
+                const matchingOption = title.options?.find((option) => option.criteriaId === criteriaItem.criteriaId);
+                // Lưu giá trị optionName hoặc để trống nếu không tìm thấy
+                acc[criteriaItem.criteriaName] = matchingOption ? matchingOption.optionName : ""; // Giá trị mặc định
                 return acc;
             }, {});
-
-            // Ensure all criteria are represented in the options array
-            const normalizedOptions = criteria.map((criteriaItem) => {
-                const matchingOption = titleItem.options?.find(
-                    (option) => option.criteriaId === criteriaItem.criteriaId
-                );
-
-                return matchingOption || {
-                    criteriaId: criteriaItem.criteriaId,
-                    optionName: "",
-                    score: 0,
-                    optionId: null,
-                };
-            });
-
             return {
-                id: titleItem.rankingTitleId,
-                index: index + 1, // Row index
-                titleName: titleItem.rankingTitleName, // Title name
-                rankScore: titleItem.totalScore || 0, // Total score
-                ...criteriaFields, // Dynamic criteria fields with criteriaId
-                options: normalizedOptions, // All options, with defaults for missing ones
+                id: title.rankingTitleId,
+                index: index + 1,
+                titleName: title.rankingTitleName,
+                rankScore: title.totalScore || 0,
+                ...criteriaFields,
             };
         });
-
-        // Update the state with the new rows
-        setRows(mappedRows);
+        setRows(mappedRows); // Update state
     };
-
-
     // End 
     useEffect(() => {
         if (originalTitle) {
@@ -461,7 +352,18 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                     <DataGrid
                         rows={rows}
                         columns={columnsTitle}
-                        getRowId={(row) => row.index}
+                        // initialState={{ pinnedColumns: { left: ['titleName', 'rankScore'], right: ['action'] } }}
+                        getRowId={(row) => row.id}
+                    // sx={{
+                    //     '& .MuiDataGrid-columnHeaders': {
+                    //         backgroundColor: '#f4f4f4',
+                    //     },
+                    //     overflowX: 'auto',  // Cho phép cuộn ngang cho các cột cuộn
+                    //     '.MuiDataGrid-virtualScroller': {
+                    //         overflowX: 'auto', // Cho phép cuộn ngang trong phần cuộn
+                    //         overflowY: 'auto', // Ẩn cuộn dọc trong vùng cuộn
+                    //     },
+                    // }}
                     />
                     {/* Button */}
                     {decisionStatus === 'Draft' && (
