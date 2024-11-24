@@ -72,15 +72,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         }
     }
 
-    const upsertDecisionTitle = async (form) => {
-        // console.log(form, decisionId, titleId);
-        try {
-            await DecisionTitleAPI.upsertDecisionTitle(form);
-        } catch (error) {
-            console.error("Error updating decision title:", error);
-        }
-    };
-
     const updateDecisionTitle = async (form) => {
         try {
             await DecisionTitleAPI.updateDecisionTitleOption(form);
@@ -100,6 +91,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     const syncDecisionTitle = async (rows, originalTitle) => {
         const originalMap = new Map(originalTitle.map((item) => [item.rankingTitleId, item]));
         const processedIds = new Set(); // Track processed titles
+        const decisionTitleForms = []; // Batch forms for updateDecisionTitle
 
         // Process rows
         for (const row of rows) {
@@ -113,7 +105,8 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 totalScore: parseFloat(row.rankScore) || 0,
             };
 
-            let newTitle;
+            let newTitle; // Store new ranking title response if applicable
+
             // Handle ranking title
             if (
                 !original ||
@@ -122,7 +115,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             ) {
                 newTitle = await upsertRankingTitle(rankingTitleForm);
             }
-            console.log("New ranking title:", newTitle);
 
             // Compare and update options
             const originalOptionsMap = new Map(
@@ -134,15 +126,13 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
                 if (!originalOption) {
                     // Add new option
-                    await upsertDecisionTitle({
+                    decisionTitleForms.push({
                         newRankingTitleId: newTitle ? newTitle.rankingTitleId : row.id,
                         newOptionId: option.optionId,
                     });
-                    console.log("Add new option:", { newRankingTitleId: row.id, newOptionId: option.optionId });
                 } else if (originalOption.optionId !== option.optionId) {
                     // Update existing option
-                    console.log("Update option:", { rankingTitleId: row.id, optionId: originalOption.optionId, newRankingTitleId: row.id, newOptionId: option.optionId });
-                    await upsertDecisionTitle({
+                    decisionTitleForms.push({
                         rankingTitleId: row.id,
                         optionId: originalOption.optionId,
                         newRankingTitleId: row.id,
@@ -156,7 +146,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
             // Handle deleted options
             for (const [criteriaId, opt] of originalOptionsMap) {
-                await deleteDecisionTitle(row.id, opt.optionId); // Modified to include rankingTitleId and optionId
+                await deleteDecisionTitle(row.id, opt.optionId); // Delete unused options
             }
 
             // Mark title as processed
@@ -166,9 +156,13 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         // Handle deleted titles
         for (const original of originalTitle) {
             if (!processedIds.has(original.rankingTitleId)) {
-                console.log("Delete ranking title:", original.rankingTitleId);
                 await deleteRankingTitle(original.rankingTitleId);
             }
+        }
+
+        // Batch update decision titles
+        if (decisionTitleForms.length > 0) {
+            await updateDecisionTitle(decisionTitleForms); // Send all add/update forms
         }
     };
 
@@ -203,7 +197,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
         setRows((prevRows) => {
             const updatedRows = [...prevRows];
-            const rowIndex = updatedRows.findIndex((row) => row.id === id);
+            const rowIndex = updatedRows.findIndex((row) => row.index === id);
 
             if (rowIndex !== -1) {
                 const currentRow = updatedRows[rowIndex];
@@ -249,12 +243,12 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
     // End 
     //////////////////////////////////// Remove row ////////////////////////////////////
-    const handleDeleteRowData = (id) => {
-        console.log('delete', id)
+    const handleDeleteRowData = (index) => {
+        console.log('delete', index)
         setRows((prevRows) => {
-            const rowIndex = prevRows.findIndex((row) => row.id === id);
+            const rowIndex = prevRows.findIndex((row) => row.index === index);
             if (rowIndex !== -1) {
-                const updatedRows = prevRows.filter((row) => row.id !== id);  // Lọc ra hàng cần xóa
+                const updatedRows = prevRows.filter((row) => row.index !== index);  // Lọc ra hàng cần xóa
                 return updatedRows;
             }
             return prevRows;
@@ -313,7 +307,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
         showSuccessMessage('Title Configuration successfully updated.');
         console.log("Title Configuration successfully updated.”");
-        // goToNextStep(); // Chuyển bước tiếp theo
+        goToNextStep(); // Chuyển bước tiếp theo
     };
 
     // console.log("Rows:", rows);
@@ -346,7 +340,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                         value={params.value || ''}
                         onChange={(e) =>
                             handleCellEditTitleCommit({
-                                id: params.row.id,
+                                id: params.row.index,
                                 field: params.field,
                                 value: e.target.value,
                             })
@@ -385,7 +379,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                         <Button
                             variant="outlined"
                             color="error"
-                            onClick={() => handleDeleteRowData(params.row.id)}
+                            onClick={() => handleDeleteRowData(params.row.index)}
                         >
                             <MdDeleteForever />
                         </Button>
