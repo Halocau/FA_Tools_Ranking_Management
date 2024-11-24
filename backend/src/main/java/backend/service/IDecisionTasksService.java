@@ -13,7 +13,7 @@ public interface IDecisionTasksService {
     public Optional<DecisionTasks> findByDecisionIdAndTaskId(int decisionId, int taskId);
     public List<DecisionTasks> getAllDecisionTasks();
     public DecisionTasks updateDecisionTask(DecisionTasks decisionTasks);
-    public void deleteDecisionTask(int decisionId, int taskId);
+    public void deleteDecisionTask(Integer decisionId, Integer taskId);
 
     //response
     public List<DecisionTasksResponse> getDecisionTasksByDecisionId(Integer decisionId);

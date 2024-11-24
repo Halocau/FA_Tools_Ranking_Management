@@ -61,7 +61,7 @@ public class DecisionTasksService implements IDecisionTasksService {
 
     @Override
     @Transactional
-    public void deleteDecisionTask(int decisionId, int taskId) {
+    public void deleteDecisionTask(Integer decisionId, Integer taskId) {
         Optional<DecisionTasks> decisionTasks = findByDecisionIdAndTaskId(decisionId, taskId);
         if (decisionTasks.isEmpty()) {
             throw new EntityNotFoundException("Decision Task Not Found");

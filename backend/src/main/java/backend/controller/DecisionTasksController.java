@@ -77,4 +77,12 @@ public class DecisionTasksController {
         return new ResponseEntity<>("Decision Tasks list added successfully", HttpStatus.CREATED);
     }
 
+    @DeleteMapping("/delete/{decisionId}/{taskId}")
+    public ResponseEntity<String> deleteDecisionTasks(
+            @PathVariable Integer decisionId,
+            @PathVariable Integer taskId
+    ) {
+        iDecisionTasksService.deleteDecisionTask(decisionId, taskId);
+        return new ResponseEntity<>("Decision task deleted successfully", HttpStatus.OK);
+    }
 }
