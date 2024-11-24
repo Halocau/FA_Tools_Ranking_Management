@@ -31,5 +31,5 @@ public interface IRankingTitleService {
     // form
     public void createRankingTitleByForm(AddRankingTitleRequest form);
 
-    public void updateRankingTitleByForm(UpdateRankingTitleRequest form);
+    public RankingTitleResponse updateRankingTitleByForm(UpdateRankingTitleRequest form);
 }

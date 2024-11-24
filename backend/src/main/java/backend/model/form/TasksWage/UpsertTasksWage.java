@@ -5,15 +5,12 @@ import lombok.Data;
 
 @Data
 public class UpsertTasksWage {
-    @NotNull(message = "RankingTitleId cannot be null")
+    @NotNull
     private Integer rankingTitleId;
-
-    @NotNull(message = "TaskId cannot be null")
+    @NotNull
     private Integer taskId;
-
-    @NotNull(message = "WorkingHourWage cannot be null")
+    @NotNull
     private Float workingHourWage;
-
-    @NotNull(message = "OvertimeWage cannot be null")
+    @NotNull
     private Float overtimeWage;
 }
