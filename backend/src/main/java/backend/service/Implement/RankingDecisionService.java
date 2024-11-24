@@ -62,6 +62,11 @@ public class RankingDecisionService implements IRankingDecisionService {
         iRankingDecisionRepository.deleteById(id);
     }
 
+    @Override
+    public List<RankingDecision> allRankingDecisions() {
+        return iRankingDecisionRepository.findAll();
+    }
+
 
     @Override
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions) {
