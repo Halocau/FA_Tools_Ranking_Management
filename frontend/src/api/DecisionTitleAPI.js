@@ -1,6 +1,6 @@
 import authClient from './baseapi/AuthorAPI';
 
-const decision_title_api = '/ranking-title';
+const decision_title_api = '/ranking-title-option';
 
 const DecisionTitleAPI = {
     getAllDecisionTitle: (filter = '', pageable = { page: 0, size: 5 }) =>
@@ -33,9 +33,14 @@ const DecisionTitleAPI = {
             .delete(`${decision_title_api}/delete/${decisionId}/${titleId}`)
             .then((response) => response.data),
 
-    updateDecisionTitle: (form, decisionId, titleId) =>
+    upsertDecisionTitle: (form) =>
         authClient
-            .put(`${decision_title_api}/upsert/${decisionId}/${titleId}`, form)
+            .put(`${decision_title_api}/upsert`, form)
+            .then((response) => response.data),
+
+    updateDecisionTitleOption: (form) =>
+        authClient
+            .put(`${decision_title_api}/update`, form)
             .then((response) => response.data),
 };
 
