@@ -260,7 +260,7 @@ const EditDecision = () => {
 
                     {/* Submit */}
                     <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-end' }}>
-                        {activeStep === 2 && (  // Chỉ hiển thị nút Submit khi activeStep = 2
+                        {isCriteriaSaved && isTitleSaved && isTaskSaved && (  // Chỉ hiển thị nút Submit khi activeStep = 2
                             <Button
                                 variant="contained"
                                 color="primary"
