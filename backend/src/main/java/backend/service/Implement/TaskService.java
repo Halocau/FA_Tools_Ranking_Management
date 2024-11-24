@@ -2,13 +2,14 @@ package backend.service.Implement;
 
 import backend.config.common.PaginationUtils;
 import backend.dao.IAccount;
+import backend.dao.IDecisionCriteriaRepository;
 import backend.dao.ITaskRepository;
+import backend.dao.ITaskWagesRepository;
 import backend.model.dto.TaskResponse;
 import backend.model.entity.Account;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
 import backend.model.form.Task.UpdateTaskRequest;
-import backend.model.page.PageInfo;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.ITaskService;
 import jakarta.transaction.Transactional;
@@ -20,7 +21,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -28,18 +28,28 @@ public class TaskService implements ITaskService {
     private ITaskRepository iTaskRepository;
     private IAccount iAccount;
     private ModelMapper modelMapper;
+    private ITaskWagesRepository iTaskWagesRepository;
+    private IDecisionCriteriaRepository idDecisionCriteriaRepository;
 
     @Autowired
-    public TaskService(ITaskRepository iTaskRepository, IAccount iAccount, ModelMapper modelMapper) {
+    public TaskService(ITaskRepository iTaskRepository, IAccount iAccount, ModelMapper modelMapper,
+            ITaskWagesRepository iTaskWagesRepository, IDecisionCriteriaRepository idDecisionCriteriaRepository) {
         this.iTaskRepository = iTaskRepository;
         this.iAccount = iAccount;
         this.modelMapper = modelMapper;
+        this.iTaskWagesRepository = iTaskWagesRepository;
+        this.idDecisionCriteriaRepository = idDecisionCriteriaRepository;
     }
 
     @Override
     public ResultPaginationDTO getTask(Specification<Task> spec, Pageable pageable) {
         Page<Task> pageTask = iTaskRepository.findAll(spec, pageable);
         return new PaginationUtils().buildPaginationDTO(pageTask);
+    }
+
+    @Override
+    public List<Task> getAllTask() {
+        return iTaskRepository.findAll();
     }
 
     @Override
@@ -88,7 +98,6 @@ public class TaskService implements ITaskService {
         }
         return taskResponses;
     }
-
 
     @Override
     public TaskResponse getTaskResponseById(Task task) {

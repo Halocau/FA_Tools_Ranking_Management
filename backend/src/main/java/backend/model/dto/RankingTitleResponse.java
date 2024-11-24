@@ -9,4 +9,5 @@ import java.util.List;
 public class RankingTitleResponse {
     private int rankingTitleId;
     private String titleName;
+    private Float totalScore;
 }
