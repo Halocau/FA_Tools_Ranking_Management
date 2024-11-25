@@ -19,7 +19,7 @@ const DecisionTaskAPI = {
 
     updateDecisionTask: (form) =>
         authClient
-            .put(`${decision_task_api}/add`, form)
+            .post(`${decision_task_api}/add`, form)
             .then((response) => response.data),
 
     upsertDecisionTask: (form) =>
