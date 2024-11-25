@@ -1,93 +1,64 @@
 //React
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { VscTriangleRight } from "react-icons/vsc";
 import { format } from "date-fns";
 import { FaEdit, FaAngleRight } from "react-icons/fa";
 // Mui
 import { MdDeleteForever } from "react-icons/md";
-import { Button, TextField, Typography } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Alert,
+  CircularProgress,
+  Typography,
+} from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 // Source Code
 import ModalCustom from "../../components/Common/Modal.jsx";
+import ActionButtons from "../../components/Common/ActionButtons.jsx";
 // acountID
+import { useAuth } from "../../contexts/AuthContext.jsx";
 import Slider from "../../layouts/Slider.jsx";
 import Box from "@mui/material/Box";
-//search
-import { sfLike } from "spring-filter-query-builder";
-import SearchComponent from "../../components/Common/Search.jsx";
+// Hooks
+import useTask from "../../hooks/useTask.jsx";
+
 // Import hook Notification
 import useNotification from "../../hooks/useNotification";
-import taskApi from "../../api/TaskAPI.js";
-
 const TaskManagement = () => {
   const navigate = useNavigate();
-  //Add
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newTaskName, setNewTaskName] = useState("");
-  //Delete
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [taskToDelete, setTaskToDelete] = useState(null);
-  //Edit
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editTaskName, setEditTaskName] = useState("");
-  //Delete many
+  const [showEditModal, setShowEditModal] = useState(false); // State for Edit Modal
+  const [newTaskName, setNewTaskName] = useState("");
+  const [editTaskName, setEditTaskName] = useState(""); // State for edited task name
   const [selectedTask, setSelectedTask] = useState(null); // State to store selected task for editing
-  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState(null);
   // Use hook notification
   const [showSuccessMessage, showErrorMessage] = useNotification();
-  //Validation error mesage
   const [validationMessage, setValidationMessage] = useState("");
-  //Select many delete
   const apiRef = useGridApiRef();
-  // Paging data
-  const [task, setTask] = useState([]);
-  const [pageSize, setpageSize] = useState(5);
-  const [page, setPage] = useState(1);
-  const [filter, setFilter] = useState("");
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
-  // Search
-  const [rows, setRows] = useState([]); // Initialize with empty array
-  const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
 
-  //Get props from useTask
-  const fetchAllTask = async () => {
-    try {
-      const data = await taskApi.searchByTaskName(filter, page, pageSize);
-      setTask(data.result);
-      setTotalPages(data.pageInfo.total);
-      setTotalElements(data.pageInfo.element);
-    } catch (error) {
-      console.error("Failed to fetch criteria:", error);
-    }
-  };
+  const {
+    data: tasks,
+    error,
+    loading,
+    fetchAllTasks,
+    addTask,
+    deleteTask,
+    updateTask, // Assuming you have an updateTask function in your useTask hook
+  } = useTask();
 
-  // Fetch all tasks when component mounts
   useEffect(() => {
-    fetchAllTask();
-  }, [page, pageSize, filter]);
-
-  // Map decision data to rows for DataGrid when rows are fetched
-  useEffect(() => {
-    if (task) {
-      const mappedRows = task.map((item, index) => ({
-        id: item.taskId,
-        index: index + 1 + (page - 1) * pageSize,
-        taskName: item.taskName,
-        createdBy: item.createdByName || "Unknown",
-        createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
-        updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
-      }));
-      setRows(mappedRows);
-      setFilteredRows(mappedRows);
-    }
-  }, [task]);
+    fetchAllTasks();
+  }, []);
 
   // Modal Add
   const handleOpenAddModal = () => {
     setValidationMessage("");
     setShowAddModal(true);
-  };
+  }
   const handleCloseAddModal = () => {
     setShowAddModal(false);
     setNewTaskName("");
@@ -98,126 +69,42 @@ const TaskManagement = () => {
   const handleAddTask = async () => {
     setValidationMessage("");
     let trimmedName = newTaskName.trim();
+
     if (!trimmedName) {
       setValidationMessage("Task name cannot be empty !");
       return;
     }
+
     if (trimmedName.length < 3 || trimmedName.length > 20) {
       setValidationMessage("Task name must be between 3 and 20 characters.");
       return;
     }
-    const nameRegex = /^[a-zA-Z0-9 ]+$/;
-    if (!nameRegex.test(trimmedName)) {
-      setValidationMessage(
-        "Task name can only contain letters, numbers, and spaces."
-      );
-      return;
-    }
-    trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
-    const isDuplicate = task.some(
-      (task) => task.taskName.toLowerCase() === trimmedName.toLowerCase()
+    trimmedName = trimmedName.charAt(0).toUpperCase() + trimmedName.slice(1);
+    // Kiểm tra xem tên đã tồn tại hay chưa
+    const existingTasks = await fetchAllTasks();
+    const isDuplicate = existingTasks.some(
+      (task) =>
+        task.taskName.toLowerCase() === trimmedName.toLowerCase()
     );
+    console.log("isDuplicate:", isDuplicate);
+
     if (isDuplicate) {
       setValidationMessage("Task name already exists !");
       return;
     }
+
     try {
       const newTask = {
         taskName: trimmedName,
-        createdBy: localStorage.getItem("userId"),
+        createdBy: localStorage.getItem('userId'),
       };
-      await taskApi.createTask(newTask);
+      await addTask(newTask);
+      showSuccessMessage("Task added successfully!");
       handleCloseAddModal();
-      setTotalElements(totalElements + 1);
-      if (task.length < pageSize) {
-        fetchAllTask();
-      } else {
-        setTotalPages(totalPages + 1);
-      }
-      showSuccessMessage("Task successfully added.");
+      await fetchAllTasks();
     } catch (error) {
       console.error("Failed to add Task:", error);
-      if (error.response && error.response.data) {
-        const detailMessage = error.response.data.detailMessage;
-        if (
-          detailMessage &&
-          detailMessage.includes("Task name exists already!")
-        ) {
-          setValidationMessage("Task name exists already!");
-          showErrorMessage("Error occurred adding Task. Please try again !");
-        }
-      } else {
-        showErrorMessage("Error occurred adding Task. Please try again !");
-      }
-    }
-  };
-
-  // Modal Delete
-  const handleOpenDeleteModal = (taskId) => {
-    const selectedTask = task.find((task) => task.taskId === taskId);
-    if (selectedTask && selectedTask.taskName === "") {
-      showErrorMessage("Cannot delete the group.");
-      return;
-    }
-    setTaskToDelete(taskId);
-    setShowDeleteModal(true);
-  };
-
-  const handleCloseDeleteModal = () => setShowDeleteModal(false);
-
-  //Delete Task
-  const handleDeleteTask = async () => {
-    try {
-      if (taskToDelete) {
-        await taskApi.deleteTaskById(taskToDelete);
-        setTask(task.filter((item) => item.taskId !== taskToDelete));
-        if (task.length === 5) {
-          fetchAllTask();
-        }
-        if (task.length === 1) {
-          setPage(page - 1);
-        }
-      }
-      setTotalElements(totalElements - 1);
-      showSuccessMessage("Task successfully removed.");
-      setTaskToDelete(null);
-      handleCloseDeleteModal();
-    } catch (error) {
-      console.error("Failed to delete group:", error);
-      showErrorMessage(
-        "Error occurred removing Ranking Group. Please try again."
-      );
-      handleCloseDeleteModal();
-    }
-  };
-
-  // Delete many task
-  const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
-  const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false); //close
-
-  // Delete many tasks
-  const handleDeleteManyTask = async () => {
-    const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
-    if (selectedIDs.length === 0) {
-      showErrorMessage("Please select tasks to delete.");
-      return;
-    }
-    try {
-      await Promise.all(selectedIDs.map((id) => taskApi.deleteTaskById(id)));
-      showSuccessMessage("Selected tasks deleted successfully!");
-      setTask((prevTasks) =>
-        prevTasks.filter((task) => !selectedIDs.includes(task.taskId))
-      );
-      if (task.length <= pageSize) {
-        fetchAllTask();
-      }
-      if (task.length === 1) {
-        setPage(page - 1);
-      }
-      handleCloseBulkDeleteModal();
-    } catch (error) {
-      console.error("Failed to delete selected tasks:", error);
-      handleCloseBulkDeleteModal();
+      showErrorMessage("Failed to add task. Please try again !");
     }
   };
 
@@ -233,62 +120,99 @@ const TaskManagement = () => {
     setEditTaskName("");
     setValidationMessage("");
   };
-  // Update Task
+
   const handleUpdateTask = async () => {
     const trimmedName = editTaskName.trim();
-    setValidationMessage("");
+    setValidationMessage("")
     if (!trimmedName) {
       setValidationMessage("Task name cannot be empty!");
       return;
     }
+
     if (trimmedName.length < 3 || trimmedName.length > 20) {
       setValidationMessage("Task name must be between 3 and 20 characters.");
       return;
     }
-    const nameRegex = /^[a-zA-Z0-9 ]+$/;
-    if (!nameRegex.test(trimmedName)) {
-      setValidationMessage(
-        "Task name can only contain letters, numbers, and spaces."
-      );
-      return;
-    }
-    const isDuplicate = rows.some(
+
+    // Kiểm tra xem tên nhiệm vụ đã tồn tại hay chưa, ngoại trừ nhiệm vụ đang được chỉnh sửa
+    const existingTasks = await fetchAllTasks();
+    const isDuplicate = existingTasks.some(
       (task) =>
         task.taskName.toLowerCase() === trimmedName.toLowerCase() &&
-        task.id !== selectedTask.id
+        task.id == selectedTask.id
     );
+
     if (isDuplicate) {
-      setValidationMessage(
-        "Task name already exists. Please choose another name."
-      );
+      setValidationMessage("Task name already exists. Please choose another name.");
       return;
     }
 
     const updatedTask = {
       taskName: trimmedName,
-      createdBy: localStorage.getItem("userId"),
+      createdBy: localStorage.getItem('userId'),
     };
 
     try {
-      // Assuming taskApi.updateTaskById exists and updates a task by its ID
-      await taskApi.updateTaskByID(selectedTask.id, updatedTask);
+      await updateTask(selectedTask.id, updatedTask);
       showSuccessMessage("Task updated successfully!");
       handleCloseEditModal();
-      fetchAllTask(); // Update task list after editing
+      await fetchAllTasks(); // Cập nhật lại danh sách nhiệm vụ
     } catch (error) {
       console.error("Failed to update Task:", error);
       showErrorMessage("Failed to update task. Please try again.");
     }
   };
 
-  //Search Task
-  const handleSearch = (event) => {
-    if (event) {
-      setFilter(sfLike("taskName", event).toString());
-    } else {
-      setFilter("");
+  // Modal Delete
+  const handleOpenDeleteModal = (taskId) => {
+    setGroupToDelete(taskId);
+    setShowDeleteModal(true);
+  };
+
+  const handleCloseDeleteModal = () => setShowDeleteModal(false);
+
+  const handleDeleteTask = async () => {
+    try {
+      if (groupToDelete) {
+        await deleteTask(groupToDelete);
+        showSuccessMessage("Task deleted successfully!");
+        setGroupToDelete(null);
+        handleCloseDeleteModal();
+        await fetchAllTasks();
+      }
+    } catch (error) {
+      console.error("Failed to delete Task:", error);
+      showErrorMessage("Failed to delete Task. Please try again.");
+      handleCloseDeleteModal();
     }
-    setPage(1);
+  };
+
+  // Delete many tasks
+  const handleBulkDelete = async () => {
+    const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
+    if (selectedIDs.length === 0) {
+      showErrorMessage("Please select tasks to delete.");
+      return;
+    }
+
+    const tasksToDelete = selectedIDs.filter((id) => {
+      const group = rows.find((row) => row.id === id);
+      return group && group.taskName.trim() !== ""; // Kiểm tra nếu tên nhiệm vụ không rỗng
+    });
+
+    if (tasksToDelete.length === 0) {
+      showErrorMessage("Cannot delete the group.");
+      return;
+    }
+
+    try {
+      await Promise.all(tasksToDelete.map((id) => deleteTask(id)));
+      showSuccessMessage("Selected tasks deleted successfully!");
+      await fetchAllTasks();
+    } catch (error) {
+      console.error("Failed to delete selected tasks:", error);
+      showErrorMessage("Failed to delete selected tasks. Please try again.");
+    }
   };
 
   //Format Data
@@ -328,6 +252,17 @@ const TaskManagement = () => {
     },
   ];
 
+  const rows = tasks
+    ? tasks.result.map((item, index) => ({
+      id: item.taskId,
+      index: index + 1,
+      taskName: item.taskName,
+      createdBy: item.createdByName || "Unknown",
+      createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
+      updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
+    }))
+    : [];
+
   return (
     <div style={{ marginTop: "60px" }}>
       <Slider />
@@ -337,32 +272,25 @@ const TaskManagement = () => {
           {<FaAngleRight />}
           Task Management
         </Typography>
-        <div style={{ marginBottom: "10px" }}>
-          <SearchComponent onSearch={handleSearch} placeholder=" Sreach Task" />
-        </div>
-        <DataGrid
-          className="custom-data-grid"
-          apiRef={apiRef}
-          rows={rows}
-          columns={columns}
-          checkboxSelection
-          pagination
-          pageSizeOptions={[5, 10, 20]}
-          getRowId={(row) => row.id}
-          rowCount={totalElements}
-          paginationMode="server"
-          paginationModel={{
-            page: page - 1, // Adjusted for 0-based index
-            pageSize: pageSize,
-          }}
-          onPaginationModelChange={(model) => {
-            setPage(model.page + 1); // Set 1-based page for backend
-            setpageSize(model.pageSize);
-          }}
-          disableNextButton={page >= totalPages}
-          disablePrevButton={page <= 1}
-          disableRowSelectionOnClick
-        />
+        {loading ? (
+          <CircularProgress />
+        ) : (
+          <DataGrid
+            className="custom-data-grid"
+            apiRef={apiRef}
+            rows={rows}
+            columns={columns}
+            checkboxSelection
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 5 },
+              },
+            }}
+            pageSizeOptions={[5]}
+            disableRowSelectionOnClick
+          />
+        )}
+
         <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
           <Button
             variant="contained"
@@ -374,12 +302,13 @@ const TaskManagement = () => {
           <Button
             variant="contained"
             color="error"
-            onClick={handleOpenBulkDeleteModal}
+            onClick={handleBulkDelete}
             sx={{ ml: 2 }}
           >
             Delete Selected Tasks
           </Button>
         </Box>
+
         {/* Add Task Modal */}
         <ModalCustom
           show={showAddModal}
@@ -415,6 +344,7 @@ const TaskManagement = () => {
             </Box>
           }
         />
+
         {/* Edit Task Modal */}
         <ModalCustom
           show={showEditModal}
@@ -452,28 +382,7 @@ const TaskManagement = () => {
             </Box>
           }
         />
-        {/* Delete Many Task Modal */}
-        <ModalCustom
-          show={showBulkDeleteModal}
-          handleClose={handleCloseBulkDeleteModal}
-          title="Confirm Bulk Delete"
-          bodyContent="Are you sure you want to delete the selected tasks?"
-          footerContent={
-            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
-              <Button variant="outlined" onClick={handleCloseBulkDeleteModal}>
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={handleDeleteManyTask}
-                sx={{ ml: 2 }}
-              >
-                Delete
-              </Button>
-            </Box>
-          }
-        />
+
         {/* Delete Task Modal */}
         <ModalCustom
           show={showDeleteModal}

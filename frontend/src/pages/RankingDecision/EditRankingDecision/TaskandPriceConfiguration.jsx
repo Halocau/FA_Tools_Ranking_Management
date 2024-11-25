@@ -11,6 +11,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
 // API
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 import DecisionTaskAPI from "../../../api/DecisionTaskAPI.js";
+import RankingTitleAPI from '../../../api/RankingTitleAPI.js';
 import taskApi from '../../../api/TaskAPI.js';
 import { initialTask } from "../Data.jsx";
 
@@ -58,7 +59,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     // Load data getTitleConfiguration
     const getTitleConfiguration = async () => {
         try {
-            const response = await DecisionTitleAPI.getDecisionTitleByDecisionId(id);
+            const response = await RankingTitleAPI.getRankingTitlesByDecisionId(id);
             // console.log(response)
             setTitle(response);
         } catch (error) {
@@ -107,6 +108,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         );
         const newRows = ['In Working Hour', 'Overtime'].map((type, index) => ({
             id: `${rows.length / 2 + 1}_${type}`,
+            index: `${index + 1}_${type}`,
             taskName: index === 0 ? addedTask.taskName : '',
             taskType: type,
             ...title.reduce((acc, title) => {
@@ -117,7 +119,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         setRows([...rows, ...newRows]);
         setSelectedTask(null)
     };
-    // console.log(rows)
+
     // End 
     //////////////////////////////////// Cancel ///////////////////////////////////////
     const handleCancelChanges = () => {
@@ -131,6 +133,28 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         setSelectedTask(null)
     };
     // End 
+
+    ////////////////////////////////// Handle Backend ////////////////////////////////////
+
+    const syncData = (rows, originalTask) => {
+        const result = {
+            added: [],
+            deleted: [],
+            updated: [],
+        };
+
+        // Map `originalTask` to a structured lookup
+        const originalTaskMap = new Map();
+        originalTask.forEach((task) => {
+            const taskKey = task.taskName;
+            originalTaskMap.set(taskKey, task);
+        });
+
+        console.log("Original Task Map:", originalTaskMap);
+
+    };
+
+
     //////////////////////////////////// Save /////////////////////////////////////////
     const handleSaveChanges = () => {
         // Kiểm tra xem tất cả các ô trong bảng đã được điền (không có ô nào trống)
@@ -148,7 +172,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                 return true;
             });
         });
-
+        syncData(rows, originalTask);
         // Nếu có ít nhất một ô chưa được điền, hiển thị thông báo lỗi
         if (!allFieldsFilled) {
             showErrorMessage('Tất cả các ô phải được điền đầy đủ');
@@ -159,13 +183,14 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         // console.log("Tất cả ô đã được điền đầy đủ. Lưu dữ liệu...");
         goToNextStep({ stayOnCurrentStep: true }); // Tiến hành lưu dữ liệu và chuyển sang bước tiếp theo
     };
-    // End 
+    // End
+
     //////////////////////////////////// Column Task////////////////////////////////////
     const ColumnsTask = (title, decisionStatus) => {
         // Cột tiêu đề động
         const titleColumns = title.map((titleItem) => ({
-            field: titleItem.rankingTitleName, // Use rankingTitleName as field
-            headerName: titleItem.rankingTitleName, // Display the name
+            field: titleItem.titleName, // Use rankingTitleName as field
+            headerName: titleItem.titleName, // Display the name
             width: 150, // Adjust column width
             editable: decisionStatus === 'Draft' || decisionStatus === 'Finalized', // Only editable in Draft
             renderCell: (params) =>
@@ -261,6 +286,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         }
     }, [originalTask, title, decisionStatus]);
     // End 
+
     //////////////////////////////////// Return //////////////////////////////////////
     return (
         <div>
