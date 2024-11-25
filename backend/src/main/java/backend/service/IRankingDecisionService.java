@@ -20,10 +20,8 @@ public interface IRankingDecisionService {
     public RankingDecision updateRankingDecision(RankingDecision rankingDecision);
 
     public void deleteRankingDecision(int id);
-
     public List<RankingDecision> allRankingDecisions();
     // response
-
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions);
     public RankingDecisionResponse findRankingDecisionResponseById(int id);
     // form

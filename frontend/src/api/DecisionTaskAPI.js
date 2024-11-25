@@ -17,9 +17,14 @@ const DecisionTaskAPI = {
             .delete(`${decision_task_api}/delete/${decisionId}/${taskId}`)
             .then((response) => response.data),
 
-    updateDecisionTask: (form, decisionId, taskId) =>
+    updateDecisionTask: (form) =>
         authClient
-            .put(`${decision_task_api}/upsert/${decisionId}/${taskId}`, form)
+            .post(`${decision_task_api}/add`, form)
+            .then((response) => response.data),
+
+    upsertDecisionTask: (form) =>
+        authClient
+            .put(`${decision_task_api}/add-list`, form)
             .then((response) => response.data),
 };
 
