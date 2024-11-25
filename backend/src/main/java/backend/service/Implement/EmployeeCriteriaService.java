@@ -60,6 +60,9 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
     @Override
     public void deleteByEmployeeId(Integer employeeId) {
         List<EmployeeCriteria> find = iEmployeeCriteriaRepository.findByEmployeeId(employeeId);
+        if(find == null){
+            throw new RuntimeException("Employee criteria list cannot be null or empty.");
+        }
         iEmployeeCriteriaRepository.deleteAll(find);
     }
 

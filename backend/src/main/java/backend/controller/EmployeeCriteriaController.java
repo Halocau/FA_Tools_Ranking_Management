@@ -44,4 +44,9 @@ public class EmployeeCriteriaController {
         iEmployeeCriteriaService.upsertEmployeeCriteriaList(forms);
         return ResponseEntity.ok("Employee criteria list updated sucessfully");
     }
+    @DeleteMapping("/delete/{employeeId}")
+    public ResponseEntity<String> deleteEmployeeCriteria(@PathVariable(name = "employeeId") Integer employeeId) {
+        iEmployeeCriteriaService.deleteByEmployeeId(employeeId);// delete all
+        return ResponseEntity.ok("Employee criteria deleted sucessfully");
+    }
 }
