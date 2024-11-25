@@ -100,77 +100,102 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
         }
     }
 
-    /// RESPONSE
     @Override
     public List<EmployeeCriteriaResponse> getEmployeeCriteriaResponse(List<EmployeeCriteria> listEmployeeCriteria) {
+        // Validate that the input list is not null or empty
+        if (listEmployeeCriteria == null || listEmployeeCriteria.isEmpty()) {
+            throw new IllegalArgumentException("Employee criteria list cannot be null or empty.");
+        }
+
         List<EmployeeCriteriaResponse> employeeCriteriaResponses = new ArrayList<>();
         Map<Integer, EmployeeCriteriaResponse> responseMap = new HashMap<>();
 
         for (EmployeeCriteria employeeCriteria : listEmployeeCriteria) {
-            // Kiểm tra xem EmployeeCriteriaResponse đã được tạo cho employeeId này chưa
+            // Check if the response for this employee ID already exists
             EmployeeCriteriaResponse response = responseMap.get(employeeCriteria.getEmployeeId());
             if (response == null) {
-                // Nếu chưa, khởi tạo EmployeeCriteriaResponse
+                // If not, create a new EmployeeCriteriaResponse
                 response = new EmployeeCriteriaResponse();
                 Optional<Employee> findEmployee = iEmployeeRepository.findById(employeeCriteria.getEmployeeId());
                 if (findEmployee.isPresent()) {
                     Employee employee = findEmployee.get();
+
+                    // Ensure employee ID and name are not null
+                    if (employee.getEmployeeId() == null || employee.getEmployeeName() == null) {
+                        throw new IllegalStateException("Employee ID or name is missing for employee: " + employee.getEmployeeId());
+                    }
                     response.setEmployeeId(employee.getEmployeeId());
                     response.setEmployeeName(employee.getEmployeeName());
 
-                    // Set RankingGroupName
+                    // Validate group ID and fetch RankingGroup
+                    if (employee.getGroupId() == null) {
+                        throw new IllegalStateException("Group ID is missing for employee: " + employee.getEmployeeId());
+                    }
                     RankingGroup rankingGroup = irankingGroupRepository.findById(employee.getGroupId())
                             .orElseThrow(() -> new EntityNotFoundException("RankingGroup not found for group ID: " + employee.getGroupId()));
                     response.setRankingGroupName(rankingGroup.getGroupName());
 
-                    // Set CurrentRankingDecision
+                    // Validate ranking decision ID and fetch RankingDecision
+                    if (employee.getRankingDecisionId() == null) {
+                        throw new IllegalStateException("Ranking decision ID is missing for employee: " + employee.getEmployeeId());
+                    }
                     RankingDecision rankingDecision = iRankingDecisionRepository.findByDecisionId(employee.getRankingDecisionId());
                     if (rankingDecision == null) {
                         throw new EntityNotFoundException("RankingDecision not found for decision ID: " + employee.getRankingDecisionId());
                     }
                     response.setCurrentRankingDecision(rankingDecision.getDecisionName());
 
-                    // Set CurrentRank
+                    // Validate ranking title ID and fetch RankingTitle
+                    if (employee.getRankingTitleId() == null) {
+                        throw new IllegalStateException("Ranking title ID is missing for employee: " + employee.getEmployeeId());
+                    }
                     RankingTitle rankingTitle = iRankingTitleRepository.findById(employee.getRankingTitleId())
                             .orElseThrow(() -> new EntityNotFoundException("RankingTitle not found for title ID: " + employee.getRankingTitleId()));
                     response.setCurrentRank(rankingTitle.getTitleName());
 
-                    // Thêm response vào map
+                    // Add the response to the map
                     responseMap.put(employee.getEmployeeId(), response);
                 }
             }
 
-            // Xử lý criteriaList, đảm bảo không lặp
+            // Process criteria list and avoid duplicates
             List<EmployeeCriteria> employeeCriteriaList = iEmployeeCriteriaRepository.findByEmployeeId(employeeCriteria.getEmployeeId());
-            Set<String> criteriaSet = new HashSet<>(); // Set để kiểm tra trùng lặp
+            Set<String> criteriaSet = new HashSet<>(); // Set to track duplicates
             List<ApplyCriteriaResponse> applyCriteriaList = new ArrayList<>();
 
             for (EmployeeCriteria empCriteria : employeeCriteriaList) {
+                // Validate and fetch Criteria
                 Criteria criteria = iCriteriaRepository.findById(empCriteria.getCriteriaId())
                         .orElseThrow(() -> new EntityNotFoundException("Criteria not found for criteria ID: " + empCriteria.getCriteriaId()));
 
+                // Validate and fetch Option
                 Options option = iOptionRepository.findById(empCriteria.getOptionId())
                         .orElseThrow(() -> new EntityNotFoundException("Option not found for option ID: " + empCriteria.getOptionId()));
 
-                // Tạo chuỗi định danh duy nhất cho criteria + option để kiểm tra trùng lặp
+                // Ensure criteria name and option name are not null
+                if (criteria.getCriteriaName() == null || option.getOptionName() == null) {
+                    throw new IllegalStateException("Criteria name or option name cannot be null.");
+                }
+
+                // Create a unique key for criteria + option to avoid duplicates
                 String uniqueKey = criteria.getCriteriaName() + "-" + option.getOptionName();
                 if (!criteriaSet.contains(uniqueKey)) {
+                    // Add non-duplicate criteria to the response
                     ApplyCriteriaResponse applyCriteriaResponse = new ApplyCriteriaResponse();
                     applyCriteriaResponse.setCirteriaName(criteria.getCriteriaName());
                     applyCriteriaResponse.setOptionName(option.getOptionName());
 
                     applyCriteriaList.add(applyCriteriaResponse);
-                    criteriaSet.add(uniqueKey); // Đánh dấu là đã xử lý
+                    criteriaSet.add(uniqueKey); // Mark as processed
                 }
             }
 
-            // Gán danh sách criteriaList không trùng lặp vào response
+            // Assign the unique criteria list to the response
             response.setCriteriaList(applyCriteriaList);
         }
 
-        // Trả về danh sách EmployeeCriteriaResponse từ map
+        // Add all responses from the map to the result list
         employeeCriteriaResponses.addAll(responseMap.values());
         return employeeCriteriaResponses;
     }
-
 }
