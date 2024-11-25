@@ -55,13 +55,6 @@ public class RankingDecisionController {
         return iRankingDecisionService.findRankingDecisionResponseById(id);
     }
 
-    @GetMapping("/all")
-    public  ResponseEntity<List<RankingDecisionResponse>> findRankingDecisionResponse(){
-        List<RankingDecision> all = iRankingDecisionService.allRankingDecisions();
-        List<RankingDecisionResponse> rankingDecisionResponses = iRankingDecisionService.getRankingDecisionResponses(all);
-        return ResponseEntity.status(HttpStatus.OK).body(rankingDecisionResponses);
-    }
-
     @PostMapping("/add")
     public String addRankingDecision(@RequestBody @Valid CreateRankingDecision form) {
         iRankingDecisionService.createRankingDecision(form);

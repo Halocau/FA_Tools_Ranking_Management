@@ -30,16 +30,6 @@ const RankingDecisionAPI = {
         }
     },
 
-    getAllRankingDecisions: async () => {
-        try {
-            const response = await authClient.get(`${rankin_decision_api}`);
-            return response.data;
-        } catch (error) {
-            console.error(`Error fetching ranking decision:`, error);
-            throw error;
-        }
-    },
-
     // Get a single ranking decision by ID
     getRankingDecisionById: async (id) => {
         try {

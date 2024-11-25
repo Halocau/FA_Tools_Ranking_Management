@@ -13,7 +13,6 @@ import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
 // API
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 import DecisionTaskAPI from "../../../api/DecisionTaskAPI.js";
-import TaskWageAPI from '../../../api/TaskWageAPI.js';
 import taskApi from '../../../api/TaskAPI.js';
 
 
@@ -71,121 +70,45 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         getTitleConfiguration();
     }, [id]);
 
-    //////////////////////////////////// Xử Lý backend /////////////////////////////////
-    const upsertDecisionTask = async (data) => {
-        try {
-            const response = await DecisionTaskAPI.updateDecisionTask(data);
-            return response;
-        } catch (error) {
-            console.error("Error fetching task:", error);
-        }
-    }
+    //////////////////////////////////// Column Task//////////////////////////////////
+    // Lấy danh sách các titleName từ rankingTitles
+    const allTitle = title.map((title) => ({
+        rankingTitleId: title.rankingTitleId,
+        titleName: title.rankingTitleName,
+    }));
+    // Hàm chuẩn hóa rows
+    const normalizeRows = (rows, allTitles) => {
+        return rows.map((row) => {
+            const updatedRow = { ...row };
+            const existingTitleIds = new Set((updatedRow.taskWages || []).map((wage) => wage.rankingTitleId));
 
-    const deleteDecisionTask = async (decisionId, taskId) => {
-        try {
-            const response = await DecisionTaskAPI.deleteDecisionTask(decisionId, taskId);
-            return response;
-        } catch (error) {
-            console.error("Error fetching task:", error);
-        }
-    }
-
-    const upsertTaskWage = async (data) => {
-        try {
-            const response = await TaskWageAPI.upsertTaskWage(data);
-            return response;
-        } catch (error) {
-            console.error("Error fetching task:", error);
-        }
-    }
-
-    const deleteTaskWage = async (taskId, rankingTitleId) => {
-        try {
-            const response = await TaskWageAPI.deleteTaskWage(taskId, rankingTitleId);
-            return response;
-        } catch (error) {
-            console.error("Error fetching task:", error);
-        }
-    }
-
-    console.log("Original Task:", originalTask);
-    console.log("Rows:", rows);
-
-    const synsDecisionTask = async (rows, originalTask) => {
-        const originalTaskMap = new Map(originalTask.map(task => [task.taskId, task]));
-        const rowsMap = new Map(rows.map(task => [task.taskId, task]));
-
-        // Task-level operations
-        for (const [taskId, original] of originalTaskMap) {
-            if (!rowsMap.has(taskId)) {
-                // Task deleted
-                await deleteDecisionTask(original.decisionId, original.taskId);
-            }
-        }
-
-        for (const [taskId, current] of rowsMap) {
-            if (!originalTaskMap.has(taskId)) {
-                // Task added
-                await upsertDecisionTask({ decisionId: current.decisionId, taskId: current.taskId });
-            } else {
-                // Task exists, check for updates
-                const original = originalTaskMap.get(taskId);
-                if (original.taskName !== current.taskName) {
-                    await upsertDecisionTask({ decisionId: current.decisionId, taskId: current.taskId });
-                }
-            }
-        }
-
-        // Task Wage-level operations
-        for (const [taskId, current] of rowsMap) {
-            const currentWages = new Map(current.taskWages.map(wage => [wage.rankingTitleId, wage]));
-            const originalWages = originalTaskMap.has(taskId)
-                ? new Map(originalTaskMap.get(taskId).taskWages.map(wage => [wage.rankingTitleId, wage]))
-                : new Map();
-
-            const upsertWages = [];
-            for (const [rankingTitleId, currentWage] of currentWages) {
-                if (!originalWages.has(rankingTitleId)) {
-                    // New wage added
-                    upsertWages.push({
-                        rankingTitleId: currentWage.rankingTitleId,
-                        taskId: taskId,
-                        workingHourWage: Number(currentWage.workingHourWage),
-                        overtimeWage: Number(currentWage.overtimeWage),
+            // Thêm `rankingTitleId` và `titleName` còn thiếu
+            allTitles.forEach(({ rankingTitleId, titleName }) => {
+                if (!existingTitleIds.has(rankingTitleId)) {
+                    updatedRow.taskWages.push({
+                        rankingTitleId,
+                        titleName,
+                        workingHourWage: null,
+                        overtimeWage: null,
                     });
-                } else {
-                    const originalWage = originalWages.get(rankingTitleId);
-                    if (
-                        originalWage.workingHourWage != currentWage.workingHourWage ||
-                        originalWage.overtimeWage != currentWage.overtimeWage
-                    ) {
-                        // Wage updated
-                        upsertWages.push({
-                            rankingTitleId: currentWage.rankingTitleId,
-                            taskId: taskId,
-                            workingHourWage: Number(currentWage.workingHourWage),
-                            overtimeWage: Number(currentWage.overtimeWage),
-                        });
-                    }
                 }
-            }
+            });
 
-            // Perform batch upsert for task wages
-            if (upsertWages.length > 0) {
-                await upsertTaskWage(upsertWages);
-            }
+            // Sắp xếp lại `taskWages` theo `titleName`
+            updatedRow.taskWages = updatedRow.taskWages.sort((a, b) => a.titleName.localeCompare(b.titleName));
 
-            console.log('upsertWages', upsertWages);
+            return updatedRow;
+        });
+    };
 
-            // Handle wage deletions
-            for (const [rankingTitleId] of originalWages) {
-                if (!currentWages.has(rankingTitleId)) {
-                    await deleteTaskWage(taskId, rankingTitleId);
-                }
-            }
-        }
-    }
 
+    useEffect(() => {
+        const normalized = normalizeRows(originalTask, allTitle);
+        setRows(normalized);
+    }, [originalTask]);
+    console.log(rows)
+    //////////////////////////////////// Xử Lý backend /////////////////////////////////
+    //
 
     ///////////////////////////// The update function changes //////////////////////////
     const handleCellEditTaskCommit = (taskId, rankingTitleId, wageType, value) => {
@@ -266,74 +189,48 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     // End 
     //////////////////////////////////// Save ///////////////////////////////////////
     const handleSaveChanges = () => {
-        console.log("TESTTTTTTT!");
+        console.log('Bắt đầu lưu dữ liệu:', rows);
+
         // Hàm kiểm tra giá trị của từng ô trong hàng
         const isRowValid = (row) => {
-            return Object.keys(row).every((key) => {
-                if (['taskId', 'taskName', 'taskType'].includes(key)) {
-                    return true; // Bỏ qua các cột cố định
-                }
-                const value = row[key];
-                // Kiểm tra ô có giá trị hợp lệ (không phải rỗng, null, hoặc undefined)
-                if (value === '' || value === null || value === undefined) {
-                    console.log(`Ô thiếu dữ liệu: ${key}, Dòng: ${JSON.stringify(row)}`);
-                    return false;
-                }
-                return true;
-            });
+            return row.taskWages.every((wage) =>
+                Object.keys(wage).every((key) => {
+                    const value = wage[key];
+
+                    // Kiểm tra các cột cố định hoặc giá trị không được phép null/undefined/rỗng
+                    if (value === null || value === undefined || value === '') {
+                        console.error(`Dữ liệu không hợp lệ tại key: ${key}, row: ${JSON.stringify(row)}`);
+                        return false;
+                    }
+
+                    return true;
+                })
+            );
         };
 
-        // Kiểm tra tất cả các hàng
-        const allFieldsFilled = rows.every(isRowValid);
+        // Kiểm tra toàn bộ hàng trong `rows`
+        const allRowsValid = rows.every(isRowValid);
 
-        if (!allFieldsFilled) {
-            showErrorMessage('Tất cả các ô phải được điền đầy đủ');
-            console.log('Có ô chưa điền dữ liệu');
-            return; // Dừng nếu có lỗi
+        if (!allRowsValid) {
+            showErrorMessage('Tất cả các ô phải được điền đầy đủ trước khi lưu.');
+            console.log('Không thể lưu do thiếu dữ liệu.');
+            return; // Dừng quá trình lưu nếu dữ liệu không hợp lệ
         }
-        synsDecisionTask(rows, originalTask);
-        // Hiển thị thông báo thành công và tiếp tục bước tiếp theo
+
+        // Nếu tất cả hợp lệ, tiếp tục lưu dữ liệu
+        console.log('Dữ liệu hợp lệ, lưu thành công:', rows);
+
+        // Hiển thị thông báo thành công
+        showSuccessMessage('Dữ liệu đã được lưu thành công.');
+
+        // Tiếp tục bước tiếp theo (nếu có)
+        goToNextStep({ stayOnCurrentStep: true });
+
+
+        // Nếu tất cả ô đều có dữ liệu, hiển thị thông báo thành công và tiếp tục bước tiếp theo
         showSuccessMessage('Task & Price Configuration successfully updated.');
         goToNextStep({ stayOnCurrentStep: true });
     };
-
-    //////////////////////////////////// Column Task//////////////////////////////////
-    // Lấy danh sách các titleName từ rankingTitles
-    const allTitle = title.map((title) => ({
-        rankingTitleId: title.rankingTitleId,
-        titleName: title.rankingTitleName,
-    }));
-    // Hàm chuẩn hóa rows
-    const normalizeRows = (rows, allTitles) => {
-        return rows.map((row) => {
-            const updatedRow = { ...row };
-            const existingTitleIds = new Set((updatedRow.taskWages || []).map((wage) => wage.rankingTitleId));
-
-            // Thêm `rankingTitleId` và `titleName` còn thiếu
-            allTitles.forEach(({ rankingTitleId, titleName }) => {
-                if (!existingTitleIds.has(rankingTitleId)) {
-                    updatedRow.taskWages.push({
-                        rankingTitleId,
-                        titleName,
-                        workingHourWage: null,
-                        overtimeWage: null,
-                    });
-                }
-            });
-
-            // Sắp xếp lại `taskWages` theo `titleName`
-            updatedRow.taskWages = updatedRow.taskWages.sort((a, b) => a.titleName.localeCompare(b.titleName));
-
-            return updatedRow;
-        });
-    };
-
-
-    useEffect(() => {
-        const normalized = normalizeRows(originalTask, allTitle);
-        setRows(normalized);
-    }, [originalTask]);
-
 
 
 
@@ -593,7 +490,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                         {/* Cancel and Save */}
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                             {/* Cancel*/}
-                            <Button
+                            <Button sx={{ display: 'flex', justifyContent: 'flex-end' }}
                                 variant="contained"
                                 color="error"
                                 onClick={handleCancelChanges}
@@ -601,7 +498,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                 Cancel
                             </Button>
                             {/* Save */}
-                            <Button
+                            <Button sx={{ display: 'flex', justifyContent: 'flex-end' }}
                                 variant="contained"
                                 color="primary"
                                 onClick={handleSaveChanges}

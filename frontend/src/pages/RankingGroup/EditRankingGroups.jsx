@@ -180,8 +180,8 @@ const EditRankingGroup = () => {
     const fetchlistRankingDecisionsClone = async () => {
         try {
             const data = await RankingDecisionAPI.getAllRankingDecisions();
-            setlistDecisionSearchClone(data.result)
-            console.log(data.result)
+            setlistDecisionSearchClone(data)
+            console.log('setlistDecisionSearchClone', data)
         } catch (error) {
             console.error("Failed to fetch criteria:", error);
         }
