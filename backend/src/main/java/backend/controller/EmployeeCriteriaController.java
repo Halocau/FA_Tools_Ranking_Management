@@ -1,16 +1,15 @@
 package backend.controller;
 
+import backend.model.dto.EmployeeCriteriaResponse;
 import backend.model.entity.EmployeeCriteria;
 import backend.model.form.EmployeeCriteria.UpsertEmployeeCriteriaRequest;
 import backend.service.IEmployeeCriteriaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -21,6 +20,13 @@ public class EmployeeCriteriaController {
     @Autowired
     public EmployeeCriteriaController(IEmployeeCriteriaService iEmployeeCriteriaService) {
         this.iEmployeeCriteriaService = iEmployeeCriteriaService;
+    }
+
+    @GetMapping
+    public List<EmployeeCriteriaResponse> employeeCriteriaList() {
+        List<EmployeeCriteria> list = iEmployeeCriteriaService.getEmployeeCriteria();
+        List<EmployeeCriteriaResponse> responseList = iEmployeeCriteriaService.getEmployeeCriteriaResponse(list);
+        return responseList;
     }
 
     @PutMapping("/upsert")

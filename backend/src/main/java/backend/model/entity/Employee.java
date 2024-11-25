@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "Employee")
@@ -43,4 +44,18 @@ public class Employee {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private LocalDate updatedDate;
+
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.DETACH,
+                    CascadeType.MERGE,
+                    CascadeType.PERSIST,
+                    CascadeType.REFRESH
+            })
+    @JoinTable(
+            name = "Employee_Criteria",
+            joinColumns = @JoinColumn(name = "employee_id"),
+            inverseJoinColumns = @JoinColumn(name = "criteria_id")
+    )
+    private List<Criteria> criterias;
 }
