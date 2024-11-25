@@ -45,6 +45,12 @@ public class CriteriaController {
         return new ResponseEntity<>(criteriaList, HttpStatus.OK);
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<CriteriaResponse>> getAllCriteria() {
+        List<Criteria> getAll = criteriaService.getAllCriteria();
+        return new ResponseEntity<>(criteriaService.convertToCriteriaResponseList(getAll), HttpStatus.OK);
+    }
+
     @GetMapping("/get/{id}")
     public ResponseEntity<CriteriaResponse> getCriteriaById(@PathVariable("id") int criteriaId) {
         Criteria criteria = criteriaService.getCriteriabyId(criteriaId);
