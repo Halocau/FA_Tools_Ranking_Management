@@ -112,28 +112,26 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     console.log("Rows:", rows);
 
     const synsDecisionTask = async (rows, originalTask) => {
-        // Convert original data into maps for faster lookup
         const originalTaskMap = new Map(originalTask.map(task => [task.taskId, task]));
         const rowsMap = new Map(rows.map(task => [task.taskId, task]));
 
-        const decisionId = id;
         // Task-level operations
         for (const [taskId, original] of originalTaskMap) {
             if (!rowsMap.has(taskId)) {
                 // Task deleted
-                await deleteDecisionTask(decisionId, original.taskId);
+                await deleteDecisionTask(original.decisionId, original.taskId);
             }
         }
 
         for (const [taskId, current] of rowsMap) {
             if (!originalTaskMap.has(taskId)) {
                 // Task added
-                await upsertDecisionTask({ decisionId: decisionId, taskId: current.taskId });
+                await upsertDecisionTask({ decisionId: current.decisionId, taskId: current.taskId });
             } else {
                 // Task exists, check for updates
                 const original = originalTaskMap.get(taskId);
                 if (original.taskName !== current.taskName) {
-                    await upsertDecisionTask({ decisionId: decisionId, taskId: current.taskId });
+                    await upsertDecisionTask({ decisionId: current.decisionId, taskId: current.taskId });
                 }
             }
         }
@@ -149,7 +147,12 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             for (const [rankingTitleId, currentWage] of currentWages) {
                 if (!originalWages.has(rankingTitleId)) {
                     // New wage added
-                    upsertWages.push(currentWage);
+                    upsertWages.push({
+                        rankingTitleId: currentWage.rankingTitleId,
+                        taskId: taskId,
+                        workingHourWage: Number(currentWage.workingHourWage),
+                        overtimeWage: Number(currentWage.overtimeWage),
+                    });
                 } else {
                     const originalWage = originalWages.get(rankingTitleId);
                     if (
@@ -157,7 +160,12 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                         originalWage.overtimeWage != currentWage.overtimeWage
                     ) {
                         // Wage updated
-                        upsertWages.push(currentWage);
+                        upsertWages.push({
+                            rankingTitleId: currentWage.rankingTitleId,
+                            taskId: taskId,
+                            workingHourWage: Number(currentWage.workingHourWage),
+                            overtimeWage: Number(currentWage.overtimeWage),
+                        });
                     }
                 }
             }
@@ -166,6 +174,8 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             if (upsertWages.length > 0) {
                 await upsertTaskWage(upsertWages);
             }
+
+            console.log('upsertWages', upsertWages);
 
             // Handle wage deletions
             for (const [rankingTitleId] of originalWages) {
