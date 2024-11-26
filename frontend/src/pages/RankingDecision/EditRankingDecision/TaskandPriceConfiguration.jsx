@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { MdDeleteForever } from 'react-icons/md';
 import { useNavigate, useParams } from "react-router-dom";
 import Select from "react-select";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+
 // MUI
 import {
     Box, Button, Typography, TextField, IconButton,
@@ -11,7 +13,6 @@ import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
 // API
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 import DecisionTaskAPI from "../../../api/DecisionTaskAPI.js";
-import RankingTitleAPI from '../../../api/RankingTitleAPI.js';
 import taskApi from '../../../api/TaskAPI.js';
 import { initialTask } from "../Data.jsx";
 
@@ -20,27 +21,27 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     const { id } = useParams(); // Get the ID from the URL
     const [originalTask, setOriginalTask] = useState([]);  // Lưu dữ liệu gốc
     const [title, setTitle] = useState([]);  // Lưu dữ liệu gốc
-    const [columnsTask, setColumnsTask] = useState([]);
     // Row table
     const [rows, setRows] = useState([]);
+    // State để lưu trữ giá trị đang chỉnh sửa của từng ô
+    const [editedWages, setEditedWages] = useState({});
     //Select to Add a new Task
     const [selectedTask, setSelectedTask] = useState(null);
-    // data tạm 
     // Sử dụng useState để lưu danh sách tên task
-
-    console.log("Original Task:", originalTask);
-    console.log("Rows:", rows);
-
     const [listtask, setListTask] = useState([]);
 
     const getListTask = async () => {
         try {
             const response = await taskApi.getAllTaskWihtOutPagination();
             setListTask(response);
+            console.log('list', response)
         } catch (error) {
             console.error("Error fetching task:", error);
         }
     }
+
+    console.log('listtask', listtask);
+    console.log('rows', rows);
 
     useEffect(() => {
         getListTask();
@@ -52,6 +53,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             const response = await DecisionTaskAPI.getDecisionTaskByDecisionId(id);
             // console.log(response)
             setOriginalTask(response);
+            setRows(response)
         } catch (error) {
             console.error("Error fetching task:", error);
         }
@@ -59,7 +61,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     // Load data getTitleConfiguration
     const getTitleConfiguration = async () => {
         try {
-            const response = await RankingTitleAPI.getRankingTitlesByDecisionId(id);
+            const response = await DecisionTitleAPI.getDecisionTitleByDecisionId(id);
             // console.log(response)
             setTitle(response);
         } catch (error) {
@@ -75,27 +77,22 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     //
 
     ///////////////////////////// The update function changes //////////////////////////
-    const handleCellEditTaskCommit = (newRow) => {
-        // console.log(newRow)
-        // Cập nhật hàng mới
-        const updatedRow = { ...newRow };
-        // Cập nhật trạng thái `rows`
-        setRows((prevRows) => {
-            const updatedRows = prevRows.map((row) =>
-                row.id === updatedRow.id ? updatedRow : row
-            );
-            return updatedRows;
+    // Hàm để cập nhật giá trị chỉnh sửa của ô
+    const handleCellEditTaskCommit = (taskId, titleName, wageType, value) => {
+        setEditedWages({
+            ...editedWages,
+            [`${taskId}-${titleName}-${wageType}`]: value
         });
-    };
+    }
     // End 
     //////////////////////////////////// Remove row ///////////////////////////////////////
-    const handleDeleteRowData = (id) => {
+    const handleDeleteRowData = (taskId) => {
         setRows((prevRows) => {
-            // Lấy taskName từ id (giả sử id có dạng "taskName_type")
-            const taskName = id.split('_')[0];
+            // Tìm taskName từ taskId
+            const taskName = taskId;
 
-            // Lọc bỏ tất cả các hàng có cùng taskName
-            const updatedRows = prevRows.filter((row) => !row.id.startsWith(taskName));
+            // Lọc bỏ tất cả các hàng liên quan đến taskName
+            const updatedRows = prevRows.filter((row) => row.taskId !== taskName);
 
             return updatedRows;
         });
@@ -105,56 +102,20 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     const handleAddTask = () => {
         const addedTask = listtask.find(
             (task) => task.taskId === selectedTask.value
-        );
-        const newRows = ['In Working Hour', 'Overtime'].map((type, index) => ({
-            id: `${rows.length / 2 + 1}_${type}`,
-            index: `${index + 1}_${type}`,
-            taskName: index === 0 ? addedTask.taskName : '',
-            taskType: type,
-            ...title.reduce((acc, title) => {
-                acc[title.rankingTitleName] = '';
-                return acc;
-            }, {}),
-        }));
-        setRows([...rows, ...newRows]);
+        )
+        console.log(addedTask)
+        // setRows([...rows, addedTask]);
         setSelectedTask(null)
     };
-
+    // console.log(rows)
     // End 
     //////////////////////////////////// Cancel ///////////////////////////////////////
     const handleCancelChanges = () => {
         console.log('cancel');
-        // Kiểm tra nếu originalTitle và title có giá trị hợp lệ
-        if (originalTask && title) {
-            setRowData(originalTask, title);
-        } else {
-            console.error("Không có dữ liệu ban đầu để load lại.");
-        }
+        setRows(originalTask)
         setSelectedTask(null)
     };
     // End 
-
-    ////////////////////////////////// Handle Backend ////////////////////////////////////
-
-    const syncData = (rows, originalTask) => {
-        const result = {
-            added: [],
-            deleted: [],
-            updated: [],
-        };
-
-        // Map `originalTask` to a structured lookup
-        const originalTaskMap = new Map();
-        originalTask.forEach((task) => {
-            const taskKey = task.taskName;
-            originalTaskMap.set(taskKey, task);
-        });
-
-        console.log("Original Task Map:", originalTaskMap);
-
-    };
-
-
     //////////////////////////////////// Save /////////////////////////////////////////
     const handleSaveChanges = () => {
         // Kiểm tra xem tất cả các ô trong bảng đã được điền (không có ô nào trống)
@@ -172,7 +133,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                 return true;
             });
         });
-        syncData(rows, originalTask);
+
         // Nếu có ít nhất một ô chưa được điền, hiển thị thông báo lỗi
         if (!allFieldsFilled) {
             showErrorMessage('Tất cả các ô phải được điền đầy đủ');
@@ -183,109 +144,9 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         // console.log("Tất cả ô đã được điền đầy đủ. Lưu dữ liệu...");
         goToNextStep({ stayOnCurrentStep: true }); // Tiến hành lưu dữ liệu và chuyển sang bước tiếp theo
     };
-    // End
-
-    //////////////////////////////////// Column Task////////////////////////////////////
-    const ColumnsTask = (title, decisionStatus) => {
-        // Cột tiêu đề động
-        const titleColumns = title.map((titleItem) => ({
-            field: titleItem.titleName, // Use rankingTitleName as field
-            headerName: titleItem.titleName, // Display the name
-            width: 150, // Adjust column width
-            editable: decisionStatus === 'Draft' || decisionStatus === 'Finalized', // Only editable in Draft
-            renderCell: (params) =>
-                decisionStatus === 'Draft' || decisionStatus === 'Finalized' ? (
-                    <TextField
-                        sx={{
-                            marginTop: '7px',
-                            textAlign: 'center',
-                        }}
-                        value={params.value || ''} // Default value
-                        onChange={(e) => {
-                            const updatedValue = e.target.value;
-                            // Update cell value
-                            params.row[params.field] = updatedValue;
-                        }}
-                        onBlur={(e) => {
-                            // Commit changes on blur
-                            const updatedRow = { ...params.row, [params.field]: e.target.value };
-                            handleCellEditTaskCommit(updatedRow); // Save changes
-                        }}
-                        variant="outlined"
-                        size="small"
-                        fullWidth
-                        type="number"
-                        InputProps={{
-                            inputProps: { min: 0 },
-                        }}
-                    />
-                ) : (
-                    params.value // Show value in Finalized status
-                ),
-        }));
-
-        // Cột cố định
-        const fixedColumns = [
-            { field: 'taskName', headerName: 'Task Name', width: 200 },
-            { field: 'taskType', headerName: 'Task Type', width: 150 },
-        ];
-
-        // Column Action
-        const actionColumn = [
-            {
-                field: 'action',
-                headerName: 'Action',
-                width: 90,
-                renderCell: (params) =>
-                    decisionStatus === 'Draft' && (
-                        <Button
-                            variant="outlined"
-                            color="error"
-                            onClick={() => handleDeleteRowData(params.row.id)}
-                        >
-                            <MdDeleteForever />
-                        </Button>
-                    ),
-            },
-        ];
-
-        return [...fixedColumns, ...titleColumns, ...actionColumn];
-    };
     // End 
-    //////////////////////////////////// Row Task /////////////////////////////////////
-    const setRowData = (task, title) => {
-        const mappedRows = task.flatMap((taskItem) => {
-            return ["In Working Hour", "Overtime"].map((type, index) => {
-                return {
-                    id: `${taskItem.taskId}_${type}`, // Id lấy taskId + type
-                    index: `${index + 1}_${type}`,
-                    taskName: type === "In Working Hour" ? taskItem.taskName : "",
-                    taskType: type,
-                    ...title.reduce((acc, titleItem) => {
-                        const titleWage = taskItem.taskWages?.find(
-                            (wage) => wage.rankingTitleId === titleItem.rankingTitleId
-                        );
-                        acc[titleItem.rankingTitleName] =
-                            type === "In Working Hour"
-                                ? titleWage?.workingHourWage || ""
-                                : titleWage?.overtimeWage || "";
-                        return acc;
-                    }, {}),
-                };
-            });
-        });
-        setRows(mappedRows); // Update state
-    };
-
-    useEffect(() => {
-        if (originalTask) {
-            const columns = ColumnsTask(title, decisionStatus);
-            setColumnsTask(columns);
-            setRowData(originalTask, title);
-            // console.log(rows)
-        }
-    }, [originalTask, title, decisionStatus]);
-    // End 
+    //////////////////////////////////// Column Task//////////////////////////////////
+    const allTitleNames = title.map(t => t.rankingTitleName);
 
     //////////////////////////////////// Return //////////////////////////////////////
     return (
@@ -304,28 +165,155 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                     gap: 2,
                 }}>
                 <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
-                    {/* Table DataGrid */}
-                    <DataGrid
-                        rows={rows}
-                        columns={columnsTask}
-                        // initialState={{ pinnedColumns: { left: ['taskName', 'taskType'], right: ['action'] } }}
-                        getRowId={(row) => row.id}
-                        processRowUpdate={(newRow) => {
-                            handleCellEditTaskCommit(newRow);
-                            return newRow;
-                        }}
-                        experimentalFeatures={{ newEditingApi: true }}
-                        sx={{
-                            '& .MuiDataGrid-columnHeaders': {
-                                backgroundColor: '#f4f4f4',
-                            },
-                            overflowX: 'auto',
-                            '.MuiDataGrid-virtualScroller': {
-                                overflowX: 'auto',
-                                overflowY: 'auto',
-                            },
-                        }}
-                    />
+                    {/* Table  */}
+                    <TableContainer component={Paper} sx={{ minWidth: 400, maxHeight: 400, height: 400, overflowX: 'auto', overflowY: 'auto' }}>
+                        <Table sx={{}} aria-label="task table">
+                            <TableHead>
+                                <TableRow>
+                                    {/* Cột Task: Cố định chiều rộng và sử dụng sticky */}
+                                    <TableCell
+                                        style={{ position: 'sticky', left: 0, backgroundColor: '#e0e0e0', width: '180px', zIndex: 2, boxSizing: 'border-box' }} >
+                                        Task
+                                    </TableCell>
+                                    {/* Cột Task Type: Cố định chiều rộng và sử dụng sticky */}
+                                    <TableCell
+                                        style={{
+                                            position: 'sticky', backgroundColor: '#e0e0e0', left: 120, zIndex: 2, boxSizing: 'border-box',
+                                            width: '120px',
+                                            maxWidth: '120px',
+                                            minWidth: '120px',
+                                            overflow: 'hidden',
+                                        }} rowSpan={2}
+                                    >Task Type
+                                    </TableCell>
+
+                                    {/* Các cột Dynamic (các title name): Cố định chiều rộng với minWidth */}
+                                    {allTitleNames.map((titleName, index) => (
+                                        <TableCell
+                                            key={`wh-${index}`}
+                                            style={{
+                                                backgroundColor: '#e0e0e0',
+                                                minWidth: 120, // Cố định chiều rộng cột này
+                                                zIndex: 1,
+                                                boxSizing: 'border-box',
+                                            }}
+                                        >
+                                            {titleName}
+                                        </TableCell>
+                                    ))}
+
+                                    {/* Cột Action: Cố định chiều rộng và sử dụng sticky */}
+                                    <TableCell
+                                        style={{
+                                            position: 'sticky',
+                                            right: 0,
+                                            backgroundColor: '#e0e0e0',
+                                            zIndex: 2,
+                                            boxSizing: 'border-box',
+                                        }}
+                                        rowSpan={2}
+                                    >
+                                        Action
+                                    </TableCell>
+                                </TableRow>
+                            </TableHead>
+
+                            <TableBody>
+                                {rows.map((task) => {
+                                    return (
+                                        <>
+                                            {/* Hàng cho In Working Hour */}
+                                            <TableRow key={`task-${task.taskId}-wh`}>
+                                                {/* Cột Task Name */}
+                                                <TableCell
+                                                    style={{
+                                                        position: 'sticky', left: 0, background: '#fff', zIndex: 2, boxSizing: 'border-box',
+                                                        width: '120px',
+                                                        maxWidth: '120px',
+                                                        minWidth: '120px',
+                                                        overflow: 'hidden',
+                                                    }}
+                                                    rowSpan={2}
+                                                >
+                                                    {task.taskName}
+                                                </TableCell>
+                                                <TableCell style={{
+                                                    position: 'sticky', left: 120, background: '#fff', zIndex: 2, boxSizing: 'border-box',
+                                                    width: '120px',
+                                                    maxWidth: '120px',
+                                                    minWidth: '120px',
+                                                    overflow: 'hidden',
+                                                }}>In Working Hour</TableCell>
+                                                {/* Cột Dynamic cho Working Hour */}
+                                                {allTitleNames.map((titleName, index) => {
+                                                    const titleData = task.taskWages.find(wage => wage.titleName === titleName);
+                                                    const workingHourWage = titleData ? titleData.workingHourWage : "-";
+                                                    return (
+                                                        <TableCell key={`wh-${index}`}>
+                                                            <TextField
+                                                                value={editedWages[`${task.taskId}-${titleName}-workingHour`] || workingHourWage}
+                                                                onChange={(e) => handleCellEditTaskCommit(task.taskId, titleName, "workingHour", e.target.value)}
+                                                                size="small"
+                                                                variant="outlined"
+                                                                fullWidth
+                                                            />
+                                                        </TableCell>
+                                                    );
+                                                })}
+                                                {/* Cột Action */}
+                                                <TableCell
+                                                    style={{
+                                                        position: 'sticky',
+                                                        right: 0,
+                                                        background: '#fff',
+                                                        zIndex: 2,
+                                                        boxSizing: 'border-box',
+                                                    }}
+                                                    rowSpan={2}
+                                                >
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="error"
+                                                        onClick={() => handleDeleteRowData(task.taskId)} // Gọi hàm xóa khi nhấn nút
+                                                    >
+                                                        <MdDeleteForever />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+
+                                            {/* Hàng cho Overtime */}
+                                            <TableRow key={`task-${task.taskId}-ot`}>
+                                                <TableCell style={{
+                                                    position: 'sticky', background: '#fff', left: 120, zIndex: 2, boxSizing: 'border-box',
+                                                    width: '120px',
+                                                    maxWidth: '120px',
+                                                    minWidth: '120px',
+                                                    overflow: 'hidden',
+                                                }}>Overtime</TableCell>
+                                                {/* Cột Dynamic cho Overtime */}
+                                                {allTitleNames.map((titleName, index) => {
+                                                    const titleData = task.taskWages.find(wage => wage.titleName === titleName);
+                                                    const overtimeWage = titleData ? titleData.overtimeWage : "-";
+                                                    return (
+                                                        <TableCell key={`ot-${index}`}>
+                                                            <TextField
+                                                                value={editedWages[`${task.taskId}-${titleName}-overtime`] || overtimeWage}
+                                                                onChange={(e) => handleCellEditTaskCommit(task.taskId, titleName, "overtime", e.target.value)}
+                                                                size="small"
+                                                                variant="outlined"
+                                                                fullWidth
+                                                            />
+                                                        </TableCell>
+                                                    );
+                                                })}
+                                            </TableRow>
+                                        </>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+
                     {/* Button */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                         {/* Select to Add a new Task*/}
@@ -334,7 +322,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                 isSearchable={true}
                                 placeholder="Select to Add a new Task"
                                 options={listtask
-                                    .filter((task) => !rows.some((row) => row.id.split('_')[0] == task.taskId))
+                                    .filter((task) => !rows.some((row) => row.taskId == task.taskId))
                                     .map((task) => ({ value: task.taskId, label: task.taskName, }))}
                                 styles={{
                                     container: (provided) => ({ ...provided, width: '300px', }),

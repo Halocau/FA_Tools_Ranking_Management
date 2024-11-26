@@ -307,7 +307,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
         showSuccessMessage('Title Configuration successfully updated.');
         console.log("Title Configuration successfully updated.”");
-        // goToNextStep(); // Chuyển bước tiếp theo
+        goToNextStep(); // Chuyển bước tiếp theo
     };
 
     // console.log("Rows:", rows);
