@@ -34,9 +34,7 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
     private ModelMapper modelMapper;
 
     @Autowired
-    public DecisionCriteriaService(IDecisionCriteriaRepository iDecisionCriteriaRepository,
-            ICriteriaRepository iCriteriaRepository, IRankingDecisionRepository iRankingDecisionRepository,
-            ModelMapper modelMapper) {
+    public DecisionCriteriaService(IDecisionCriteriaRepository iDecisionCriteriaRepository, ICriteriaRepository iCriteriaRepository, IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper) {
         this.iDecisionCriteriaRepository = iDecisionCriteriaRepository;
         this.iCriteriaRepository = iCriteriaRepository;
         this.iRankingDecisionRepository = iRankingDecisionRepository;
@@ -47,6 +45,7 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
     public DecisionCriteria findByCriteriaId(Integer criteriaId) {
         return iDecisionCriteriaRepository.findByCriteriaId(criteriaId);
     }
+
 
     @Override
     public ResultPaginationDTO getAllDecisionCriteria(Specification<DecisionCriteria> spec, Pageable pageable) {
@@ -100,7 +99,6 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
             Criteria criteria = iCriteriaRepository.findById(dcResponse.getCriteriaId()).orElse(null);
             if (criteria != null) {
                 response.setCriteriaName(criteria.getCriteriaName());
-                response.setMaxScore(criteria.getMaxScore());
             }
 
             // Get List Option
@@ -122,10 +120,9 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
 
     // get have page
     @Override
-    public ResultPaginationDTO findByDecisionIdAndSpecification(Integer decisionId,
-            Specification<DecisionCriteria> spec, Pageable pageable) {
-        Specification<DecisionCriteria> combinedSpec = (root, query, criteriaBuilder) -> criteriaBuilder
-                .equal(root.get("decisionId"), decisionId);
+    public ResultPaginationDTO findByDecisionIdAndSpecification(Integer decisionId, Specification<DecisionCriteria> spec, Pageable pageable) {
+        Specification<DecisionCriteria> combinedSpec = (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("decisionId"), decisionId);
 
         if (spec != null) {
             combinedSpec = combinedSpec.and(spec);
@@ -135,7 +132,8 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
         return new PaginationUtils().buildPaginationDTO(find);
     }
 
-    @Override // SEARCH lIST BY decisionId
+
+    @Override//SEARCH lIST BY decisionId
     public List<DecisionCriteria> findByDecisionId(Integer decisionId) {
         return iDecisionCriteriaRepository.findByDecisionId(decisionId);
     }
@@ -154,21 +152,20 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
     @Override
     @Transactional
     public void deleteDecisionCriteria(Integer decisionId, Integer criteriaId) {
-        DecisionCriteria findDecisionCriteria = iDecisionCriteriaRepository.findByCriteriaIdAndDecisionId(criteriaId,
-                decisionId);
+        DecisionCriteria findDecisionCriteria = iDecisionCriteriaRepository.findByCriteriaIdAndDecisionId(criteriaId, decisionId);
         if (findDecisionCriteria != null) {
             iDecisionCriteriaRepository.delete(findDecisionCriteria);
         } else {
             throw new EntityNotFoundException(
-                    String.format("DecisionCriteria with decisionId %d and criteriaId %d not found", decisionId,
-                            criteriaId));
+                    String.format("DecisionCriteria with decisionId %d and criteriaId %d not found", decisionId, criteriaId)
+            );
         }
     }
 
     /**
      * Form request
      */
-    @Override // ADD
+    @Override   //ADD
     @Transactional
     public void createDecisionCriteria(AddDecisionCriteriaRequest form) {
         DecisionCriteria decisionCriteria = DecisionCriteria.builder()
@@ -179,7 +176,8 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
         iDecisionCriteriaRepository.save(decisionCriteria);
     }
 
-    @Override // UPDATE
+
+    @Override   //UPDATE
     @Transactional
     public void updateDecisionCriteria(UpdateDecisionCriteriaRequest form, Integer decisionId, Integer criteriaId) {
         DecisionCriteria find = iDecisionCriteriaRepository.findByCriteriaIdAndDecisionId(criteriaId, decisionId);

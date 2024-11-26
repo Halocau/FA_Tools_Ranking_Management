@@ -1,9 +1,5 @@
 package backend.controller;
 
-import backend.model.dto.TitleConfiguration.OptionDTO;
-import backend.model.dto.TitleConfiguration.TitleOptionDTO;
-import backend.model.entity.Options;
-import backend.model.entity.RankingTitle;
 import backend.model.entity.RankingTitleOption;
 import backend.model.form.RankingTitleOption.AddRankingTitleOptionRequest;
 import backend.model.form.RankingTitleOption.UpdateRankingTitleOptionRequest;
@@ -38,26 +34,15 @@ public class RankingTitleOptionController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Ranking Title Option added");
     }
 
-    @GetMapping("/get-decisionId/{id}")
-    public ResponseEntity<List<TitleOptionDTO>> getRankingTitleOptionByDecisionId(@PathVariable int id) {
-        List<TitleOptionDTO> listDecisionId = iRankingTitleOptionService
-                .getRankingTitleOptionByDecisionId(id);
-        return ResponseEntity.status(HttpStatus.OK).body(listDecisionId);
-    }
-
-    @PutMapping("/upsert")
-    public ResponseEntity<String> updateRankingTitleOption(
-            @Valid @RequestBody UpdateRankingTitleOptionRequest form) {
-        iRankingTitleOptionService.upsertRankingTitleOption(form);
-        return ResponseEntity.ok("Ranking Title Option updated successfully");
-    }
-
-    @PutMapping("/update")
-    public ResponseEntity<String> updateRankingTitleOptions(
-            @RequestBody List<UpdateRankingTitleOptionRequest> requests) {
-        iRankingTitleOptionService.updateRankingTitleOptions(requests);
-        return ResponseEntity.ok("Ranking Title Options updated successfully");
-    }
+//    @PutMapping("/upsert/{rankingTitleId}/{optionId}")
+//    public ResponseEntity<String> updateRankingTitleOption(
+//            @Valid @RequestBody UpdateRankingTitleOptionRequest form,
+//            @PathVariable(name = "rankingTitleId") Integer rankingTitleId,
+//            @PathVariable(name = "optionId") Integer optionId
+//    ) {
+//            iRankingTitleOptionService.updateRankingTitleOption(form,rankingTitleId,optionId);
+//            return ResponseEntity.ok("Ranking Title Option updated successfully");
+//    }
 
     @DeleteMapping("/delete/{rankingTitleId}/{optionId}")
     public ResponseEntity<String> deleteRankingTitleOption(

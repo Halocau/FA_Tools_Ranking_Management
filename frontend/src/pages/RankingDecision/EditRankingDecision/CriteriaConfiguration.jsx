@@ -1,51 +1,72 @@
-// React
 import React, { useEffect, useState } from 'react';
+
 import { useNavigate, useParams } from "react-router-dom";
+
+// Components
 import Select from "react-select";
-import { MdDeleteForever } from 'react-icons/md';
-import { FaPlusCircle } from 'react-icons/fa';
-// Mui
-import { Box, TextField, Button, IconButton } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { Box, TextField, Button } from '@mui/material';
+
+//Icon
+import { MdDeleteForever } from 'react-icons/md';
 
 // API
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
+import CriteriaAPI from "../../../api/CriteriaAPI.js";
 
 const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
     // Data
     const { id } = useParams(); // Get the ID from the URL
-    const [originalCriteria, setOriginalCriteria] = useState([]);  // Lưu dữ liệu gốc
-    // Row table
-    const [rows, setRows] = useState([]);
-    //Select to Add a new Criteria
     const [selectedCriteria, setSelectedCriteria] = useState(null);
+
+    // Row table
+    const [originalCriteria, setOriginalCriteria] = useState([]);  // Lưu dữ liệu gốc
+    const [rows, setRows] = useState([]);
+
+    //Select to Add a new Criteria
     const [listcriteria, setListCriteria] = useState([]);
 
-    console.log(decisionStatus);
+    // Pagination for data grid
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(20);
+
+    const [filter, setFilter] = useState('');
+    //size of list
+    const [size, setSize] = useState(20);
 
     // Load data getCriteriaConfiguration
     const getCriteriaConfiguration = async () => {
         try {
             const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
-            setOriginalCriteria((prevCriteria) => {
-                if (JSON.stringify(prevCriteria) !== JSON.stringify(response)) {
-                    return response;
-                }
-                return prevCriteria;
-            });
+            setOriginalCriteria(response.result);
         } catch (error) {
             console.error("Error fetching criteria:", error);
         }
     };
-    useEffect(() => {
-        if (!id) return; // Bỏ qua nếu `id` không xác định
-        getCriteriaConfiguration();
-    }, [id]);
 
-    //////////////////////////////////// Xử Lý backend /////////////////////////////////
+    useEffect(() => {
+        getCriteriaConfiguration();
+    }, []);
+
+    const getCriteriaList = async () => {
+        try {
+            const response = await CriteriaAPI.searchCriteria(
+                filter,
+                0,
+                size
+            );
+            setListCriteria(response.result);
+        } catch (error) {
+            console.error("Error fetching criteria:", error);
+        }
+    }
+
+    useEffect(() => {
+        getCriteriaList();
+    }, [filter, size]);
+
+
     const updateDecisionCriteria = async (form) => {
-        console.log(form)
         try {
             await DecisionCriteriaAPI.updateDecisionCriteria(
                 form, id, form.criteriaId);
@@ -53,6 +74,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             console.error("Error updating decision criteria:", error);
         }
     }
+
     const deleteDecisionCriteria = async (criteriaId) => {
         try {
             await DecisionCriteriaAPI.deleteDecisionCriteria(id, criteriaId);
@@ -60,7 +82,8 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             console.error("Error deleting decision criteria:", error);
         }
     }
-    const syncDecisionCriteria = (rows, originalCriteria) => {
+
+    const syncDecisionCriteria = async (rows, originalCriteria) => {
         try {
             // Create a map of original criteria for quick lookup
             const originalCriteriaMap = new Map(
@@ -73,7 +96,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                 if (original) {
                     // If the row exists in originalCriteria but has a different weight, update it
                     if (original.weight !== row.weight) {
-                        updateDecisionCriteria({
+                        await updateDecisionCriteria({
                             decisionId: id,
                             criteriaId: row.id,
                             weight: row.weight
@@ -84,7 +107,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                 }
                 else {
                     // If the row is new, add it
-                    updateDecisionCriteria({
+                    await updateDecisionCriteria({
                         decisionId: id,
                         criteriaId: row.id,
                         weight: row.weight
@@ -94,16 +117,19 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
 
             // Remaining items in originalCriteriaMap are to be deleted
             for (const [criteriaId] of originalCriteriaMap) {
-                deleteDecisionCriteria(criteriaId);
+                await deleteDecisionCriteria(criteriaId);
             }
         } catch (error) {
             console.error("Error syncing decision criteria:", error);
         }
     };
-    // End 
-    ///////////////////////////// The update function changes //////////////////////////
+
+
+
+    // Hàm cập nhập thay đổi weight
     const handleCellEditCriteriaCommit = (newRow) => {
         const updatedRow = { ...newRow };
+
         setRows((prevRows) => {
             const updatedRows = prevRows.map((row) =>
                 row.id === updatedRow.id ? updatedRow : row
@@ -111,24 +137,35 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             return updatedRows;
         });
     };
-    //////////////////////////////////// Remove row ///////////////////////////////////
+
+    //////////////////////////////////// Remove ////////////////////////////////////
     const handleDeleteRowData = (id) => {
         setRows((prevRows) => prevRows.filter((row) => row.id !== id));
     };
-    // End 
-    //////////////////////////////// Select to Add a new Criteria ////////////////////
-    const getCriteriaList = async () => {
-        try {
-            const response = await DecisionCriteriaAPI.getAllCriteria();
-            setListCriteria(response);
-        } catch (error) {
-            console.error("Error fetching criteria:", error);
+
+    //////////////////////////////////// Cancel ////////////////////////////////////
+    const handleCancelChanges = () => {
+        setRowData(originalCriteria);
+    };
+
+    //////////////////////////////////// Save ////////////////////////////////////
+    const calculateTotalWeight = () => {
+        const totalWeight = rows.reduce((total, row) => total + Number(row.weight || 0), 0);
+        return totalWeight;
+    };
+
+    const handleSaveChanges = () => {
+        const totalWeight = calculateTotalWeight();
+        if (totalWeight === 100) {
+            syncDecisionCriteria(rows, originalCriteria);
+            showSuccessMessage("Criteria Configuration saved successfully!");
+            goToNextStep();
+        } else {
+            showErrorMessage('Tổng weight phải bằng 100');
         }
-    }
-    // Load list criteria
-    useEffect(() => {
-        getCriteriaList();
-    }, []);
+    };
+
+    //////////////////////////////////// Select to Add a new Criteria ////////////////////////////////////
     const handleAddCriteria = async () => {
         const addedCriteria = listcriteria.find(
             (criteria) => criteria.criteriaId === selectedCriteria.value
@@ -143,37 +180,8 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
         setRows((prevCriteria) => [...prevCriteria, newRows]);
         setSelectedCriteria(null);
     };
-    // End 
-    //////////////////////////////////// Cancel ///////////////////////////////////////
-    const handleCancelChanges = () => {
-        setRowData(originalCriteria);
-        setSelectedCriteria(null)
-    };
-    // End 
-    //////////////////////////////////// Save ////////////////////////////////////////
-    const calculateTotalWeight = () => {
-        const totalWeight = rows.reduce((total, row) => total + Number(row.weight || 0), 0);
-        return totalWeight;
-    };
-    // End
-    const handleSaveChanges = () => {
-        const checkWeight = rows.some((row) => row.weight <= 0);
-        if (checkWeight) {
-            showErrorMessage('Weight must be greater than 0');
-        } else {
-            const totalWeight = calculateTotalWeight();
-            if (totalWeight === 100) {
-                syncDecisionCriteria(rows, originalCriteria);
-                showSuccessMessage("Criteria Configuration saved successfully!");
-                getCriteriaList();
-                goToNextStep();
-            } else {
-                showErrorMessage('Tổng weight phải bằng 100');
-            }
-        }
-    };
 
-    //////////////////////////////////// Column Criteria //////////////////////////////////
+    //////////////////////////////////// Column Criteria ////////////////////////////////////
     const columnsCriteria = [
         { field: 'criteria_name', headerName: 'Criteria Name', width: 500 },
         {
@@ -234,8 +242,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                 ),
         },
     ];
-    // End 
-    ///////////////////////////////////// Row Criteria ////////////////////////////////////
+
     const setRowData = (data) => {
         const mappedRows = data.map((data, index) => ({
             id: data.criteriaId,
@@ -247,7 +254,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
         }));
         setRows(mappedRows);
     }
-    // End 
+
     useEffect(() => {
         if (originalCriteria) {
             setRowData(originalCriteria);
@@ -255,85 +262,80 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     }, [originalCriteria]);
 
     return (
-        <div>
-            {/* Surrounding border */}
-            <Box sx={{
-                width: "100%",
-                height: 500,
-                marginTop: '10px',
-                border: '2px solid black',
-                borderRadius: '8px',
-                padding: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-            }}>
-                <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
-                    {/* Table DataGrid */}
-                    <DataGrid
-                        rows={rows}
-                        columns={columnsCriteria}
-                        getRowId={(row) => row.id}
-                        processRowUpdate={(newRow) => {
-                            handleCellEditCriteriaCommit(newRow);
-                            return newRow;
-                        }}
-                        experimentalFeatures={{ newEditingApi: true }}
-                    />
-                    {/* Button */}
-                    {decisionStatus === 'Draft' && (
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-                            {/* Select to Add a new Criteria */}
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                                <Select
-                                    isSearchable={true}
-                                    placeholder="Select to Add a new Criteria "
-                                    options={listcriteria
-                                        .filter((criteria) => !rows.some((row) => row.id === criteria.criteriaId))
-                                        .map((criteria) => ({ value: criteria.criteriaId, label: criteria.criteriaName, }))}
-                                    styles={{
-                                        container: (provided) => ({ ...provided, width: '300px', }),
-                                        control: (provided) => ({ ...provided, height: '40px', fontSize: '16px', display: 'flex', alignItems: 'center', }),
-                                        placeholder: (provided) => ({ ...provided, color: '#888', }),
-                                        menu: (provided) => ({ ...provided, maxHeight: 300, overflowY: 'auto', }),
-                                    }}
-                                    menuPlacement="top"
-                                    value={selectedCriteria}
-                                    onChange={(option) => setSelectedCriteria(option)}
-                                />
-                                <IconButton
-                                    onClick={handleAddCriteria}
-                                    color={selectedCriteria ? 'primary' : 'default'}
-                                    disabled={!selectedCriteria}
-                                    sx={{ marginLeft: 1, height: '30px', display: 'flex', alignItems: 'center', }}
-                                >
-                                    <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
-                                </IconButton>
-                            </Box>
-                            {/* Cancel and Save */}
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                                {/* Cancel*/}
-                                <Button
-                                    variant="contained"
-                                    color="error"
-                                    onClick={handleCancelChanges}
-                                >
-                                    Cancel
-                                </Button>
-                                {/* Save*/}
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={handleSaveChanges}
-                                >
-                                    Save
-                                </Button>
-                            </Box>
+        <Box sx={{
+            width: "100%",
+            height: 600,
+            marginTop: '10px',
+            border: '2px solid black',
+            borderRadius: '8px',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+        }}>
+            <Box>
+                <DataGrid
+                    rows={rows}
+                    columns={columnsCriteria}
+                    getRowId={(row) => row.id}
+                    processRowUpdate={(newRow) => {
+                        handleCellEditCriteriaCommit(newRow);
+                        return newRow;
+                    }}
+                    experimentalFeatures={{ newEditingApi: true }}
+                    style={{ height: 400, width: '100%' }}
+                />
+                {decisionStatus === 'Draft' && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+                            <Select
+                                isSearchable={true}
+                                placeholder="Add New Criteria ..."
+                                options={listcriteria
+                                    .filter(
+                                        (criteria) => !rows.some((row) => row.id === criteria.criteriaId)
+                                    )
+                                    .map((criteria) => ({
+                                        value: criteria.criteriaId,
+                                        label: criteria.criteriaName,
+                                    }))}
+                                styles={{
+                                    menu: (provided) => ({
+                                        ...provided,
+                                        maxHeight: 300,
+                                        overflowY: 'auto',
+                                        width: 300,
+                                    }),
+                                }}
+                                menuPlacement="top"
+                                value={selectedCriteria} // Bind the selected option to the state
+                                onChange={(option) => setSelectedCriteria(option)} // Update state on selection
+                            />
+                            <Button variant="contained" color="success" onClick={handleAddCriteria}>
+                                Add Criteria
+                            </Button>
                         </Box>
-                    )}
-                </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+
+                            <Button
+                                variant="contained"
+                                color="error"
+                                onClick={handleCancelChanges}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="success"
+                                onClick={handleSaveChanges}
+                            >
+                                Save
+                            </Button>
+                        </Box>
+                    </Box>
+                )}
             </Box>
-        </div>
+        </Box>
     );
 };
 

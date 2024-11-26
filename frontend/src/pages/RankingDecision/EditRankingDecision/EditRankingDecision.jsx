@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { FaAngleRight } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { MdDeleteForever } from "react-icons/md";
 // MUI
 import {
-    InputAdornment, Box, Button, Typography, TextField, Modal, IconButton,
+    InputAdornment, Box, Button, Typography, TextField, Modal, IconButton, Select, MenuItem, Table, TableHead, TableBody, TableCell, TableRow
 } from "@mui/material";
+import { DataGrid } from '@mui/x-data-grid';
 import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
+import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Stepper, Step, StepButton } from '@mui/material';
-import { CheckCircle } from '@mui/icons-material'; // You can also use other icons if needed
-
 // Css 
 import "../../../assets/css/RankingGroups.css"
+import '../../../assets/css/Table.css';
 // API
-import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
+import RankingDecisionAPI from "../../../api/RankingDecisionAPI.js";
+import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
+//Common
+import ModalCustom from "../../../components/Common/Modal.jsx";
+import ActionButtons from "../../../components/Common/ActionButtons.jsx";
+// Contexts
+import { useAuth } from "../../../contexts/AuthContext.jsx";
 // Hooks
 import useNotification from "../../../hooks/useNotification.jsx";
-//Steper
+//Data
 import { rankTitle, initialCriteria, initialTitle, initialTask } from "../Data.jsx";
 import CriteriaConfiguration from "./CriteriaConfiguration.jsx";
 import TitleConfiguration from "./TitleConfiguration.jsx";
@@ -31,14 +38,29 @@ const EditDecision = () => {
     const [originalDecisionName, setOriginalDecisionName] = useState('');
     const [showEditDecisionInfoModal, setShowEditDecisionInfoModal] = useState(false); // Display decision editing modal
     const [newDecisionName, setNewDecisionName] = useState(""); // New decision Name
+    const [status, setStatus] = useState("");
+
     // Step
-    const [activeStep, setActiveStep] = useState(2);
-    const [decisionStatus, setDecisionStatus] = useState('');
+    const [activeStep, setActiveStep] = useState(0);
+    // Data
+    const [criteria, setCriteria] = useState([]);
+    const [title, setTitle] = useState([]);
+    const [task, setTask] = useState([]);
+    const [decisionStatus, setDecisionStatus] = useState('Draft');
+    // 'Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'
     const steps = ['Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'];
-    // State saves data for each step
+    // Trạng thái lưu dữ liệu cho từng bước
     const [isCriteriaSaved, setIsCriteriaSaved] = useState(false);
     const [isTitleSaved, setIsTitleSaved] = useState(false);
     const [isTaskSaved, setIsTaskSaved] = useState(false);
+
+    // Table  List  (page, size) 
+    // const [rows, setRows] = useState([]);
+    // const [filter, setFilter] = useState('');
+    // const [page, setPage] = useState(1);
+    // const [pageSize, setPageSize] = useState(5);
+    // const [totalElements, setTotalElements] = useState(0);
+    // const [totalPages, setTotalPages] = useState(0);
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Validation error message
@@ -56,7 +78,7 @@ const EditDecision = () => {
             console.log(decisionData)
             setOriginalDecisionName(decisionData.decisionName || "Decision Name");
             setNewDecisionName(decisionData.decisionName || "");
-            setDecisionStatus(decisionData.status)
+            setStatus(decisionData.status || "");
         } catch (error) {
             console.error("Error fetching group:", error);
         }
@@ -112,69 +134,78 @@ const EditDecision = () => {
 
 
     /////////////////////////////////////////////////////// Stepp /////////////////////////////////////////////////////////////////
-    // Trạng thái hoàn thành của từng bước
-    const [completed, setCompleted] = useState({
-        0: isCriteriaSaved,
-        1: isTitleSaved,
-        2: isTaskSaved,
-    });
-    useEffect(() => {
-        if (decisionStatus === 'Finalized') {
-            setIsCriteriaSaved(true);
-            setIsTitleSaved(true);
-            setIsTaskSaved(true);
-            setCompleted({
-                0: true,
-                1: true,
-                2: true,
-            });
-        }
-    }, [decisionStatus]);
     // Hàm kiểm tra xem có thể chuyển sang bước khác không
     const canMoveToNextStep = (step) => {
-        if (decisionStatus === 'Finalized') {
-            return true;
-        } else if (decisionStatus === 'Draft') {
-            if (step === 1 && !isCriteriaSaved) return false;
-            if (step === 2 && !isTitleSaved) return false;
-        }
+        if (step === 1 && !isCriteriaSaved) return false;  // Không chuyển sang Title Configuration nếu Criteria chưa lưu
+        if (step === 2 && !isTitleSaved) return false;  // Không chuyển sang Task & Price Configuration nếu Title chưa lưu
         return true;
     };
     // Hàm xử lý khi người dùng nhấn vào một bước
     const handleStepChange = (step) => {
-        console.log(step)
-        if (step < activeStep || canMoveToNextStep(step)) {
+        if (step < activeStep || canMoveToNextStep(step)) {  // Người dùng chỉ có thể quay lại các bước trước hoặc tiến tới bước sau nếu dữ liệu đã lưu
             setActiveStep(step);
         }
     };
-
-    // Hàm chuyển sang bước tiếp theo
-    const goToNextStep = ({ stayOnCurrentStep = false } = {}) => {
-        if (decisionStatus === 'Draft') {
-            if (activeStep === 0 && !isCriteriaSaved) {
-                setIsCriteriaSaved(true);
-                setCompleted((prev) => ({ ...prev, 0: true }));
-            }
-            if (activeStep === 1 && !isTitleSaved) {
-                setIsTitleSaved(true);
-                setCompleted((prev) => ({ ...prev, 1: true }));
-            }
-            if (activeStep === 2 && !isTaskSaved) {
-                setIsTaskSaved(true);
-                setCompleted((prev) => ({ ...prev, 2: true }));
-            }
-        } else if (decisionStatus === 'Finalized') {
-            setIsCriteriaSaved(true);
-            setIsTitleSaved(true);
-            setIsTaskSaved(true);
-            setCompleted({ 0: true, 1: true, 2: true });
-        }
-
-        // Nếu `stayOnCurrentStep` là false, chuyển bước
-        if (!stayOnCurrentStep) {
-            setActiveStep((prevStep) => prevStep + 1);
+    // Hàm xử lý khi lưu dữ liệu cho từng bước
+    const handleSave = () => {
+        if (activeStep === 0) {
+            setIsCriteriaSaved(true); // Đánh dấu Criteria đã lưu
+        } else if (activeStep === 1) {
+            setIsTitleSaved(true); // Đánh dấu Title đã lưu
+        } else if (activeStep === 2) {
+            setIsTaskSaved(true); // Đánh dấu Task đã lưu
         }
     };
+    // Màu sắc cho từng bước dựa trên trạng thái
+    const getStepColor = (index) => {
+        if (index === activeStep) {
+            return 'primary';  // Bước hiện tại sẽ có màu chính
+        }
+        if (index === 0 && !isCriteriaSaved) {
+            return 'default';  // Criteria chưa lưu thì không có tick mark
+        }
+        if (index === 1 && !isTitleSaved) {
+            return 'default';  // Title chưa lưu thì không có tick mark
+        }
+        if (index === 2 && !isTaskSaved) {
+            return 'default';  // Task chưa lưu thì không có tick mark
+        }
+        return 'secondary'; // Các bước đã lưu sẽ có tick mark
+    };
+    // Hàm chuyển sang bước tiếp theo và cập nhật decisionStatus
+    const goToNextStep = () => {
+        // Cập nhật decisionStatus tùy thuộc vào bước hiện tại
+        if (activeStep === 0) {
+            // setDecisionStatus('In Progress'); // Bước 0: Đang tiến hành
+        } else if (activeStep === 1) {
+            // setDecisionStatus('In Progress'); // Bước 1: Tiến hành
+        } else if (activeStep === 2) {
+            setDecisionStatus('Finalize'); // Bước 2: Hoàn thành
+
+        }
+
+        // Chuyển sang bước tiếp theo
+        setActiveStep(prevStep => prevStep + 1);
+    };
+
+
+    //////////////////////////////////////////////////////////////////////////// Criteria Configuration ////////////////////////////////////////////////////////////////////////////
+    const getCriteriaConfiguration = async () => {
+        try {
+            const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
+            console.log(response)
+            setCriteria(response.result);
+            // setTotalElements(response.pageInfo.element);
+            // setTotalPages(response.pageInfo.total);
+        } catch (error) {
+            console.error("Error fetching criteria:", error);
+        }
+    };
+
+    useEffect(() => {
+        getCriteriaConfiguration();
+        console.log(criteria);
+    }, []);
 
 
     ////////////////////////////////////////////////////////////////////////////renderStepContent////////////////////////////////////////////////////////////////////////////
@@ -183,6 +214,7 @@ const EditDecision = () => {
             case 0:
                 return (
                     <CriteriaConfiguration
+                        criteria={criteria}
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
@@ -192,29 +224,31 @@ const EditDecision = () => {
             case 1:
                 return (
                     <TitleConfiguration
+                        criteria={initialCriteria}
+                        title={initialTitle}
+                        rankTitle={rankTitle}
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
-                        showSuccessMessage={showSuccessMessage}
                     />
                 );
             case 2:
                 return (
                     <TaskandPriceConfiguration
+                        criteria={initialCriteria}
+                        title={initialTitle}
+                        rankTitle={rankTitle}
+                        task={initialTask}
                         decisionStatus={decisionStatus}
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
-                        showSuccessMessage={showSuccessMessage}
                     />
                 );
             default:
                 return <div>No Step</div>;
         }
     };
-    const handleSubmit = () => {
-        setDecisionStatus('Finalized')
-        showSuccessMessage('Submit successfully ');
-    };
+
     return (
         <div style={{ marginTop: "60px" }}>
             <Box sx={{ marginTop: 4, padding: 2 }}>
@@ -226,7 +260,6 @@ const EditDecision = () => {
                 </Typography>
                 {/* Box Decision Info */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: 2 }}>
-                    {/* Ranking Decision Name */}
                     <Box sx={{ display: 'flex', alignItems: 'center', width: '48%' }}>
                         <Typography sx={{ marginRight: 1 }}>Ranking Decision Name:</Typography>
                         <TextField
@@ -243,14 +276,12 @@ const EditDecision = () => {
                             <EditIcon />
                         </IconButton>
                     </Box>
-
-                    {/* Status */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-end' }}> {/* Giãn khoảng cách ở đây */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%' }}>
                         <Typography sx={{ marginRight: 1 }}>Status:</Typography>
                         <TextField
                             variant="outlined"
                             fullWidth
-                            value={decisionStatus}
+                            value={status}
                             disabled
                             sx={{ width: '60%' }}
                             InputProps={{
@@ -258,46 +289,23 @@ const EditDecision = () => {
                             }}
                         />
                     </Box>
-
-                    {/* Submit */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-end' }}>
-                        {activeStep === 2 && (  // Chỉ hiển thị nút Submit khi activeStep = 2
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleSubmit}
-                                sx={{
-                                    visibility: decisionStatus === 'Draft' ? 'visible' : 'hidden', // Giữ không gian cho nút nếu là Draft
-                                }}
-                            >
-                                Submit
-                            </Button>
-                        )}
-                    </Box>
-
                 </Box>
 
                 {/* Stepper */}
                 <Box sx={{ width: '100%', marginTop: 2 }}>
-                    <Stepper
-                        activeStep={activeStep}
-                        alternativeLabel={true}
-                        nonLinear={decisionStatus === 'Finalized'}
-                    >
+                    <Stepper activeStep={activeStep} alternativeLabel>
                         {steps.map((label, index) => (
-                            <Step key={label} completed={completed[index]}>
+                            <Step key={label}>
                                 <StepButton
                                     onClick={() => handleStepChange(index)}
                                     sx={{
-                                        textAlign: 'center',
-                                        fontSize: '16px',
-                                        fontWeight: 'bold',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
+                                        color: getStepColor(index),
+                                        textAlign: 'center',  // Ensure the label is centered
+                                        fontSize: '16px',  // Customize font size as needed
+                                        fontWeight: 'bold'  // Optional: Make the label bold
                                     }}
                                 >
-                                    {label}
+                                    {label}  {/* Only display the step label */}
                                 </StepButton>
                             </Step>
                         ))}
