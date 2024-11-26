@@ -6,4 +6,5 @@ import lombok.Data;
 public class ApplyCriteriaResponse {
     private String cirteriaName;
     private String optionName;
+    private Integer score;
 }
