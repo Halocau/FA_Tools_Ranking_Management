@@ -32,8 +32,7 @@ public class TaskService implements ITaskService {
     private IDecisionCriteriaRepository idDecisionCriteriaRepository;
 
     @Autowired
-    public TaskService(ITaskRepository iTaskRepository, IAccount iAccount, ModelMapper modelMapper,
-            ITaskWagesRepository iTaskWagesRepository, IDecisionCriteriaRepository idDecisionCriteriaRepository) {
+    public TaskService(ITaskRepository iTaskRepository, IAccount iAccount, ModelMapper modelMapper, ITaskWagesRepository iTaskWagesRepository, IDecisionCriteriaRepository idDecisionCriteriaRepository) {
         this.iTaskRepository = iTaskRepository;
         this.iAccount = iAccount;
         this.modelMapper = modelMapper;
@@ -45,11 +44,6 @@ public class TaskService implements ITaskService {
     public ResultPaginationDTO getTask(Specification<Task> spec, Pageable pageable) {
         Page<Task> pageTask = iTaskRepository.findAll(spec, pageable);
         return new PaginationUtils().buildPaginationDTO(pageTask);
-    }
-
-    @Override
-    public List<Task> getAllTask() {
-        return iTaskRepository.findAll();
     }
 
     @Override
@@ -98,6 +92,7 @@ public class TaskService implements ITaskService {
         }
         return taskResponses;
     }
+
 
     @Override
     public TaskResponse getTaskResponseById(Task task) {

@@ -1,0 +1,15 @@
+package backend.model.dto;
+
+import backend.model.entity.Criteria;
+import lombok.Data;
+
+import java.util.List;
+@Data
+public class EmployeeCriteriaResponse {
+    private Integer employeeId;
+    private String employeeName;
+    private String rankingGroupName;
+    private String currentRankingDecision;
+    private String currentRank;
+    private List<ApplyCriteriaResponse> criteriaList;
+}

@@ -1,19 +1,16 @@
 package backend.config.exception;
 
 import java.nio.file.AccessDeniedException;
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
-import backend.config.exception.ErrorResponse;
+import backend.config.exception.exceptionEntity.StorageException;
 import backend.config.exception.exceptionEntity.PageException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
@@ -367,7 +364,27 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
+    //File Exception
+    @ExceptionHandler({StorageException.class})
+    public ResponseEntity<Object> handleUploadException(Exception exception) {
+        String message = "File Upload error!";
+        String detailMessage = exception.getLocalizedMessage();
+        int code = 14;
 
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                message,
+                detailMessage,
+                code,
+                exception,
+                null,
+                null
+        );
+
+        log.error(detailMessage, exception);
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 
 //    // Account blocked exception
 //    @ExceptionHandler({ AccountBlockException.class })

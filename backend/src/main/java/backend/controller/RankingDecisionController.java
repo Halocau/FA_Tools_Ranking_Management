@@ -43,16 +43,16 @@ public class RankingDecisionController {
         paginationDTO.setResult(rankingDecisionResponses);
         return ResponseEntity.status(HttpStatus.OK).body(paginationDTO);
     }
+    @GetMapping("/get/{id}")
+    public  RankingDecisionResponse findRankingDecisionResponse(@PathVariable int id){
+        return iRankingDecisionService.findRankingDecisionResponseById(id);
+    }
+
     @GetMapping("/all")
     public  ResponseEntity<List<RankingDecisionResponse>> findRankingDecisionResponse(){
         List<RankingDecision> all = iRankingDecisionService.allRankingDecisions();
         List<RankingDecisionResponse> rankingDecisionResponses = iRankingDecisionService.getRankingDecisionResponses(all);
         return ResponseEntity.status(HttpStatus.OK).body(rankingDecisionResponses);
-    }
-    
-    @GetMapping("/get/{id}")
-    public  RankingDecisionResponse findRankingDecisionResponse(@PathVariable int id){
-        return iRankingDecisionService.findRankingDecisionResponseById(id);
     }
 
     @PostMapping("/add")

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/tasks-wage")
@@ -30,13 +31,15 @@ public class TasksWageController {
 
     @PutMapping("/upsert")
     public ResponseEntity<String> updateTaskWages(@Valid @RequestBody UpsertTasksWage form) {
-        TaskWages find = iTaskWagesService.findByRankingTitleIdAndTaskId(form.getRankingTitleId(), form.getTaskId());
-        if (find == null) {
-            throw new RuntimeException("Task wages not found with rankingTitleId: "
-                    + form.getRankingTitleId() + ", taskId: " + form.getTaskId());
-        }
+        Optional<TaskWages> find = iTaskWagesService.findByRankingTitleIdAndTaskId(form.getRankingTitleId(), form.getTaskId());
         iTaskWagesService.upsertTaskWages(form, form.getRankingTitleId(), form.getTaskId());
         return new ResponseEntity<>("Task wages updated successfully", HttpStatus.OK);
+    }
+
+    @PutMapping("/upsert-list")
+    public ResponseEntity<String> upsertTaskWagesList(@Valid @RequestBody List<UpsertTasksWage> forms) {
+        iTaskWagesService.upsertTaskWagesList(forms);
+        return new ResponseEntity<>("Task wages updated successfully for all items", HttpStatus.OK);
     }
 
     @DeleteMapping("delete/{rankingTitleId}/{taskId}")

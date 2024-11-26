@@ -32,16 +32,16 @@ public class RankingDecisionService implements IRankingDecisionService {
         this.iRankingDecisionRepository = iRankingDecisionRepository;
         this.modelMapper = modelMapper;
     }
-    @Override
-        public List<RankingDecision> allRankingDecisions() {
-            return iRankingDecisionRepository.findAll();
-        }
+
     @Override
     public ResultPaginationDTO getRankingDecisions(Specification<RankingDecision> spec, Pageable pageable) {
          Page<RankingDecision> pageRankingDecision = iRankingDecisionRepository.findAll(spec,pageable);
          return new PaginationUtils().buildPaginationDTO(pageRankingDecision);
     }
-
+    @Override
+    public List<RankingDecision> allRankingDecisions() {
+        return iRankingDecisionRepository.findAll();
+    }
     @Override
     public RankingDecision getRankingDecisionById(int id) {
         return iRankingDecisionRepository.findById(id).get();
@@ -64,6 +64,8 @@ public class RankingDecisionService implements IRankingDecisionService {
     public void deleteRankingDecision(int id) {
         iRankingDecisionRepository.deleteById(id);
     }
+
+
 
 
     @Override
