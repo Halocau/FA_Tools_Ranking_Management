@@ -1,450 +1,494 @@
-import React, { useEffect, useState } from 'react';
-import { MdDeleteForever } from 'react-icons/md';
-// MUI
+import React, { useEffect, useState } from "react";
+import { MdDeleteForever } from "react-icons/md";
+import { useNavigate, useParams } from "react-router-dom";
+import Select from "react-select";
 import {
-    InputAdornment, Box, Button, Typography, TextField, Modal, IconButton, Select, MenuItem, Table, TableHead, TableBody, TableCell, TableRow
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
 } from "@mui/material";
-import { DataGrid } from '@mui/x-data-grid';
-<<<<<<< HEAD
-import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
+
+// MUI
+import { Box, Button, Typography, TextField, IconButton } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
+import AddCircleIcon from "@mui/icons-material/AddCircle"; // Dấu + icon
 // API
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 import DecisionTaskAPI from "../../../api/DecisionTaskAPI.js";
-import RankingTitleAPI from '../../../api/RankingTitleAPI.js';
-import taskApi from '../../../api/TaskAPI.js';
+import taskApi from "../../../api/TaskAPI.js";
 import { initialTask } from "../Data.jsx";
 
-const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
-    // Data
-    const { id } = useParams(); // Get the ID from the URL
-    const [originalTask, setOriginalTask] = useState([]);  // Lưu dữ liệu gốc
-    const [title, setTitle] = useState([]);  // Lưu dữ liệu gốc
-=======
-import ClearIcon from '@mui/icons-material/Clear';
-import EditIcon from '@mui/icons-material/Edit';
-import CircleIcon from '@mui/icons-material/RadioButtonUnchecked';
-import { Stepper, Step, StepButton } from '@mui/material';
-const TaskandPriceConfiguration = ({ criteria, title, task, decisionStatus, goToNextStep, showErrorMessage }) => {
-    // // Data 
-    // const { id } = useParams(); // Get the ID from the URL
-    // const [task, setTask] = useState([]);
->>>>>>> parent of e12c42b (Merge branch 'HoangMN' into DuyPQ)
-    const [columnsTask, setColumnsTask] = useState([]);
-    // Row table
-    const [originalRows, setOriginalRows] = useState([]);  // Lưu dữ liệu gốc
-    const [rows, setRows] = useState([]);
-    // State Cancel and Save
-    const [hasChanges, setHasChanges] = useState(false); // kiểm tra thay đổi
-    //Select to Add a new Task
-    const [listtask, setListTask] = useState([]);
+const TaskandPriceConfiguration = ({
+  decisionStatus,
+  goToNextStep,
+  showErrorMessage,
+  showSuccessMessage,
+}) => {
+  // Data
+  const { id } = useParams(); // Get the ID from the URL
+  const [originalTask, setOriginalTask] = useState([]); // Lưu dữ liệu gốc
+  const [title, setTitle] = useState([]); // Lưu dữ liệu gốc
+  // Row table
+  const [rows, setRows] = useState([]);
+  // State để lưu trữ giá trị đang chỉnh sửa của từng ô
+  const [editedWages, setEditedWages] = useState({});
+  //Select to Add a new Task
+  const [selectedTask, setSelectedTask] = useState(null);
+  // Sử dụng useState để lưu danh sách tên task
+  const [listtask, setListTask] = useState([]);
 
-    // Load data getTitleConfiguration
-<<<<<<< HEAD
-    const getTitleConfiguration = async () => {
-        try {
-            const response = await RankingTitleAPI.getRankingTitlesByDecisionId(id);
-            // console.log(response)
-            setTitle(response);
-        } catch (error) {
-            console.error("Error fetching task:", error);
-        }
-    };
-    // Load update
-    useEffect(() => {
-        getTaskConfiguration()
-        getTitleConfiguration();
-    }, [id]);
-    //////////////////////////////////// Xử Lý backend /////////////////////////////////
-    //
+  const getListTask = async () => {
+    try {
+      const response = await taskApi.getAllTaskWihtOutPagination();
+      setListTask(response);
+      console.log("list", response);
+    } catch (error) {
+      console.error("Error fetching task:", error);
+    }
+  };
 
-    ///////////////////////////// The update function changes //////////////////////////
-=======
-    // chưa có API
-    console.log(task)
-    ///////////////////////////// Hàm cập nhập thay đổi ///////////////////////////
-    // Hàm cập nhập thay đổi data
->>>>>>> parent of e12c42b (Merge branch 'HoangMN' into DuyPQ)
-    const handleCellEditTaskCommit = (newRow) => {
-        console.log(newRow)
-        // Cập nhật hàng mới
-        const updatedRow = { ...newRow };
+  console.log("listtask", listtask);
+  console.log("rows", rows);
 
-        // Cập nhật trạng thái `rows`
-        setRows((prevRows) => {
-            const updatedRows = prevRows.map((row) =>
-                row.id === updatedRow.id ? updatedRow : row
+  useEffect(() => {
+    getListTask();
+  }, []);
+
+  // Load data getTaskConfiguration
+  const getTaskConfiguration = async () => {
+    try {
+      const response = await DecisionTaskAPI.getDecisionTaskByDecisionId(id);
+      // console.log(response)
+      setOriginalTask(response);
+      setRows(response);
+    } catch (error) {
+      console.error("Error fetching task:", error);
+    }
+  };
+  // Load data getTitleConfiguration
+  const getTitleConfiguration = async () => {
+    try {
+      const response = await DecisionTitleAPI.getDecisionTitleByDecisionId(id);
+      // console.log(response)
+      setTitle(response);
+    } catch (error) {
+      console.error("Error fetching task:", error);
+    }
+  };
+  // Load update
+  useEffect(() => {
+    getTaskConfiguration();
+    getTitleConfiguration();
+  }, [id]);
+  //////////////////////////////////// Xử Lý backend /////////////////////////////////
+  //
+
+  ///////////////////////////// The update function changes //////////////////////////
+  // Hàm để cập nhật giá trị chỉnh sửa của ô
+  const handleCellEditTaskCommit = (taskId, titleName, wageType, value) => {
+    setEditedWages({
+      ...editedWages,
+      [`${taskId}-${titleName}-${wageType}`]: value,
+    });
+  };
+  // End
+  //////////////////////////////////// Remove row ///////////////////////////////////////
+  const handleDeleteRowData = (taskId) => {
+    setRows((prevRows) => {
+      // Tìm taskName từ taskId
+      const taskName = taskId;
+
+      // Lọc bỏ tất cả các hàng liên quan đến taskName
+      const updatedRows = prevRows.filter((row) => row.taskId !== taskName);
+
+      return updatedRows;
+    });
+  };
+  // End
+  //////////////////////////////////// Select to Add a new Task //////////////////////
+  const handleAddTask = () => {
+    const addedTask = listtask.find(
+      (task) => task.taskId === selectedTask.value
+    );
+    console.log(addedTask);
+    // setRows([...rows, addedTask]);
+    setSelectedTask(null);
+  };
+  // console.log(rows)
+  // End
+  //////////////////////////////////// Cancel ///////////////////////////////////////
+  const handleCancelChanges = () => {
+    console.log("cancel");
+    setRows(originalTask);
+    setSelectedTask(null);
+  };
+  // End
+  //////////////////////////////////// Save /////////////////////////////////////////
+  const handleSaveChanges = () => {
+    // Kiểm tra xem tất cả các ô trong bảng đã được điền (không có ô nào trống)
+    const allFieldsFilled = rows.every((row) => {
+      // Kiểm tra mỗi ô trong hàng (trừ các cột cố định như 'id' và 'task')
+      return Object.keys(row).every((key) => {
+        if (key !== "id" && key !== "taskName" && key !== "taskType") {
+          // Kiểm tra giá trị của ô không phải là undefined, null hay rỗng
+          if (row[key] === "" || row[key] === null || row[key] === undefined) {
+            console.log(
+              `Ô thiếu dữ liệu: ${key}, Dòng: ${JSON.stringify(row)}`
             );
-
-            // Kiểm tra sự thay đổi so với `originalRows`
-            const hasAnyChanges = updatedRows.some(
-                (row, index) => row.weight !== originalRows[index]?.weight
-            );
-            setHasChanges(hasAnyChanges);
-
-            return updatedRows;
-        });
-    };
-
-    //////////////////////////////////// Remove ////////////////////////////////////
-    // Hàm hủy thay đổi, đặt lại  giá trị ban đầu của 1 hàng
-    const handleDeleteRowData = (id) => {
-        setRows((prevRows) => {
-            const rowIndex = prevRows.findIndex((row) => row.id === id);
-
-            if (rowIndex !== -1) {
-                const updatedRow = { ...prevRows[rowIndex] };
-                const originalRow = originalRows.find((row) => row.id === id);
-
-                // Khôi phục giá trị từ originalRow chỉ cho các cột title
-                Object.keys(updatedRow).forEach((key) => {
-                    // Kiểm tra xem cột có phải là cột 'title' hay không
-                    if (key !== 'id' && key !== 'task' && key !== 'type') {
-                        // updatedRow[key] = originalRow ? originalRow[key] : '';
-                        updatedRow[key] = '';// Khôi phục giá trị gốc cho các cột title
-                    }
-                });
-
-                const updatedRows = [...prevRows];
-                updatedRows[rowIndex] = updatedRow;
-                return updatedRows;
-            }
-
-            return prevRows;
-        });
-    };
-<<<<<<< HEAD
-    // End 
-    //////////////////////////////////// Select to Add a new Task //////////////////////
-    const handleAddTask = () => {
-        const addedTask = listtask.find(
-            (task) => task.taskId === selectedTask.value
-        );
-        const newRows = ['In Working Hour', 'Overtime'].map((type, index) => ({
-            id: `${rows.length / 2 + 1}_${type}`,
-            index: `${index + 1}_${type}`,
-            taskName: index === 0 ? addedTask.taskName : '',
-            taskType: type,
-            ...title.reduce((acc, title) => {
-                acc[title.rankingTitleName] = '';
-                return acc;
-            }, {}),
-        }));
-        setRows([...rows, ...newRows]);
-        setSelectedTask(null)
-    };
-
-    // End 
-    //////////////////////////////////// Cancel ///////////////////////////////////////
-=======
-
-    //////////////////////////////////// Cancel /////////////////////////////////////
-    // Theo dõi sự thay đổi của rows và originalRows
-    useEffect(() => {
-        const checkForChanges = () => {
-            // Kiểm tra sự khác biệt giữa rows và originalRows
-            const hasAnyChanges = rows.some((row, index) => {
-                const originalRow = originalRows[index];
-
-                // Kiểm tra nếu có sự khác biệt giữa row và originalRow
-                return Object.keys(row).some((key) => {
-                    if (key !== 'id' && key !== 'task') {
-                        return true;
-                    }
-                    return false;
-                });
-            });
-
-            setHasChanges(hasAnyChanges);
-        };
-
-        // Gọi hàm kiểm tra thay đổi
-        checkForChanges();
-    }, [rows, originalRows]);
-    //// Hàm hủy thay đổi, đặt lại  giá trị ban đầu của tất cả
->>>>>>> parent of e12c42b (Merge branch 'HoangMN' into DuyPQ)
-    const handleCancelChanges = () => {
-        // Đặt lại tất cả các ô trong bảng về giá trị ban đầu
-        setRows((prevRows) => {
-            const resetRows = prevRows.map((row, index) => {
-                const originalRow = originalRows[index]; // Lấy giá trị ban đầu từ originalRows
-
-                const updatedRow = { ...row };
-
-                // Khôi phục lại giá trị của mỗi ô từ originalRow, ngoại trừ cột 'task', 'type', và 'id'
-                Object.keys(updatedRow).forEach((key) => {
-                    if (key !== 'id' && key !== 'task' && key !== 'type') { // Giữ lại 'id', 'titleName', 'task', và 'type'
-                        updatedRow[key] = originalRow ? originalRow[key] : ''; // Khôi phục giá trị gốc từ originalRow, nếu có
-                    }
-                });
-
-                return updatedRow;
-            });
-
-            return resetRows;
-        });
-    };
-<<<<<<< HEAD
-    // End 
-
-    ////////////////////////////////// Handle Backend ////////////////////////////////////
-
-    const syncData = (rows, originalTask) => {
-        const result = {
-            added: [],
-            deleted: [],
-            updated: [],
-        };
-
-        // Map `originalTask` to a structured lookup
-        const originalTaskMap = new Map();
-        originalTask.forEach((task) => {
-            const taskKey = task.taskName;
-            originalTaskMap.set(taskKey, task);
-        });
-
-        console.log("Original Task Map:", originalTaskMap);
-
-    };
-
-
-    //////////////////////////////////// Save /////////////////////////////////////////
-=======
-
-    //////////////////////////////////// Save ////////////////////////////////////
->>>>>>> parent of e12c42b (Merge branch 'HoangMN' into DuyPQ)
-    const handleSaveChanges = () => {
-        // Kiểm tra xem tất cả các ô trong bảng đã được điền (không có ô nào trống)
-        const allFieldsFilled = rows.every((row) => {
-            // Kiểm tra mỗi ô trong hàng (trừ các cột cố định như 'id' và 'task')
-            return Object.keys(row).every((key) => {
-                if (key !== 'id' && key !== 'task' && key !== 'type') { // Giữ lại các cột cố định
-                    // Kiểm tra giá trị của ô không phải là undefined, null hay rỗng
-                    if (row[key] === '' || row[key] === null || row[key] === undefined) {
-                        console.log(`Ô thiếu dữ liệu: ${key}, Dòng: ${JSON.stringify(row)}`);
-                        return false; // Nếu ô thiếu dữ liệu, trả về false
-                    }
-                    return true; // Nếu ô có dữ liệu, trả về true
-                }
-                return true; // Các cột 'id', 'task', 'type' không cần kiểm tra
-            });
-        });
-        syncData(rows, originalTask);
-        // Nếu có ít nhất một ô chưa được điền, hiển thị thông báo lỗi
-        if (!allFieldsFilled) {
-            showErrorMessage('Tất cả các ô phải được điền đầy đủ');
-            console.log('Có ô chưa điền dữ liệu');
-            return; // Dừng hàm nếu có ô chưa điền
+            return false;
+          }
+          return true;
         }
+        return true;
+      });
+    });
 
-        console.log("Tất cả ô đã được điền đầy đủ. Lưu dữ liệu...");
-        goToNextStep(); // Tiến hành lưu dữ liệu và chuyển sang bước tiếp theo
-    };
-<<<<<<< HEAD
-    // End
+    // Nếu có ít nhất một ô chưa được điền, hiển thị thông báo lỗi
+    if (!allFieldsFilled) {
+      showErrorMessage("Tất cả các ô phải được điền đầy đủ");
+      console.log("Có ô chưa điền dữ liệu");
+      return; // Dừng hàm nếu có ô chưa điền
+    }
+    showSuccessMessage("Task & Price Configuration successfully updated.");
+    // console.log("Tất cả ô đã được điền đầy đủ. Lưu dữ liệu...");
+    goToNextStep({ stayOnCurrentStep: true }); // Tiến hành lưu dữ liệu và chuyển sang bước tiếp theo
+  };
+  // End
+  //////////////////////////////////// Column Task//////////////////////////////////
+  const allTitleNames = title.map((t) => t.rankingTitleName);
 
-    //////////////////////////////////// Column Task////////////////////////////////////
-    const ColumnsTask = (title, decisionStatus) => {
-        // Cột tiêu đề động
-        const titleColumns = title.map((titleItem) => ({
-            field: titleItem.titleName, // Use rankingTitleName as field
-            headerName: titleItem.titleName, // Display the name
-            width: 150, // Adjust column width
-            editable: decisionStatus === 'Draft' || decisionStatus === 'Finalized', // Only editable in Draft
-            renderCell: (params) =>
-                decisionStatus === 'Draft' || decisionStatus === 'Finalized' ? (
-                    <TextField
-                        sx={{
-                            marginTop: '7px',
-                            textAlign: 'center',
-                        }}
-                        value={params.value || ''} // Default value
-                        onChange={(e) => {
-                            const updatedValue = e.target.value;
-                            // Update cell value
-                            params.row[params.field] = updatedValue;
-                        }}
-                        onBlur={(e) => {
-                            // Commit changes on blur
-                            const updatedRow = { ...params.row, [params.field]: e.target.value };
-                            handleCellEditTaskCommit(updatedRow); // Save changes
-                        }}
-                        variant="outlined"
-                        size="small"
-                        fullWidth
-                        type="number"
-                        InputProps={{
-                            inputProps: { min: 0 },
-                        }}
-                    />
-                ) : (
-                    params.value // Show value in Finalized status
-                ),
-=======
-
-
-    //////////////////////////////////// Select to Add a new Task ////////////////////////////////////
-    const handleAddTask = () => {
-        const newTitle = {
-            id: rows.length + 1,
-            titleName: 'New Title',
-            ...title.reduce((acc, title) => {
-                acc[title.titleName] = '';  // Chỗ này sẽ là ô trống cho mỗi tiêu chí mới
-                return acc;
-            }, {}),
-        };
-        setRows([...rows, newTitle]);
-    };
-
-    //////////////////////////////////// Column task ////////////////////////////////////
-    // Tạo cấu hình cột và hàng
-    // Cập nhật bảng khi task, title, hoặc criteria thay đổi
-    const updateTaskTableConfig = (criteria, title, task, decisionStatus) => {
-        // Cột từ tiêu chí
-        const titleColumns = title.map((title) => ({
-            field: title.titleName,
-            headerName: title.titleName,
-            width: 140,
-            editable: true,
-            renderCell: (params) => (
-                <TextField
-                    value={params.value || ''}
-                    onChange={(e) => handleCellEditTaskCommit({ id: params.row.id, field: params.field, value: e.target.value })}
-                    variant="outlined"
-                    fullWidth
-                    sx={{
-                        marginTop: '10px',
-                        height: '30px',
-                        '.MuiInputBase-root': { display: 'flex', alignItems: 'center' },
-                        '.MuiInputBase-input': { padding: '4px' },
+  //////////////////////////////////// Return //////////////////////////////////////
+  return (
+    <div>
+      {/* Surrounding border */}
+      <Box
+        sx={{
+          width: "100%",
+          height: 500,
+          marginTop: "10px",
+          border: "2px solid black",
+          borderRadius: "8px",
+          padding: "16px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        <Box sx={{ width: "100%", height: 400, marginTop: "10px" }}>
+          {/* Table  */}
+          <TableContainer
+            component={Paper}
+            sx={{
+              minWidth: 400,
+              maxHeight: 400,
+              height: 400,
+              overflowX: "auto",
+              overflowY: "auto",
+            }}
+          >
+            <Table sx={{}} aria-label="task table">
+              <TableHead>
+                <TableRow>
+                  {/* Cột Task: Cố định chiều rộng và sử dụng sticky */}
+                  <TableCell
+                    style={{
+                      position: "sticky",
+                      left: 0,
+                      backgroundColor: "#e0e0e0",
+                      width: "180px",
+                      zIndex: 2,
+                      boxSizing: "border-box",
                     }}
-                    type="number"
-                    inputMode="numeric"
-                />
-            ),
->>>>>>> parent of e12c42b (Merge branch 'HoangMN' into DuyPQ)
-        }));
+                  >
+                    Task
+                  </TableCell>
+                  {/* Cột Task Type: Cố định chiều rộng và sử dụng sticky */}
+                  <TableCell
+                    style={{
+                      position: "sticky",
+                      backgroundColor: "#e0e0e0",
+                      left: 120,
+                      zIndex: 2,
+                      boxSizing: "border-box",
+                      width: "120px",
+                      maxWidth: "120px",
+                      minWidth: "120px",
+                      overflow: "hidden",
+                    }}
+                    rowSpan={2}
+                  >
+                    Task Type
+                  </TableCell>
 
-        // Cột cố định
-        const fixedColumns = [
-            { field: 'task', headerName: 'Task', width: 100 },
-            { field: 'type', headerName: 'Type', width: 100 },
-        ];
-        // cột action
-        const actionColumn = [
-            {
-                field: 'action', headerName: 'Action', width: 130,
-                renderCell: (params) =>
-                    decisionStatus === 'Draft' && (
-                        <Button
+                  {/* Các cột Dynamic (các title name): Cố định chiều rộng với minWidth */}
+                  {allTitleNames.map((titleName, index) => (
+                    <TableCell
+                      key={`wh-${index}`}
+                      style={{
+                        backgroundColor: "#e0e0e0",
+                        minWidth: 120, // Cố định chiều rộng cột này
+                        zIndex: 1,
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      {titleName}
+                    </TableCell>
+                  ))}
+
+                  {/* Cột Action: Cố định chiều rộng và sử dụng sticky */}
+                  <TableCell
+                    style={{
+                      position: "sticky",
+                      right: 0,
+                      backgroundColor: "#e0e0e0",
+                      zIndex: 2,
+                      boxSizing: "border-box",
+                    }}
+                    rowSpan={2}
+                  >
+                    Action
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+
+              <TableBody>
+                {rows.map((task) => {
+                  return (
+                    <>
+                      {/* Hàng cho In Working Hour */}
+                      <TableRow key={`task-${task.taskId}-wh`}>
+                        {/* Cột Task Name */}
+                        <TableCell
+                          style={{
+                            position: "sticky",
+                            left: 0,
+                            background: "#fff",
+                            zIndex: 2,
+                            boxSizing: "border-box",
+                            width: "120px",
+                            maxWidth: "120px",
+                            minWidth: "120px",
+                            overflow: "hidden",
+                          }}
+                          rowSpan={2}
+                        >
+                          {task.taskName}
+                        </TableCell>
+                        <TableCell
+                          style={{
+                            position: "sticky",
+                            left: 120,
+                            background: "#fff",
+                            zIndex: 2,
+                            boxSizing: "border-box",
+                            width: "120px",
+                            maxWidth: "120px",
+                            minWidth: "120px",
+                            overflow: "hidden",
+                          }}
+                        >
+                          In Working Hour
+                        </TableCell>
+                        {/* Cột Dynamic cho Working Hour */}
+                        {allTitleNames.map((titleName, index) => {
+                          const titleData = task.taskWages.find(
+                            (wage) => wage.titleName === titleName
+                          );
+                          const workingHourWage = titleData
+                            ? titleData.workingHourWage
+                            : "-";
+                          return (
+                            <TableCell key={`wh-${index}`}>
+                              <TextField
+                                value={
+                                  editedWages[
+                                    `${task.taskId}-${titleName}-workingHour`
+                                  ] || workingHourWage
+                                }
+                                onChange={(e) =>
+                                  handleCellEditTaskCommit(
+                                    task.taskId,
+                                    titleName,
+                                    "workingHour",
+                                    e.target.value
+                                  )
+                                }
+                                size="small"
+                                variant="outlined"
+                                fullWidth
+                              />
+                            </TableCell>
+                          );
+                        })}
+                        {/* Cột Action */}
+                        <TableCell
+                          style={{
+                            position: "sticky",
+                            right: 0,
+                            background: "#fff",
+                            zIndex: 2,
+                            boxSizing: "border-box",
+                          }}
+                          rowSpan={2}
+                        >
+                          <Button
                             variant="outlined"
                             color="error"
-                            onClick={() => handleDeleteRowData(params.row.id)}
-                        >
+                            onClick={() => handleDeleteRowData(task.taskId)} // Gọi hàm xóa khi nhấn nút
+                          >
                             <MdDeleteForever />
-                        </Button>
-                    ),
-            },
-        ];
+                          </Button>
+                        </TableCell>
+                      </TableRow>
 
-        const updatedRows = task.map((task) => {
-            return ['In Working Hour', 'Overtime'].map((type, index) => ({
-                id: `${task.task_name}_${type}`,
-                task: index === 0 ? task.task_name : '',
-                type: index === 0 ? 'In Working Hour' : 'Overtime',
-            }));
-        }).flat().map((row) => {
-            // Kiểm tra và thay thế undefined bằng chuỗi rỗng hoặc giá trị mặc định khác
-            Object.keys(row).forEach((key) => {
-                if (row[key] === undefined) {
-                    row[key] = ''; // Hoặc bạn có thể thay bằng một giá trị mặc định nào đó
-                }
-            });
-            return row;
-        });
+                      {/* Hàng cho Overtime */}
+                      <TableRow key={`task-${task.taskId}-ot`}>
+                        <TableCell
+                          style={{
+                            position: "sticky",
+                            background: "#fff",
+                            left: 120,
+                            zIndex: 2,
+                            boxSizing: "border-box",
+                            width: "120px",
+                            maxWidth: "120px",
+                            minWidth: "120px",
+                            overflow: "hidden",
+                          }}
+                        >
+                          Overtime
+                        </TableCell>
+                        {/* Cột Dynamic cho Overtime */}
+                        {allTitleNames.map((titleName, index) => {
+                          const titleData = task.taskWages.find(
+                            (wage) => wage.titleName === titleName
+                          );
+                          const overtimeWage = titleData
+                            ? titleData.overtimeWage
+                            : "-";
+                          return (
+                            <TableCell key={`ot-${index}`}>
+                              <TextField
+                                value={
+                                  editedWages[
+                                    `${task.taskId}-${titleName}-overtime`
+                                  ] || overtimeWage
+                                }
+                                onChange={(e) =>
+                                  handleCellEditTaskCommit(
+                                    task.taskId,
+                                    titleName,
+                                    "overtime",
+                                    e.target.value
+                                  )
+                                }
+                                size="small"
+                                variant="outlined"
+                                fullWidth
+                              />
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    </>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-
-        // Trả về cột và hàng
-        return { columns: [...fixedColumns, ...titleColumns, ...actionColumn], rows: updatedRows };
-    };
-    useEffect(() => {
-        if (criteria && title && task) {
-            const { columns, rows } = updateTaskTableConfig(criteria, title, task, decisionStatus);
-
-            // Cập nhật cột và hàng
-            setColumnsTask(columns);
-            setRows(rows);
-            setOriginalRows(rows); // Lưu lại dữ liệu gốc
-        }
-<<<<<<< HEAD
-    }, [originalTask, title, decisionStatus]);
-    // End 
-
-    //////////////////////////////////// Return //////////////////////////////////////
-=======
-    }, [criteria, title, task, decisionStatus]);
-
-
->>>>>>> parent of e12c42b (Merge branch 'HoangMN' into DuyPQ)
-    return (
-        <div>
-            <Box sx={{
-                width: "100%",
-                height: 500,
-                marginTop: '10px',
-                border: '2px solid black',
-                borderRadius: '8px',
-                padding: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-                overflow: 'hidden',
-            }}>
-                <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
-                    <DataGrid
-                        rows={rows}
-                        columns={columnsTask}
-                        getRowId={(row) => row.id}
-                        processRowUpdate={(newRow) => {
-                            handleCellEditTaskCommit(newRow); // Lưu thay đổi chính thức
-                            return newRow; // Cần trả về `newRow` để cập nhật DataGrid
-                        }}
-                        experimentalFeatures={{ newEditingApi: true }} // Bật tính năng chỉnh sửa hàng mới
-                    />
-                    {decisionStatus === 'Draft' && (
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-                                <Button variant="contained" color="success" onClick={handleAddTask}>
-                                    Add Task
-                                </Button>
-                            </Box>
-
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                                {hasChanges && (
-                                    <Button
-                                        variant="contained"
-                                        color="error"
-                                        onClick={handleCancelChanges} // Gọi hàm hủy thay đổi
-                                    >
-                                        Cancel
-                                    </Button>
-                                )}
-                                {hasChanges && (
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={handleSaveChanges} // Gọi hàm lưu thay đổi
-                                    >
-                                        Save
-                                    </Button>
-                                )}
-                            </Box>
-                        </Box>
-                    )}
-                </Box>
+          {/* Button */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 2,
+              marginTop: "20px",
+            }}
+          >
+            {/* Select to Add a new Task*/}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-start",
+                alignItems: "center",
+              }}
+            >
+              <Select
+                isSearchable={true}
+                placeholder="Select to Add a new Task"
+                options={listtask
+                  .filter(
+                    (task) => !rows.some((row) => row.taskId == task.taskId)
+                  )
+                  .map((task) => ({
+                    value: task.taskId,
+                    label: task.taskName,
+                  }))}
+                styles={{
+                  container: (provided) => ({ ...provided, width: "300px" }),
+                  control: (provided) => ({
+                    ...provided,
+                    height: "40px",
+                    fontSize: "16px",
+                    display: "flex",
+                    alignItems: "center",
+                  }),
+                  placeholder: (provided) => ({ ...provided, color: "#888" }),
+                  menu: (provided) => ({
+                    ...provided,
+                    maxHeight: 300,
+                    overflowY: "auto",
+                    zIndex: 9999,
+                  }),
+                }}
+                menuPlacement="top"
+                value={selectedTask}
+                onChange={(option) => setSelectedTask(option)}
+              />
+              <IconButton
+                onClick={handleAddTask}
+                color={selectedTask ? "primary" : "default"}
+                // disabled={!selectedTask}
+                sx={{
+                  marginLeft: 1,
+                  height: "30px",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <AddCircleIcon sx={{ fontSize: 30 }} />{" "}
+                {/* Điều chỉnh kích thước của icon */}
+              </IconButton>
             </Box>
-        </div>
-    );
+            {/* Cancel and Save */}
+            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
+              {/* Cancel*/}
+              <Button
+                variant="contained"
+                color="error"
+                onClick={handleCancelChanges}
+              >
+                Cancel
+              </Button>
+              {/* Save */}
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSaveChanges}
+              >
+                Save
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    </div>
+  );
 };
-
 
 export default TaskandPriceConfiguration;
