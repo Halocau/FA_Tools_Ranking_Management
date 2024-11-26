@@ -7,5 +7,5 @@ import java.net.URISyntaxException;
 
 public interface IFileService {
     public void createDirectory(String folder) throws URISyntaxException;
-    public void store(MultipartFile file, String folder) throws URISyntaxException, IOException;
+    public String store(MultipartFile file, String folder) throws URISyntaxException, IOException;
 }

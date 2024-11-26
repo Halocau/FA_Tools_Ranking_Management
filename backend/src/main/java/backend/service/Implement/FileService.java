@@ -41,7 +41,7 @@ public class FileService implements IFileService {
 
     @Override
     @Transactional
-    public void store(
+    public String store(
             MultipartFile file,// name file upload
             String folder // name folder
     ) throws URISyntaxException,
@@ -54,5 +54,6 @@ public class FileService implements IFileService {
             Files.copy(inputStream, path,
                     StandardCopyOption.REPLACE_EXISTING);
         }
+        return finalName;
     }
 }
