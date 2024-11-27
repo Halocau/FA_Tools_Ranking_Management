@@ -41,10 +41,10 @@ const RankingDecision = () => {
     };
     //// State
     // Table  List Ranking decision (page, size)
-    const [rows, setRows] = useState([]); // Initialize with empty array
-    const [rankingDecisions, setRankingDecisions] = useState([]);
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(5);
+    const [filter, setFilter] = useState("");
+    const [RankingDecisions, setRankingDecisions] = useState([]);
+    const [Page, setPage] = useState(1);
+    const [PageSize, setPageSize] = useState(5);
     const [totalElements, setTotalElements] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     // ApiRef   
@@ -55,18 +55,17 @@ const RankingDecision = () => {
     const [newDecisionName, setnewDecisionName] = useState(""); // State to store the new decison name that the user enters
     const [clone, setClone] = useState(false); // Clone state decides
     const [selectedCloneDecision, setSelectedCloneDecision] = useState(null);
-    const [listDecisionSearchClone, setlistDecisionSearchClone] = useState([]);
     // Delete
     const [showDeleteModal, setShowDeleteModal] = useState(false); // State to determine whether the delete decision modal is displayed or not
-    const [decisionToDelete, setDecisionToDelete] = useState(null); // State to store the ID of the decision to be deleted
+    const [DecisionToDelete, setDecisionToDelete] = useState(null); // State to store the ID of the decision to be deleted
     // delete select
     const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
     // Search Decision
-    const [filter, setFilter] = useState("");
+    const [rows, setRows] = useState([]); // Initialize with empty array
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Validation error message
-    const [validationMessage, setValidationMessage] = useState(""); setRows
+    const [validationMessage, setValidationMessage] = useState("");
     // Status menu
     const [anchorEl, setAnchorEl] = useState(null);
     // Function Onclick Menu
@@ -83,28 +82,26 @@ const RankingDecision = () => {
         try {
             const data = await RankingDecisionAPI.searchRankingDecisions(
                 filter,
-                page,
-                pageSize
+                Page,
+                PageSize
             );
             setRankingDecisions(data.result);
             setTotalPages(data.pageInfo.total);
             setTotalElements(data.pageInfo.element);
         } catch (error) {
-            console.error("Failed to fetch decision:", error);
+            console.error("Failed to fetch criteria:", error);
         }
     }
     // Fetch all ranking decisions when component mounts
     useEffect(() => {
         fetchAllRankingDecisions();
-    }, [page, pageSize, filter]);
-    ;
-
+    }, [Page, PageSize, filter]);
     // Map decision data to rows for DataGrid when rows are fetched
     useEffect(() => {
-        if (rankingDecisions) {
-            const mappedRows = rankingDecisions.map((decision, index) => ({
+        if (RankingDecisions) {
+            const mappedRows = RankingDecisions.map((decision, index) => ({
                 id: decision.decisionId,
-                index: index + 1 + (page - 1) * pageSize,
+                index: index + 1 + (Page - 1) * PageSize,
                 dicisionname: decision.decisionName,
                 finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
                 finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
@@ -112,7 +109,7 @@ const RankingDecision = () => {
             }));
             setRows(mappedRows); // Update rows with data from decisions
         }
-    }, [rankingDecisions]);
+    }, [RankingDecisions]);
 
     //// Handlers to open/close modals for adding decisions
     // Open the modal
@@ -125,23 +122,6 @@ const RankingDecision = () => {
         setSelectedCloneDecision(null);
         setClone(false);
     };
-    //  list ranking decision to choose from for clone
-    const fetchlistRankingDecisionsClone = async () => {
-        try {
-            const data = await RankingDecisionAPI.searchRankingDecisions(
-                filter,
-                1,
-                totalElements,
-            );
-            setlistDecisionSearchClone(data.result)
-        } catch (error) {
-            console.error("Failed to fetch decision:", error);
-        }
-    }
-    useEffect(() => {
-        fetchlistRankingDecisionsClone();
-    }, [totalElements, filter])
-
     // Function to adding Ranking Decision
     const handleAddRankingDecision = async () => {
         setValidationMessage("");
@@ -150,7 +130,7 @@ const RankingDecision = () => {
             setValidationMessage("Ranking Decision Name is required.");
             return;
         }
-        const isDuplicate = rankingDecisions.some(
+        const isDuplicate = RankingDecisions.some(
             decision => decision.decisionName.toLowerCase() === trimmedName.toLowerCase()
         );
         if (isDuplicate) {
@@ -179,7 +159,7 @@ const RankingDecision = () => {
             }
             // setRankingDecisions([...rankingDecisions, newDecision]);
             setTotalElements(totalElements + 1);
-            if (rankingDecisions.length < pageSize) {
+            if (RankingDecisions.length < PageSize) {
                 fetchAllRankingDecisions();
             } else {
                 setTotalPages(totalPages + 1);
@@ -187,25 +167,31 @@ const RankingDecision = () => {
             handleCloseAddRankingDecisionModal();
             showSuccessMessage("Ranking Decision successfully added.");
         } catch (error) {
-            console.error("Failed to add decision:", error);
+            console.error("Failed to add group:", error);
 
+            // Kiểm tra nếu lỗi từ backend có chứa thông báo lỗi liên quan đến tên nhóm
             if (error.response && error.response.data) {
-                // Kiểm tra và lấy thông báo lỗi từ phần exception
-                if (error.response.data.exception && error.response.data.exception.decisionName) {
-                    setValidationMessage(error.response.data.exception.decisionName); // Hiển thị thông báo lỗi từ exception
-                } else if (error.response.data.detailMessage) {
-                    setValidationMessage(error.response.data.detailMessage); // Hiển thị detailMessage nếu không có exception
-                } else if (error.response.data.message) {
-                    setValidationMessage(error.response.data.message); // Hiển thị message chung nếu không có detailMessage
+                // Lọc chỉ thông báo lỗi "RankingGroup name exists already!" từ phần detailMessage
+                const detailMessage = error.response.data.detailMessage;
+                if (detailMessage && detailMessage.includes("RankingGroup name exists already!")) {
+                    setValidationMessage("RankingGroup name exists already!");  // Chỉ hiển thị thông báo lỗi mong muốn
                 } else {
                     showErrorMessage("Error occurred adding Ranking Decision. Please try again");
                 }
             } else {
+                // Nếu không có thông báo cụ thể từ backend, hiển thị thông báo lỗi mặc định
                 showErrorMessage("Error occurred adding Ranking Decision. Please try again");
             }
         }
     };
+    const {
+        data: decisions,
+        fetchListAllRankingDecisions,
+    } = useRankingDecision();
 
+    useEffect(() => {
+        fetchListAllRankingDecisions();
+    }, []);
     //// Handlers to open/close modals for delete decision
     // Open the modal
     const handleOpenDeleteRankingDecisionModal = (decisionId) => {
@@ -215,16 +201,16 @@ const RankingDecision = () => {
     // Close the modal
     const handleCloseDeleteRankingDecisionModal = () => setShowDeleteModal(false);
     // Function to delete a  ranking decision
-    const handleDeleteRankingDecision = async () => {
+    const handledeleteRankingDecision = async () => {
         try {
-            if (decisionToDelete) {
-                await RankingDecisionAPI.deleteRankingDecision(decisionToDelete);
-                setRankingDecisions(rankingDecisions.filter((decision) => decision.decisionId !== decisionToDelete))
-                if (rankingDecisions.length === 5) {
+            if (DecisionToDelete) {
+                await RankingDecisionAPI.deleteRankingDecision(DecisionToDelete);
+                setRankingDecisions(RankingDecisions.filter((decision) => decision.decisionId !== DecisionToDelete))
+                if (RankingDecisions.length === 5) {
                     fetchAllRankingDecisions();
                 }
-                if (rankingDecisions.length === 1) {
-                    setPage(page - 1)
+                if (RankingDecisions.length === 1) {
+                    setPage(Page - 1)
                 }
             }
             setTotalElements(totalElements - 1);
@@ -243,46 +229,42 @@ const RankingDecision = () => {
     // Close the modal
     const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false);
     const handleBulkDeleteRankingDecision = async () => {
-        // Lấy danh sách ID của các dòng đã chọn
+        // List ID of Row choice
         const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
         if (selectedIDs.length === 0) {
             showErrorMessage("Please select decisions to delete.");
             handleCloseBulkDeleteModal();
             return;
         }
-
         try {
-            // Xóa các quyết định đã chọn
+            // Xóa quyết định
             await Promise.all(selectedIDs.map((id) => RankingDecisionAPI.deleteRankingDecision(id)));
             showSuccessMessage("Selected decision deleted successfully!");
-            // Cập nhật danh sách các quyết định
-            const updatedRankingDecisions = rankingDecisions.filter(
+            // Cập nhật danh sách sau khi xóa
+            const updatedRankingDecisions = RankingDecisions.filter(
                 (decision) => !selectedIDs.includes(decision.decisionId)
             );
             setRankingDecisions(updatedRankingDecisions);
-            if (rankingDecisions.length === 5) {
+            // Kiểm tra điều kiện giảm trang khi xóa
+            if (updatedRankingDecisions.length === 0 && Page > 1) {
+                setPage(Page - 1); // Giảm trang nếu không còn dữ liệu
+            }
+
+            // Kiểm tra nếu còn đúng 5 nhóm sau khi xóa thì gọi fetchAllRankingDecisions
+            if (updatedRankingDecisions.length === 5) {
                 await fetchAllRankingDecisions();
             }
-            // Kiểm tra nếu còn đúng 1 nhóm sau khi xóa thì giảm Page đi 1
-            if (rankingDecisions.length === 1) {
-                setPage(page - 1);
-            }
-
-            await fetchAllRankingDecisions();
-
             handleCloseBulkDeleteModal();
         } catch (error) {
-            console.error("Error during bulk delete:", error);
-            showErrorMessage("An error occurred while deleting decisions.");
+            console.error("Failed to delete selected groups:", error);
+            showErrorMessage("Failed to delete selected groups. Please try again.");
+            handleCloseBulkDeleteModal();
         }
     };
 
 
-
     ///// Search Decision 
     const handleSearch = (event) => {
-        // console
-        console.log("Search", event)
         if (event) {
             setFilter(sfLike("decisionName", event).toString());
         } else {
@@ -291,7 +273,7 @@ const RankingDecision = () => {
         setPage(1);
     };
 
-    //// Define columns for DataGrid
+    // Define columns for DataGrid
     const columns = [
         { field: "index", headerName: "ID", width: 80 },
         { field: "dicisionname", headerName: "Ranking Decision Name", width: 350 },
@@ -380,15 +362,15 @@ const RankingDecision = () => {
                         rowCount={totalElements}
                         paginationMode="server"
                         paginationModel={{
-                            page: page - 1,  // Adjusted for 0-based index
-                            pageSize: pageSize,
+                            page: Page - 1,  // Adjusted for 0-based index
+                            pageSize: PageSize,
                         }}
                         onPaginationModelChange={(model) => {
                             setPage(model.page + 1);  // Set 1-based page for backend
                             setPageSize(model.pageSize);
                         }}
-                        disableNextButton={page >= totalPages}
-                        disablePrevButton={page <= 1}
+                        disableNextButton={Page >= totalPages}
+                        disablePrevButton={Page <= 1}
                         disableRowSelectionOnClick
                         autoHeight={false}
                         sx={{
@@ -448,7 +430,7 @@ const RankingDecision = () => {
                         {clone && (
                             <Autocomplete
                                 disablePortal
-                                options={listDecisionSearchClone}
+                                options={decisions.result}
                                 getOptionLabel={(option) => option.decisionName || ''}
                                 value={selectedCloneDecision}
                                 onChange={(event, value) => {
@@ -482,7 +464,7 @@ const RankingDecision = () => {
                     footerContent={
                         <ActionButtons
                             onCancel={handleCloseDeleteRankingDecisionModal}
-                            onConfirm={handleDeleteRankingDecision}
+                            onConfirm={handledeleteRankingDecision}
                             confirmText="Delete"
                             cancelText="Cancel"
                             color="error"

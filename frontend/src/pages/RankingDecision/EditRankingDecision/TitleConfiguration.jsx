@@ -90,11 +90,150 @@ const TitleConfiguration = ({
         const updatedRow = { ...prevRows[rowIndex] };
         const originalRow = originalRows.find((row) => row.id === id);
 
+<<<<<<< HEAD
         // Khôi phục giá trị từ originalRow nếu có
         Object.keys(updatedRow).forEach((key) => {
           if (key !== "id" && key !== "titleName") {
             updatedRow[key] = originalRow ? originalRow[key] : ""; // Khôi phục giá trị gốc
           }
+=======
+    // End 
+    const handleSaveChanges = () => {
+        // Kiểm tra xem tất cả rankScore đã được tính toán
+        const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
+        // console.log("Original Title:", originalTitle);
+        // console.log("Rows:", rows);
+        if (!allRankScoresCalculated) {
+            showErrorMessage('Tất cả Rank Score phải được tính toán.');
+            return; // Dừng lại nếu có lỗi
+        }
+        syncDecisionTitle(rows, originalTitle);
+
+        showSuccessMessage('Title Configuration successfully updated.');
+        console.log("Title Configuration successfully updated.”");
+        goToNextStep(); // Chuyển bước tiếp theo
+    };
+
+    // console.log("Rows:", rows);
+    // console.log("Original Title:", originalTitle);
+    // End 
+    ///////////////////////////////// Column Title ///////////////////////////////////
+    const ColumnsTitle = (criteria, decisionStatus) => {
+        if (!Array.isArray(criteria)) {
+            console.error("Invalid criteria data:", criteria);
+            return [];
+        }
+        // Column Criteria
+        const criteriaColumns = criteria.map((criteriaItem) => ({
+            field: criteriaItem.criteriaName,
+            headerName: criteriaItem.criteriaName,
+            width: 200,
+            editable: decisionStatus === 'Draft',
+            renderCell: (params) => {
+                const currentCriteria = criteria.find(
+                    (c) => c.criteriaName === params.field
+                );
+
+                if (!currentCriteria || !Array.isArray(currentCriteria.options)) {
+                    console.warn(`No options found for criteria: ${params.field}`);
+                    return null;
+                }
+
+                return (
+                    <Select
+                        value={params.value || ''}
+                        onChange={(e) =>
+                            handleCellEditTitleCommit({
+                                id: params.row.index,
+                                field: params.field,
+                                value: e.target.value,
+                            })
+                        }
+                        fullWidth
+                        sx={{
+                            height: '30px',
+                            '.MuiSelect-select': { padding: '4px' },
+                        }}
+                    >
+                        {currentCriteria.options.map((option) => (
+                            <MenuItem key={option.optionId} value={option.optionName}>
+                                {`${option.score} - ${option.optionName}`} {/* Tên kèm score */}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                );
+            },
+        }));
+        // Column Title
+        const fixedColumns = [
+            { field: 'titleName', headerName: 'Title Name', width: 100, pinned: 'left' },
+            {
+                field: 'rankScore', headerName: 'Rank Score', width: 100, pinned: 'left',
+                editable: decisionStatus === 'Draft', align: 'center', headerAlign: 'center',
+            },
+        ];
+        // Column Action
+        const actionColumn = [
+            {
+                field: 'action',
+                headerName: 'Action',
+                width: 90,
+                renderCell: (params) =>
+                    decisionStatus === 'Draft' && (
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => handleDeleteRowData(params.row.index)}
+                        >
+                            <MdDeleteForever />
+                        </Button>
+                    ),
+            },
+        ];
+
+        return [...fixedColumns, ...criteriaColumns, ...actionColumn];
+    };
+    // End 
+    //////////////////////////////////// Row Title ////////////////////////////////////
+    const setRowData = (title, criteria) => {
+        const mappedRows = title.map((titleItem, index) => {
+            // Create fields for criteria columns, ensuring every criteria is included
+            const criteriaFields = criteria.reduce((acc, criteriaItem) => {
+                // Find the option corresponding to this criteria
+                const matchingOption = titleItem.options?.find(
+                    (option) => option.criteriaId === criteriaItem.criteriaId
+                );
+
+                // Set the field value to the matched optionName or an empty string if not found
+                acc[criteriaItem.criteriaName] = matchingOption ? matchingOption.optionName : "";
+                acc[`${criteriaItem.criteriaName}_id`] = criteriaItem.criteriaId;
+
+                return acc;
+            }, {});
+
+            // Ensure all criteria are represented in the options array
+            const normalizedOptions = criteria.map((criteriaItem) => {
+                const matchingOption = titleItem.options?.find(
+                    (option) => option.criteriaId === criteriaItem.criteriaId
+                );
+
+                return matchingOption || {
+                    criteriaId: criteriaItem.criteriaId,
+                    optionName: "",
+                    score: 0,
+                    optionId: null,
+                };
+            });
+
+            return {
+                id: titleItem.rankingTitleId,
+                index: index + 1, // Row index
+                titleName: titleItem.rankingTitleName, // Title name
+                rankScore: titleItem.totalScore || 0, // Total score
+                ...criteriaFields, // Dynamic criteria fields with criteriaId
+                options: normalizedOptions, // All options, with defaults for missing ones
+            };
+>>>>>>> parent of 762ff0a (merge to HoangMN)
         });
 
         const updatedRows = [...prevRows];
