@@ -42,6 +42,12 @@ public class EmployeeController {
 
         return new ResponseEntity<>(allEmployee, HttpStatus.OK);
     }
+    @GetMapping("/group/{groupId}")
+    public ResponseEntity<List<EmployeeResponse>> getEmployeeGroupId(@PathVariable Integer groupId) {
+        List<Employee> getByGroupId = iEmployeeService.findByGroupId(groupId);
+        List<EmployeeResponse> getEmployeeResponse = iEmployeeService.getAllEmployeeResponses(getByGroupId);
+        return new ResponseEntity<>(getEmployeeResponse, HttpStatus.OK);
+    }
 //error
     @GetMapping("/get/{id}")
     public ResponseEntity<EmployeeResponse> findEmployeeResponse(@PathVariable Integer id) {

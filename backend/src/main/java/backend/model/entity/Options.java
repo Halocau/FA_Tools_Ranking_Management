@@ -1,6 +1,5 @@
 package backend.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -30,7 +29,7 @@ public class Options {
 
         @ManyToOne
         @JoinColumn(name = "criteria_id", insertable = false, updatable = false)
-        @JsonBackReference
+        @JsonIgnore // Bỏ qua tham chiếu ngược khi chuyển đổi sang JSON
         private Criteria criteria;
 
         @Column(name = "option_name")
@@ -60,6 +59,5 @@ public class Options {
                         CascadeType.REFRESH
         })
         @JoinTable(name = "Ranking_Title_Option", joinColumns = @JoinColumn(name = "option_id"), inverseJoinColumns = @JoinColumn(name = "ranking_title_id"))
-        @JsonIgnore
         private List<RankingTitle> rankingTitles;
 }

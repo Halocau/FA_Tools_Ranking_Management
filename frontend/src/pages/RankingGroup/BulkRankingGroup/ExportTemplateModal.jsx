@@ -33,7 +33,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
     //  Destructuring from RankingGroupAPI custom API
     const getAllEmployees = async () => {
         try {
-            const data = await EmpoyeeAPI.getAllEmployee();
+            const data = await EmpoyeeAPI.getAllEmployee(id);
             setEmployees(data);
             const uniqueRankingDecisions = [...new Set(data.map(item => item.currentRankingDecision))];
             setRankingDecisions(uniqueRankingDecisions)

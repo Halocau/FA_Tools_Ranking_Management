@@ -14,6 +14,7 @@ public interface IEmployeeService {
     public ResultPaginationDTO getAllEmployee(Specification<Employee> spec, Pageable pageable);
     Optional<Employee> findById(Integer id);
     public void deleteEmployee(Integer id);
+    public List<Employee> findByGroupId(Integer groupId);
     //response
     public List<EmployeeResponse> getAllEmployeeResponses(List<Employee> allEmployees);
     public EmployeeResponse findEmployeeResponseById(Employee employee);
