@@ -127,51 +127,45 @@ const BulkRankingGroup = () => {
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
-            {/* Group Info */}
             <Box sx={{ marginTop: 4, padding: 2 }}>
-                <Typography variant="h6">
-                    <a href="/ranking-group">Ranking Group List</a>{" "}
-                    {<FaAngleRight />}
-                    Bulk Ranking Group
-                </Typography>
-                <Box sx={{
-                    border: '1px solid black',
-                    borderRadius: '4px',
-                    padding: '16px',
-                    marginTop: '16px'
-                }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Box sx={{ width: '48%' }}>
-                            <Typography>Group Name:</Typography>
-                            <TextField variant="outlined" fullWidth value={groupInfo.groupName} disabled />
-                        </Box>
-                        <Box sx={{ width: '48%' }}>
-                            <Typography>Current Ranking Decision:</Typography>
-                            <TextField variant="outlined" fullWidth value={groupInfo.currentRankingDecision} disabled />
+                {/* Group Info */}
+                <Box>
+                    <Typography variant="h6">
+                        <a href="/ranking-group">Ranking Group List</a>{" "}
+                        {<FaAngleRight />}
+                        Bulk Ranking Group
+                    </Typography>
+                    <Box sx={{
+                        border: '1px solid black',
+                        borderRadius: '4px',
+                        padding: '16px',
+                        marginTop: '16px'
+                    }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <Box sx={{ width: '48%' }}>
+                                <Typography>Group Name:</Typography>
+                                <TextField variant="outlined" fullWidth value={groupInfo.groupName} disabled />
+                            </Box>
+                            <Box sx={{ width: '48%' }}>
+                                <Typography>Current Ranking Decision:</Typography>
+                                <TextField variant="outlined" fullWidth value={groupInfo.currentRankingDecision} disabled />
+                            </Box>
                         </Box>
                     </Box>
                 </Box>
-
-                <Box sx={{
-                    marginTop: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '12px'
-                }}>
-                    <Typography variant="h5">Bulk Ranking History</Typography>
+                {/* Button */}
+                <Box sx={{ marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                    <Typography sx={{ display: 'flex', gap: 1, width: 350 }} variant="h6">Bulk Ranking History</Typography>
                     <SearchComponent onSearch={handleSearch} width={200} />
-
-                    <Box sx={{ display: 'flex', gap: 1 }}> {/* Sử dụng gap để tạo khoảng cách giữa các nút */}
-                        <Button variant="contained" color="primary" onClick={""}>
+                    <Box sx={{ display: 'flex', gap: 1, height: 40 }}> {/* Sử dụng gap để tạo khoảng cách giữa các nút */}
+                        <Button sx={{ width: 160 }} variant="contained" color="primary" onClick={""}>
                             Export Template
                         </Button>
-                        <Button variant="contained" color="primary" onClick={"handleOpenAddRankingDecisionModal"}>
+                        <Button sx={{ width: 130 }} variant="contained" color="primary" onClick={"handleOpenAddRankingDecisionModal"}>
                             Bulk Ranking
                         </Button>
                     </Box>
                 </Box>
-
                 {/* Table Show Ranking Decision List */}
                 <Box sx={{ width: "100%", height: 350 }}>
                     <DataGrid
@@ -202,7 +196,7 @@ const BulkRankingGroup = () => {
                 </Box>
 
             </Box>
-        </div>
+        </div >
     );
 };
 
