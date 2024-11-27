@@ -56,11 +56,16 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
         return iEmployeeCriteriaRepository.findByEmployeeId(employeeId);
     }
 
+    @Override
+    public List<EmployeeCriteria> getEmployeeCriteriaByGroupId(Integer groupId) {
+        return iEmployeeCriteriaRepository.findByGroupId(groupId);
+    }
+
     // delete all
     @Override
     public void deleteByEmployeeId(Integer employeeId) {
         List<EmployeeCriteria> find = iEmployeeCriteriaRepository.findByEmployeeId(employeeId);
-        if(find == null){
+        if (find == null) {
             throw new RuntimeException("Employee criteria list cannot be null or empty.");
         }
         iEmployeeCriteriaRepository.deleteAll(find);
@@ -103,6 +108,7 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
         }
     }
 
+    /// Response
     @Override
     public List<EmployeeCriteriaResponse> getEmployeeCriteriaResponse(List<EmployeeCriteria> listEmployeeCriteria) {
         // Validate that the input list is not null or empty
