@@ -53,10 +53,10 @@ public class RankingTitleController {
     }
 
     @PutMapping("/upsert")
-    public ResponseEntity<RankingTitleResponse> updateRankingTitle(
+    public ResponseEntity<String> updateRankingTitle(
             @Valid @RequestBody UpdateRankingTitleRequest form) {
-        RankingTitleResponse rankingTitleResponse = iRankingTitleService.updateRankingTitleByForm(form);
-        return ResponseEntity.status(HttpStatus.OK).body(rankingTitleResponse);
+        iRankingTitleService.updateRankingTitleByForm(form);
+        return ResponseEntity.ok("Successfully updated Ranking Title");
     }
 
     @DeleteMapping("/delete/{id}")

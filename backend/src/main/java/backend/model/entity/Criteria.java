@@ -1,7 +1,10 @@
 package backend.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -15,6 +18,8 @@ import java.util.List;
 @Entity
 @Table(name = "Criteria")
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Criteria {
 
     @Id
@@ -47,6 +52,17 @@ public class Criteria {
     @JsonManagedReference
     private List<Options> options;
 
-    public Criteria() {
-    }
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.DETACH,
+                    CascadeType.MERGE,
+                    CascadeType.PERSIST,
+                    CascadeType.REFRESH
+            })
+    @JoinTable(
+            name = "Employee_Criteria",
+            joinColumns = @JoinColumn(name = "criteria_id"),
+            inverseJoinColumns = @JoinColumn(name = "employee_id")
+    )
+   private List<Employee> employees;
 }
