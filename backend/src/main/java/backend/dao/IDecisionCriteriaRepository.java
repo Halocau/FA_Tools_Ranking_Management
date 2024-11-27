@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface IDecisionCriteriaRepository extends JpaRepository<DecisionCriteria, Integer>, JpaSpecificationExecutor<DecisionCriteria> {
@@ -21,6 +22,6 @@ public interface IDecisionCriteriaRepository extends JpaRepository<DecisionCrite
     public DecisionCriteria findByCriteriaId(Integer criteriaId);
 
     // criteriaId and decisionId
-    public DecisionCriteria findByCriteriaIdAndDecisionId(Integer criteriaId, Integer decisionId);
+    public Optional<DecisionCriteria> findByDecisionIdAndCriteriaId(Integer decisionId, Integer criteriaId);
     public void deleteDecisionCriteriaByDecisionIdAndCriteriaId(Integer decisionId, Integer criteriaId);
 }

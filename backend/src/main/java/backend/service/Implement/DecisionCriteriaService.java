@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DecisionCriteriaService implements IDecisionCriteriaService {
@@ -141,8 +142,8 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
     }
 
     @Override
-    public DecisionCriteria findByCriteriaIdAndDecisionId(Integer criteriaId, Integer decisionId) {
-        return iDecisionCriteriaRepository.findByCriteriaIdAndDecisionId(criteriaId, decisionId);
+    public Optional<DecisionCriteria> findByCriteriaIdAndDecisionId(Integer decisionId,Integer criteriaId) {
+        return iDecisionCriteriaRepository.findByDecisionIdAndCriteriaId(decisionId,criteriaId);
     }
 
     @Override
@@ -154,14 +155,15 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
     @Override
     @Transactional
     public void deleteDecisionCriteria(Integer decisionId, Integer criteriaId) {
-        DecisionCriteria findDecisionCriteria = iDecisionCriteriaRepository.findByCriteriaIdAndDecisionId(criteriaId,
-                decisionId);
-        if (findDecisionCriteria != null) {
-            iDecisionCriteriaRepository.delete(findDecisionCriteria);
+        Optional<DecisionCriteria> findDecisionCriteria = iDecisionCriteriaRepository.findByDecisionIdAndCriteriaId(decisionId,criteriaId);
+
+        if (findDecisionCriteria.isPresent()) {
+            // Nếu tìm thấy, tiến hành xóa đối tượng
+            iDecisionCriteriaRepository.delete(findDecisionCriteria.get());
         } else {
+            // Nếu không tìm thấy, ném ngoại lệ
             throw new EntityNotFoundException(
-                    String.format("DecisionCriteria with decisionId %d and criteriaId %d not found", decisionId,
-                            criteriaId));
+                    String.format("DecisionCriteria with decisionId %d and criteriaId %d not found", decisionId, criteriaId));
         }
     }
 
@@ -179,17 +181,20 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
         iDecisionCriteriaRepository.save(decisionCriteria);
     }
 
-    @Override // UPDATE
+    @Override
     @Transactional
     public void updateDecisionCriteria(UpdateDecisionCriteriaRequest form, Integer decisionId, Integer criteriaId) {
-        DecisionCriteria find = iDecisionCriteriaRepository.findByCriteriaIdAndDecisionId(criteriaId, decisionId);
-        if (find != null) {
-            // update form
-            find.setDecisionId(form.getDecisionId());
-            find.setCriteriaId(form.getCriteriaId());
-            find.setWeight(form.getWeight());
-            iDecisionCriteriaRepository.saveAndFlush(find);
+        Optional<DecisionCriteria> find = iDecisionCriteriaRepository.findByDecisionIdAndCriteriaId(decisionId,criteriaId);
+
+        if (find.isPresent()) {
+            // Nếu tồn tại, cập nhật thông tin
+            DecisionCriteria existingCriteria = find.get();
+            existingCriteria.setDecisionId(form.getDecisionId());
+            existingCriteria.setCriteriaId(form.getCriteriaId());
+            existingCriteria.setWeight(form.getWeight());
+            iDecisionCriteriaRepository.saveAndFlush(existingCriteria);
         } else {
+            // Nếu không tồn tại, tạo mới
             DecisionCriteria newCriteria = DecisionCriteria.builder()
                     .decisionId(form.getDecisionId())
                     .criteriaId(form.getCriteriaId())
