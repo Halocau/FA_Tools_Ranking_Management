@@ -23,14 +23,16 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedRankingDecision, setSelectedRankingDecision] = useState([]);
     const [selectedRank, setSelectedRank] = useState([]);
+    const [rankError, setRankError] = useState(false);
     // Select Employee
     const [selectedEmployees, setSelectedEmployees] = useState([]);
     //Table
     const [rows, setRows] = useState([]);
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
-    // Load Data 
-    //  Destructuring from RankingGroupAPI custom API
+
+
+    ////////////////////////////////////////////////////////////// Load Data //////////////////////////////////////////////////////////////
     const getAllEmployees = async () => {
         try {
             const data = await EmpoyeeAPI.getAllEmployee(id);
@@ -50,8 +52,8 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
 
     ////////////////////////////////////////////////////////////// Sreach //////////////////////////////////////////////////////////////
     // Khi thay đổi giá trị tìm kiếm
-    const handleSearch = (e) => {
-        const query = e.target.value;
+    const handleSearch = (event) => {
+        const query = event;
         setSearchQuery(query);
 
         // Filter employees based on search query, selected ranking decision, and selected rank
@@ -63,9 +65,8 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
         setSelectedRankingDecision(decision);
         setSelectedRank(''); // Reset rank selection when decision changes
         setRankError(false);
-
         // Filter rows based on the selected decision
-        filterRows(searchQuery, decision, selectedRank);
+        filterRows(searchQuery, decision);
     };
     // Khi thay đổi Current Rank
     const handleRankChange = (event) => {
@@ -78,43 +79,60 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
     };
     const filterRows = (query, decision, rank) => {
         let filteredEmployees = employees;
-        // Filter based on the search query
+
+        // Filter based on search query (ID and Name)
         if (query) {
+            console.log(query)
             filteredEmployees = filteredEmployees.filter(employee =>
-                employee.employeeName.toLowerCase().includes(query.toLowerCase()) ||
-                employee.employeeId.toString().includes(query)
+                employee.employeeId.toString().includes(query) ||  // Tìm theo ID
+                employee.employeeName.toLowerCase().includes(query.toLowerCase())  // Tìm theo tên
             );
         }
+
         // Filter based on the selected ranking decision
         if (decision) {
             filteredEmployees = filteredEmployees.filter(employee =>
                 employee.currentRankingDecision === decision
             );
         }
+
         // Filter based on the selected rank
         if (rank) {
             filteredEmployees = filteredEmployees.filter(employee =>
                 employee.currentRank === rank
             );
         }
+
         // Map the filtered data to the table rows
         const mappedRows = filteredEmployees.map((employee) => ({
-            id: employee.employeeId,
-            name: employee.employeeName,
-            rankingGroup: employee.decisionName,
+            employeeId: employee.employeeId,
+            employeeName: employee.employeeName,
+            rankingGroup: employee.rankingGroupName,
             currentDecision: employee.currentRankingDecision,
             currentRank: employee.currentRank,
         }));
-        setRows(mappedRows);
+
+        setRows(mappedRows); // Update the rows to reflect the filtered data
     };
+
     ////////////////////////////////////////////////////////////// Select //////////////////////////////////////////////////////////////
-    const handleSelectionModelChange = (selection) => {
-        setSelectedEmployees(selection);
+    // Hàm lấy thông tin nhân viên đã chọn
+    const handleSelectionModelChange = () => {
+        // Lấy các ID của các hàng đã chọn từ apiRef
+        const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
+
+        // Lọc các nhân viên dựa trên các ID đã chọn
+        const selectedRowsData = selectedIDs.map((employeeId) => rows.find((row) => row.employeeId === employeeId));
+        // Cập nhật state với các nhân viên đã chọn
+        setSelectedEmployees(selectedRowsData);
+        console.log(selectedRowsData); // In ra dữ liệu đã chọn để kiểm tra
+        handleClose()
     };
+
     ////////////////////////////////////////////////////////////// Table//////////////////////////////////////////////////////////////
     const columns = [
-        { field: "id", headerName: "Employee ID", width: 150 },
-        { field: "name", headerName: "Employee Name", width: 200 },
+        { field: "employeeId", headerName: "Employee ID", width: 150 },
+        { field: "employeeName", headerName: "Employee Name", width: 200 },
         { field: "rankingGroup", headerName: "Ranking Group", width: 200 },
         { field: "currentDecision", headerName: "Current Ranking Decision", width: 200 },
         { field: "currentRank", headerName: "Current Rank", width: 200 },
@@ -123,9 +141,9 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
     useEffect(() => {
         if (employees) {
             const mappedRows = employees.map((employees) => ({
-                id: employees.employeeId,
-                name: employees.employeeName,
-                rankingGroup: employees.decisionName,
+                employeeId: employees.employeeId,
+                employeeName: employees.employeeName,
+                rankingGroup: employees.rankingGroupName,
                 currentDecision: employees.currentRankingDecision,
                 currentRank: employees.currentRank,
             }));
@@ -199,8 +217,6 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
                                 marginRight: 20,
                             }}
                         >
-                            <MenuItem disabled value="Select Current Ranking Decision">
-                            </MenuItem>
                             {rankingDecisions.map((decision) => (
                                 <MenuItem key={decision} value={decision}>
                                     {decision}
@@ -213,7 +229,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
                     <Box>
                         <Select
                             fullWidth
-                            value={selectedRank}
+                            value={selectedRank || ''}
                             onChange={handleRankChange}
                             displayEmpty
                             sx={{
@@ -223,8 +239,6 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
                                 height: 40
                             }}
                         >
-                            <MenuItem disabled value="Select Current Rank">
-                            </MenuItem>
                             {selectedRankingDecision.length > 0 ? (
                                 // Filter employees based on the selected Ranking Decision
                                 employees
@@ -255,12 +269,15 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
                     }}
                 >
                     <DataGrid
+                        apiRef={apiRef} // Truyền apiRef vào DataGrid
                         rows={rows}
                         columns={columns}
+                        getRowId={(row) => row.employeeId}
                         checkboxSelection
                         disableRowSelectionOnClick
                         hideFooter
                         autoHeight
+                        onSelectionModelChange={(newSelection) => handleSelectionModelChange(newSelection)} // Sự kiện này sẽ truyền đúng newSelection
                         sx={{
                             "& .MuiDataGrid-columnHeader": {
                                 textAlign: "center", // Căn giữa header
@@ -273,6 +290,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
                             },
                         }}
                     />
+
                 </Box>
 
                 {/* Nút Export */}
@@ -280,7 +298,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => onExport(selectedEmployees)}
+                        onClick={handleSelectionModelChange}
                     >
                         Export
                     </Button>
