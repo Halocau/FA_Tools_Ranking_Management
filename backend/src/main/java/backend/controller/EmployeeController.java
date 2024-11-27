@@ -42,24 +42,13 @@ public class EmployeeController {
 
         return new ResponseEntity<>(allEmployee, HttpStatus.OK);
     }
-    @GetMapping("/get-employee/{groupId}")
+    @GetMapping("/group/{groupId}")
     public ResponseEntity<List<EmployeeResponse>> getEmployeeGroupId(@PathVariable Integer groupId) {
         List<Employee> getByGroupId = iEmployeeService.findByGroupId(groupId);
         List<EmployeeResponse> getEmployeeResponse = iEmployeeService.getAllEmployeeResponses(getByGroupId);
         return new ResponseEntity<>(getEmployeeResponse, HttpStatus.OK);
     }
-//error
-    @GetMapping("/get/{id}")
-    public ResponseEntity<EmployeeResponse> findEmployeeResponse(@PathVariable Integer id) {
-        Optional<Employee> employee = iEmployeeService.findById(id);
-        if (employee.isPresent()) {
-            EmployeeResponse employeeResponse = iEmployeeService.findEmployeeResponseById(employee.get());
-            return ResponseEntity.status(HttpStatus.OK).body(employeeResponse);
-        } else {
-            throw new EntityNotFoundException("Employee not found with ID: " + id);
-        }
 
-    }
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteEmployee(@PathVariable Integer id) {
         iEmployeeService.deleteEmployee(id);
