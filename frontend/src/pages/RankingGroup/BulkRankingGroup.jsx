@@ -32,6 +32,8 @@ import useNotification from "../../hooks/useNotification";
 import Slider from "../../layouts/Slider.jsx";
 //Filter
 import { sfLike, sfEqual, sfAnd } from 'spring-filter-query-builder';
+//Export
+import ExportTemplateModal from "../../components/BulkRanking/ExportTemplateModal.jsx";
 
 const BulkRankingGroup = () => {
     const navigate = useNavigate(); // To navigate between pages
@@ -55,6 +57,9 @@ const BulkRankingGroup = () => {
     const [message, setMessage] = useState(""); // Status notification
     const [messageType, setMessageType] = useState("success"); // Message type (success/error)
     const [validationMessage, setValidationMessage] = useState(""); // Validation error message
+    // Export popup
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
 
 
     const getBulkRankingGroup = async () => {
@@ -119,6 +124,19 @@ const BulkRankingGroup = () => {
         }
     }
 
+    //// Export 
+    // Toggle modal
+    const handleOpenExportModal = () => setIsExportModalOpen(true);
+    const handleCloseExportModal = () => setIsExportModalOpen(false);
+
+    // Dummy data (replace with real API data)
+    const employees = [
+        { id: 1, name: "Alice", rankingGroup: "Group A", currentDecision: "Decision 1", currentRank: "Rank 1" },
+        { id: 2, name: "Bob", rankingGroup: "Group A", currentDecision: "Decision 2", currentRank: "Rank 2" },
+    ];
+    const rankingDecisions = ["Decision 1", "Decision 2", "Decision 3"];
+    /////
+
     //// Fetch Ranking Group on id change
     useEffect(() => {
         RankingGroupEdit();
@@ -180,9 +198,20 @@ const BulkRankingGroup = () => {
                     <SearchComponent onSearch={handleSearch} width={200} />
 
                     <Box sx={{ display: 'flex', gap: 1 }}> {/* Sử dụng gap để tạo khoảng cách giữa các nút */}
-                        <Button variant="contained" color="primary" onClick={""}>
+                        <Button variant="contained" color="primary" onClick={handleOpenExportModal}>
                             Export Template
                         </Button>
+                                    {/* Modal xuất template */}
+                        <ExportTemplateModal
+                            open={isExportModalOpen}
+                            handleClose={handleCloseExportModal}
+                            employees={employees}
+                            rankingDecisions={rankingDecisions}
+                            onExport={(selectedEmployees) => {
+                                console.log("Selected Employees for Export:", selectedEmployees);
+                                handleCloseExportModal();
+                            }}
+                        />
                         <Button variant="contained" color="primary" onClick={"handleOpenAddRankingDecisionModal"}>
                             Bulk Ranking
                         </Button>
