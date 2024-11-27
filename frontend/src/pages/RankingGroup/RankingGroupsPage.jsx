@@ -48,7 +48,7 @@ const RankingGroups = () => {
   const [groupToDelete, setGroupToDelete] = useState(null); // State to save the ID of the group to be deleted
   // Delete select
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
-  // API
+  // ApiRef
   const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
   // Search Group
   const [filter, setFilter] = useState("");
@@ -56,6 +56,8 @@ const RankingGroups = () => {
   const [showSuccessMessage, showErrorMessage] = useNotification();
   // Validation error message
   const [validationMessage, setValidationMessage] = useState("");
+
+
   //  Destructuring from RankingGroupAPI custom API
   const fetchAllRankingGroups = async () => {
     try {

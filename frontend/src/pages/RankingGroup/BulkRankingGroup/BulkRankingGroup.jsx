@@ -15,31 +15,32 @@ import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import InfoIcon from '@mui/icons-material/Info';
 import Autocomplete from '@mui/material/Autocomplete';
 // Css 
-import "../../assets/css/RankingGroups.css"
+import "../../../assets/css/RankingGroups.css"
 // Source code
 // API
 import RankingGroupAPI from "../../../api/RankingGroupAPI.js";
 import BulkRankingAPI from "../../../api/BulkRankingAPI.js";
 //Common
-import ModalCustom from "../../../components/Common/Modal.jsx";
-import ActionButtons from "../../../components/Common/ActionButtons.jsx";
 import SearchComponent from "../../../components/Common/Search.jsx";
 // Contexts
 import { useAuth } from "../../../contexts/AuthContext.jsx";
 // Hooks
-import useNotification from "../../../hooks/useNotification.jsx";
+import useNotification from "../../../hooks/useNotification";
 // Layouts
 import Slider from "../../../layouts/Slider.jsx";
 //Filter
 import { sfLike, sfEqual, sfAnd } from 'spring-filter-query-builder';
+//Export
+import ExportTemplateModal from "./ExportTemplateModal.jsx";
 
 const BulkRankingGroup = () => {
     const navigate = useNavigate(); // To navigate between pages
     const { id } = useParams(); // Get the ID from the URL
-
-    // State 
-    //// State
-    // Table  List Ranking Decision (page, size) 
+    // Group Info
+    const [groupInfo, setGroupInfo] = useState({ groupName: '', currentRankingDecision: '' });
+    // Export popup
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    // Table  List 
     const [rows, setRows] = useState([]); // Initialize with empty array
     const [bulkRankingGroup, setBulkRankingGroup] = useState([]);
     const [filter, setFilter] = useState(`rankingGroupId : ${id}`);
@@ -47,8 +48,6 @@ const BulkRankingGroup = () => {
     const [pageSize, setPageSize] = useState(5);
     const [totalElements, setTotalElements] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
-    // Group Info
-    const [groupInfo, setGroupInfo] = useState({ groupName: '', currentRankingDecision: '' });
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Status
@@ -82,7 +81,7 @@ const BulkRankingGroup = () => {
     }
 
 
-    ///////////////////////////////////////////////////////// BulkRankingGroup /////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////// Table /////////////////////////////////////////////////////////
     const getBulkRankingGroup = async () => {
         try {
             const response = await BulkRankingAPI.viewBulkHistory(
@@ -123,7 +122,12 @@ const BulkRankingGroup = () => {
             setRows(mappedRows);
         }
     }, [bulkRankingGroup])
-
+    ///////////////////////////////////////////////////////// BulkRankingGroup /////////////////////////////////////////////////////////
+    //// Export 
+    // Toggle modal
+    const handleOpenExportModal = () => setIsExportModalOpen(true);
+    const handleCloseExportModal = () => setIsExportModalOpen(false);
+    // End code
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
@@ -158,40 +162,46 @@ const BulkRankingGroup = () => {
                     <Typography sx={{ display: 'flex', gap: 1, width: 350 }} variant="h6">Bulk Ranking History</Typography>
                     <SearchComponent onSearch={handleSearch} width={200} />
                     <Box sx={{ display: 'flex', gap: 1, height: 40 }}> {/* Sử dụng gap để tạo khoảng cách giữa các nút */}
-                        <Button sx={{ width: 160 }} variant="contained" color="primary" onClick={""}>
+                        <Button sx={{ width: 160 }} variant="contained" color="primary" onClick={handleOpenExportModal}>
                             Export Template
                         </Button>
+                        {/* Modal xuất template */}
+                        <ExportTemplateModal
+                            open={isExportModalOpen}
+                            handleClose={handleCloseExportModal}
+                            // employees={employees}
+                            // rankingDecisions={rankingDecisions}
+                            onExport={(selectedEmployees) => {
+                                console.log("Selected Employees for Export:", selectedEmployees);
+                                handleCloseExportModal();
+                            }}
+                        />
                         <Button sx={{ width: 130 }} variant="contained" color="primary" onClick={"handleOpenAddRankingDecisionModal"}>
                             Bulk Ranking
                         </Button>
                     </Box>
                 </Box>
-                {/* Table Show Ranking Decision List */}
+                {/* Table */}
                 <Box sx={{ width: "100%", height: 350 }}>
                     <DataGrid
                         className="custom-data-grid"
                         rows={rows}
                         columns={columns}
                         pagination
-                        getRowId={(row) => row.id}
-
                         pageSizeOptions={[5, 10, 25]}
-                        initialState={{
-                            pagination: {
-                                paginationModel: {
-                                    pageSize: pageSize,
-                                    page: page,
-                                },
-                            },
+                        getRowId={(row) => row.id}
+                        rowCount={totalElements}
+                        paginationMode="server"
+                        paginationModel={{
+                            page: page - 1,  // Adjusted for 0-based index
+                            pageSize: pageSize,
                         }}
-                        autoHeight={false}
-                        sx={{
-                            height: '100%',
-                            overflow: 'auto',
-                            '& .MuiDataGrid-virtualScroller': {
-                                overflowY: 'auto',
-                            },
+                        onPaginationModelChange={(model) => {
+                            setPage(model.page + 1);  // Set 1-based page for backend
+                            setPageSize(model.pageSize);
                         }}
+                        disableNextButton={page >= totalPages}
+                        disablePrevButton={page <= 1}
                     />
                 </Box>
 
