@@ -55,6 +55,11 @@ public class EmployeeService implements IEmployeeService {
         iEmployeeRepository.delete(employee);
     }
 
+    @Override
+    public List<Employee> findByGroupId(Integer groupId) {
+        return iEmployeeRepository.findByGroupId(groupId);
+    }
+
     /// Response
     @Override
     public List<EmployeeResponse> getAllEmployeeResponses(List<Employee> allEmployees) {

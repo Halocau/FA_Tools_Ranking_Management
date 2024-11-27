@@ -181,7 +181,7 @@ const EditRankingGroup = () => {
         try {
             const data = await RankingDecisionAPI.getAllRankingDecisions();
             setlistDecisionSearchClone(data.result)
-            console.log(data.result)
+            console.log('setlistDecisionSearchClone', data)
         } catch (error) {
             console.error("Failed to fetch criteria:", error);
         }

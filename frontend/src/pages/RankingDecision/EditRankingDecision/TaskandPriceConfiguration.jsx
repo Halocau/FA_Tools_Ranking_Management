@@ -43,7 +43,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
     useEffect(() => {
         getListTask();
-    }, []);
+    }, [id]);
 
     // Load data getTaskConfiguration
     const getTaskConfiguration = async () => {

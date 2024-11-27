@@ -309,8 +309,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         goToNextStep(); // Chuyển bước tiếp theo
     };
 
-    // console.log("Rows:", rows);
-    // console.log("Original Title:", originalTitle);
     // End 
     ///////////////////////////////// Column Title ///////////////////////////////////
     const ColumnsTitle = (criteria, decisionStatus) => {
