@@ -30,8 +30,11 @@ import useNotification from "../../../hooks/useNotification";
 import Slider from "../../../layouts/Slider.jsx";
 //Filter
 import { sfLike, sfEqual, sfAnd } from 'spring-filter-query-builder';
+<<<<<<< HEAD:frontend/src/pages/RankingGroup/BulkRankingGroup/BulkRankingGroup.jsx
 //Export
 import ExportTemplateModal from "./ExportTemplateModal.jsx";
+=======
+>>>>>>> parent of abf7ea3 (Export Teamplate pop-up):frontend/src/pages/RankingGroup/BulkRankingGroup.jsx
 
 const BulkRankingGroup = () => {
     const navigate = useNavigate(); // To navigate between pages
@@ -52,6 +55,7 @@ const BulkRankingGroup = () => {
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Status
     const [validationMessage, setValidationMessage] = useState(""); // Validation error message
+<<<<<<< HEAD:frontend/src/pages/RankingGroup/BulkRankingGroup/BulkRankingGroup.jsx
 
     //////////////////////////////////////////////////////////// Group Info ////////////////////////////////////////////////////////////
     const RankingGroupInfo = async () => {
@@ -79,6 +83,8 @@ const BulkRankingGroup = () => {
             setFilter(`rankingGroupId : ${id}`);
         }
     }
+=======
+>>>>>>> parent of abf7ea3 (Export Teamplate pop-up):frontend/src/pages/RankingGroup/BulkRankingGroup.jsx
 
 
     ///////////////////////////////////////////////////////// Table /////////////////////////////////////////////////////////
@@ -122,12 +128,59 @@ const BulkRankingGroup = () => {
             setRows(mappedRows);
         }
     }, [bulkRankingGroup])
+<<<<<<< HEAD:frontend/src/pages/RankingGroup/BulkRankingGroup/BulkRankingGroup.jsx
     ///////////////////////////////////////////////////////// BulkRankingGroup /////////////////////////////////////////////////////////
     //// Export 
     // Toggle modal
     const handleOpenExportModal = () => setIsExportModalOpen(true);
     const handleCloseExportModal = () => setIsExportModalOpen(false);
     // End code
+=======
+
+    console.log(bulkRankingGroup);
+    // Ranking Group Edit
+    const RankingGroupEdit = async () => {
+        try {
+            const groupData = await RankingGroupAPI.getRankingGroupById(id);
+            // Ensure no undefined values are passed
+            setEditGroup({
+                groupName: groupData.groupName || "",
+                currentRankingDecision: groupData.currentRankingDecision || "",
+            });
+            console.log(groupData)
+            setOriginalGroupName(groupData.groupName || "Group Name");
+            setOriginalDecisionName(groupData.currentRankingDecision || "");
+        } catch (error) {
+            console.error("Error fetching group:", error);
+        }
+    };
+
+    const handleSearch = (query) => {
+        console.log(query);
+        if (query) {
+            setFilter(sfAnd([sfEqual("rankingGroupId", id), sfLike("fileName", query)]).toString());
+        } else {
+            setFilter(`rankingGroupId : ${id}`);
+        }
+    }
+
+    //// Fetch Ranking Group on id change
+    useEffect(() => {
+        RankingGroupEdit();
+    }, [id]);
+
+    // Columns configuration for the DataGrid
+    const columns = [
+        { field: "fileName", headerName: "File Name", width: 200 },
+        { field: "rankingdecision", headerName: "Ranking Decision", width: 300 },
+        { field: "uploadedAt", headerName: "Uploaded At", width: 130 },
+        { field: "uploadedBy", headerName: "Uploaded By", width: 130 },
+        { field: "status", headerName: "Status", width: 130 },
+        { field: "note", headerName: "Note", width: 300 }
+    ];
+
+
+>>>>>>> parent of abf7ea3 (Export Teamplate pop-up):frontend/src/pages/RankingGroup/BulkRankingGroup.jsx
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
@@ -161,6 +214,7 @@ const BulkRankingGroup = () => {
                 <Box sx={{ marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                     <Typography sx={{ display: 'flex', gap: 1, width: 350 }} variant="h6">Bulk Ranking History</Typography>
                     <SearchComponent onSearch={handleSearch} width={200} />
+<<<<<<< HEAD:frontend/src/pages/RankingGroup/BulkRankingGroup/BulkRankingGroup.jsx
                     <Box sx={{ display: 'flex', gap: 1, height: 40 }}> {/* Sử dụng gap để tạo khoảng cách giữa các nút */}
                         <Button sx={{ width: 160 }} variant="contained" color="primary" onClick={handleOpenExportModal}>
                             Export Template
@@ -177,6 +231,14 @@ const BulkRankingGroup = () => {
                             }}
                         />
                         <Button sx={{ width: 130 }} variant="contained" color="primary" onClick={"handleOpenAddRankingDecisionModal"}>
+=======
+
+                    <Box sx={{ display: 'flex', gap: 1 }}> {/* Sử dụng gap để tạo khoảng cách giữa các nút */}
+                        <Button variant="contained" color="primary" onClick={""}>
+                            Export Template
+                        </Button>
+                        <Button variant="contained" color="primary" onClick={"handleOpenAddRankingDecisionModal"}>
+>>>>>>> parent of abf7ea3 (Export Teamplate pop-up):frontend/src/pages/RankingGroup/BulkRankingGroup.jsx
                             Bulk Ranking
                         </Button>
                     </Box>
