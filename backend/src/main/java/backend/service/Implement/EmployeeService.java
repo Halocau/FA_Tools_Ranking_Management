@@ -38,9 +38,9 @@ public class EmployeeService implements IEmployeeService {
     }
 
     @Override
-    public ResultPaginationDTO getAllEmployee(Specification<Employee> spec, Pageable pageable) {
-        Page<Employee> employees = iEmployeeRepository.findAll(spec, pageable);
-        return new PaginationUtils().buildPaginationDTO(employees);
+    public List<Employee> getAllEmployee(Specification<Employee> spec) {
+        List<Employee> employees = iEmployeeRepository.findAll(spec);
+        return employees;
     }
 
     @Override
