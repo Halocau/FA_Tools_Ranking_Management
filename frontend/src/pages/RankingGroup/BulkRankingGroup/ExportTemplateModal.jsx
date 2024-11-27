@@ -5,6 +5,8 @@ import { Box, Button, Typography, Modal, TextField, Select, MenuItem, Alert, For
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
+import ClearIcon from '@mui/icons-material/Clear';
+import { InputAdornment } from "@mui/material";  // Import InputAdornment
 // API
 import EmpoyeeAPI from "../../../api/EmployeeAPI.js";
 //Common
@@ -216,6 +218,20 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
                                 height: 40,
                                 marginRight: 20,
                             }}
+                            renderValue={(value) => value || 'Select a decision'}
+                            endAdornment={ // Thêm biểu tượng Clear vào trong Select
+                                <InputAdornment position="end">
+                                    {selectedRankingDecision && (
+                                        <IconButton
+                                            size="small"
+                                            sx={{ position: 'absolute', right: 30 }} // Đặt vị trí của biểu tượng Clear
+                                            onClick={() => setSelectedRankingDecision('')}
+                                        >
+                                            <ClearIcon />
+                                        </IconButton>
+                                    )}
+                                </InputAdornment>
+                            }
                         >
                             {rankingDecisions.map((decision) => (
                                 <MenuItem key={decision} value={decision}>
@@ -238,11 +254,32 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
                                 width: 300,
                                 height: 40
                             }}
+                            renderValue={(value) => value || 'Select a decision'}
+                            endAdornment={ // Thêm biểu tượng Clear vào trong Select
+                                <InputAdornment position="end">
+                                    {selectedRankingDecision && (
+                                        <IconButton
+                                            size="small"
+                                            sx={{ position: 'absolute', right: 30 }} // Đặt vị trí của biểu tượng Clear
+                                            onClick={() => setSelectedRank('')}
+                                        >
+                                            <ClearIcon />
+                                        </IconButton>
+                                    )}
+                                </InputAdornment>
+                            }
                         >
                             {selectedRankingDecision.length > 0 ? (
-                                // Filter employees based on the selected Ranking Decision
+                                // Lọc nhân viên theo Current Ranking Decision
                                 employees
                                     .filter((employee) => employee.currentRankingDecision === selectedRankingDecision)
+                                    .reduce((acc, employee) => {
+                                        // Kiểm tra xem currentRank đã xuất hiện chưa
+                                        if (!acc.some((item) => item.currentRank === employee.currentRank)) {
+                                            acc.push(employee); // Thêm nhân viên vào mảng nếu currentRank chưa có
+                                        }
+                                        return acc;
+                                    }, [])
                                     .map((employee) => (
                                         <MenuItem key={employee.employeeId} value={employee.currentRank}>
                                             {employee.currentRank}
@@ -253,6 +290,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
                                     You need to select Current Ranking Decision first
                                 </MenuItem>
                             )}
+
                         </Select>
 
                     </Box>
