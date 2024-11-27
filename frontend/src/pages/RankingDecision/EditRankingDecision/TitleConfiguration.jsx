@@ -290,7 +290,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             console.warn(`Không tìm thấy option phù hợp cho tiêu chí: ${criteriaItem.criteriaName}`);
             return totalScore; // Không có option phù hợp, giữ nguyên điểm
         }, 0);
-
     };
 
     // End 

@@ -5,9 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ITaskWagesRepository extends JpaRepository<TaskWages, Integer> {
-    public TaskWages findByRankingTitleIdAndTaskId(Integer rankingTitleId, Integer taskId);
+    Optional<TaskWages> findByRankingTitleIdAndTaskId(Integer rankingTitleId, Integer taskId);
     List<TaskWages> findByTaskId(Integer taskId);
 }
