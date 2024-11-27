@@ -17,11 +17,6 @@ const taskApi = {
         }
     },
 
-    getAllTaskWihtOutPagination: async () => {
-        const response = await authClient.get(`${TASK_API}/all`)
-        return response.data;
-    },
-
     // Get a single task by ID
     getTaskById: async (id) => {
         try {

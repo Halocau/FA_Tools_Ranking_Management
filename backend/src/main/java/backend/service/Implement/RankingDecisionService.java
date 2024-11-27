@@ -66,6 +66,8 @@ public class RankingDecisionService implements IRankingDecisionService {
     }
 
 
+
+
     @Override
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions) {
         List<RankingDecisionResponse> rankingDecisionResponses = new ArrayList<>();
