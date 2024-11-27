@@ -18,18 +18,18 @@ import Autocomplete from '@mui/material/Autocomplete';
 import "../../assets/css/RankingGroups.css"
 // Source code
 // API
-import RankingGroupAPI from "../../api/RankingGroupAPI.js";
-import BulkRankingAPI from "../../api/BulkRankingAPI.js";
+import RankingGroupAPI from "../../../api/RankingGroupAPI.js";
+import BulkRankingAPI from "../../../api/BulkRankingAPI.js";
 //Common
-import ModalCustom from "../../components/Common/Modal.jsx";
-import ActionButtons from "../../components/Common/ActionButtons.jsx";
-import SearchComponent from "../../components/Common/Search.jsx";
+import ModalCustom from "../../../components/Common/Modal.jsx";
+import ActionButtons from "../../../components/Common/ActionButtons.jsx";
+import SearchComponent from "../../../components/Common/Search.jsx";
 // Contexts
-import { useAuth } from "../../contexts/AuthContext.jsx";
+import { useAuth } from "../../../contexts/AuthContext.jsx";
 // Hooks
-import useNotification from "../../hooks/useNotification";
+import useNotification from "../../../hooks/useNotification.jsx";
 // Layouts
-import Slider from "../../layouts/Slider.jsx";
+import Slider from "../../../layouts/Slider.jsx";
 //Filter
 import { sfLike, sfEqual, sfAnd } from 'spring-filter-query-builder';
 
