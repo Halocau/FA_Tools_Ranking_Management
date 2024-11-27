@@ -9,7 +9,6 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import { Stepper, Step, StepButton } from '@mui/material';
-import { CheckCircle } from '@mui/icons-material'; // You can also use other icons if needed
 
 // Css 
 import "../../../assets/css/RankingGroups.css"
@@ -261,7 +260,7 @@ const EditDecision = () => {
 
                     {/* Submit */}
                     <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-end' }}>
-                        {activeStep === 2 && (  // Chỉ hiển thị nút Submit khi activeStep = 2
+                        {isCriteriaSaved && isTitleSaved && isTaskSaved && (  // Chỉ hiển thị nút Submit khi activeStep = 2
                             <Button
                                 variant="contained"
                                 color="primary"

@@ -4,6 +4,11 @@ import authClient from "./baseapi/AuthorAPI";
 const TASK_API = '/task';
 
 const taskApi = {
+    getAllTaskWihtOutPagination: async () => {
+        const response = await authClient.get(`${TASK_API}/all`)
+        return response.data;
+    },
+
     // Get all tasks with pagination
     getAllTasks: async (page = 0, size = 5) => {
         try {
