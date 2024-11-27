@@ -30,11 +30,6 @@ import useNotification from "../../../hooks/useNotification";
 import Slider from "../../../layouts/Slider.jsx";
 //Filter
 import { sfLike, sfEqual, sfAnd } from 'spring-filter-query-builder';
-<<<<<<< HEAD:frontend/src/pages/RankingGroup/BulkRankingGroup/BulkRankingGroup.jsx
-//Export
-import ExportTemplateModal from "./ExportTemplateModal.jsx";
-=======
->>>>>>> parent of abf7ea3 (Export Teamplate pop-up):frontend/src/pages/RankingGroup/BulkRankingGroup.jsx
 
 const BulkRankingGroup = () => {
     const navigate = useNavigate(); // To navigate between pages
@@ -55,39 +50,8 @@ const BulkRankingGroup = () => {
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Status
     const [validationMessage, setValidationMessage] = useState(""); // Validation error message
-<<<<<<< HEAD:frontend/src/pages/RankingGroup/BulkRankingGroup/BulkRankingGroup.jsx
-
-    //////////////////////////////////////////////////////////// Group Info ////////////////////////////////////////////////////////////
-    const RankingGroupInfo = async () => {
-        try {
-            const groupData = await RankingGroupAPI.getRankingGroupById(id);
-            setGroupInfo({
-                groupName: groupData.groupName || "",
-                currentRankingDecision: groupData.currentRankingDecision || "",
-            });
-            console.log(groupData)
-        } catch (error) {
-            console.error("Error fetching group:", error);
-        }
-    };
-    //// Fetch Ranking Group on id change
-    useEffect(() => {
-        RankingGroupInfo();
-    }, [id]);
-    ////////////////////////////////////////////////////////////// Sreach //////////////////////////////////////////////////////////////
-    const handleSearch = (query) => {
-        console.log(query);
-        if (query) {
-            setFilter(sfAnd([sfEqual("rankingGroupId", id), sfLike("fileName", query)]).toString());
-        } else {
-            setFilter(`rankingGroupId : ${id}`);
-        }
-    }
-=======
->>>>>>> parent of abf7ea3 (Export Teamplate pop-up):frontend/src/pages/RankingGroup/BulkRankingGroup.jsx
 
 
-    ///////////////////////////////////////////////////////// Table /////////////////////////////////////////////////////////
     const getBulkRankingGroup = async () => {
         try {
             const response = await BulkRankingAPI.viewBulkHistory(
@@ -214,24 +178,6 @@ const BulkRankingGroup = () => {
                 <Box sx={{ marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                     <Typography sx={{ display: 'flex', gap: 1, width: 350 }} variant="h6">Bulk Ranking History</Typography>
                     <SearchComponent onSearch={handleSearch} width={200} />
-<<<<<<< HEAD:frontend/src/pages/RankingGroup/BulkRankingGroup/BulkRankingGroup.jsx
-                    <Box sx={{ display: 'flex', gap: 1, height: 40 }}> {/* Sử dụng gap để tạo khoảng cách giữa các nút */}
-                        <Button sx={{ width: 160 }} variant="contained" color="primary" onClick={handleOpenExportModal}>
-                            Export Template
-                        </Button>
-                        {/* Modal xuất template */}
-                        <ExportTemplateModal
-                            open={isExportModalOpen}
-                            handleClose={handleCloseExportModal}
-                            // employees={employees}
-                            // rankingDecisions={rankingDecisions}
-                            onExport={(selectedEmployees) => {
-                                console.log("Selected Employees for Export:", selectedEmployees);
-                                handleCloseExportModal();
-                            }}
-                        />
-                        <Button sx={{ width: 130 }} variant="contained" color="primary" onClick={"handleOpenAddRankingDecisionModal"}>
-=======
 
                     <Box sx={{ display: 'flex', gap: 1 }}> {/* Sử dụng gap để tạo khoảng cách giữa các nút */}
                         <Button variant="contained" color="primary" onClick={""}>
