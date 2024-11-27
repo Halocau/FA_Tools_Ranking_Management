@@ -23,6 +23,9 @@ import EmpoyeeAPI from "../../../api/EmployeeAPI.js";
 import SearchComponent from "../../../components/Common/Search.jsx";
 // Hooks
 import useNotification from "../../../hooks/useNotification";
+//
+import * as XLSX from "xlsx";
+
 const ExportTemplateModal = ({ open, handleClose, onExport }) => {
   const navigate = useNavigate(); // To navigate between pages
   const { id } = useParams(); // Get the ID from the URL
@@ -132,18 +135,26 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
 
   ////////////////////////////////////////////////////////////// Select //////////////////////////////////////////////////////////////
   // Hàm lấy thông tin nhân viên đã chọn
-  const handleSelectionModelChange = () => {
-    // Lấy các ID của các hàng đã chọn từ apiRef
-    const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
+  const handleSelectionModelChange = (newSelection) => {
+      const selectedIDs = newSelection.selectionModel;
 
-    // Lọc các nhân viên dựa trên các ID đã chọn
-    const selectedRowsData = selectedIDs.map((employeeId) =>
-      rows.find((row) => row.employeeId === employeeId)
-    );
-    // Cập nhật state với các nhân viên đã chọn
-    setSelectedEmployees(selectedRowsData);
-    console.log(selectedRowsData); // In ra dữ liệu đã chọn để kiểm tra
-    handleClose();
+      if (selectedIDs.length > 0) {
+        const selectedRowsData = selectedIDs.map((id) =>
+          rows.find((row) => row.employeeId === id)
+        );
+
+        // Kiểm tra xem selectedRowsData có phải là mảng hợp lệ không
+        if (selectedRowsData && selectedRowsData.length > 0) {
+          setSelectedEmployees(selectedRowsData);
+          console.log("Nhân viên đã chọn:", selectedRowsData); // Debug
+        } else {
+          setSelectedEmployees([]);
+          console.log("Không tìm thấy nhân viên tương ứng với ID đã chọn.");
+        }
+      } else {
+        setSelectedEmployees([]);
+        console.log("Chưa có nhân viên nào được chọn.");
+      }
   };
 
   ////////////////////////////////////////////////////////////// Table//////////////////////////////////////////////////////////////
@@ -159,6 +170,31 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
     { field: "currentRank", headerName: "Current Rank", width: 200 },
   ];
 
+  //
+  const exportToExcel = (selectedEmployees) => {
+    if (selectedEmployees.length === 0) {
+      showErrorMessage("No records selected for export.");
+      return;
+    }
+    // Tiến hành xuất Excel
+    const worksheetData = selectedEmployees.map((employee) => ({
+      "Employee ID": employee.employeeId,
+      "Employee Name": employee.employeeName,
+      "Ranking Group": employee.rankingGroup,
+      "Current Decision": employee.currentDecision,
+      "Current Rank": employee.currentRank,
+    }));
+    // Tạo worksheet và workbook
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+    // Xuất file Excel
+    const currentDate = new Date().toISOString().split("T")[0]; // Lấy ngày hiện tại
+    const fileName = `Exported_Employees_${currentDate}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    showSuccessMessage("Export successful!");
+  };
+
   useEffect(() => {
     if (employees) {
       const mappedRows = employees.map((employees) => ({
@@ -171,6 +207,9 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
       setRows(mappedRows);
     }
   }, [employees]);
+
+  console.log("Rows:", rows); 
+  console.log("Selected Employees:", selectedEmployees);
 
   return (
     <Modal sx={{ marginTop: 2 }} open={open} onClose={handleClose}>
@@ -359,9 +398,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
             disableRowSelectionOnClick
             hideFooter
             autoHeight
-            onSelectionModelChange={(newSelection) =>
-              handleSelectionModelChange(newSelection)
-            } // Sự kiện này sẽ truyền đúng newSelection
+            onSelectionModelChange={handleSelectionModelChange}
             sx={{
               "& .MuiDataGrid-columnHeader": {
                 textAlign: "center", // Căn giữa header
@@ -381,7 +418,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
           <Button
             variant="contained"
             color="primary"
-            onClick={handleSelectionModelChange}
+            onClick={() => exportToExcel(selectedEmployees)}
           >
             Export
           </Button>
