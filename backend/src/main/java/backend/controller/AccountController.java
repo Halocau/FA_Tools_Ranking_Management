@@ -31,10 +31,7 @@ public class AccountController {
         this.iAccountService = iAccountService;
     }
 
-    @GetMapping("/user-and-pass")
-
-    // http://localhost:8080/api/account/user-and-pass?username=quatbt&password=11111
-
+    @GetMapping("/user-and-pass") // http://localhost:8080/api/account/user-and-pass?username=quatbt&password=11111
     public ResponseEntity<Account> getAccountByUsernameAndPassword(
             @RequestParam String username,
             @RequestParam String password) {
