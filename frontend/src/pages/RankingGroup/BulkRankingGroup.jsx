@@ -1,14 +1,10 @@
 // react
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { MdDeleteForever } from "react-icons/md";
-import { FaEdit } from "react-icons/fa";
-import { FaEye } from 'react-icons/fa';
-import { FaHistory } from 'react-icons/fa';
 import { FaAngleRight } from 'react-icons/fa';
 // Mui
 import {
-    InputAdornment, Box, Button, Typography, TextField, FormControl, InputLabel, Select, MenuItem, Modal, IconButton, Switch, FormControlLabel, Alert, FormHelperText
+     Box, Button, Typography, TextField,  InputLabel, Select, MenuItem, Modal, IconButton, Switch, FormControlLabel, Alert, FormHelperText
 } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear';
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
@@ -16,7 +12,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import Autocomplete from '@mui/material/Autocomplete';
 // Css 
 import "../../assets/css/RankingGroups.css"
-// Source code
 // API
 import RankingGroupAPI from "../../api/RankingGroupAPI.js";
 import BulkRankingAPI from "../../api/BulkRankingAPI.js";
@@ -227,7 +222,6 @@ const BulkRankingGroup = () => {
                         // checkboxSelection
                         pagination
                         getRowId={(row) => row.id}
-
                         pageSizeOptions={[5, 10, 25]}
                         initialState={{
                             pagination: {
