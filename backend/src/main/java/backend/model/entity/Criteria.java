@@ -1,13 +1,12 @@
 package backend.model.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,8 +15,6 @@ import java.util.List;
 @Entity
 @Table(name = "Criteria")
 @SuperBuilder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Criteria {
 
     @Id
@@ -47,19 +44,9 @@ public class Criteria {
 
     // Add the OneToMany relationship to Options with cascading delete
     @OneToMany(mappedBy = "criteria", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Options> options;
 
-    @ManyToMany(fetch = FetchType.LAZY,
-            cascade = {
-                    CascadeType.DETACH,
-                    CascadeType.MERGE,
-                    CascadeType.PERSIST,
-                    CascadeType.REFRESH
-            })
-    @JoinTable(
-            name = "Employee_Criteria",
-            joinColumns = @JoinColumn(name = "criteria_id"),
-            inverseJoinColumns = @JoinColumn(name = "employee_id")
-    )
-   private List<Employee> employees;
+    public Criteria() {
+    }
 }
