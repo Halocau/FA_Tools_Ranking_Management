@@ -47,13 +47,11 @@ const BulkRankingGroup = () => {
     const [pageSize, setPageSize] = useState(5);
     const [totalElements, setTotalElements] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
-    // Edit
-    const [editGroup, setEditGroup] = useState({ groupName: '', currentRankingDecision: '' });
-    const [originalGroupName, setOriginalGroupName] = useState('');
-    const [originalDecisionName, setOriginalDecisionName] = useState('');
+    // Group Info
+    const [groupInfo, setGroupInfo] = useState({ groupName: '', currentRankingDecision: '' });
+    // Use hook notification
+    const [showSuccessMessage, showErrorMessage] = useNotification();
     // Status
-    const [message, setMessage] = useState(""); // Status notification
-    const [messageType, setMessageType] = useState("success"); // Message type (success/error)
     const [validationMessage, setValidationMessage] = useState(""); // Validation error message
 
 
@@ -93,18 +91,16 @@ const BulkRankingGroup = () => {
     }, [bulkRankingGroup])
 
     console.log(bulkRankingGroup);
-    // Ranking Group Edit
-    const RankingGroupEdit = async () => {
+    // Ranking Group Info
+    const RankingGroupInfo = async () => {
         try {
             const groupData = await RankingGroupAPI.getRankingGroupById(id);
             // Ensure no undefined values are passed
-            setEditGroup({
+            setGroupInfo({
                 groupName: groupData.groupName || "",
                 currentRankingDecision: groupData.currentRankingDecision || "",
             });
             console.log(groupData)
-            setOriginalGroupName(groupData.groupName || "Group Name");
-            setOriginalDecisionName(groupData.currentRankingDecision || "");
         } catch (error) {
             console.error("Error fetching group:", error);
         }
@@ -121,7 +117,7 @@ const BulkRankingGroup = () => {
 
     //// Fetch Ranking Group on id change
     useEffect(() => {
-        RankingGroupEdit();
+        RankingGroupInfo();
     }, [id]);
 
     // Columns configuration for the DataGrid
@@ -154,36 +150,31 @@ const BulkRankingGroup = () => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Box sx={{ width: '48%' }}>
                             <Typography>Group Name:</Typography>
-                            <TextField variant="outlined" fullWidth value={originalGroupName} disabled />
+                            <TextField variant="outlined" fullWidth value={groupInfo.groupName} disabled />
                         </Box>
                         <Box sx={{ width: '48%' }}>
                             <Typography>Current Ranking Decision:</Typography>
-                            <TextField variant="outlined" fullWidth value={originalDecisionName} disabled />
+                            <TextField variant="outlined" fullWidth value={groupInfo.currentRankingDecision} disabled />
                         </Box>
                     </Box>
                 </Box>
-                {/* Displaying messages after when add/delete decision*/}
-                {message && (
-                    <Alert severity={messageType} sx={{ marginTop: 2 }}>
-                        {message}
-                    </Alert>
-                )}
+
 
                 <Box sx={{
-                    marginTop: '12px',
+                    marginTop: '20px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    marginBottom: '12px'
+                    marginBottom: '20px',
                 }}>
-                    <Typography variant="h5">Bulk Ranking History</Typography>
+                    <Typography sx={{ display: 'flex', width: 350 }} variant="h6">Bulk Ranking History</Typography>
                     <SearchComponent onSearch={handleSearch} width={200} />
 
                     <Box sx={{ display: 'flex', gap: 1 }}> {/* Sử dụng gap để tạo khoảng cách giữa các nút */}
-                        <Button variant="contained" color="primary" onClick={""}>
+                        <Button sx={{ display: 'flex', gap: 1, height: 40, width: 170 }} variant="contained" color="primary" onClick={""}>
                             Export Template
                         </Button>
-                        <Button variant="contained" color="primary" onClick={"handleOpenAddRankingDecisionModal"}>
+                        <Button sx={{ display: 'flex', gap: 1, height: 40, width: 140 }} variant="contained" color="primary" onClick={"handleOpenAddRankingDecisionModal"}>
                             Bulk Ranking
                         </Button>
                     </Box>
