@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 // ExportTemplateModal.jsx
-import { Box, Button, Typography, Modal, TextField, Select, MenuItem, Alert, FormHelperText } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  Modal,
+  TextField,
+  Select,
+  MenuItem,
+  Alert,
+  FormHelperText,
+} from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
-import ClearIcon from '@mui/icons-material/Clear';
-import { InputAdornment } from "@mui/material";  // Import InputAdornment
+import ClearIcon from "@mui/icons-material/Clear";
+import { InputAdornment } from "@mui/material"; // Import InputAdornment
 // API
 import EmpoyeeAPI from "../../../api/EmployeeAPI.js";
 //Common
@@ -126,44 +136,41 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
   //
   const capitalizeFirstLetterEachWord = (string) => {
     return string
-      .split(" ") // Tách chuỗi thành các từ
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Viết hoa chữ cái đầu mỗi từ
-      .join(" "); // Nối các từ lại với nhau thành chuỗi
+      .split(" ") // Split string to word
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Uppercase 
+      .join(" "); // Connect words
   };
 
   ////////////////////////////////////////////////////////////// Select //////////////////////////////////////////////////////////////
-  // Hàm lấy thông tin nhân viên đã chọn
+  // Selection Employees
   const handleSelectionModelChange = () => {
     const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
-    // Lấy dữ liệu từ các dòng được chọn
     const selectedRowsData = selectedIDs.map((employeeId) =>
       rows.find((row) => row.employeeId === employeeId)
     );
-
-    // Kiểm tra nếu mảng không rỗng
     if (selectedRowsData.length > 0) {
-      const selectedRowsData = selectedIDs.map((employeeId) =>
-        rows.find((row) => row.employeeId === employeeId)
-      );
+      // change Data to Excel
+      const worksheet = XLSX.utils.json_to_sheet(selectedRowsData);
 
-      // Chuyển chữ cái đầu của mỗi từ trong header thành chữ hoa
-      const columnHeaders = columns.map((col) =>
-        capitalizeFirstLetterEachWord(col.headerName)
-      );
+      // Create Header name
+      const headers = Object.keys(selectedRowsData[0]).map((key) => {
+        return key
+          .replace(/([A-Z])/g, " $1") // Add space before Uppercase Character
+          .replace(/^./, (str) => str.toUpperCase());
+      });
 
-      // Chuyển dữ liệu thành bảng Excel với header đã được viết hoa chữ cái đầu mỗi từ
-      const worksheet = XLSX.utils.json_to_sheet(selectedRowsData, {
-        
+      // Update header to sheet
+      headers.forEach((header, index) => {
+        worksheet[`${String.fromCharCode(65 + index)}1`] = { v: header }; 
       });
 
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
 
-      // Tạo file Excel
+      // create file Excel
       XLSX.writeFile(workbook, "Selected_Employees.xlsx");
       handleClose();
-    } else {
-      // Nếu không có dòng nào được chọn, có thể thông báo lỗi hoặc xử lý khác
+    } else {      
       showErrorMessage("No rows selected to export.");
     }
   };
@@ -193,8 +200,6 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
       setRows(mappedRows);
     }
   }, [employees]);
-
-  
 
   return (
     <Modal sx={{ marginTop: 2 }} open={open} onClose={handleClose}>
