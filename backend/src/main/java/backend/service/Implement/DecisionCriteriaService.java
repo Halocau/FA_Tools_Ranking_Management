@@ -4,6 +4,7 @@ import backend.config.common.PaginationUtils;
 import backend.dao.ICriteriaRepository;
 import backend.dao.IDecisionCriteriaRepository;
 import backend.dao.IRankingDecisionRepository;
+import backend.model.dto.CriteriaResponse;
 import backend.model.dto.DecisionCriteriaResponse;
 import backend.model.dto.TitleConfiguration.DecisionCriteriaDTO;
 import backend.model.dto.TitleConfiguration.OptionDTO;
@@ -71,8 +72,12 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
             Criteria criteria = iCriteriaRepository.findById(dcResponse.getCriteriaId()).orElse(null);
             if (criteria != null) {
                 response.setCriteriaName(criteria.getCriteriaName());
-                response.setNumOptions(criteria.getNumOptions());
-                response.setMaxScore(criteria.getMaxScore());
+                response.setNumOptions(criteria.getOptions().size());
+                Integer maxScore = criteria.getOptions().stream()
+                        .mapToInt(option -> option.getScore())
+                        .max()
+                        .orElse(0);
+                response.setMaxScore(maxScore);
             } else {
                 response.setCriteriaName(null);
                 response.setNumOptions(null);
@@ -100,7 +105,11 @@ public class DecisionCriteriaService implements IDecisionCriteriaService {
             Criteria criteria = iCriteriaRepository.findById(dcResponse.getCriteriaId()).orElse(null);
             if (criteria != null) {
                 response.setCriteriaName(criteria.getCriteriaName());
-                response.setMaxScore(criteria.getMaxScore());
+                Integer maxScore = criteria.getOptions().stream()
+                        .mapToInt(option -> option.getScore())
+                        .max()
+                        .orElse(0);
+                response.setMaxScore(maxScore);
             }
 
             // Get List Option
