@@ -9,8 +9,6 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -49,7 +47,6 @@ public class Criteria {
 
     // Add the OneToMany relationship to Options with cascading delete
     @OneToMany(mappedBy = "criteria", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
     private List<Options> options;
 
     @ManyToMany(fetch = FetchType.LAZY,

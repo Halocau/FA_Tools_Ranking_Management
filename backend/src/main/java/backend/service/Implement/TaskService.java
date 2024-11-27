@@ -40,12 +40,15 @@ public class TaskService implements ITaskService {
         this.iTaskWagesRepository = iTaskWagesRepository;
         this.idDecisionCriteriaRepository = idDecisionCriteriaRepository;
     }
-
     @Override
-    public ResultPaginationDTO getTask(Specification<Task> spec, Pageable pageable) {
-        Page<Task> pageTask = iTaskRepository.findAll(spec, pageable);
-        return new PaginationUtils().buildPaginationDTO(pageTask);
-    }
+        public List<Task> getAllTask() {
+            return iTaskRepository.findAll();
+        }
+        @Override
+        public ResultPaginationDTO getTask(Specification<Task> spec, Pageable pageable) {
+            Page<Task> pageTask = iTaskRepository.findAll(spec, pageable);
+            return new PaginationUtils().buildPaginationDTO(pageTask);
+        }
 
     @Override
     public List<Task> getAllTask() {
