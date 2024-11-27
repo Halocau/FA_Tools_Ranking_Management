@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { MdDeleteForever } from "react-icons/md";
-import { FaEdit } from "react-icons/fa";
+import { FaInfo } from "react-icons/fa";
 import { FaEye } from 'react-icons/fa';
 import { FaHistory } from 'react-icons/fa';
 import { FaAngleRight } from 'react-icons/fa';
@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear';
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
-import EditIcon from '@mui/icons-material/Edit';
+import InfoIcon from '@mui/icons-material/Info';
 import Autocomplete from '@mui/material/Autocomplete';
 // Css 
 import "../../assets/css/RankingGroups.css"
@@ -47,16 +47,42 @@ const BulkRankingGroup = () => {
     const [pageSize, setPageSize] = useState(5);
     const [totalElements, setTotalElements] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
-    // Edit
-    const [editGroup, setEditGroup] = useState({ groupName: '', currentRankingDecision: '' });
-    const [originalGroupName, setOriginalGroupName] = useState('');
-    const [originalDecisionName, setOriginalDecisionName] = useState('');
+    // Group Info
+    const [groupInfo, setGroupInfo] = useState({ groupName: '', currentRankingDecision: '' });
+    // Use hook notification
+    const [showSuccessMessage, showErrorMessage] = useNotification();
     // Status
-    const [message, setMessage] = useState(""); // Status notification
-    const [messageType, setMessageType] = useState("success"); // Message type (success/error)
     const [validationMessage, setValidationMessage] = useState(""); // Validation error message
 
+    //////////////////////////////////////////////////////////// Group Info ////////////////////////////////////////////////////////////
+    const RankingGroupInfo = async () => {
+        try {
+            const groupData = await RankingGroupAPI.getRankingGroupById(id);
+            setGroupInfo({
+                groupName: groupData.groupName || "",
+                currentRankingDecision: groupData.currentRankingDecision || "",
+            });
+            console.log(groupData)
+        } catch (error) {
+            console.error("Error fetching group:", error);
+        }
+    };
+    //// Fetch Ranking Group on id change
+    useEffect(() => {
+        RankingGroupInfo();
+    }, [id]);
+    ////////////////////////////////////////////////////////////// Sreach //////////////////////////////////////////////////////////////
+    const handleSearch = (query) => {
+        console.log(query);
+        if (query) {
+            setFilter(sfAnd([sfEqual("rankingGroupId", id), sfLike("fileName", query)]).toString());
+        } else {
+            setFilter(`rankingGroupId : ${id}`);
+        }
+    }
 
+
+    ///////////////////////////////////////////////////////// BulkRankingGroup /////////////////////////////////////////////////////////
     const getBulkRankingGroup = async () => {
         try {
             const response = await BulkRankingAPI.viewBulkHistory(
@@ -71,12 +97,18 @@ const BulkRankingGroup = () => {
             console.error("Error fetching group:", error);
         }
     }
-
     useEffect(() => {
         getBulkRankingGroup();
     }, [id, filter, page, pageSize]);
-
-
+    // Columns configuration for the DataGrid
+    const columns = [
+        { field: "fileName", headerName: "File Name", width: 200 },
+        { field: "rankingdecision", headerName: "Ranking Decision", width: 300 },
+        { field: "uploadedAt", headerName: "Uploaded At", width: 130 },
+        { field: "uploadedBy", headerName: "Uploaded By", width: 130 },
+        { field: "status", headerName: "Status", width: 130 },
+        { field: "note", headerName: "Note", width: 300 }
+    ];
     useEffect(() => {
         if (bulkRankingGroup) {
             const mappedRows = bulkRankingGroup.map((bulkRankingGroup, index) => ({
@@ -91,49 +123,6 @@ const BulkRankingGroup = () => {
             setRows(mappedRows);
         }
     }, [bulkRankingGroup])
-
-    console.log(bulkRankingGroup);
-    // Ranking Group Edit
-    const RankingGroupEdit = async () => {
-        try {
-            const groupData = await RankingGroupAPI.getRankingGroupById(id);
-            // Ensure no undefined values are passed
-            setEditGroup({
-                groupName: groupData.groupName || "",
-                currentRankingDecision: groupData.currentRankingDecision || "",
-            });
-            console.log(groupData)
-            setOriginalGroupName(groupData.groupName || "Group Name");
-            setOriginalDecisionName(groupData.currentRankingDecision || "");
-        } catch (error) {
-            console.error("Error fetching group:", error);
-        }
-    };
-
-    const handleSearch = (query) => {
-        console.log(query);
-        if (query) {
-            setFilter(sfAnd([sfEqual("rankingGroupId", id), sfLike("fileName", query)]).toString());
-        } else {
-            setFilter(`rankingGroupId : ${id}`);
-        }
-    }
-
-    //// Fetch Ranking Group on id change
-    useEffect(() => {
-        RankingGroupEdit();
-    }, [id]);
-
-    // Columns configuration for the DataGrid
-    const columns = [
-        { field: "fileName", headerName: "File Name", width: 200 },
-        { field: "rankingdecision", headerName: "Ranking Decision", width: 300 },
-        { field: "uploadedAt", headerName: "Uploaded At", width: 130 },
-        { field: "uploadedBy", headerName: "Uploaded By", width: 130 },
-        { field: "status", headerName: "Status", width: 130 },
-        { field: "note", headerName: "Note", width: 300 }
-    ];
-
 
     return (
         <div style={{ marginTop: "60px" }}>
@@ -154,20 +143,14 @@ const BulkRankingGroup = () => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Box sx={{ width: '48%' }}>
                             <Typography>Group Name:</Typography>
-                            <TextField variant="outlined" fullWidth value={originalGroupName} disabled />
+                            <TextField variant="outlined" fullWidth value={groupInfo.groupName} disabled />
                         </Box>
                         <Box sx={{ width: '48%' }}>
                             <Typography>Current Ranking Decision:</Typography>
-                            <TextField variant="outlined" fullWidth value={originalDecisionName} disabled />
+                            <TextField variant="outlined" fullWidth value={groupInfo.currentRankingDecision} disabled />
                         </Box>
                     </Box>
                 </Box>
-                {/* Displaying messages after when add/delete decision*/}
-                {message && (
-                    <Alert severity={messageType} sx={{ marginTop: 2 }}>
-                        {message}
-                    </Alert>
-                )}
 
                 <Box sx={{
                     marginTop: '12px',
@@ -195,7 +178,6 @@ const BulkRankingGroup = () => {
                         className="custom-data-grid"
                         rows={rows}
                         columns={columns}
-                        // checkboxSelection
                         pagination
                         getRowId={(row) => row.id}
 
@@ -203,12 +185,11 @@ const BulkRankingGroup = () => {
                         initialState={{
                             pagination: {
                                 paginationModel: {
-                                    pageSize: 5,
-                                    page: 0,
+                                    pageSize: pageSize,
+                                    page: page,
                                 },
                             },
                         }}
-                        // disableRowSelectionOnClick
                         autoHeight={false}
                         sx={{
                             height: '100%',
