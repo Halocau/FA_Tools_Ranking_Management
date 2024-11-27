@@ -7,4 +7,5 @@ public class OptionDTO {
     private int optionId;
     private String optionName;
     private int score;
+    private int criteriaId;
 }

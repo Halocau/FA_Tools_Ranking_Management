@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { VscTriangleRight } from "react-icons/vsc";
 import { format } from "date-fns";
 import { FaEdit, FaAngleRight } from "react-icons/fa";
-
 // Mui
 import { MdDeleteForever } from "react-icons/md";
 import {
@@ -36,15 +35,10 @@ const TaskManagement = () => {
   const [editTaskName, setEditTaskName] = useState(""); // State for edited task name
   const [selectedTask, setSelectedTask] = useState(null); // State to store selected task for editing
   const [groupToDelete, setGroupToDelete] = useState(null);
-<<<<<<< HEAD
-=======
-  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
->>>>>>> parent of 05ee5f5 (Update Criteria Management)
   // Use hook notification
   const [showSuccessMessage, showErrorMessage] = useNotification();
   const [validationMessage, setValidationMessage] = useState("");
   const apiRef = useGridApiRef();
-<<<<<<< HEAD
 
   const {
     data: tasks,
@@ -55,32 +49,6 @@ const TaskManagement = () => {
     deleteTask,
     updateTask, // Assuming you have an updateTask function in your useTask hook
   } = useTask();
-=======
-  // Paging data
-  const [task, setTask] = useState([]);
-  const [pageSize, setpageSize] = useState(5);
-  const [page, setPage] = useState(1);
-  const [filter, setFilter] = useState("");
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
-  // Search
-  const [rows, setRows] = useState([]); // Initialize with empty array
-  const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
-  const [searchValue, setSearchValue] = useState("");
-
-  //Get props from useTask
-
-  const fetchAllTask = async () => {
-    try {
-      const data = await taskApi.searchByTaskName(filter, page, pageSize);
-      setTask(data.result);
-      setTotalPages(data.pageInfo.total);
-      setTotalElements(data.pageInfo.element);
-    } catch (error) {
-      console.error("Failed to fetch criteria:", error);
-    }
-  };
->>>>>>> parent of 05ee5f5 (Update Criteria Management)
 
   useEffect(() => {
     fetchAllTasks();
@@ -118,10 +86,7 @@ const TaskManagement = () => {
       (task) =>
         task.taskName.toLowerCase() === trimmedName.toLowerCase()
     );
-<<<<<<< HEAD
     console.log("isDuplicate:", isDuplicate);
-=======
->>>>>>> parent of 05ee5f5 (Update Criteria Management)
 
     if (isDuplicate) {
       setValidationMessage("Task name already exists !");
@@ -169,21 +134,9 @@ const TaskManagement = () => {
       return;
     }
 
-<<<<<<< HEAD
     // Kiểm tra xem tên nhiệm vụ đã tồn tại hay chưa, ngoại trừ nhiệm vụ đang được chỉnh sửa
     const existingTasks = await fetchAllTasks();
     const isDuplicate = existingTasks.some(
-=======
-    const nameRegex = /^[a-zA-Z0-9 ]+$/;
-    if (!nameRegex.test(trimmedName)) {
-      setValidationMessage(
-        "Task name can only contain letters, numbers, and spaces."
-      );
-      return;
-    }
-
-    const isDuplicate = rows.some(
->>>>>>> parent of 05ee5f5 (Update Criteria Management)
       (task) =>
         task.taskName.toLowerCase() === trimmedName.toLowerCase() &&
         task.id == selectedTask.id

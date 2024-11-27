@@ -35,16 +35,6 @@ public class CriteriaController {
         this.idDecisionCriteriaService = idDecisionCriteriaService;
     }
 
-    // @GetMapping
-    // public ResponseEntity<List<CriteriaResponse>> getAllCriteria(
-    // @Filter Specification<Criteria> spec,
-    // Pageable pageable) {
-    // List<Criteria> criteriaList = criteriaService.getAllCriteria();
-    // List<CriteriaResponse> criteriaResponses =
-    // criteriaService.convertToCriteriaResponseList(criteriaList);
-    // return new ResponseEntity<>(criteriaResponses, HttpStatus.OK);
-    // }
-
     @GetMapping
     public ResponseEntity<ResultPaginationDTO> searchCriteria(
             @Filter Specification<Criteria> spec,
@@ -53,6 +43,12 @@ public class CriteriaController {
         // List<CriteriaResponse> criteriaResponses =
         // criteriaService.convertToCriteriaResponseList(criteriaList);
         return new ResponseEntity<>(criteriaList, HttpStatus.OK);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<CriteriaResponse>> getAllCriteria() {
+        List<Criteria> getAll = criteriaService.getAllCriteria();
+        return new ResponseEntity<>(criteriaService.convertToCriteriaResponseList(getAll), HttpStatus.OK);
     }
 
     @GetMapping("/get/{id}")
