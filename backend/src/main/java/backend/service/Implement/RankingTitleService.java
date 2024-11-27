@@ -113,7 +113,7 @@ public class RankingTitleService implements IRankingTitleService {
 
     @Override
     @Transactional
-    public void updateRankingTitleByForm(UpdateRankingTitleRequest form) {
+    public RankingTitleResponse updateRankingTitleByForm(UpdateRankingTitleRequest form) {
         boolean check = false;
         if (form.getId() != null) {
             RankingTitle findRankingTitle = findRankingTitleById(form.getId());
@@ -121,6 +121,7 @@ public class RankingTitleService implements IRankingTitleService {
                 findRankingTitle.setTitleName(form.getTitleName());
                 findRankingTitle.setTotalScore(form.getTotalScore());
                 iRankingTitleRepository.save(findRankingTitle);
+                return modelMapper.map(findRankingTitle, RankingTitleResponse.class);
             } else {
                 check = true;
             }
@@ -135,7 +136,10 @@ public class RankingTitleService implements IRankingTitleService {
                     .totalScore(form.getTotalScore())
                     .build();
             iRankingTitleRepository.save(rankingTitle);
+            return modelMapper.map(rankingTitle, RankingTitleResponse.class);
         }
+
+        return null;
     }
 
 }

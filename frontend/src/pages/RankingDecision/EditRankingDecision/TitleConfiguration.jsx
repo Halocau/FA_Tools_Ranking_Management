@@ -290,6 +290,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             console.warn(`Không tìm thấy option phù hợp cho tiêu chí: ${criteriaItem.criteriaName}`);
             return totalScore; // Không có option phù hợp, giữ nguyên điểm
         }, 0);
+
     };
 
     // End 
@@ -306,9 +307,11 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
         showSuccessMessage('Title Configuration successfully updated.');
         console.log("Title Configuration successfully updated.”");
-        // goToNextStep(); // Chuyển bước tiếp theo
+        goToNextStep(); // Chuyển bước tiếp theo
     };
 
+    // console.log("Rows:", rows);
+    // console.log("Original Title:", originalTitle);
     // End 
     ///////////////////////////////// Column Title ///////////////////////////////////
     const ColumnsTitle = (criteria, decisionStatus) => {

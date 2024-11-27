@@ -111,9 +111,22 @@ const EditRankingGroup = () => {
     //// Fetch all ranking decisions when component mounts
     useEffect(() => {
         fetchAllRankingDecisions();
-    }, [id, page, pageSize, filter]);
-    ;
+    }, [page, pageSize, filter, id]);
 
+    // Map decision data to rows for DataGrid when rows are fetched
+    useEffect(() => {
+        if (rankingDecisions) {
+            const mappedRows = rankingDecisions.map((decision, index) => ({
+                id: decision.decisionId,
+                index: index + 1 + (page - 1) * pageSize,
+                dicisionname: decision.decisionName,
+                finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
+                finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
+                status: decision.status
+            }));
+            setRows(mappedRows); // Update rows with data from decisions
+        }
+    }, [rankingDecisions]);
 
     /////////////////////////////////////////////////////////// Handlers to open/close modals for editing of the group info ///////////////////////////////////////////////////////////
     // Open the modal
@@ -179,16 +192,20 @@ const EditRankingGroup = () => {
     //  list ranking decision to choose from for clone
     const fetchlistRankingDecisionsClone = async () => {
         try {
-            const data = await RankingDecisionAPI.getAllRankingDecisions();
+            const data = await RankingDecisionAPI.searchRankingDecisions(
+                filter,
+                1,
+                totalElements,
+            );
             setlistDecisionSearchClone(data.result)
-            console.log('setlistDecisionSearchClone', data)
+            console.log(listDecisionSearchClone)
         } catch (error) {
             console.error("Failed to fetch criteria:", error);
         }
     }
     useEffect(() => {
         fetchlistRankingDecisionsClone();
-    }, [id])
+    }, [totalElements, filter])
 
     // Function to adding Ranking Decision
     const handleAddRankingDecision = async () => {
@@ -299,8 +316,7 @@ const EditRankingGroup = () => {
         }
         setPage(1);
     };
-
-    /////////////////////////////////////////////////////////// Table Ranking Decision List ///////////////////////////////////////////////////////////
+    ///// Table Ranking Decision List
     //Columns configuration for the DataGrid
     const columns = [
         { field: "index", headerName: "ID", width: 80 },
@@ -337,20 +353,6 @@ const EditRankingGroup = () => {
             ),
         },
     ];
-    // Map decision data to rows for DataGrid when rows are fetched
-    useEffect(() => {
-        if (rankingDecisions) {
-            const mappedRows = rankingDecisions.map((decision, index) => ({
-                id: decision.decisionId,
-                index: index + 1 + (page - 1) * pageSize,
-                dicisionname: decision.decisionName,
-                finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
-                finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
-                status: decision.status
-            }));
-            setRows(mappedRows); // Update rows with data from decisions
-        }
-    }, [rankingDecisions]);
 
     return (
         <div style={{ marginTop: "60px" }}>

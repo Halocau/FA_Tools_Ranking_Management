@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TaskWagesService implements ITaskWagesService {
@@ -34,7 +33,7 @@ public class TaskWagesService implements ITaskWagesService {
     }
 
     @Override
-    public Optional<TaskWages> findByRankingTitleIdAndTaskId(Integer rankingTitleId, Integer taskId) {
+    public TaskWages findByRankingTitleIdAndTaskId(Integer rankingTitleId, Integer taskId) {
         return iTaskWagesRepository.findByRankingTitleIdAndTaskId(rankingTitleId, taskId);
     }
 
@@ -47,31 +46,29 @@ public class TaskWagesService implements ITaskWagesService {
     @Transactional
     public void deleteTaskWages(Integer rankingTitleId, Integer taskId) {
         if (rankingTitleId == null || taskId == null) {
-            throw new IllegalArgumentException("param RankingTitleId và TaskId không được null");
+            throw new IllegalArgumentException("param RankingTitleId và TaskId not null");
         }
 
-        Optional<TaskWages> find = iTaskWagesRepository.findByRankingTitleIdAndTaskId(rankingTitleId, taskId);
-        if (find.isEmpty()) { // Sử dụng isEmpty() thay vì null
+        TaskWages find = iTaskWagesRepository.findByRankingTitleIdAndTaskId(rankingTitleId, taskId);
+        if (find == null) {
             throw new EntityNotFoundException("Task wages not found with rankingTitleId: "
                     + rankingTitleId + ", taskId: " + taskId);
         }
-
-        // Giải nén Optional và xóa đối tượng
-        iTaskWagesRepository.delete(find.get());
+        iTaskWagesRepository.delete(find);
     }
+
     /**
      * Form
      */
-    @Override //UPDATE AND ADD tasksWage
+    @Override
     @Transactional
     public void upsertTaskWages(UpsertTasksWage form, Integer rankingTitleId, Integer taskId) {
         if (form == null || rankingTitleId == null || taskId == null) {
-            throw new IllegalArgumentException("Form or input param must not be null");
+            throw new IllegalArgumentException("Form or input param not null");
         }
 
-        Optional<TaskWages> findTaskWages = iTaskWagesRepository.findByRankingTitleIdAndTaskId(rankingTitleId, taskId);
-        if (findTaskWages.isEmpty()) {
-            // Insert
+        TaskWages findTaskWages = iTaskWagesRepository.findByRankingTitleIdAndTaskId(rankingTitleId, taskId);
+        if (findTaskWages == null) {
             TaskWages newTaskWages = TaskWages.builder()
                     .rankingTitleId(form.getRankingTitleId())
                     .taskId(form.getTaskId())
@@ -80,22 +77,9 @@ public class TaskWagesService implements ITaskWagesService {
                     .build();
             iTaskWagesRepository.save(newTaskWages);
         } else {
-            // Update
-            TaskWages existingTaskWages = findTaskWages.get();
-            existingTaskWages.setWorkingHourWage(form.getWorkingHourWage());
-            existingTaskWages.setOvertimeWage(form.getOvertimeWage());
-            iTaskWagesRepository.save(existingTaskWages);
-        }
-    }
-    @Override  //UPDATE AND ADD LIST tasksWage
-    @Transactional
-    public void upsertTaskWagesList(List<UpsertTasksWage> forms) {
-        if (forms == null || forms.isEmpty()) {
-            throw new IllegalArgumentException("The list of forms cannot be null or empty");
-        }
-
-        for (UpsertTasksWage form : forms) {
-            upsertTaskWages(form, form.getRankingTitleId(), form.getTaskId());
+            findTaskWages.setWorkingHourWage(form.getWorkingHourWage());
+            findTaskWages.setOvertimeWage(form.getOvertimeWage());
+            iTaskWagesRepository.saveAndFlush(findTaskWages);
         }
     }
 }
