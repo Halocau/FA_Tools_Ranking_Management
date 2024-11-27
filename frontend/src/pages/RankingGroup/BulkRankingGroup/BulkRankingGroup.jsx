@@ -32,6 +32,8 @@ import Slider from "../../../layouts/Slider.jsx";
 import { sfLike, sfEqual, sfAnd } from 'spring-filter-query-builder';
 //Export
 import ExportTemplateModal from "./ExportTemplateModal.jsx";
+//Import
+import BulkRankingModal from "./BulkRankingModal.jsx";
 
 const BulkRankingGroup = () => {
     const navigate = useNavigate(); // To navigate between pages
@@ -40,6 +42,9 @@ const BulkRankingGroup = () => {
     const [groupInfo, setGroupInfo] = useState({ groupName: '', currentRankingDecision: '' });
     // Export popup
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    // Import popup
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
     // Table  List 
     const [rows, setRows] = useState([]); // Initialize with empty array
     const [bulkRankingGroup, setBulkRankingGroup] = useState([]);
@@ -123,6 +128,16 @@ const BulkRankingGroup = () => {
         }
     }, [bulkRankingGroup])
     ///////////////////////////////////////////////////////// BulkRankingGroup /////////////////////////////////////////////////////////
+    //// Import
+    const handleOpenImportModal = () => {
+        setIsImportModalOpen(true);
+        console.log("Modal open prop type:", typeof isImportModalOpen, "Value:", isImportModalOpen);
+    };
+
+    const handleCloseImportModal = () => {
+        setIsImportModalOpen(false);
+        console.log("Modal Closed:", isImportModalOpen); // Debugging
+    };
     //// Export 
     // Toggle modal
     const handleOpenExportModal = () => setIsExportModalOpen(true);
@@ -176,9 +191,18 @@ const BulkRankingGroup = () => {
                                 handleCloseExportModal();
                             }}
                         />
-                        <Button sx={{ width: 130 }} variant="contained" color="primary" onClick={"handleOpenAddRankingDecisionModal"}>
+                        <Button sx={{ width: 130 }} variant="contained" color="primary" onClick={handleOpenImportModal}>
                             Bulk Ranking
                         </Button>
+                        {/* Modal bulk ranking */}
+                        <BulkRankingModal
+                            open={isImportModalOpen}
+                            handleClose={handleCloseImportModal}
+                            onUpload={(selectedEmployees) => {
+                                console.log("SelectedEmployees for BulkRanking:", selectedEmployees);
+                                handleCloseImportModal();
+                            }}
+                        />
                     </Box>
                 </Box>
                 {/* Table */}
