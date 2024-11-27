@@ -188,7 +188,7 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
                     applyCriteriaResponse.setCirteriaName(criteria.getCriteriaName());
                     applyCriteriaResponse.setOptionName(option.getOptionName());
                     applyCriteriaResponse.setScore(option.getScore());
-                    
+
                     applyCriteriaList.add(applyCriteriaResponse);
                     criteriaSet.add(uniqueKey); // Mark as processed
                 }
