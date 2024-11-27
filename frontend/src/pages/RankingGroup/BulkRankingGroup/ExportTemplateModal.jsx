@@ -15,14 +15,14 @@ import {
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
+import ClearIcon from "@mui/icons-material/Clear";
+import { InputAdornment } from "@mui/material"; // Import InputAdornment
 // API
 import EmpoyeeAPI from "../../../api/EmployeeAPI.js";
 //Common
 import SearchComponent from "../../../components/Common/Search.jsx";
 // Hooks
 import useNotification from "../../../hooks/useNotification";
-import * as XLSX from "xlsx";
-
 const ExportTemplateModal = ({ open, handleClose, onExport }) => {
   const navigate = useNavigate(); // To navigate between pages
   const { id } = useParams(); // Get the ID from the URL
@@ -132,19 +132,18 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
 
   ////////////////////////////////////////////////////////////// Select //////////////////////////////////////////////////////////////
   // Hàm lấy thông tin nhân viên đã chọn
-  const handleSelectionModelChange = (newSelection) => {
-    // Lấy các ID của các hàng đã chọn từ newSelection
-    const selectedIDs = newSelection;
-    console.log("Selected IDs:", newSelections);
+  const handleSelectionModelChange = () => {
+    // Lấy các ID của các hàng đã chọn từ apiRef
+    const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
+
     // Lọc các nhân viên dựa trên các ID đã chọn
     const selectedRowsData = selectedIDs.map((employeeId) =>
       rows.find((row) => row.employeeId === employeeId)
     );
-    console.log(newSelection);
-    // console
     // Cập nhật state với các nhân viên đã chọn
     setSelectedEmployees(selectedRowsData);
     console.log(selectedRowsData); // In ra dữ liệu đã chọn để kiểm tra
+    handleClose();
   };
 
   ////////////////////////////////////////////////////////////// Table//////////////////////////////////////////////////////////////
@@ -162,44 +161,16 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
 
   useEffect(() => {
     if (employees) {
-      const mappedRows = employees.map((employee) => ({
-        employeeId: employee.employeeId,
-        employeeName: employee.employeeName,
-        rankingGroup: employee.rankingGroupName,
-        currentDecision: employee.currentRankingDecision,
-        currentRank: employee.currentRank,
+      const mappedRows = employees.map((employees) => ({
+        employeeId: employees.employeeId,
+        employeeName: employees.employeeName,
+        rankingGroup: employees.rankingGroupName,
+        currentDecision: employees.currentRankingDecision,
+        currentRank: employees.currentRank,
       }));
       setRows(mappedRows);
     }
   }, [employees]);
-
-  //
-  const exportToExcel = () => {
-    if (selectedEmployees.length === 0) {
-      showErrorMessage("No records selected for export.");
-      return;
-    }
-
-    // Chuẩn bị dữ liệu cho file Excel
-    const dataToExport = selectedEmployees.map((employee) => ({
-      "Employee ID": employee.employeeId,
-      "Employee Name": employee.employeeName,
-      "Ranking Group": employee.rankingGroup,
-      "Current Ranking Decision": employee.currentDecision,
-      "Current Rank": employee.currentRank,
-    }));
-
-    console.log(dataToExport);
-    // Tạo worksheet từ dữ liệu
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-
-    // Tạo workbook và thêm worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
-
-    // Xuất file
-    XLSX.writeFile(workbook, "Selected_Employees.xlsx");
-  };
 
   return (
     <Modal sx={{ marginTop: 2 }} open={open} onClose={handleClose}>
@@ -277,6 +248,21 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
                 height: 40,
                 marginRight: 20,
               }}
+              renderValue={(value) => value || "Select a decision"}
+              endAdornment={
+                // Thêm biểu tượng Clear vào trong Select
+                <InputAdornment position="end">
+                  {selectedRankingDecision && (
+                    <IconButton
+                      size="small"
+                      sx={{ position: "absolute", right: 30 }} // Đặt vị trí của biểu tượng Clear
+                      onClick={() => setSelectedRankingDecision("")}
+                    >
+                      <ClearIcon />
+                    </IconButton>
+                  )}
+                </InputAdornment>
+              }
             >
               {rankingDecisions.map((decision) => (
                 <MenuItem key={decision} value={decision}>
@@ -302,15 +288,41 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
                 width: 300,
                 height: 40,
               }}
+              renderValue={(value) => value || "Select a decision"}
+              endAdornment={
+                // Thêm biểu tượng Clear vào trong Select
+                <InputAdornment position="end">
+                  {selectedRankingDecision && (
+                    <IconButton
+                      size="small"
+                      sx={{ position: "absolute", right: 30 }} // Đặt vị trí của biểu tượng Clear
+                      onClick={() => setSelectedRank("")}
+                    >
+                      <ClearIcon />
+                    </IconButton>
+                  )}
+                </InputAdornment>
+              }
             >
               {selectedRankingDecision.length > 0 ? (
-                // Filter employees based on the selected Ranking Decision
+                // Lọc nhân viên theo Current Ranking Decision
                 employees
                   .filter(
                     (employee) =>
                       employee.currentRankingDecision ===
                       selectedRankingDecision
                   )
+                  .reduce((acc, employee) => {
+                    // Kiểm tra xem currentRank đã xuất hiện chưa
+                    if (
+                      !acc.some(
+                        (item) => item.currentRank === employee.currentRank
+                      )
+                    ) {
+                      acc.push(employee); // Thêm nhân viên vào mảng nếu currentRank chưa có
+                    }
+                    return acc;
+                  }, [])
                   .map((employee) => (
                     <MenuItem
                       key={employee.employeeId}
@@ -349,7 +361,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
             autoHeight
             onSelectionModelChange={(newSelection) =>
               handleSelectionModelChange(newSelection)
-            }
+            } // Sự kiện này sẽ truyền đúng newSelection
             sx={{
               "& .MuiDataGrid-columnHeader": {
                 textAlign: "center", // Căn giữa header
@@ -366,7 +378,11 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
 
         {/* Nút Export */}
         <Box sx={{ display: "flex", justifyContent: "flex-end", marginTop: 2 }}>
-          <Button variant="contained" color="primary" onClick={exportToExcel}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSelectionModelChange}
+          >
             Export
           </Button>
         </Box>
