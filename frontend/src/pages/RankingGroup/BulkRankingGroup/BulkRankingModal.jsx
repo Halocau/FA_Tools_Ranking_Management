@@ -16,7 +16,7 @@ const modalStyle = {
     p: 4,
 };
 
-const BulkRankingModal = ({ open, handleClose, onUpload }) => {
+const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMessage }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [file, setFile] = useState(null);
     const [fileError, setFileError] = useState(""); // Track file error
@@ -64,10 +64,10 @@ const BulkRankingModal = ({ open, handleClose, onUpload }) => {
                 folder: 'upload'
             }
             const response = await FileUploadAPI.uploadFile(form);
-            console.log("File uploaded successfully:", response);
+            showSuccessMessage("Successfully upload!!!");
             handleCloseModal();
         } catch (error) {
-            console.error("Error uploading file:", error.response?.data || error.message);
+            showErrorMessage("Failed to upload data from excel file!!!");
         }
     };
 

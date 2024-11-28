@@ -194,15 +194,15 @@ const BulkRankingGroup = () => {
                         <Button sx={{ width: 130 }} variant="contained" color="primary" onClick={handleOpenImportModal}>
                             Bulk Ranking
                         </Button>
+
                         {/* Modal bulk ranking */}
                         <BulkRankingModal
                             open={isImportModalOpen}
                             handleClose={handleCloseImportModal}
-                            onUpload={(selectedEmployees) => {
-                                console.log("SelectedEmployees for BulkRanking:", selectedEmployees);
-                                handleCloseImportModal();
-                            }}
+                            showSuccessMessage={showSuccessMessage}
+                            showErrorMessage={showErrorMessage}
                         />
+
                     </Box>
                 </Box>
                 {/* Table */}
