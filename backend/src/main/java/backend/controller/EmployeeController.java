@@ -29,13 +29,13 @@ public class EmployeeController {
 
     @GetMapping
     public ResponseEntity<List<EmployeeResponse>> getEmployeeResponse(
-            @Filter Specification<Employee> spec
-    ) {
-        //get object pagination
+            @Filter Specification<Employee> spec) {
+        // get object pagination
         List<Employee> allEmployee = iEmployeeService.getAllEmployee(spec);
         List<EmployeeResponse> getEmployeeResponse = iEmployeeService.getAllEmployeeResponses(allEmployee);
         return new ResponseEntity<>(getEmployeeResponse, HttpStatus.OK);
     }
+
     @GetMapping("/group/{groupId}")
     public ResponseEntity<List<EmployeeResponse>> getEmployeeGroupId(@PathVariable Integer groupId) {
         List<Employee> getByGroupId = iEmployeeService.findByGroupId(groupId);

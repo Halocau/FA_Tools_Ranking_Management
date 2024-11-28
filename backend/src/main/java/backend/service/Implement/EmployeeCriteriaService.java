@@ -11,6 +11,8 @@ import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import java.util.*;
 
@@ -25,9 +27,10 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
     private IRankingDecisionRepository iRankingDecisionRepository;
     private ICriteriaRepository iCriteriaRepository;
     private IOptionRepository iOptionRepository;
+    private IDecisionCriteriaRepository iDecisionCriteriaRepository;
 
     @Autowired
-    public EmployeeCriteriaService(IEmployeeCriteriaRepository iEmployeeCriteriaRepository, IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingTitleRepository iRankingTitleRepository, IBulkRankingHistoryRepository iBulkRankingHistoryRepository, IRankingGroupRepository irankingGroupRepository, IRankingDecisionRepository iRankingDecisionRepository, ICriteriaRepository iCriteriaRepository, IOptionRepository iOptionRepository) {
+    public EmployeeCriteriaService(IEmployeeCriteriaRepository iEmployeeCriteriaRepository, IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingTitleRepository iRankingTitleRepository, IBulkRankingHistoryRepository iBulkRankingHistoryRepository, IRankingGroupRepository irankingGroupRepository, IRankingDecisionRepository iRankingDecisionRepository, ICriteriaRepository iCriteriaRepository, IOptionRepository iOptionRepository, IDecisionCriteriaRepository iDecisionCriteriaRepository) {
         this.iEmployeeCriteriaRepository = iEmployeeCriteriaRepository;
         this.iEmployeeRepository = iEmployeeRepository;
         this.modelMapper = modelMapper;
@@ -37,6 +40,7 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
         this.iRankingDecisionRepository = iRankingDecisionRepository;
         this.iCriteriaRepository = iCriteriaRepository;
         this.iOptionRepository = iOptionRepository;
+        this.iDecisionCriteriaRepository = iDecisionCriteriaRepository;
     }
 
     /// CRUD
@@ -111,7 +115,6 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
     /// Response
     @Override
     public List<EmployeeCriteriaResponse> getEmployeeCriteriaResponse(List<EmployeeCriteria> listEmployeeCriteria) {
-        // Validate that the input list is not null or empty
         if (listEmployeeCriteria == null || listEmployeeCriteria.isEmpty()) {
             throw new IllegalArgumentException("Employee criteria list cannot be null or empty.");
         }
@@ -120,91 +123,76 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
         Map<Integer, EmployeeCriteriaResponse> responseMap = new HashMap<>();
 
         for (EmployeeCriteria employeeCriteria : listEmployeeCriteria) {
-            // Check if the response for this employee ID already exists
+            Employee employee = iEmployeeRepository.findById(employeeCriteria.getEmployeeId())
+                    .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeCriteria.getEmployeeId()));
+
             EmployeeCriteriaResponse response = responseMap.get(employeeCriteria.getEmployeeId());
             if (response == null) {
-                // If not, create a new EmployeeCriteriaResponse
                 response = new EmployeeCriteriaResponse();
-                Optional<Employee> findEmployee = iEmployeeRepository.findById(employeeCriteria.getEmployeeId());
-                if (findEmployee.isPresent()) {
-                    Employee employee = findEmployee.get();
+                response.setEmployeeId(employee.getEmployeeId());
+                response.setEmployeeName(employee.getEmployeeName());
 
-                    // Ensure employee ID and name are not null
-                    if (employee.getEmployeeId() == null || employee.getEmployeeName() == null) {
-                        throw new IllegalStateException("Employee ID or name is missing for employee: " + employee.getEmployeeId());
-                    }
-                    response.setEmployeeId(employee.getEmployeeId());
-                    response.setEmployeeName(employee.getEmployeeName());
+                // Fetch RankingGroup
+                RankingGroup rankingGroup = irankingGroupRepository.findById(employee.getGroupId())
+                        .orElseThrow(() -> new EntityNotFoundException("RankingGroup not found for group ID: " + employee.getGroupId()));
+                response.setRankingGroupName(rankingGroup.getGroupName());
 
-                    // Validate group ID and fetch RankingGroup
-                    if (employee.getGroupId() == null) {
-                        throw new IllegalStateException("Group ID is missing for employee: " + employee.getEmployeeId());
-                    }
-                    RankingGroup rankingGroup = irankingGroupRepository.findById(employee.getGroupId())
-                            .orElseThrow(() -> new EntityNotFoundException("RankingGroup not found for group ID: " + employee.getGroupId()));
-                    response.setRankingGroupName(rankingGroup.getGroupName());
-
-                    // Validate ranking decision ID and fetch RankingDecision
-                    if (employee.getRankingDecisionId() == null) {
-                        throw new IllegalStateException("Ranking decision ID is missing for employee: " + employee.getEmployeeId());
-                    }
-                    RankingDecision rankingDecision = iRankingDecisionRepository.findByDecisionId(employee.getRankingDecisionId());
-                    if (rankingDecision == null) {
-                        throw new EntityNotFoundException("RankingDecision not found for decision ID: " + employee.getRankingDecisionId());
-                    }
-                    response.setCurrentRankingDecision(rankingDecision.getDecisionName());
-
-                    // Validate ranking title ID and fetch RankingTitle
-                    if (employee.getRankingTitleId() == null) {
-                        throw new IllegalStateException("Ranking title ID is missing for employee: " + employee.getEmployeeId());
-                    }
-                    RankingTitle rankingTitle = iRankingTitleRepository.findById(employee.getRankingTitleId())
-                            .orElseThrow(() -> new EntityNotFoundException("RankingTitle not found for title ID: " + employee.getRankingTitleId()));
-                    response.setCurrentRank(rankingTitle.getTitleName());
-
-                    // Add the response to the map
-                    responseMap.put(employee.getEmployeeId(), response);
+                // Fetch RankingDecision
+                RankingDecision rankingDecision = iRankingDecisionRepository.findByDecisionId(employee.getRankingDecisionId());
+                if (rankingDecision == null) {
+                    throw new EntityNotFoundException("RankingDecision not found for decision ID: " + employee.getRankingDecisionId());
                 }
+                response.setCurrentRankingDecision(rankingDecision.getDecisionName());
+
+                // Fetch RankingTitle
+                RankingTitle rankingTitle = iRankingTitleRepository.findById(employee.getRankingTitleId())
+                        .orElseThrow(() -> new EntityNotFoundException("RankingTitle not found for title ID: " + employee.getRankingTitleId()));
+                response.setCurrentRank(rankingTitle.getTitleName());
+
+                responseMap.put(employee.getEmployeeId(), response);
             }
 
-            // Process criteria list and avoid duplicates
-            List<EmployeeCriteria> employeeCriteriaList = iEmployeeCriteriaRepository.findByEmployeeId(employeeCriteria.getEmployeeId());
-            Set<String> criteriaSet = new HashSet<>(); // Set to track duplicates
             List<ApplyCriteriaResponse> applyCriteriaList = new ArrayList<>();
+            Set<String> criteriaSet = new HashSet<>();
 
+            List<EmployeeCriteria> employeeCriteriaList = iEmployeeCriteriaRepository.findByEmployeeId(employee.getEmployeeId());
             for (EmployeeCriteria empCriteria : employeeCriteriaList) {
-                // Validate and fetch Criteria
                 Criteria criteria = iCriteriaRepository.findById(empCriteria.getCriteriaId())
                         .orElseThrow(() -> new EntityNotFoundException("Criteria not found for criteria ID: " + empCriteria.getCriteriaId()));
 
-                // Validate and fetch Option
                 Options option = iOptionRepository.findById(empCriteria.getOptionId())
                         .orElseThrow(() -> new EntityNotFoundException("Option not found for option ID: " + empCriteria.getOptionId()));
 
-                // Ensure criteria name and option name are not null
-                if (criteria.getCriteriaName() == null || option.getOptionName() == null) {
-                    throw new IllegalStateException("Criteria name or option name cannot be null.");
-                }
+                // Truy vấn để lấy weight từ DecisionCriteria
+                DecisionCriteria decisionCriteria = iDecisionCriteriaRepository.findByDecisionIdAndCriteriaId(
+                                employee.getRankingDecisionId(), empCriteria.getCriteriaId())
+                        .orElseThrow(() -> new EntityNotFoundException("DecisionCriteria not found for decision ID: "
+                                + employee.getRankingDecisionId() + " and criteria ID: " + empCriteria.getCriteriaId()));
 
-                // Create a unique key for criteria + option to avoid duplicates
                 String uniqueKey = criteria.getCriteriaName() + "-" + option.getOptionName();
                 if (!criteriaSet.contains(uniqueKey)) {
-                    // Add non-duplicate criteria to the response
                     ApplyCriteriaResponse applyCriteriaResponse = new ApplyCriteriaResponse();
                     applyCriteriaResponse.setCirteriaName(criteria.getCriteriaName());
                     applyCriteriaResponse.setOptionName(option.getOptionName());
                     applyCriteriaResponse.setScore(option.getScore());
-
+                    applyCriteriaResponse.setWeight(decisionCriteria.getWeight()); // Gán weight vào DTO
+                    applyCriteriaResponse.setMaxScore(criteria.getMaxScore());
                     applyCriteriaList.add(applyCriteriaResponse);
-                    criteriaSet.add(uniqueKey); // Mark as processed
+                    criteriaSet.add(uniqueKey);
                 }
             }
 
-            // Assign the unique criteria list to the response
             response.setCriteriaList(applyCriteriaList);
+
+            // Tính totalScore dựa trên criteriaList
+            double totalScore = applyCriteriaList.stream()
+                    .mapToDouble(criteria -> (criteria.getScore() * criteria.getWeight() / criteria.getMaxScore()))
+                    .sum();
+            // Làm tròn totalScore thành 2 chữ số thập phân
+            BigDecimal roundedTotalScore = new BigDecimal(totalScore).setScale(2, RoundingMode.HALF_UP);
+            response.setTotalScore(roundedTotalScore.doubleValue());
         }
 
-        // Add all responses from the map to the result list
         employeeCriteriaResponses.addAll(responseMap.values());
         return employeeCriteriaResponses;
     }

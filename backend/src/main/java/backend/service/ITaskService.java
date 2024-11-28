@@ -14,7 +14,7 @@ public interface ITaskService {
     // crud task
 
     public ResultPaginationDTO getTask(Specification<Task> spec, Pageable pageable);
-    
+
     public List<Task> getAllTask();
 
     public Task getTaskById(int id);

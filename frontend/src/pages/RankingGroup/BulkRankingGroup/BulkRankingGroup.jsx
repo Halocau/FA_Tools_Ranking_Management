@@ -46,6 +46,8 @@ import Slider from "../../../layouts/Slider.jsx";
 import { sfLike, sfEqual, sfAnd } from "spring-filter-query-builder";
 //Export
 import ExportTemplateModal from "./ExportTemplateModal.jsx";
+//Import
+import BulkRankingModal from "./BulkRankingModal.jsx";
 import * as XLSX from "xlsx";
 
 const BulkRankingGroup = () => {
@@ -58,6 +60,9 @@ const BulkRankingGroup = () => {
   });
   // Export popup
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  // Import popup
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
   // Table  List
   const [rows, setRows] = useState([]); // Initialize with empty array
   const [bulkRankingGroup, setBulkRankingGroup] = useState([]);
@@ -78,11 +83,8 @@ const BulkRankingGroup = () => {
   const RankingGroupInfo = async () => {
     try {
       const groupData = await RankingGroupAPI.getRankingGroupById(id);
-      setGroupInfo({
-        groupName: groupData.groupName || "",
-        currentRankingDecision: groupData.currentRankingDecision || "",
-      });
-      console.log(groupData);
+      setGroupInfo(groupData);
+      // console.log(groupData);
     } catch (error) {
       console.error("Error fetching group:", error);
     }
@@ -152,6 +154,16 @@ const BulkRankingGroup = () => {
     }
   }, [bulkRankingGroup]);
   ///////////////////////////////////////////////////////// BulkRankingGroup /////////////////////////////////////////////////////////
+  //// Import
+  const handleOpenImportModal = () => {
+    setIsImportModalOpen(true);
+    console.log("Modal open prop type:", typeof isImportModalOpen, "Value:", isImportModalOpen);
+  };
+
+  const handleCloseImportModal = () => {
+    setIsImportModalOpen(false);
+    console.log("Modal Closed:", isImportModalOpen); // Debugging
+  };
   //// Export
   // Toggle modal
   const handleOpenExportModal = () => setIsExportModalOpen(true);
@@ -265,10 +277,17 @@ const BulkRankingGroup = () => {
               sx={{ width: 130 }}
               variant="contained"
               color="primary"
-              onClick={() => setIsModalOpen(true)}
+              onClick={handleOpenImportModal}
             >
               Bulk Ranking
             </Button>
+            {/* Modal bulk ranking */}
+            <BulkRankingModal
+              open={isImportModalOpen}
+              handleClose={handleCloseImportModal}
+              showSuccessMessage={showSuccessMessage}
+              showErrorMessage={showErrorMessage}
+            />
           </Box>
         </Box>
         {/* Table */}

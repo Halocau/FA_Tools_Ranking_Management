@@ -7,4 +7,6 @@ public class ApplyCriteriaResponse {
     private String cirteriaName;
     private String optionName;
     private Integer score;
+    private Float weight;
+    private int maxScore;
 }
