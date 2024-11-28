@@ -2,6 +2,7 @@ package backend.service;
 
 import backend.model.dto.BulkRankingHistoryResponse;
 import backend.model.entity.BulkRankingHistory;
+import backend.model.form.BulkRankingHistory.CreateBulkRankingHistoryRequest;
 import backend.model.page.ResultPaginationDTO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -17,6 +18,7 @@ public interface IBulkRankingHistoryService {
 
     //response
     public List<BulkRankingHistoryResponse> getAllBulkRankingHistoryResponses(List<BulkRankingHistory> list);
-//    public List<BulkRankingHistoryResponse> findListBulkRankingHistoryResponses(Integer historyId);
+    //form
+    public void createBulkRankingHistoryRequest(CreateBulkRankingHistoryRequest form);
 
 }

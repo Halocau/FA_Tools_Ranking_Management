@@ -10,6 +10,7 @@ import backend.model.entity.Account;
 import backend.model.entity.BulkRankingHistory;
 import backend.model.entity.RankingDecision;
 import backend.model.entity.RankingGroup;
+import backend.model.form.BulkRankingHistory.CreateBulkRankingHistoryRequest;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.IBulkRankingHistoryService;
 import backend.service.IRankingGroupService;
@@ -116,6 +117,19 @@ public class BulkRankingHistoryService implements IBulkRankingHistoryService {
         return responseList;
     }
 
+    @Override
+    @Transactional
+    public void createBulkRankingHistoryRequest(CreateBulkRankingHistoryRequest form) {
+        BulkRankingHistory create = BulkRankingHistory.builder()
+                .fileName(form.getFileName())
+                .filePath(form.getFilePath())
+                .rankingGroupId(form.getRankingGroupId())
+                .uploadBy(form.getUploadBy())
+                .status(form.getStatus())
+                .note(form.getNote())
+                .build();
+        iBulkRankingHistoryRepository.save(create);
+    }
 
 
 //    @Override
