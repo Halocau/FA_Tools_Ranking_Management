@@ -83,11 +83,8 @@ const BulkRankingGroup = () => {
   const RankingGroupInfo = async () => {
     try {
       const groupData = await RankingGroupAPI.getRankingGroupById(id);
-      setGroupInfo({
-        groupName: groupData.groupName || "",
-        currentRankingDecision: groupData.currentRankingDecision || "",
-      });
-      console.log(groupData);
+      setGroupInfo(groupData);
+      // console.log(groupData);
     } catch (error) {
       console.error("Error fetching group:", error);
     }
@@ -280,7 +277,7 @@ const BulkRankingGroup = () => {
               sx={{ width: 130 }}
               variant="contained"
               color="primary"
-              onClick={() => setIsModalOpen(true)}
+              onClick={handleOpenImportModal}
             >
               Bulk Ranking
             </Button>
