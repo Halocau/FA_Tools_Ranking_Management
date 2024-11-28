@@ -65,6 +65,7 @@ const BulkRankingModal = ({ open, handleClose, onUpload }) => {
             }
             const response = await FileUploadAPI.uploadFile(form);
             console.log("File uploaded successfully:", response);
+            handleCloseModal();
         } catch (error) {
             console.error("Error uploading file:", error.response?.data || error.message);
         }
