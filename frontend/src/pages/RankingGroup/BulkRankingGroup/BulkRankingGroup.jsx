@@ -51,7 +51,6 @@ import BulkRankingModal from "./BulkRankingModal.jsx";
 import * as XLSX from "xlsx";
 
 const BulkRankingGroup = () => {
-  const navigate = useNavigate(); // To navigate between pages
   const { id } = useParams(); // Get the ID from the URL
   // Group Info
   const [groupInfo, setGroupInfo] = useState({
@@ -287,6 +286,7 @@ const BulkRankingGroup = () => {
               handleClose={handleCloseImportModal}
               showSuccessMessage={showSuccessMessage}
               showErrorMessage={showErrorMessage}
+              currentGroup={groupInfo}
             />
           </Box>
         </Box>
