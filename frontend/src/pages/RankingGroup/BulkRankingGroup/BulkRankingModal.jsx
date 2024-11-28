@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Box, Button, Link, Modal, Typography, TextField, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ClearIcon from "@mui/icons-material/Clear"; // Import the Clear icon
+import FileUploadAPI from "../../../api/FileUploadAPI";
 
 const modalStyle = {
     position: "absolute",
@@ -17,17 +18,21 @@ const modalStyle = {
 
 const BulkRankingModal = ({ open, handleClose, onUpload }) => {
     const [selectedFile, setSelectedFile] = useState(null);
+    const [file, setFile] = useState(null);
     const [fileError, setFileError] = useState(""); // Track file error
 
     // Handle file change
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file && file.name.endsWith(".xlsx")) {
+            console.log("Selected file:", file); // Debugging step
             setSelectedFile(file.name);
-            setFileError(""); // Clear any previous error
+            setFile(file); // Store the file object in state
+            setFileError("");
         } else {
             setSelectedFile(null);
-            setFileError("Please select a valid .xlsx file."); // Show error message if file is not xlsx
+            setFile(null); // Reset file if invalid
+            setFileError("Please select a valid .xlsx file.");
         }
     };
 
@@ -42,6 +47,27 @@ const BulkRankingModal = ({ open, handleClose, onUpload }) => {
     const handleRemoveFile = () => {
         setSelectedFile(null); // Reset the selected file
         setFileError(""); // Reset the error message
+    };
+
+    const handleFileUpload = async () => {
+        if (!file) {
+            alert("Please select a file before uploading.");
+            return;
+        }
+        try {
+            console.log("Uploading file:", file); // Debugging step
+            const formData = new FormData();
+            formData.append("file", file); // Ensure the key matches the backend requirement
+            console.log("FormData contents:", Array.from(formData.entries())); // Debugging step
+            const form = {
+                file: file,
+                folder: 'upload'
+            }
+            const response = await FileUploadAPI.uploadFile(form);
+            console.log("File uploaded successfully:", response);
+        } catch (error) {
+            console.error("Error uploading file:", error.response?.data || error.message);
+        }
     };
 
     return (
@@ -135,7 +161,7 @@ const BulkRankingModal = ({ open, handleClose, onUpload }) => {
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => onUpload(selectedFile)} // Pass selectedFile to onUpload
+                        onClick={() => handleFileUpload(file)} // Pass selectedFile to onUpload
                         sx={{ textTransform: "none", fontWeight: "bold" }}
                     >
                         Upload
