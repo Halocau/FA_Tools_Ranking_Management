@@ -158,14 +158,16 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
 
                 // Flatten the criteria data and add it to the row
                 const criteriaColumns = employee.criteriaList.reduce((acc, criteria) => {
-                    acc[criteria.cirteriaName] = criteria.optionName; // Add score for each criteria
+                    acc[criteria.cirteriaName] = `${criteria.score} - ${criteria.optionName}`; // Add score for each criteria
                     return acc;
                 }, {});
 
+                const totalScore = employee.totalScore;
                 // Return the row with the flattened criteria added
                 return {
                     ...row,
                     ...criteriaColumns,
+                    totalScore,
                 };
             });
 
