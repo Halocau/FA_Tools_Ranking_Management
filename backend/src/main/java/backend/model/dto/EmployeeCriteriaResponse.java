@@ -11,6 +11,7 @@ public class EmployeeCriteriaResponse {
     private String rankingGroupName;
     private String currentRankingDecision;
     private String currentRank;
+    private String assessmentRank;
     private List<ApplyCriteriaResponse> criteriaList;
-    private double totalScore;
+    private Double totalScore;
 }
