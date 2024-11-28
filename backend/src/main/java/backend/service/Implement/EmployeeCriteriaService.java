@@ -11,6 +11,8 @@ import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import java.util.*;
 
@@ -174,18 +176,24 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
                     applyCriteriaResponse.setOptionName(option.getOptionName());
                     applyCriteriaResponse.setScore(option.getScore());
                     applyCriteriaResponse.setWeight(decisionCriteria.getWeight()); // Gán weight vào DTO
-
+                    applyCriteriaResponse.setMaxScore(criteria.getMaxScore());
                     applyCriteriaList.add(applyCriteriaResponse);
                     criteriaSet.add(uniqueKey);
                 }
             }
 
             response.setCriteriaList(applyCriteriaList);
+
+            // Tính totalScore dựa trên criteriaList
+            double totalScore = applyCriteriaList.stream()
+                    .mapToDouble(criteria -> (criteria.getScore() * criteria.getWeight() / criteria.getMaxScore()))
+                    .sum();
+            // Làm tròn totalScore thành 2 chữ số thập phân
+            BigDecimal roundedTotalScore = new BigDecimal(totalScore).setScale(2, RoundingMode.HALF_UP);
+            response.setTotalScore(roundedTotalScore.doubleValue());
         }
 
         employeeCriteriaResponses.addAll(responseMap.values());
         return employeeCriteriaResponses;
     }
-
-
 }
