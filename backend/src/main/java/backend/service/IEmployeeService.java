@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IEmployeeService {
-    public ResultPaginationDTO getAllEmployee(Specification<Employee> spec, Pageable pageable);
+    public List<Employee> getAllEmployee(Specification<Employee> spec);
     Optional<Employee> findById(Integer id);
     public void deleteEmployee(Integer id);
     public List<Employee> findByGroupId(Integer groupId);
