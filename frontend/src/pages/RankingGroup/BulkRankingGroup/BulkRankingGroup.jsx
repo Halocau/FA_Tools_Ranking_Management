@@ -157,6 +157,16 @@ const BulkRankingGroup = () => {
     }
   }, [bulkRankingGroup]);
   ///////////////////////////////////////////////////////// BulkRankingGroup /////////////////////////////////////////////////////////
+  //// Import
+  const handleOpenImportModal = () => {
+    setIsImportModalOpen(true);
+    console.log("Modal open prop type:", typeof isImportModalOpen, "Value:", isImportModalOpen);
+  };
+
+  const handleCloseImportModal = () => {
+    setIsImportModalOpen(false);
+    console.log("Modal Closed:", isImportModalOpen); // Debugging
+  };
   //// Export
   // Toggle modal
   const handleOpenExportModal = () => setIsExportModalOpen(true);
@@ -274,6 +284,13 @@ const BulkRankingGroup = () => {
             >
               Bulk Ranking
             </Button>
+            {/* Modal bulk ranking */}
+            <BulkRankingModal
+              open={isImportModalOpen}
+              handleClose={handleCloseImportModal}
+              showSuccessMessage={showSuccessMessage}
+              showErrorMessage={showErrorMessage}
+            />
           </Box>
         </Box>
         {/* Table */}
