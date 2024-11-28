@@ -3,6 +3,7 @@ import { Box, Button, Link, Modal, Typography, TextField, IconButton } from "@mu
 import CloseIcon from "@mui/icons-material/Close";
 import ClearIcon from "@mui/icons-material/Clear"; // Import the Clear icon
 import FileUploadAPI from "../../../api/FileUploadAPI";
+import * as XLSX from "xlsx"; // Import SheetJS library
 
 const modalStyle = {
     position: "absolute",
@@ -20,6 +21,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
     const [selectedFile, setSelectedFile] = useState(null);
     const [file, setFile] = useState(null);
     const [fileError, setFileError] = useState(""); // Track file error
+    const [data, setData] = useState(null);
 
     // Handle file change
     const handleFileChange = (e) => {
@@ -29,6 +31,17 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             setSelectedFile(file.name);
             setFile(file); // Store the file object in state
             setFileError("");
+            // Parse the file to extract data
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const arrayBuffer = event.target.result;
+                const workbook = XLSX.read(arrayBuffer, { type: "array" });
+                const sheetName = workbook.SheetNames[0]; // Read the first sheet
+                const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]); // Convert sheet to JSON
+                setData(sheetData); // Update data state with extracted data
+                console.log("Extracted Data:", sheetData); // Log data for debugging
+            };
+            reader.readAsArrayBuffer(file);
         } else {
             setSelectedFile(null);
             setFile(null); // Reset file if invalid
