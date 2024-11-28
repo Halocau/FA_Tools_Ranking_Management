@@ -29,6 +29,14 @@ public class EmployeeCriteriaController {
         return responseList;
     }
 
+
+    @GetMapping("/get-groupId/{groupId}")
+    public List<EmployeeCriteriaResponse> employeeCriteriaByGroupId(@PathVariable(name = "groupId") Integer groupId) {
+        List<EmployeeCriteria> listGroupId = iEmployeeCriteriaService.getEmployeeCriteriaByGroupId(groupId);
+        List<EmployeeCriteriaResponse> responseList = iEmployeeCriteriaService.getEmployeeCriteriaResponse(listGroupId);
+        return responseList;
+    }
+
     @PutMapping("/upsert")
     public ResponseEntity<String> upsertEmployeeCriteria(@Valid @RequestBody UpsertEmployeeCriteriaRequest form) {
         EmployeeCriteria findEmployeeCriteria = iEmployeeCriteriaService.findByEmployeeIdAndCriteriaId(form.getEmployeeId(), form.getCriteriaId());

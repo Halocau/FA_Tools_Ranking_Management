@@ -28,19 +28,13 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public ResponseEntity<ResultPaginationDTO> getEmployeeResponse(
-            @Filter Specification<Employee> spec,
-            Pageable pageable
+    public ResponseEntity<List<EmployeeResponse>> getEmployeeResponse(
+            @Filter Specification<Employee> spec
     ) {
         //get object pagination
-        ResultPaginationDTO allEmployee = iEmployeeService.getAllEmployee(spec, pageable);
-
-        List<Employee> getEmployee = (List<Employee>) allEmployee.getResult();
-
-        List<EmployeeResponse> getEmployeeResponse = iEmployeeService.getAllEmployeeResponses(getEmployee);
-        allEmployee.setResult(getEmployeeResponse);
-
-        return new ResponseEntity<>(allEmployee, HttpStatus.OK);
+        List<Employee> allEmployee = iEmployeeService.getAllEmployee(spec);
+        List<EmployeeResponse> getEmployeeResponse = iEmployeeService.getAllEmployeeResponses(allEmployee);
+        return new ResponseEntity<>(getEmployeeResponse, HttpStatus.OK);
     }
     @GetMapping("/group/{groupId}")
     public ResponseEntity<List<EmployeeResponse>> getEmployeeGroupId(@PathVariable Integer groupId) {
@@ -48,18 +42,7 @@ public class EmployeeController {
         List<EmployeeResponse> getEmployeeResponse = iEmployeeService.getAllEmployeeResponses(getByGroupId);
         return new ResponseEntity<>(getEmployeeResponse, HttpStatus.OK);
     }
-//error
-    @GetMapping("/get/{id}")
-    public ResponseEntity<EmployeeResponse> findEmployeeResponse(@PathVariable Integer id) {
-        Optional<Employee> employee = iEmployeeService.findById(id);
-        if (employee.isPresent()) {
-            EmployeeResponse employeeResponse = iEmployeeService.findEmployeeResponseById(employee.get());
-            return ResponseEntity.status(HttpStatus.OK).body(employeeResponse);
-        } else {
-            throw new EntityNotFoundException("Employee not found with ID: " + id);
-        }
 
-    }
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteEmployee(@PathVariable Integer id) {
         iEmployeeService.deleteEmployee(id);

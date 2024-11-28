@@ -23,7 +23,7 @@ import EmpoyeeAPI from "../../../api/EmployeeAPI.js";
 import SearchComponent from "../../../components/Common/Search.jsx";
 // Hooks
 import useNotification from "../../../hooks/useNotification";
-//
+// Import Excel export library
 import * as XLSX from "xlsx";
 
 const ExportTemplateModal = ({ open, handleClose, onExport }) => {
@@ -133,28 +133,46 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
     setRows(mappedRows); // Update the rows to reflect the filtered data
   };
 
+  //
+  const capitalizeFirstLetterEachWord = (string) => {
+    return string
+      .split(" ") // Split string to word
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Uppercase 
+      .join(" "); // Connect words
+  };
+
   ////////////////////////////////////////////////////////////// Select //////////////////////////////////////////////////////////////
-  // Hàm lấy thông tin nhân viên đã chọn
-  const handleSelectionModelChange = (newSelection) => {
-      const selectedIDs = newSelection.selectionModel;
+  // Selection Employees
+  const handleSelectionModelChange = () => {
+    const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
+    const selectedRowsData = selectedIDs.map((employeeId) =>
+      rows.find((row) => row.employeeId === employeeId)
+    );
+    if (selectedRowsData.length > 0) {
+      // change Data to Excel
+      const worksheet = XLSX.utils.json_to_sheet(selectedRowsData);
 
-      if (selectedIDs.length > 0) {
-        const selectedRowsData = selectedIDs.map((id) =>
-          rows.find((row) => row.employeeId === id)
-        );
+      // Create Header name
+      const headers = Object.keys(selectedRowsData[0]).map((key) => {
+        return key
+          .replace(/([A-Z])/g, " $1") // Add space before Uppercase Character
+          .replace(/^./, (str) => str.toUpperCase());
+      });
 
-        // Kiểm tra xem selectedRowsData có phải là mảng hợp lệ không
-        if (selectedRowsData && selectedRowsData.length > 0) {
-          setSelectedEmployees(selectedRowsData);
-          console.log("Nhân viên đã chọn:", selectedRowsData); // Debug
-        } else {
-          setSelectedEmployees([]);
-          console.log("Không tìm thấy nhân viên tương ứng với ID đã chọn.");
-        }
-      } else {
-        setSelectedEmployees([]);
-        console.log("Chưa có nhân viên nào được chọn.");
-      }
+      // Update header to sheet
+      headers.forEach((header, index) => {
+        worksheet[`${String.fromCharCode(65 + index)}1`] = { v: header }; 
+      });
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+
+      // create file Excel
+      XLSX.writeFile(workbook, "Selected_Employees.xlsx");
+      handleClose();
+    } else {      
+      showErrorMessage("No rows selected to export.");
+    }
   };
 
   ////////////////////////////////////////////////////////////// Table//////////////////////////////////////////////////////////////
@@ -170,31 +188,6 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
     { field: "currentRank", headerName: "Current Rank", width: 200 },
   ];
 
-  //
-  const exportToExcel = (selectedEmployees) => {
-    if (selectedEmployees.length === 0) {
-      showErrorMessage("No records selected for export.");
-      return;
-    }
-    // Tiến hành xuất Excel
-    const worksheetData = selectedEmployees.map((employee) => ({
-      "Employee ID": employee.employeeId,
-      "Employee Name": employee.employeeName,
-      "Ranking Group": employee.rankingGroup,
-      "Current Decision": employee.currentDecision,
-      "Current Rank": employee.currentRank,
-    }));
-    // Tạo worksheet và workbook
-    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
-    // Xuất file Excel
-    const currentDate = new Date().toISOString().split("T")[0]; // Lấy ngày hiện tại
-    const fileName = `Exported_Employees_${currentDate}.xlsx`;
-    XLSX.writeFile(workbook, fileName);
-    showSuccessMessage("Export successful!");
-  };
-
   useEffect(() => {
     if (employees) {
       const mappedRows = employees.map((employees) => ({
@@ -207,9 +200,6 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
       setRows(mappedRows);
     }
   }, [employees]);
-
-  console.log("Rows:", rows); 
-  console.log("Selected Employees:", selectedEmployees);
 
   return (
     <Modal sx={{ marginTop: 2 }} open={open} onClose={handleClose}>
@@ -398,7 +388,9 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
             disableRowSelectionOnClick
             hideFooter
             autoHeight
-            onSelectionModelChange={handleSelectionModelChange}
+            onSelectionModelChange={(newSelection) =>
+              handleSelectionModelChange(newSelection)
+            } // Sự kiện này sẽ truyền đúng newSelection
             sx={{
               "& .MuiDataGrid-columnHeader": {
                 textAlign: "center", // Căn giữa header
@@ -418,7 +410,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => exportToExcel(selectedEmployees)}
+            onClick={handleSelectionModelChange}
           >
             Export
           </Button>
