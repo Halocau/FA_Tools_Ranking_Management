@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -122,12 +123,16 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
         List<EmployeeCriteriaResponse> employeeCriteriaResponses = new ArrayList<>();
         Map<Integer, EmployeeCriteriaResponse> responseMap = new HashMap<>();
 
+        // Duyệt qua từng EmployeeCriteria trong danh sách
         for (EmployeeCriteria employeeCriteria : listEmployeeCriteria) {
+            // Truy xuất thông tin nhân viên
             Employee employee = iEmployeeRepository.findById(employeeCriteria.getEmployeeId())
                     .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeCriteria.getEmployeeId()));
 
+            // Kiểm tra xem đã có EmployeeCriteriaResponse chưa
             EmployeeCriteriaResponse response = responseMap.get(employeeCriteria.getEmployeeId());
             if (response == null) {
+                // Chưa có, tạo mới
                 response = new EmployeeCriteriaResponse();
                 response.setEmployeeId(employee.getEmployeeId());
                 response.setEmployeeName(employee.getEmployeeName());
@@ -152,9 +157,11 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
                 responseMap.put(employee.getEmployeeId(), response);
             }
 
+            // Lấy danh sách ApplyCriteriaResponse
             List<ApplyCriteriaResponse> applyCriteriaList = new ArrayList<>();
             Set<String> criteriaSet = new HashSet<>();
 
+            // Lấy danh sách EmployeeCriteria của nhân viên
             List<EmployeeCriteria> employeeCriteriaList = iEmployeeCriteriaRepository.findByEmployeeId(employee.getEmployeeId());
             for (EmployeeCriteria empCriteria : employeeCriteriaList) {
                 Criteria criteria = iCriteriaRepository.findById(empCriteria.getCriteriaId())
@@ -175,7 +182,7 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
                     applyCriteriaResponse.setCirteriaName(criteria.getCriteriaName());
                     applyCriteriaResponse.setOptionName(option.getOptionName());
                     applyCriteriaResponse.setScore(option.getScore());
-                    applyCriteriaResponse.setWeight(decisionCriteria.getWeight()); // Gán weight vào DTO
+                    applyCriteriaResponse.setWeight(decisionCriteria.getWeight());
                     applyCriteriaResponse.setMaxScore(criteria.getMaxScore());
                     applyCriteriaList.add(applyCriteriaResponse);
                     criteriaSet.add(uniqueKey);
@@ -185,15 +192,43 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
             response.setCriteriaList(applyCriteriaList);
 
             // Tính totalScore dựa trên criteriaList
-            double totalScore = applyCriteriaList.stream()
-                    .mapToDouble(criteria -> (criteria.getScore() * criteria.getWeight() / criteria.getMaxScore()))
-                    .sum();
+            double totalScore = 0.0;
+            for (ApplyCriteriaResponse criteria : applyCriteriaList) {
+                totalScore += (criteria.getScore() * criteria.getWeight() / criteria.getMaxScore());
+            }
+
             // Làm tròn totalScore thành 2 chữ số thập phân
             BigDecimal roundedTotalScore = new BigDecimal(totalScore).setScale(2, RoundingMode.HALF_UP);
             response.setTotalScore(roundedTotalScore.doubleValue());
+
+            // Lấy danh sách RankingTitle sắp xếp theo totalScore
+            List<RankingTitle> sortedRankingTitles = iRankingTitleRepository.findAllByOrderByTotalScoreAsc();
+
+            // Truy xuất thông tin về thứ hạng hiện tại của Employee
+            RankingTitle employeeRankingTitle = iRankingTitleRepository.findById(employee.getRankingTitleId())
+                    .orElseThrow(() -> new EntityNotFoundException("RankingTitle not found for title ID: " + employee.getRankingTitleId()));
+
+            // Mặc định assessmentRank là thứ hạng hiện tại
+            String assessmentRank = employeeRankingTitle.getTitleName();
+
+            // Duyệt danh sách để tìm thứ hạng phù hợp với totalScore
+            for (RankingTitle title : sortedRankingTitles) {
+                // Kiểm tra totalScore có null không trước khi gọi doubleValue
+                double titleTotalScore = (title.getTotalScore() != null) ? title.getTotalScore() : 0.0;
+
+                if (roundedTotalScore.doubleValue() >= titleTotalScore) {
+                    assessmentRank = title.getTitleName(); // Cập nhật thứ hạng nếu đủ điểm
+                } else {
+                    break;
+                }
+            }
+
+            response.setAssessmentRank(assessmentRank);
         }
 
         employeeCriteriaResponses.addAll(responseMap.values());
         return employeeCriteriaResponses;
     }
+
+
 }
