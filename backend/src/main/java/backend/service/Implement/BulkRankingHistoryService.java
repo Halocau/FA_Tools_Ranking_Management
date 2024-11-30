@@ -13,7 +13,6 @@ import backend.model.entity.RankingGroup;
 import backend.model.form.BulkRankingHistory.CreateBulkRankingHistoryRequest;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.IBulkRankingHistoryService;
-import backend.service.IRankingGroupService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,7 +118,7 @@ public class BulkRankingHistoryService implements IBulkRankingHistoryService {
 
     @Override
     @Transactional
-    public void createBulkRankingHistoryRequest(CreateBulkRankingHistoryRequest form) {
+    public BulkRankingHistory createBulkRankingHistoryRequest(CreateBulkRankingHistoryRequest form) {
         BulkRankingHistory create = BulkRankingHistory.builder()
                 .fileName(form.getFileName())
                 .filePath(form.getFilePath())
@@ -129,6 +128,7 @@ public class BulkRankingHistoryService implements IBulkRankingHistoryService {
                 .note(form.getNote())
                 .build();
         iBulkRankingHistoryRepository.save(create);
+        return create;
     }
 
 

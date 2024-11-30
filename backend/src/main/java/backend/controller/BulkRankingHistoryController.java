@@ -42,8 +42,8 @@ public class BulkRankingHistoryController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<String> createBulkRankingHistory(@Valid @RequestBody CreateBulkRankingHistoryRequest form) {
-        iBulkRankingHistoryService.createBulkRankingHistoryRequest(form);
-        return ResponseEntity.status(HttpStatus.CREATED).body("created BulkRankingHistory request successfully");
+    public ResponseEntity<BulkRankingHistory> createBulkRankingHistory(@Valid @RequestBody CreateBulkRankingHistoryRequest form) {
+        BulkRankingHistory createBulkRankingHistory =iBulkRankingHistoryService.createBulkRankingHistoryRequest(form);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createBulkRankingHistory);
     }
 }
