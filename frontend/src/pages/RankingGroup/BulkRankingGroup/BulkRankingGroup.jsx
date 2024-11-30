@@ -125,6 +125,15 @@ const BulkRankingGroup = () => {
   useEffect(() => {
     getBulkRankingGroup();
   }, [id, filter, page, pageSize]);
+
+  const addNewBulkRanking = async (data) => {
+    try {
+      const response = await BulkRankingAPI.addNewBulkRanking(data);
+      return response;
+    } catch (error) {
+      console.error("Error fetching group:", error);
+    }
+  }
   // Columns configuration for the DataGrid
   const columns = [
     { field: "fileName", headerName: "File Name", width: 200 },
@@ -287,6 +296,7 @@ const BulkRankingGroup = () => {
               showSuccessMessage={showSuccessMessage}
               showErrorMessage={showErrorMessage}
               currentGroup={groupInfo}
+              addNewBulkRanking={addNewBulkRanking}
             />
           </Box>
         </Box>
