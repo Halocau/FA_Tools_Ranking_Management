@@ -19,6 +19,6 @@ public interface IBulkRankingHistoryService {
     //response
     public List<BulkRankingHistoryResponse> getAllBulkRankingHistoryResponses(List<BulkRankingHistory> list);
     //form
-    public void createBulkRankingHistoryRequest(CreateBulkRankingHistoryRequest form);
+    public BulkRankingHistory createBulkRankingHistoryRequest(CreateBulkRankingHistoryRequest form);
 
 }
