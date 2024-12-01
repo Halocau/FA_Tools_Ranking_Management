@@ -1,11 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { Box, Button, Link, Modal, Typography, TextField, IconButton } from "@mui/material";
+import React, { useEffect, useState, useRef } from "react";
+
+// Mui
+import { Box, Button, Link, Modal, Typography, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ClearIcon from "@mui/icons-material/Clear"; // Import the Clear icon
-import FileUploadAPI from "../../../api/FileUploadAPI";
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+
+// XLSX library
 import * as XLSX from "xlsx"; // Import SheetJS library
 
 //API
+import FileUploadAPI from "../../../api/FileUploadAPI";
 import EmployeeCriteriaAPI from "../../../api/EmployeeCriteriaAPI";
 import EmployeeAPI from "../../../api/EmployeeAPI";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI";
@@ -25,13 +30,11 @@ const modalStyle = {
 const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMessage, currentGroup, addNewBulkRanking }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [file, setFile] = useState(null);
-    const [fileError, setFileError] = useState(""); // Track file error
     const [data, setData] = useState(null);
     const [criteriaList, setListCriteria] = useState([]);
-    const [newBulkRanking, setNewBulkRanking] = useState({});
-    const [employeeCriteriaData, setEmployeeCriteriaData] = useState([]);
-    console.log("Criteria:", criteriaList);
-    console.log("Data: ", data);
+    const [status, setStatus] = useState('Success');
+    const [note, setNote] = useState('');
+    const fileInputRef = useRef(null); // Reference to the file input
 
     const getCriteriaList = async () => {
         try {
@@ -50,8 +53,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
 
     const uploadEmployee = async (form) => {
         try {
-            const response = await EmployeeAPI.upsertEmployeeList(form);
-            showSuccessMessage("Successfully upload data to employee list!!!");
+            await EmployeeAPI.upsertEmployeeList(form);
         } catch (error) {
             showErrorMessage("Failed to upload data to employee list!!!");
         }
@@ -59,8 +61,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
 
     const uploadEmployeeCriteria = async (form) => {
         try {
-            const response = await EmployeeCriteriaAPI.upsertEmployeeCriteriaList(form);
-            showSuccessMessage("Successfully upload data to employee criteria list!!!");
+            await EmployeeCriteriaAPI.upsertEmployeeCriteriaList(form);
         } catch (error) {
             showErrorMessage("Failed to upload data to employee criteria list!!!");
         }
@@ -108,10 +109,8 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file && file.name.endsWith(".xlsx")) {
-            console.log("Selected file:", file); // Debugging step
             setSelectedFile(file.name);
             setFile(file); // Store the file object in state
-            setFileError("");
 
             // Parse the file to extract data
             const reader = new FileReader();
@@ -125,21 +124,21 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
 
                 // Extract headers and validate required columns
                 const headers = sheetData[0] || []; // The first row contains headers
-                // const requiredColumns = ["Employer ID", "Employer Name"];
-                // const validationResult = validateColumns(headers, requiredColumns);
+                const requiredColumns = ["Employer ID", "Employer Name"];
+                const validationResult = validateColumns(headers, requiredColumns);
 
-                // if (!validationResult.isValid) {
-                //     // Set error if validation fails
-                //     setFileError(validationResult.errorMessage);
-                //     setData([]); // Clear data state
-                //     return;
-                // }
+                if (!validationResult.isValid) {
+                    setStatus("Failed");
+                    setNote("Wrong value input for criteria options. Please update and try again.");
+                    setData([]); // Clear data state
+                    return;
+                }
 
-                console.log("Headers:", headers); // Log headers for debugging
                 const validationResult2 = validateHeadersAgainstCriteria(headers, criteriaList);
                 if (!validationResult2.isValid) {
                     // Set error if validation fails
-                    setFileError(validationResult2.errorMessage);
+                    setStatus("Failed");
+                    setNote("Wrong value template. Re-download latest template and try again.");
                     setData([]); // Clear data state
                     return;
                 }
@@ -147,85 +146,29 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 // Convert sheet to JSON excluding the header row
                 const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
                 setData(jsonData); // Update data state with extracted data
-                console.log("Extracted Data:", jsonData); // Log data for debugging
-                const mappedData = mapExcelDataToOptionIds(sheetData, criteriaList);
-                setEmployeeCriteriaData(mappedData);
-                console.log("Mapped Data:", mappedData); // Log mapped data for debugging
+
             };
             reader.readAsArrayBuffer(file);
         } else {
             setSelectedFile(null);
             setFile(null); // Reset file if invalid
             setData([]); // Clear data state
-            setFileError("Please select a valid .xlsx file.");
-            console.log("Invalid file selected."); // Debugging step
         }
     };
 
 
-    const mapExcelDataToOptionIds = (excelData, criteriaList) => {
-        const criteriaNameToOptionsMap = criteriaList.reduce((map, criteria) => {
-            map[criteria.criteriaName] = criteria.options;
-            return map;
-        }, {});
-
-        // Extract header row and data rows
-        const headers = excelData[0];
-        const dataRows = excelData.slice(1);
-
-        // Normalize headers
-        const normalizedHeaders = headers.map((header) =>
-            header.trim().replace(/\r?\n|\r/g, "")
-        );
-
-        const result = dataRows.map((row) => {
-            const rowResult = {};
-
-            row.forEach((cellValue, colIndex) => {
-                const columnHeader = normalizedHeaders[colIndex];
-
-                // Skip non-criteria columns
-                if (!criteriaNameToOptionsMap[columnHeader]) {
-                    rowResult[columnHeader] = cellValue; // Keep non-criteria data (e.g., Employer ID)
-                    return;
-                }
-
-                // Match criteria column
-                const options = criteriaNameToOptionsMap[columnHeader];
-                const [scoreStr, ...optionNameParts] = cellValue.split(" - ");
-                const score = parseInt(scoreStr.trim(), 10);
-                const optionName = optionNameParts.join(" - ").trim();
-
-                const matchedOption = options.find(
-                    (option) =>
-                        option.score === score && option.optionName === optionName
-                );
-
-                if (matchedOption) {
-                    rowResult[columnHeader] = matchedOption.optionId; // Store optionId
-                } else {
-                    rowResult[columnHeader] = null; // Mark unmatched
-                    console.warn(
-                        `No matching option found for cell value: "${cellValue}" in column: "${columnHeader}"`
-                    );
-                }
-            });
-            return rowResult;
-        });
-        return result;
-    };
-
     // Handle closing the modal and resetting the file
     const handleCloseModal = () => {
         setSelectedFile(null); // Reset selected file when closing the modal
-        setFileError(""); // Reset file error message
         handleClose(); // Call the original handleClose to close the modal
     };
 
     // Handle removing the selected file
     const handleRemoveFile = () => {
         setSelectedFile(null); // Reset the selected file
-        setFileError(""); // Reset the error message
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ''; // Reset the input value
+        }
     };
 
     const handleEmployeeUpload = async (newBulkRanking) => {
@@ -243,7 +186,6 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             // Call the uploadEmployee function with the mapped data
             await uploadEmployee(employees);
 
-            console.log("Employee upload process completed successfully!");
         } catch (error) {
             console.error("Error during employee upload process:", error);
         }
@@ -294,16 +236,13 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             return;
         }
         try {
-            console.log("Uploading file:", file); // Debugging step
             const formData = new FormData();
             formData.append("file", file); // Ensure the key matches the backend requirement
-            console.log("FormData contents:", Array.from(formData.entries())); // Debugging step
             const form = {
                 file: file,
                 folder: 'upload'
             }
             const response = await FileUploadAPI.uploadFile(form);
-            // console.log("Response:", response);
             const filePath = `D:\\upload\\${response.fileName}`;
             // Construct the payload for bulk ranking upload
             const data = {
@@ -311,30 +250,34 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 filePath: filePath,
                 rankingGroupId: currentGroup.groupId, // Assume currentGroup is provided with a groupId field
                 uploadBy: 1, // Default uploadBy value
-                status: "ok", // Default status
-                note: "1", // Default note
+                status: status, // Default status
+                note: note, // Default note
             };
 
-            // Call the function to add a new bulk ranking
-            const newBulkRanking = await addNewBulkRanking(data);
-            setNewBulkRanking(newBulkRanking);
+            if (status === 'Success') {
+                // Call the function to add a new bulk ranking
+                const newBulkRanking = await addNewBulkRanking(data);
+                // Call the function to upload employees
+                await handleEmployeeUpload(newBulkRanking);
 
-            // Call the function to upload employees
-            await handleEmployeeUpload(newBulkRanking);
-
-            // Call the function to upload employee criteria
-            const output = extractEmployeeCriteriaOptions(criteriaList, data);
-            await uploadEmployeeCriteria(output);
-            showSuccessMessage("Successfully upload!!!");
+                // Call the function to upload employee criteria
+                const output = extractEmployeeCriteriaOptions(criteriaList, data);
+                await uploadEmployeeCriteria(output);
+                showSuccessMessage("Successfully upload!!!");
+            }
+            if (status === 'Failed') {
+                throw new Error("Failed to upload data from excel file!!!");
+            }
             handleCloseModal();
+
         } catch (error) {
-            console.error("Error uploading file:", error);
             showErrorMessage("Failed to upload data from excel file!!!");
+            handleCloseModal();
         }
     };
 
     return (
-        <Modal open={open} onClose={handleCloseModal}>
+        <Modal open={open} onClose={handleCloseModal} >
             <Box sx={modalStyle}>
                 {/* Header */}
                 <Box
@@ -368,26 +311,47 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 </Box>
 
                 {/* Body */}
-                <Box mt={2}>
-                    <Typography variant="body1">Select a file to upload:</Typography>
-                    <TextField
-                        fullWidth
-                        variant="outlined"
-                        type="file"
-                        accept=".xlsx" // Only accept .xlsx files
-                        onChange={handleFileChange}
-                    />
-                    {fileError && (
-                        <Typography variant="body2" color="error" mt={1}>
-                            {fileError} {/* Display error message */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', justifyItems: 'center', marginTop: '20px' }}>
+                    <Typography variant="body1">Select file:</Typography>
+                    <Box
+                        sx={{
+                            width: '15vw',
+                            border: '1px solid #ccc',
+                            borderRadius: '5px',
+                            padding: '8px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Typography variant="body2" noWrap>
+                            {selectedFile ? selectedFile : 'No file selected'}
                         </Typography>
-                    )}
-                </Box>
+                        <label htmlFor="file-upload">
+                            <input
+                                id="file-upload"
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".xls,.xlsx"
+                                style={{ display: 'none' }}
+                                onChange={handleFileChange}
+                            />
+                            <IconButton
+                                color="primary"
+                                component="span"
+                                size="small"
+                                aria-label="upload file"
+                            >
+                                <UploadFileIcon />
+                            </IconButton>
+                        </label>
+                    </Box>
+                </div>
 
                 {/* Display selected file as a clickable link with clear icon */}
                 {selectedFile && (
-                    <Box mt={2} display="flex" alignItems="center">
-                        <Typography variant="body2" mr={2}>
+                    <Box mt={2} display="flex" alignItems="center" >
+                        <Typography variant="body2" mr={2} noWrap>
                             Selected File:{" "}
                             <Link
                                 href="#"
