@@ -9,7 +9,6 @@ import * as XLSX from "xlsx"; // Import SheetJS library
 import EmployeeCriteriaAPI from "../../../api/EmployeeCriteriaAPI";
 import EmployeeAPI from "../../../api/EmployeeAPI";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI";
-import { lightGreen } from "@mui/material/colors";
 
 const modalStyle = {
     position: "absolute",
@@ -29,9 +28,10 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
     const [fileError, setFileError] = useState(""); // Track file error
     const [data, setData] = useState(null);
     const [criteriaList, setListCriteria] = useState([]);
-    const [fileName, setFileName] = useState("");
+    const [fileName, setFileName] = useState(null);
+    const [newBulkRanking, setNewBulkRanking] = useState({});
 
-    console.log("Criteria:", criteriaList);
+    console.log("Criteria:", newBulkRanking);
 
     const getCriteriaList = async () => {
         try {
@@ -243,9 +243,26 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             }
             const response = await FileUploadAPI.uploadFile(form);
             setFileName(response.fileName);
+            // console.log("Response:", response);
+            const filePath = `D:\\upload\\${fileName}`;
+
+            // Construct the payload for bulk ranking upload
+            const data = {
+                fileName: fileName,
+                filePath: filePath,
+                rankingGroupId: currentGroup.groupId, // Assume currentGroup is provided with a groupId field
+                uploadBy: 1, // Default uploadBy value
+                status: "ok", // Default status
+                note: "1", // Default note
+            };
+
+            // Call the function to add a new bulk ranking
+            const newBulkRanking = await addNewBulkRanking(data);
+            setNewBulkRanking(newBulkRanking);
             showSuccessMessage("Successfully upload!!!");
             handleCloseModal();
         } catch (error) {
+            console.error("Error uploading file:", error);
             showErrorMessage("Failed to upload data from excel file!!!");
         }
     };
