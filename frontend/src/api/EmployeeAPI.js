@@ -10,7 +10,7 @@ const EmployeeAPI = {
 
     upsertEmployeeList: (form) =>
         authClient
-            .post(`${employee_api}/upsert-list`, form)
+            .put(`${employee_api}/upsert-list`, form)
             .then((response) => response.data),
 };
 export default EmployeeAPI;

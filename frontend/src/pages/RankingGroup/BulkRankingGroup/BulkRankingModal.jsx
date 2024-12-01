@@ -28,10 +28,10 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
     const [fileError, setFileError] = useState(""); // Track file error
     const [data, setData] = useState(null);
     const [criteriaList, setListCriteria] = useState([]);
-    const [fileName, setFileName] = useState(null);
     const [newBulkRanking, setNewBulkRanking] = useState({});
-
-    console.log("Criteria:", newBulkRanking);
+    const [employeeCriteriaData, setEmployeeCriteriaData] = useState([]);
+    console.log("Criteria:", criteriaList);
+    console.log("Data: ", data);
 
     const getCriteriaList = async () => {
         try {
@@ -149,6 +149,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 setData(jsonData); // Update data state with extracted data
                 console.log("Extracted Data:", jsonData); // Log data for debugging
                 const mappedData = mapExcelDataToOptionIds(sheetData, criteriaList);
+                setEmployeeCriteriaData(mappedData);
                 console.log("Mapped Data:", mappedData); // Log mapped data for debugging
             };
             reader.readAsArrayBuffer(file);
@@ -227,6 +228,66 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         setFileError(""); // Reset the error message
     };
 
+    const handleEmployeeUpload = async (newBulkRanking) => {
+        try {
+            // Map the data to match the required employee form structure
+            const employees = data.map((item) => ({
+                employeeId: item["Employer ID"], // Extract Employer ID
+                employeeName: item["Employer Name"], // Extract Employer Name
+                groupId: currentGroup.groupId, // groupId from currentGroup
+                rankingTitleId: 1, // Default as 1
+                bulkImportId: newBulkRanking.historyId, // From newBulkRanking.historyId
+                rankingDecisionId: currentGroup.decisionId, // From currentGroup.decisionId
+            }));
+
+            // Call the uploadEmployee function with the mapped data
+            await uploadEmployee(employees);
+
+            console.log("Employee upload process completed successfully!");
+        } catch (error) {
+            console.error("Error during employee upload process:", error);
+        }
+    };
+
+
+    function extractEmployeeCriteriaOptions() {
+        const result = [];
+
+        // Create a lookup for criteria options by criteriaName and score
+        const criteriaLookup = {};
+        criteriaList.forEach(criteria => {
+            const optionsLookup = {};
+            criteria.options.forEach(option => {
+                optionsLookup[option.score] = option.optionId; // Map score to optionId
+            });
+            criteriaLookup[criteria.criteriaName] = {
+                criteriaId: criteria.criteriaId,
+                options: optionsLookup
+            };
+        });
+
+        // Map data to employeeId, criteriaId, and optionId
+        data.forEach(employee => {
+            const employeeId = employee["Employer ID"];
+            for (const key in employee) {
+                if (key !== "Employer ID" && key !== "Employer Name") {
+                    const criteriaName = key.trim(); // Remove unwanted whitespace or line breaks
+                    const [score] = employee[key].split(" - ").map(s => parseInt(s.trim())); // Extract score
+
+                    if (criteriaLookup[criteriaName]) {
+                        const { criteriaId, options } = criteriaLookup[criteriaName];
+                        const optionId = options[score];
+                        result.push({ employeeId, criteriaId, optionId });
+                    }
+                }
+            }
+        });
+
+        return result;
+    }
+
+
+
     const handleFileUpload = async () => {
         if (!file) {
             alert("Please select a file before uploading.");
@@ -242,13 +303,11 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 folder: 'upload'
             }
             const response = await FileUploadAPI.uploadFile(form);
-            setFileName(response.fileName);
             // console.log("Response:", response);
-            const filePath = `D:\\upload\\${fileName}`;
-
+            const filePath = `D:\\upload\\${response.fileName}`;
             // Construct the payload for bulk ranking upload
             const data = {
-                fileName: fileName,
+                fileName: response.fileName,
                 filePath: filePath,
                 rankingGroupId: currentGroup.groupId, // Assume currentGroup is provided with a groupId field
                 uploadBy: 1, // Default uploadBy value
@@ -259,6 +318,13 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             // Call the function to add a new bulk ranking
             const newBulkRanking = await addNewBulkRanking(data);
             setNewBulkRanking(newBulkRanking);
+
+            // Call the function to upload employees
+            await handleEmployeeUpload(newBulkRanking);
+
+            // Call the function to upload employee criteria
+            const output = extractEmployeeCriteriaOptions(criteriaList, data);
+            await uploadEmployeeCriteria(output);
             showSuccessMessage("Successfully upload!!!");
             handleCloseModal();
         } catch (error) {

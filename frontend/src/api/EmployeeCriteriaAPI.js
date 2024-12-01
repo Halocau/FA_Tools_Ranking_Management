@@ -11,7 +11,7 @@ const EmployeeCriteriaAPI = {
      */
     upsertEmployeeCriteriaList: (form) =>
         authClient
-            .post(`${employee_criteria_api}/upsert-list`, form)
+            .put(`${employee_criteria_api}/upsert-list`, form)
             .then((response) => response.data),
 
     /**
