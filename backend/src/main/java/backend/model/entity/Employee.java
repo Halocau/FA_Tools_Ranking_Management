@@ -28,8 +28,6 @@ public class Employee {
 
     @Column(name = "group_id")
     private Integer groupId;
-    @Column(name = "rank_title_id")
-    private Integer rankingTitleId;
 
     @Column(name = "bulk_import_id")
     private Integer bulkImportId;

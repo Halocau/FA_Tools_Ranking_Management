@@ -79,9 +79,9 @@ public class EmployeeService implements IEmployeeService {
             response.setCurrentRankingDecision(rankingDecision.getDecisionName());
 
             // Set CurrentRank
-            RankingTitle rankingTitle = iRankingTitleRepository.findById(employee.getRankingTitleId())
-                    .orElseThrow(() -> new EntityNotFoundException("RankingTitle not found for title ID: " + employee.getRankingTitleId()));
-            response.setCurrentRank(rankingTitle.getTitleName());
+//            RankingTitle rankingTitle = iRankingTitleRepository.findById(employee.getRankingTitleId())
+//                    .orElseThrow(() -> new EntityNotFoundException("RankingTitle not found for title ID: " + employee.getRankingTitleId()));
+//            response.setCurrentRank(rankingTitle.getTitleName());
 
             employeeResponses.add(response);
         }
@@ -104,7 +104,7 @@ public class EmployeeService implements IEmployeeService {
             employee.setEmployeeId(form.getEmployeeId());
             employee.setEmployeeName(form.getEmployeeName());
             employee.setGroupId(form.getGroupId());
-            employee.setRankingTitleId(form.getRankingTitleId());
+//            employee.setRankingTitleId(form.getRankingTitleId());
             employee.setBulkImportId(form.getBulkImportId());
             employee.setRankingDecisionId(form.getRankingDecisionId());
             iEmployeeRepository.saveAndFlush(employee);
@@ -114,7 +114,7 @@ public class EmployeeService implements IEmployeeService {
                     .employeeId(form.getEmployeeId())
                     .employeeName(form.getEmployeeName())
                     .groupId(form.getGroupId())
-                    .rankingTitleId(form.getRankingTitleId())
+//                    .rankingTitleId(form.getRankingTitleId())
                     .bulkImportId(form.getBulkImportId())
                     .rankingDecisionId(form.getRankingDecisionId())
                     .build();
