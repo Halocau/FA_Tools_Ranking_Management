@@ -299,6 +299,7 @@ const BulkRankingGroup = () => {
               showErrorMessage={showErrorMessage}
               currentGroup={groupInfo}
               addNewBulkRanking={addNewBulkRanking}
+              fetchBulkRankings={getBulkRankingGroup}
             />
           </Box>
         </Box>
