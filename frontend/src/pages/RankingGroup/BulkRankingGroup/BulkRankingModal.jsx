@@ -34,6 +34,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
     const [criteriaList, setListCriteria] = useState([]);
     const [status, setStatus] = useState('Success');
     const [note, setNote] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
     const fileInputRef = useRef(null); // Reference to the file input
 
     const getCriteriaList = async () => {
@@ -99,16 +100,29 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 errorMessage: `Missing required criteria: ${missingCriteria.join(", ")}`,
             };
         }
-
         return { isValid: true, errorMessage: "" };
     };
 
+    const validateData = (data) => {
+        // Validate each item in the data array
+        data.forEach((item, index) => {
+            console.log(item);
+            for (const [key, value] of Object.entries(item)) {
+                if (value == null || value === "") {
+                    setStatus("Failed");
+                    setNote("Wrong value template. Re-download latest template and try again.");
+                    setData([]); // Clear data state
+                    return;
+                }
+            }
+        });
+    };
 
-
+    console.log(data);
     // File change handler
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if (file && file.name.endsWith(".xlsx")) {
+        if (file && (file.name.endsWith(".xlsx") || file.name.endsWith(".xls"))) {
             setSelectedFile(file.name);
             setFile(file); // Store the file object in state
 
@@ -153,12 +167,18 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             setSelectedFile(null);
             setFile(null); // Reset file if invalid
             setData([]); // Clear data state
+            setErrorMessage("Invalid file format. Please upload a .xlsx or .xls file.");
         }
     };
 
 
     // Handle closing the modal and resetting the file
     const handleCloseModal = () => {
+        setStatus("Success");
+        setNote("");
+        setData([]);
+        setFile(null);
+        setErrorMessage('');
         setSelectedFile(null); // Reset selected file when closing the modal
         handleClose(); // Call the original handleClose to close the modal
     };
@@ -173,12 +193,12 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
 
     const handleEmployeeUpload = async (newBulkRanking) => {
         try {
+
             // Map the data to match the required employee form structure
             const employees = data.map((item) => ({
                 employeeId: item["Employer ID"], // Extract Employer ID
                 employeeName: item["Employer Name"], // Extract Employer Name
                 groupId: currentGroup.groupId, // groupId from currentGroup
-                rankingTitleId: 1, // Default as 1
                 bulkImportId: newBulkRanking.historyId, // From newBulkRanking.historyId
                 rankingDecisionId: currentGroup.decisionId, // From currentGroup.decisionId
             }));
@@ -244,6 +264,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             }
             const response = await FileUploadAPI.uploadFile(form);
             const filePath = `D:\\upload\\${response.fileName}`;
+
             // Construct the payload for bulk ranking upload
             const data = {
                 fileName: response.fileName,
@@ -253,10 +274,10 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 status: status, // Default status
                 note: note, // Default note
             };
+            const newBulkRanking = await addNewBulkRanking(data);
 
             if (status === 'Success') {
                 // Call the function to add a new bulk ranking
-                const newBulkRanking = await addNewBulkRanking(data);
                 // Call the function to upload employees
                 await handleEmployeeUpload(newBulkRanking);
 
@@ -342,12 +363,17 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                                 size="small"
                                 aria-label="upload file"
                             >
-                                <UploadFileIcon />
+                                <UploadFileIcon sx={{ color: 'black' }} />
                             </IconButton>
                         </label>
                     </Box>
                 </div>
-
+                {/* Validation Message */}
+                {errorMessage && (
+                    <Typography variant="body2" color="error" style={{ marginTop: '10px' }}>
+                        {errorMessage}
+                    </Typography>
+                )}
                 {/* Display selected file as a clickable link with clear icon */}
                 {selectedFile && (
                     <Box mt={2} display="flex" alignItems="center" >
@@ -362,8 +388,6 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                                 }}
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    // Handle file link click (you can choose to download, or show more details, etc.)
-                                    alert(`You clicked on ${selectedFile}`);
                                 }}
                             >
                                 {selectedFile}

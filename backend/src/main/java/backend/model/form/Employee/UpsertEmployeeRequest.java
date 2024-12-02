@@ -18,9 +18,6 @@ public class UpsertEmployeeRequest {
     private Integer groupId;
 
     @NotNull
-    private Integer rankingTitleId;
-
-    @NotNull
     private Integer bulkImportId;
     @NotNull
     private Integer rankingDecisionId;
