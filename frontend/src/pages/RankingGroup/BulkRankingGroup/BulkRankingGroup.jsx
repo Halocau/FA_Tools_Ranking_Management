@@ -88,6 +88,7 @@ const BulkRankingGroup = () => {
       console.error("Error fetching group:", error);
     }
   };
+
   //// Fetch Ranking Group on id change
   useEffect(() => {
     RankingGroupInfo();
@@ -202,6 +203,7 @@ const BulkRankingGroup = () => {
     }
     setIsModalOpen(false); // Đóng Modal sau khi tải tệp
   };
+
   return (
     <div style={{ marginTop: "60px" }}>
       <Slider />

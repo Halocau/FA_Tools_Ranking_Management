@@ -64,11 +64,14 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
             setEmployees([]);
         }
     };
-    useEffect(() => {
-        getAllEmployees();
-    }, [id]);
 
-    ////////////////////////////////////////////////////////////// Sreach //////////////////////////////////////////////////////////////
+    useEffect(() => {
+        if (open) {
+            getAllEmployees();
+        }
+    }, [open, id]);
+
+    ////////////////////////////////////////////////////////////// Search //////////////////////////////////////////////////////////////
     // Khi thay đổi giá trị tìm kiếm
     const handleSearch = (event) => {
         const query = event;

@@ -106,7 +106,6 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
     const validateData = (data) => {
         // Validate each item in the data array
         data.forEach((item, index) => {
-            console.log(item);
             for (const [key, value] of Object.entries(item)) {
                 if (value == null || value === "") {
                     setStatus("Failed");
@@ -118,7 +117,6 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         });
     };
 
-    console.log(data);
     // File change handler
     const handleFileChange = (e) => {
         const file = e.target.files[0];
