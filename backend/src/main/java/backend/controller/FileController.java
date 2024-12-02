@@ -43,7 +43,7 @@ public class FileController {
             throw new StorageException("File is empty. Please upload a file.");
         }
         String fileName = file.getOriginalFilename();
-        List<String> allowedExtensions = Arrays.asList("pdf", "jpg", "jpeg", "png", "doc", "docx", "xlsx");
+        List<String> allowedExtensions = Arrays.asList("xlsx");
         boolean isValidExtension = allowedExtensions.stream().anyMatch(item -> fileName.toLowerCase().endsWith(item));
         if (!isValidExtension) {
             throw new StorageException("Invalid file extension. Only allows "+allowedExtensions.toString());
