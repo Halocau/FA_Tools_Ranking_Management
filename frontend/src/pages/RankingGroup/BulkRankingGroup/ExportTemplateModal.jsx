@@ -65,8 +65,10 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
     }
   };
   useEffect(() => {
-    getAllEmployees();
-  }, [id]);
+    if (open) {
+      getAllEmployees();
+    }
+  }, [id, open]);
 
   ////////////////////////////////////////////////////////////// Sreach //////////////////////////////////////////////////////////////
   // Khi thay đổi giá trị tìm kiếm
@@ -114,7 +116,6 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
         (employee) => employee.currentRankingDecision === decision
       );
     }
-
     // Filter based on the selected rank
     if (rank) {
       filteredEmployees = filteredEmployees.filter(
@@ -170,11 +171,13 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
         );
 
         const totalScore = employee.totalScore;
+        const assessmentRank = employee.assessmentRank;
         // Return the row with the flattened criteria added
         return {
           ...row,
           ...criteriaColumns,
           totalScore,
+          assessmentRank,
         };
       });
 
