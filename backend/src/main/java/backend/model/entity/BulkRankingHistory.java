@@ -12,18 +12,21 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
 @Entity
 @Table(name = "Bulk_Ranking_History")
-@SuperBuilder
 public class BulkRankingHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "history_id")
-    private int historyId;
+    private Integer historyId;
 
     @Column(name = "file_name")
     @Size(min = 3, max = 100)
     private String fileName;
+
+    @Column(name = "file_path")
+    private String filePath;
 
     @Column(name = "ranking_group_id")
     private Integer rankingGroupId;

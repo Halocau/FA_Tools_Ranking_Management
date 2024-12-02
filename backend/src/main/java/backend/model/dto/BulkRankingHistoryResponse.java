@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 @Data
 public class BulkRankingHistoryResponse {
-    private int historyId;
+    private Integer historyId;
     private String fileName;
+    private String filePath;
     private String decisionName;
     private LocalDateTime uploadAt;
     private String uploadByName;

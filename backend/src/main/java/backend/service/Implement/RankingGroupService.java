@@ -142,8 +142,10 @@ public class RankingGroupService implements IRankingGroupService {
                 // Thiết lập giá trị cho currentRankingDecision từ decisionName
                 if (decision != null) {
                     response.setCurrentRankingDecision(decision.getDecisionName());
+                    response.setDecisionId(decision.getDecisionId());
                 } else {
                     response.setCurrentRankingDecision(null);
+                    response.setDecisionId(null);
                 }
             }
             responseList.add(response);
@@ -155,6 +157,7 @@ public class RankingGroupService implements IRankingGroupService {
     public RankingGroupResponse getRankingGroupResponseById(RankingGroup rankingGroup) {
         RankingGroupResponse response = modelMapper.map(rankingGroup, RankingGroupResponse.class);
         response.setCurrentRankingDecision(rankingGroup.getDecisionName());
+        response.setDecisionId(rankingGroup.getCurrent_ranking_decision());
         Account account = iAccount.findById(rankingGroup.getCreatedBy()).orElse(null);
         if (account != null) {
             response.setCreatedBy(account.getFullName());

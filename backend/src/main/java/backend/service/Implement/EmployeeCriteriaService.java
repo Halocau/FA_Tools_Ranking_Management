@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -112,7 +113,6 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
         }
     }
 
-    /// Response
     @Override
     public List<EmployeeCriteriaResponse> getEmployeeCriteriaResponse(List<EmployeeCriteria> listEmployeeCriteria) {
         if (listEmployeeCriteria == null || listEmployeeCriteria.isEmpty()) {
@@ -132,22 +132,15 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
                 response.setEmployeeId(employee.getEmployeeId());
                 response.setEmployeeName(employee.getEmployeeName());
 
-                // Fetch RankingGroup
                 RankingGroup rankingGroup = irankingGroupRepository.findById(employee.getGroupId())
                         .orElseThrow(() -> new EntityNotFoundException("RankingGroup not found for group ID: " + employee.getGroupId()));
                 response.setRankingGroupName(rankingGroup.getGroupName());
 
-                // Fetch RankingDecision
                 RankingDecision rankingDecision = iRankingDecisionRepository.findByDecisionId(employee.getRankingDecisionId());
                 if (rankingDecision == null) {
                     throw new EntityNotFoundException("RankingDecision not found for decision ID: " + employee.getRankingDecisionId());
                 }
                 response.setCurrentRankingDecision(rankingDecision.getDecisionName());
-
-                // Fetch RankingTitle
-                RankingTitle rankingTitle = iRankingTitleRepository.findById(employee.getRankingTitleId())
-                        .orElseThrow(() -> new EntityNotFoundException("RankingTitle not found for title ID: " + employee.getRankingTitleId()));
-                response.setCurrentRank(rankingTitle.getTitleName());
 
                 responseMap.put(employee.getEmployeeId(), response);
             }
@@ -163,7 +156,6 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
                 Options option = iOptionRepository.findById(empCriteria.getOptionId())
                         .orElseThrow(() -> new EntityNotFoundException("Option not found for option ID: " + empCriteria.getOptionId()));
 
-                // Truy vấn để lấy weight từ DecisionCriteria
                 DecisionCriteria decisionCriteria = iDecisionCriteriaRepository.findByDecisionIdAndCriteriaId(
                                 employee.getRankingDecisionId(), empCriteria.getCriteriaId())
                         .orElseThrow(() -> new EntityNotFoundException("DecisionCriteria not found for decision ID: "
@@ -175,7 +167,7 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
                     applyCriteriaResponse.setCirteriaName(criteria.getCriteriaName());
                     applyCriteriaResponse.setOptionName(option.getOptionName());
                     applyCriteriaResponse.setScore(option.getScore());
-                    applyCriteriaResponse.setWeight(decisionCriteria.getWeight()); // Gán weight vào DTO
+                    applyCriteriaResponse.setWeight(decisionCriteria.getWeight());
                     applyCriteriaResponse.setMaxScore(criteria.getMaxScore());
                     applyCriteriaList.add(applyCriteriaResponse);
                     criteriaSet.add(uniqueKey);
@@ -184,16 +176,94 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
 
             response.setCriteriaList(applyCriteriaList);
 
-            // Tính totalScore dựa trên criteriaList
-            double totalScore = applyCriteriaList.stream()
-                    .mapToDouble(criteria -> (criteria.getScore() * criteria.getWeight() / criteria.getMaxScore()))
-                    .sum();
-            // Làm tròn totalScore thành 2 chữ số thập phân
+            // Tính điểm tổng
+            double totalScore = calculateTotalScore(applyCriteriaList);
             BigDecimal roundedTotalScore = new BigDecimal(totalScore).setScale(2, RoundingMode.HALF_UP);
             response.setTotalScore(roundedTotalScore.doubleValue());
+
+            // Truy vấn danh sách RankingTitle theo decisionId và tìm totalScore gần nhất
+            List<RankingTitle> rankingTitles = iRankingTitleRepository.findByDecisionIdOrderByTotalScoreAsc(employee.getRankingDecisionId());
+
+            // Tìm rank gần nhất
+            RankingTitle nearestRank = findNearestRank(roundedTotalScore.doubleValue(), rankingTitles);
+            if (nearestRank != null) {
+                response.setCurrentRank(nearestRank.getTitleName());
+            }
+
+            // Tìm rank tiếp theo (assessmentRank)
+            RankingTitle nextRank = findNextRank(roundedTotalScore.doubleValue(), rankingTitles, nearestRank);
+            if (nextRank != null) {
+                response.setAssessmentRank(nextRank.getTitleName());  // Gán giá trị cho trường assessmentRank
+            }
+
+            responseMap.put(employee.getEmployeeId(), response);
         }
 
         employeeCriteriaResponses.addAll(responseMap.values());
         return employeeCriteriaResponses;
     }
+
+    // Tính điểm tổng
+    private double calculateTotalScore(List<ApplyCriteriaResponse> applyCriteriaList) {
+        double totalScore = 0.0;
+        for (ApplyCriteriaResponse criteria : applyCriteriaList) {
+            totalScore += (criteria.getScore() * criteria.getWeight() / criteria.getMaxScore());
+        }
+        return totalScore;
+    }
+
+    // Lấy rank gần nhất
+    private RankingTitle findNearestRank(double totalScore, List<RankingTitle> rankingTitles) {
+        RankingTitle nearestRank = null;
+        double minDifference = Double.POSITIVE_INFINITY;
+
+        // Sắp xếp danh sách theo totalScore
+        rankingTitles.sort(Comparator.comparingDouble(RankingTitle::getTotalScore));
+
+        // Duyệt qua từng rank trong danh sách
+        for (RankingTitle title : rankingTitles) {
+            double titleTotalScore = title.getTotalScore();
+            double difference = Math.abs(totalScore - titleTotalScore);
+
+            // Kiểm tra sự khác biệt giữa totalScore và rank hiện tại
+            if (difference < minDifference) {
+                minDifference = difference;
+                nearestRank = title;
+            }
+
+            // Nếu totalScore của rank đã vượt qua totalScore, dừng tìm kiếm
+            if (titleTotalScore > totalScore) {
+                break;
+            }
+        }
+
+        return nearestRank;
+    }
+
+    // Tìm rank tiếp theo (assessmentRank)
+    private RankingTitle findNextRank(double totalScore, List<RankingTitle> rankingTitles, RankingTitle currentRank) {
+        RankingTitle nextRank = null;
+
+        // Sắp xếp danh sách theo totalScore
+        rankingTitles.sort(Comparator.comparingDouble(RankingTitle::getTotalScore));
+
+        boolean foundCurrentRank = false;
+        for (RankingTitle title : rankingTitles) {
+            // Khi tìm thấy currentRank, bật cờ để bắt đầu tìm rank tiếp theo
+            if (foundCurrentRank) {
+                if (title.getTotalScore() > totalScore) {
+                    nextRank = title;  // Rank tiếp theo có totalScore lớn hơn currentRank
+                    break;
+                }
+            }
+
+            // Đánh dấu đã tìm thấy currentRank
+            if (title.getTitleName().equals(currentRank.getTitleName())) {
+                foundCurrentRank = true;
+            }
+        }
+
+        return nextRank;
+    }
+
 }
