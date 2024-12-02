@@ -303,9 +303,8 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             return; // Dừng lại nếu có lỗi
         }
         syncDecisionTitle(rows, originalTitle);
-
         showSuccessMessage('Title Configuration successfully updated.');
-        console.log("Title Configuration successfully updated.”");
+        getTitleConfiguration();
         goToNextStep(); // Chuyển bước tiếp theo
     };
 

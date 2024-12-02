@@ -134,14 +134,6 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
         setRows(mappedRows); // Update the rows to reflect the filtered data
     };
 
-    //
-    const capitalizeFirstLetterEachWord = (string) => {
-        return string
-            .split(" ") // Split string to word
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Uppercase 
-            .join(" "); // Connect words
-    };
-
     ////////////////////////////////////////////////////////////// Select //////////////////////////////////////////////////////////////
     // Function to export selected data to Excel
     const handleSelectionModelChange = () => {
@@ -191,6 +183,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
             // Generate Excel file and trigger download
             XLSX.writeFile(workbook, "Selected_Employees.xlsx");
             handleClose();
+            showSuccessMessage("Export successfully")
         } else {
             showErrorMessage("No rows selected to export.");
         }
