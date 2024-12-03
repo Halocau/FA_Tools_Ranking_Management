@@ -22,7 +22,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-
 import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
@@ -37,7 +36,9 @@ public class RankingGroupService implements IRankingGroupService {
     private IRankingDecisionRepository iRankingDecisionRepository;
     private ModelMapper modelMapper;
 
-    public RankingGroupService(IRankingGroupRepository iRankingGroupRepository, IAccount iAccount, IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper) {
+    @Autowired
+    public RankingGroupService(IRankingGroupRepository iRankingGroupRepository, IAccount iAccount,
+            IRankingDecisionRepository iRankingDecisionRepository, ModelMapper modelMapper) {
         this.iRankingGroupRepository = iRankingGroupRepository;
         this.iAccount = iAccount;
         this.iRankingDecisionRepository = iRankingDecisionRepository;
@@ -141,8 +142,10 @@ public class RankingGroupService implements IRankingGroupService {
                 // Thiết lập giá trị cho currentRankingDecision từ decisionName
                 if (decision != null) {
                     response.setCurrentRankingDecision(decision.getDecisionName());
+                    response.setDecisionId(decision.getDecisionId());
                 } else {
                     response.setCurrentRankingDecision(null);
+                    response.setDecisionId(null);
                 }
             }
             responseList.add(response);
@@ -154,6 +157,7 @@ public class RankingGroupService implements IRankingGroupService {
     public RankingGroupResponse getRankingGroupResponseById(RankingGroup rankingGroup) {
         RankingGroupResponse response = modelMapper.map(rankingGroup, RankingGroupResponse.class);
         response.setCurrentRankingDecision(rankingGroup.getDecisionName());
+        response.setDecisionId(rankingGroup.getCurrent_ranking_decision());
         Account account = iAccount.findById(rankingGroup.getCreatedBy()).orElse(null);
         if (account != null) {
             response.setCreatedBy(account.getFullName());
@@ -189,7 +193,6 @@ public class RankingGroupService implements IRankingGroupService {
             iRankingGroupRepository.saveAndFlush(group);
         }
     }
-
 
     @Override
     public boolean isRankingGroupExitsByGroupName(String groupName) {

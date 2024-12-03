@@ -92,14 +92,28 @@ public class CriteriaService implements ICriteriaService {
 
     @Override
     public CriteriaResponse convertToCriteriaResponse(Criteria criteria) {
-        return modelMapper.map(criteria, CriteriaResponse.class);
+        CriteriaResponse response = modelMapper.map(criteria, CriteriaResponse.class);
+        if (criteria.getOptions() == null) {
+            response.setNumOptions(0);
+            response.setMaxScore(0);
+        } else {
+            response.setNumOptions(criteria.getOptions().size());
+            Integer maxScore = criteria.getOptions().stream()
+                    .mapToInt(option -> option.getScore())
+                    .max()
+                    .orElse(0);
+            response.setMaxScore(maxScore);
+        }
+
+        return response;
+        // return modelMapper.map(criteria, CriteriaResponse.class);
     }
 
     @Override
     public List<CriteriaResponse> convertToCriteriaResponseList(List<Criteria> criteriaList) {
         List<CriteriaResponse> criteriaResponses = new ArrayList<>();
         for (Criteria criteria : criteriaList) {
-            criteriaResponses.add(modelMapper.map(criteria, CriteriaResponse.class));
+            criteriaResponses.add(convertToCriteriaResponse(criteria));
         }
         return criteriaResponses;
     }
@@ -108,7 +122,7 @@ public class CriteriaService implements ICriteriaService {
     public boolean existsByCriteriaName(String name) {
         return criteriaRepository.existsByCriteriaName(name);
     }
-    
+
     @Override
     public ResultPaginationDTO getAllCriteria(Specification<Criteria> spec, Pageable pageable) {
         // Page<Criteria> criteriaList = criteriaRepository.findAll(spec, pageable);

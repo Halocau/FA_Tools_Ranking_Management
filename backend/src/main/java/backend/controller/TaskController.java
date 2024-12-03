@@ -34,12 +34,11 @@ public class TaskController {
     public TaskController(ITaskService iTaskService) {
         this.iTaskService = iTaskService;
     }
-    
+
     @GetMapping
     public ResponseEntity<ResultPaginationDTO> getAllTasks(
             @Filter Specification<Task> spec,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         // Lấy đối tượng phân trang
         ResultPaginationDTO allTask = iTaskService.getTask(spec, pageable);
 
@@ -54,12 +53,13 @@ public class TaskController {
     }
 
     @GetMapping("/all")
-        public ResponseEntity<List<TaskResponse>> getAllTaskResponse() {
-            List<Task> allTask = iTaskService.getAllTask();
-            List<TaskResponse> taskResponses = iTaskService.getAllTaskResponse(allTask);
-            return ResponseEntity.ok(taskResponses);
-        }
-    //test pagination
+    public ResponseEntity<List<TaskResponse>> getAllTaskResponse() {
+        List<Task> allTask = iTaskService.getAllTask();
+        List<TaskResponse> taskResponses = iTaskService.getAllTaskResponse(allTask);
+        return ResponseEntity.ok(taskResponses);
+    }
+
+    // test pagination
     @GetMapping("/full")
     public ResponseEntity<ResultPaginationDTO> getTaskList(
             @Filter Specification<Task> spec,
