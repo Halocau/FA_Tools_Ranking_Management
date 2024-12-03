@@ -184,22 +184,31 @@ public class RankingGroupService implements IRankingGroupService {
     @Override
     @Transactional
     public void updateRankingGroup(Integer groupId, UpdateNewGroupRequest form) {
-        // Tìm và cập nhật nhóm xếp hạng (Find and update ranking group)
+        // Tìm và kiểm tra nhóm xếp hạng (Find and check ranking group)
         RankingGroup group = iRankingGroupRepository.findById(groupId)
-                .orElseThrow(() -> new RankingGroupException("Ranking Group not found id: " + groupId));
+                .orElseThrow(() -> new RankingGroupException("Ranking Group not found with id: " + groupId));
 
-        // Kiểm tra tên nhóm đã tồn tại chưa (Check if group name already exists)
-        if (!group.getGroupName().equals(form.getGroupName()) &&
-                iRankingGroupRepository.existsByGroupNameAndGroupIdNot(form.getGroupName(), groupId)) {
-            throw new IllegalArgumentException("Group name already exists.");
+        // Kiểm tra tên nhóm có null hoặc rỗng (Check if group name is null or empty)
+        if (form.getGroupName() != null && !group.getGroupName().equals(form.getGroupName())) {
+            if (iRankingGroupRepository.existsByGroupNameAndGroupIdNot(form.getGroupName(), groupId)) {
+                throw new IllegalArgumentException("Group name already exists.");
+            }
+            group.setGroupName(form.getGroupName());
         }
 
-        group.setGroupName(form.getGroupName());
+        // Kiểm tra quyết định hiện tại và cập nhật nếu tồn tại (Check and update ranking decision)
         if (form.getCurrentRankingDecision() != null) {
+            boolean decisionExists = iRankingDecisionRepository.existsById(form.getCurrentRankingDecision());
+            if (!decisionExists) {
+                throw new IllegalArgumentException("Ranking Decision not found.");
+            }
             group.setCurrent_ranking_decision(form.getCurrentRankingDecision());
         }
+
+        // Lưu và làm mới (Save and flush changes)
         iRankingGroupRepository.saveAndFlush(group);
     }
+
 
     /// Validate
     @Override
