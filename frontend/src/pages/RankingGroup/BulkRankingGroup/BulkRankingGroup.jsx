@@ -8,26 +8,9 @@ import { FaHistory } from "react-icons/fa";
 import { FaAngleRight } from "react-icons/fa";
 // Mui
 import {
-  InputAdornment,
-  Box,
-  Button,
-  Typography,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Modal,
-  IconButton,
-  Switch,
-  FormControlLabel,
-  Alert,
-  FormHelperText,
+  InputAdornment, Box, Button, Typography, TextField, FormControl, Modal, IconButton,
 } from "@mui/material";
-import ClearIcon from "@mui/icons-material/Clear";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
-import InfoIcon from "@mui/icons-material/Info";
-import Autocomplete from "@mui/material/Autocomplete";
 // Css
 import "../../../assets/css/RankingGroups.css";
 // Source code

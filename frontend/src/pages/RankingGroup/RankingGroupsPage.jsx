@@ -34,7 +34,6 @@ const RankingGroups = () => {
   const navigate = useNavigate(); // Initialize the useNavigate hook to navigate between pages in the application
   // State
   const { user } = useAuth();
-  console.log(user);
   // Table  List Ranking Group (page, size) 
   const [rows, setRows] = useState([]); // Initialize with empty array
   const [rankingGroups, setRankingGroups] = useState([]);
@@ -59,7 +58,7 @@ const RankingGroups = () => {
   // Validation error message
   const [validationMessage, setValidationMessage] = useState("");
 
-
+  /////////////////////////////////////////////////////// Load Data ////////////////////////////////////////////////////////////////////////
   //  Destructuring from RankingGroupAPI custom API
   const fetchAllRankingGroups = async () => {
     try {
@@ -83,22 +82,7 @@ const RankingGroups = () => {
     fetchAllRankingGroups();
   }, [page, pageSize, filter]);
 
-  // Map decision data to rows for DataGrid when rows are fetched
-  useEffect(() => {
-    if (RankingGroups) {
-      const mappedRows = rankingGroups.map((group, index) => ({
-        id: group.groupId,
-        index: index + 1 + (page - 1) * pageSize,
-        groupName: group.groupName,
-        numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
-        currentRankingDecision: group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
-      }));
-      setRows(mappedRows);
-    }
-  }, [rankingGroups]);
-
-
-  //// Handlers to open/close modals for adding group
+  /////////////////////////////////////////////////////// Add Ranking Group /////////////////////////////////////////////////////////////////
   // Open the modal
   const handleOpenAddRankingGroupModal = () => setShowAddModal(true);
   // Close the modal
@@ -198,10 +182,9 @@ const RankingGroups = () => {
     }
   };
 
-  //// Handlers to open/close modals for delete group
+  /////////////////////////////////////////////////////// Delete Ranking Group ////////////////////////////////////////////////////////////////
   /// Open the modal
   const handleOpenDeleteRankingGroupModal = (groupId) => {
-    // Find group by ID in result array
     const selectedGroup = rankingGroups.find(group => group.groupId === groupId);
     // If the group is named "Trainer", display an error message and do not open the modal
     if (selectedGroup && selectedGroup.groupName === "Trainer") {
@@ -238,7 +221,7 @@ const RankingGroups = () => {
     }
   };
 
-  // Bulk Delete Ranking Groups
+  /////////////////////////////////////////////////////// Bulk Delete Ranking Groups ////////////////////////////////////////////////////////////
   // Open the modal
   const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
   // Close the modal
@@ -284,7 +267,7 @@ const RankingGroups = () => {
     }
   };
 
-  ///// Search Group
+  /////////////////////////////////////////////////////// Search Ranking Groups /////////////////////////////////////////////////////////////////
   const handleSearch = (event) => {
     console.log("Search", event)
     if (event) {
@@ -296,7 +279,7 @@ const RankingGroups = () => {
 
   };
 
-
+  /////////////////////////////////////////////////////// Table Ranking Group /////////////////////////////////////////////////////////////////
   // Define columns for DataGrid
   const columns = [
     { field: "index", headerName: "ID", width: 70 },
@@ -306,22 +289,9 @@ const RankingGroups = () => {
     {
       field: "action", headerName: "Action", width: 300, renderCell: (params) => (
         <>
-          {/* View */}
-          <Button
-            variant="outlined"
-            color="gray"
-            // size="small"
-            onClick={() => {
-              console.log(`Navigating to view group with ID: ${params.row.id}`);
-              navigate(`/ranking-group/view/${params.row.id}`);
-            }}
-          >
-            <FaEye />
-          </Button>
           {/* Edit */}
           <Button
             variant="outlined"
-            // size="small"
             sx={{ marginLeft: 1 }}
             onClick={() => {
               console.log(`Navigating to edit group with ID: ${params.row.id}`);
@@ -334,7 +304,6 @@ const RankingGroups = () => {
           <Button
             variant="outlined"
             color="error"
-            // size="small"
             sx={{ marginLeft: 1 }}
             onClick={() => handleOpenDeleteRankingGroupModal(params.row.id)}
           >
@@ -343,7 +312,6 @@ const RankingGroups = () => {
           {/* Bulk Ranking History */}
           <Button
             variant="outlined"
-            // size="small"
             sx={{ marginLeft: 1 }}
             onClick={() => {
               console.log(`Navigating to bulk group with ID: ${params.row.id}`);
@@ -356,8 +324,21 @@ const RankingGroups = () => {
       ),
     },
   ];
+  // Map decision data to rows for DataGrid when rows are fetched
+  useEffect(() => {
+    if (RankingGroups) {
+      const mappedRows = rankingGroups.map((group, index) => ({
+        id: group.groupId,
+        index: index + 1 + (page - 1) * pageSize,
+        groupName: group.groupName,
+        numEmployees: group.numEmployees < 1 ? "0" : group.numEmployees,
+        currentRankingDecision: group.currentRankingDecision == null ? "No decision applies" : group.currentRankingDecision,
+      }));
+      setRows(mappedRows);
+    }
+  }, [rankingGroups]);
 
-  /////////////////////////////////////////////////////////// Return ///////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////// Return ////////////////////////////////////////////////////////////////////////
   return (
     <div style={{ marginTop: "60px" }}>
       <Slider />
@@ -368,8 +349,7 @@ const RankingGroups = () => {
         {/* Search Ranking Group */}
         <SearchComponent onSearch={handleSearch} placeholder=" Sreach Group" />
         {/* Table show Ranking Group */}
-        <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
-          {/* {loading ? <CircularProgress /> : ( */}
+        <Box sx={{ width: "100%", height: 370, marginTop: '50px' }}>
           <DataGrid
             className="custom-data-grid"
             apiRef={apiRef}
@@ -382,11 +362,11 @@ const RankingGroups = () => {
             rowCount={totalElements}
             paginationMode="server"
             paginationModel={{
-              page: page - 1,  // Adjusted for 0-based index
+              page: page - 1,
               pageSize: pageSize,
             }}
             onPaginationModelChange={(model) => {
-              setPage(model.page + 1);  // Set 1-based page for backend
+              setPage(model.page + 1);
               setPageSize(model.pageSize);
             }}
             disableNextButton={page >= totalPages}
@@ -394,7 +374,6 @@ const RankingGroups = () => {
             disableRowSelectionOnClick
             autoHeight={false}
           />
-          {/* )} */}
         </Box>
         {/* Button Add new Group and Delete Selected Groups */}
         <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>

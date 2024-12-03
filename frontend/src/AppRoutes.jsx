@@ -15,8 +15,8 @@ import Sidebar from "./layouts/Sidebar";
 import Header from "./layouts/Header";
 import RankingGroups from "./pages/RankingGroup/RankingGroupsPage.jsx";
 import EditRankingGroup from './pages/RankingGroup/EditRankingGroups.jsx';
-import ViewRankingGroup from './pages/RankingGroup/ViewRankingGroup.jsx';
 import BulkRankingGroup from './pages/RankingGroup/BulkRankingGroup/BulkRankingGroup.jsx';
+import BulkRankingModal from "./pages/RankingGroup/BulkRankingGroup/BulkRankingModal.jsx";
 import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
 import EditRankingDecison from "./pages/RankingDecision/EditRankingDecision/EditRankingDecision.jsx";
 import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx';
@@ -47,14 +47,6 @@ function AppRoutes() {
             </LayoutWrapper>
           </ProtectedRoutes>
 
-        }
-      />
-      <Route
-        path="/ranking-group/view/:id"
-        element={
-          <LayoutWrapper>
-            <ViewRankingGroup />
-          </LayoutWrapper>
         }
       />
       <Route
