@@ -27,7 +27,7 @@ const modalStyle = {
     p: 4,
 };
 
-const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMessage, currentGroup, addNewBulkRanking }) => {
+const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMessage, currentGroup, addNewBulkRanking, fetchBulkRankings }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [file, setFile] = useState(null);
     const [data, setData] = useState(null);
@@ -68,123 +68,167 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         }
     }
 
-    // Validation function to check for required columns
-    const validateColumns = (headers, requiredColumns) => {
-        const missingColumns = requiredColumns.filter((col) => !headers.includes(col));
-        if (missingColumns.length > 0) {
+    // Function to validate headers
+    const validateHeaders = (headers, requiredColumns, criteriaList) => {
+        // Ensure headers is defined and contains valid data
+        if (!Array.isArray(headers) || headers.length === 0) {
             return {
                 isValid: false,
-                errorMessage: `Missing required columns: ${missingColumns.join(", ")}`,
+                errorMessage: "Headers must be a non-empty array.",
             };
         }
-        return { isValid: true, errorMessage: "" };
-    };
 
-    const validateHeadersAgainstCriteria = (headers, criteriaList) => {
         // Normalize headers by trimming and removing special characters
         const normalizedHeaders = headers.map((header) => header.trim().replace(/\r?\n|\r/g, ""));
 
-        // Normalize criteria names
-        const requiredCriteriaNames = criteriaList.map((criteria) =>
+        // Normalize required columns and criteria names
+        const normalizedRequiredColumns = requiredColumns.map((col) => col.trim().replace(/\r?\n|\r/g, ""));
+        const normalizedCriteriaNames = criteriaList.map((criteria) =>
             criteria.criteriaName.trim().replace(/\r?\n|\r/g, "")
         );
 
-        // Find missing criteria
-        const missingCriteria = requiredCriteriaNames.filter(
+        // Find missing columns and criteria
+        const missingColumns = normalizedRequiredColumns.filter(
+            (col) => !normalizedHeaders.includes(col)
+        );
+        const missingCriteria = normalizedCriteriaNames.filter(
             (criteriaName) => !normalizedHeaders.includes(criteriaName)
         );
 
-        if (missingCriteria.length > 0) {
+        // Combine results
+        if (missingColumns.length > 0 || missingCriteria.length > 0) {
+            const errorMessageParts = [];
+            if (missingColumns.length > 0) {
+                errorMessageParts.push(`Missing required columns: ${missingColumns.join(", ")}`);
+            }
+            if (missingCriteria.length > 0) {
+                errorMessageParts.push(`Missing required criteria: ${missingCriteria.join(", ")}`);
+            }
             return {
                 isValid: false,
-                errorMessage: `Missing required criteria: ${missingCriteria.join(", ")}`,
+                errorMessage: errorMessageParts.join("; "),
             };
         }
+
         return { isValid: true, errorMessage: "" };
     };
 
+
     const validateData = (data) => {
+        // Check if data is not provided or empty
+        if (!data || data.length === 0) {
+            console.error("No data provided for validation.");
+            setStatus("Failed");
+            setNote("No data available to validate. Please upload a valid file.");
+            return false;
+        }
+
         // Validate each item in the data array
-        data.forEach((item, index) => {
-            console.log(item);
+        for (let index = 0; index < data.length; index++) {
+            const item = data[index];
             for (const [key, value] of Object.entries(item)) {
-                if (value == null || value === "") {
+                console.log(`${key}: ${value}`);
+                // Check if the value is null, undefined, or empty
+                if (value === null || value === undefined || value === "") {
+                    console.error(`Validation failed at row ${index + 1}, column: ${key}`);
                     setStatus("Failed");
-                    setNote("Wrong value template. Re-download latest template and try again.");
-                    setData([]); // Clear data state
-                    return;
+                    setNote(`Invalid value in row ${index + 1}, column: ${key}. Please correct the template and try again.`);
+                    return false;
                 }
             }
-        });
+        }
+        return true;
     };
 
-    console.log(data);
+
+
+    // File change handler
     // File change handler
     const handleFileChange = (e) => {
         const file = e.target.files[0];
+
         if (file && (file.name.endsWith(".xlsx") || file.name.endsWith(".xls"))) {
             setSelectedFile(file.name);
             setFile(file); // Store the file object in state
 
-            // Parse the file to extract data
             const reader = new FileReader();
+
+            // Event handler for when file is read
             reader.onload = (event) => {
-                const arrayBuffer = event.target.result;
-                const workbook = XLSX.read(arrayBuffer, { type: "array" });
-                const sheetName = workbook.SheetNames[0]; // Read the first sheet
-                const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
-                    header: 1, // Extract raw rows, with the first row as headers
-                });
+                try {
+                    const arrayBuffer = event.target.result;
 
-                // Extract headers and validate required columns
-                const headers = sheetData[0] || []; // The first row contains headers
-                const requiredColumns = ["Employer ID", "Employer Name"];
-                const validationResult = validateColumns(headers, requiredColumns);
+                    // Attempt to read the workbook
+                    const workbook = XLSX.read(arrayBuffer, { type: "array" });
+                    if (!workbook || workbook.SheetNames.length === 0) {
+                        throw new Error("Unable to read the file or no sheets found.");
+                    }
 
-                if (!validationResult.isValid) {
-                    setStatus("Failed");
-                    setNote("Wrong value input for criteria options. Please update and try again.");
+                    const sheetName = workbook.SheetNames[0]; // Read the first sheet
+                    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+                        header: 1, // Extract raw rows, with the first row as headers
+                    });
+
+                    // Ensure sheetData contains at least headers
+                    if (!sheetData || sheetData.length === 0) {
+                        throw new Error("Sheet is empty or contains invalid data.");
+                    }
+
+                    // Extract headers and validate required columns
+                    const headers = sheetData[0] || []; // The first row contains headers
+                    const requiredColumns = ["Employer ID", "Employer Name"];
+
+                    const validationHeaders = validateHeaders(headers, requiredColumns, criteriaList);
+                    if (!validationHeaders.isValid) {
+                        // Set error if validation fails
+                        setStatus("Failed");
+                        setNote("Wrong value template. Re-download latest template and try again.");
+                        setData([]); // Clear data state
+                        return;
+                    }
+
+                    // Convert sheet to JSON excluding the header row
+                    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                    setData(jsonData); // Update data state with extracted data
+                    // validateData(jsonData);
+
+                } catch (error) {
+                    showErrorMessage("Failed to process the file. Ensure it is a valid template.");
+                    handleRemoveFile();
                     setData([]); // Clear data state
-                    return;
                 }
-
-                const validationResult2 = validateHeadersAgainstCriteria(headers, criteriaList);
-                if (!validationResult2.isValid) {
-                    // Set error if validation fails
-                    setStatus("Failed");
-                    setNote("Wrong value template. Re-download latest template and try again.");
-                    setData([]); // Clear data state
-                    return;
-                }
-
-                // Convert sheet to JSON excluding the header row
-                const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-                setData(jsonData); // Update data state with extracted data
-
             };
+
+            // Event handler for when file fails to read
+            reader.onerror = () => {
+                console.error("Error reading file.");
+                showErrorMessage("Error reading file. Please try again.");
+                handleRemoveFile();
+                setData([]); // Clear data state
+            };
+
             reader.readAsArrayBuffer(file);
         } else {
-            setSelectedFile(null);
-            setFile(null); // Reset file if invalid
+            showErrorMessage("Invalid file format. Please upload a .xlsx or .xls file.");
+            handleRemoveFile();
             setData([]); // Clear data state
-            setErrorMessage("Invalid file format. Please upload a .xlsx or .xls file.");
         }
     };
 
-
     // Handle closing the modal and resetting the file
     const handleCloseModal = () => {
-        setStatus("Success");
-        setNote("");
+        fetchBulkRankings();
         setData([]);
-        setFile(null);
+        handleRemoveFile();
         setErrorMessage('');
-        setSelectedFile(null); // Reset selected file when closing the modal
         handleClose(); // Call the original handleClose to close the modal
     };
 
     // Handle removing the selected file
     const handleRemoveFile = () => {
+        setStatus("Success");
+        setNote("");
+        setFile(null); // Reset file if invalid
         setSelectedFile(null); // Reset the selected file
         if (fileInputRef.current) {
             fileInputRef.current.value = ''; // Reset the input value
@@ -256,8 +300,8 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             return;
         }
         try {
-            const formData = new FormData();
-            formData.append("file", file); // Ensure the key matches the backend requirement
+            console.log("Start uploading...\n", data);
+            const isValid = validateData(data);
             const form = {
                 file: file,
                 folder: 'upload'
@@ -265,8 +309,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             const response = await FileUploadAPI.uploadFile(form);
             const filePath = `D:\\upload\\${response.fileName}`;
 
-            // Construct the payload for bulk ranking upload
-            const data = {
+            const bulkRankingform = {
                 fileName: response.fileName,
                 filePath: filePath,
                 rankingGroupId: currentGroup.groupId, // Assume currentGroup is provided with a groupId field
@@ -274,7 +317,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 status: status, // Default status
                 note: note, // Default note
             };
-            const newBulkRanking = await addNewBulkRanking(data);
+            const newBulkRanking = await addNewBulkRanking(bulkRankingform);
 
             if (status === 'Success') {
                 // Call the function to add a new bulk ranking
@@ -292,6 +335,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             handleCloseModal();
 
         } catch (error) {
+            console.error("Error during upload process:", error);
             showErrorMessage("Failed to upload data from excel file!!!");
             handleCloseModal();
         }

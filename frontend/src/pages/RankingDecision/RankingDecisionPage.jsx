@@ -27,6 +27,7 @@ import { useAuth } from "../../contexts/AuthContext.jsx";
 // Hooks
 import useNotification from "../../hooks/useNotification";
 import useRankingDecision from "../../hooks/useRankingDecision"
+
 // Layouts
 import Slider from "../../layouts/Slider.jsx";
 
@@ -39,6 +40,9 @@ const RankingDecision = () => {
     const handleCriteriaManagementClick = () => {
         navigate('/criteria-management'); // Navigate Page CriteriaManagement
     };
+
+    const { user } = useAuth();
+    console.log(user);
     //// State
     // Table  List Ranking decision (page, size)
     const [rows, setRows] = useState([]); // Initialize with empty array

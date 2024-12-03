@@ -23,19 +23,30 @@ import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx';
 import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx';
 import EditCriteria from './pages/CriteriaManagement/EditCriterial.jsx';
 import CriteriaConfiguration from "./pages/RankingDecision/EditRankingDecision/CriteriaConfiguration.jsx";
+
+// Import Protected Routes
+import ProtectedRoutes from "./components/Protected/ProtectedRoute.jsx";
+
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<LoginPage />} />
-      <Route path="/homepage" element={<HomePage />} />
+      <Route path="/homepage" element={
+        <ProtectedRoutes>
+          <HomePage />
+        </ProtectedRoutes>} />
       <Route path="/register" element={<SignupPage />} />
       <Route path="/forgetpassword" element={<ForgetPasswordPage />} />
       <Route
         path="/ranking-group"
         element={
-          <LayoutWrapper>
-            <RankingGroups className="ml-2" />
-          </LayoutWrapper>
+          <ProtectedRoutes>
+
+            <LayoutWrapper>
+              <RankingGroups className="ml-2" />
+            </LayoutWrapper>
+          </ProtectedRoutes>
+
         }
       />
       <Route
@@ -65,9 +76,12 @@ function AppRoutes() {
       <Route
         path="/ranking-decision"
         element={
-          <LayoutWrapper>
-            <RankingDecision className="ml-2" />
-          </LayoutWrapper>
+          <ProtectedRoutes>
+            <LayoutWrapper>
+              <RankingDecision className="ml-2" />
+            </LayoutWrapper>
+          </ProtectedRoutes>
+
         }
       />
       <Route
