@@ -124,10 +124,16 @@ public class RankingGroupService implements IRankingGroupService {
     }
 
     @Override
+    @Transactional
     public void deleteRankingGroup(int id) {
-        // Xóa nhóm xếp hạng bằng ID (Delete group by ID)
+        // Kiểm tra xem nhóm có tồn tại không (Check if the group exists)
+        if (!iRankingGroupRepository.existsById(id)) {
+            throw new RankingGroupException("Ranking Group not found with id: " + id);
+        }
+        // Xóa nhóm (Delete the group)
         iRankingGroupRepository.deleteById(id);
     }
+
 
     /// Response
     @Override
