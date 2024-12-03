@@ -5,8 +5,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
     InputAdornment, Box, Button, Typography, TextField, Modal, IconButton,
 } from "@mui/material";
-import ClearIcon from '@mui/icons-material/Clear';
-import EditIcon from '@mui/icons-material/Edit';
 import { Stepper, Step, StepButton } from '@mui/material';
 // Css 
 import "../../../assets/css/RankingGroups.css"
@@ -19,14 +17,11 @@ import CriteriaConfiguration from "./CriteriaConfiguration.jsx";
 import TitleConfiguration from "./TitleConfiguration.jsx";
 import TaskandPriceConfiguration from "./TaskandPriceConfiguration.jsx";
 
-const EditDecision = () => {
+const ViewDecision = () => {
     // const navigate = useNavigate(); // To navigate between pages
     const { id } = useParams(); // Get the ID from the URL
     // Edit
-    const [editDecision, setEditDecision] = useState({ decisionName: '', status: '' });
-    const [originalDecisionName, setOriginalDecisionName] = useState('');
-    const [showEditDecisionInfoModal, setShowEditDecisionInfoModal] = useState(false); // Display decision editing modal
-    const [newDecisionName, setNewDecisionName] = useState(""); // New decision Name
+    const [viewDecision, setViewDecision] = useState({ decisionName: '', status: '' });
     // Step
     const [activeStep, setActiveStep] = useState(2);
     const [decisionStatus, setDecisionStatus] = useState('');
@@ -46,13 +41,11 @@ const EditDecision = () => {
         try {
             const decisionData = await RankingDecisionAPI.getRankingDecisionById(id);
             // Ensure no undefined values are passed
-            setEditDecision({
+            setViewDecision({
                 decisionName: decisionData.decisionName || "",
                 status: decisionData.status || "",
             });
             console.log(decisionData)
-            setOriginalDecisionName(decisionData.decisionName || "Decision Name");
-            setNewDecisionName(decisionData.decisionName || "");
             setDecisionStatus(decisionData.status)
         } catch (error) {
             console.error("Error fetching group:", error);
@@ -62,47 +55,6 @@ const EditDecision = () => {
     useEffect(() => {
         EditRankingDecision();
     }, [id]);
-
-    ////Handlers to open/close modals for editing of the decision info 
-    // Open modal
-    const handleOpenEditRankingDecisionInfoModal = () => {
-        setShowEditDecisionInfoModal(true);
-        setValidationMessage("");
-    };
-    // Close modal
-    const handleCloseEditRankingDecisionInfoModal = () => {
-        setShowEditDecisionInfoModal(false);
-        setValidationMessage("");
-    };
-    // Function
-    const handleEditRankingDecisionInfo = async () => {
-        setValidationMessage("");
-        let trimmedName = newDecisionName.trim();
-
-        if (!trimmedName) {
-            setValidationMessage("Decision name cannot be empty.");
-            return;
-        }
-        if (trimmedName.length < 3 || trimmedName.length > 20) {
-            setValidationMessage("Decision name must be between 3 and 20 characters.");
-            return;
-        }
-        // Capitalize the first letter of each word
-        trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
-        try {
-            const updatedDecision = {
-                decisionName: trimmedName,
-                createBy: localStorage.getItem('userId')
-            };
-            await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
-            setOriginalDecisionName(trimmedName);
-            showSuccessMessage("Decision info successfully updated");
-            setShowEditDecisionInfoModal(false);
-        } catch (error) {
-            console.error("Error updating decision:", error);
-            showErrorMessage("Error occurred updating decision info. Please try again.");
-        }
-    };
 
     //////////////////////////////////////////////////////////////////////////// Stepp /////////////////////////////////////////////////////////////////////////
     // Completion status of each step
@@ -205,7 +157,7 @@ const EditDecision = () => {
     //////////////////////////////////////////////////////////////////////////// Submit ////////////////////////////////////////////////////////////////////////////
 
     const handleSubmit = () => {
-        setEditDecision({ status: 'Finalized' })
+        setViewDecision({ status: 'Finalized' })
         setDecisionStatus('Finalized')
         showSuccessMessage('Submit successfully ');
     };
@@ -216,7 +168,7 @@ const EditDecision = () => {
                 <Typography variant="h6">
                     <a href="/ranking-decision">Ranking Decision List</a>{" "}
                     <FaAngleRight />
-                    Edit Ranking Decision
+                    View Ranking Decision
                 </Typography>
                 {/* Box Decision Info */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: 2 }}>
@@ -226,16 +178,13 @@ const EditDecision = () => {
                         <TextField
                             variant="outlined"
                             fullWidth
-                            value={originalDecisionName}
+                            value={viewDecision.decisionName}
                             disabled
                             sx={{ width: '60%' }}
                             InputProps={{
                                 sx: { height: '30px' }
                             }}
                         />
-                        <IconButton size="small" aria-label="edit" onClick={handleOpenEditRankingDecisionInfoModal}>
-                            <EditIcon />
-                        </IconButton>
                     </Box>
 
                     {/* Status */}
@@ -244,7 +193,7 @@ const EditDecision = () => {
                         <TextField
                             variant="outlined"
                             fullWidth
-                            value={editDecision.status}
+                            value={viewDecision.status}
                             disabled
                             sx={{ width: '60%' }}
                             InputProps={{
@@ -298,60 +247,10 @@ const EditDecision = () => {
                     </Stepper>
                 </Box>
                 <Box>{renderStepContent(activeStep)}</Box>
-
-                {/* Modal for editing group info */}
-                <Modal open={showEditDecisionInfoModal} onClose={handleCloseEditRankingDecisionInfoModal}>
-                    <Box sx={{
-                        padding: 2,
-                        backgroundColor: 'white',
-                        borderRadius: 1,
-                        maxWidth: 400,
-                        margin: 'auto',
-                        marginTop: '100px'
-                    }}>
-                        <Typography variant="h6" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            Edit Decision Info
-                            <button type="button" className="btn-close" aria-label="Close" onClick={handleCloseEditRankingDecisionInfoModal}></button>
-                        </Typography>
-                        <TextField
-                            label="Decision Name"
-                            variant="outlined"
-                            fullWidth
-                            value={newDecisionName || ""} // Default to empty string if undefined
-                            onChange={(e) =>
-                                setNewDecisionName(e.target.value)
-                            }
-                            error={!!validationMessage}
-                            helperText={validationMessage}
-                            sx={{ marginTop: 2 }}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            onClick={() => {
-                                                console.log(newDecisionName)
-                                                setNewDecisionName('');
-                                                setValidationMessage("");
-                                            }}
-                                            size="small"
-                                        >
-                                            <ClearIcon />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
-
-                        <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
-                            <Button variant="outlined" onClick={handleCloseEditRankingDecisionInfoModal}>Cancel</Button>
-                            <Button variant="contained" onClick={handleEditRankingDecisionInfo}>Save</Button>
-                        </Box>
-                    </Box>
-                </Modal>
             </Box >
         </div >
 
     );
 };
-export default EditDecision;
+export default ViewDecision;
 

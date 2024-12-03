@@ -1,10 +1,6 @@
 // react
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { MdDeleteForever } from "react-icons/md";
-import { FaInfo } from "react-icons/fa";
-import { FaEye } from "react-icons/fa";
-import { FaHistory } from "react-icons/fa";
 import { FaAngleRight } from "react-icons/fa";
 // Mui
 import {
@@ -163,28 +159,22 @@ const BulkRankingGroup = () => {
   // End code
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]); // Cập nhật file khi người dùng chọn
+    setFile(e.target.files[0]);
   };
 
   const handleUpload = () => {
     if (file) {
-      // Đọc file Excel khi người dùng chọn tệp
       const reader = new FileReader();
       reader.onload = (e) => {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: "array" });
-
-        // Giả sử bạn có 1 sheet trong file Excel và lấy dữ liệu từ sheet đầu tiên
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-        console.log(jsonData); // In dữ liệu từ file Excel ra console
-
-        // Xử lý dữ liệu từ file Excel ở đây (ví dụ: gửi đến API, lưu vào trạng thái, v.v.)
+        console.log(jsonData);
       };
       reader.readAsArrayBuffer(file);
     }
-    setIsModalOpen(false); // Đóng Modal sau khi tải tệp
+    setIsModalOpen(false);
   };
 
   return (
@@ -242,8 +232,6 @@ const BulkRankingGroup = () => {
           </Typography>
           <SearchComponent onSearch={handleSearch} width={200} />
           <Box sx={{ display: "flex", gap: 1, height: 40 }}>
-            {" "}
-            {/* Sử dụng gap để tạo khoảng cách giữa các nút */}
             <Button
               sx={{ width: 160 }}
               variant="contained"
@@ -256,8 +244,6 @@ const BulkRankingGroup = () => {
             <ExportTemplateModal
               open={isExportModalOpen}
               handleClose={handleCloseExportModal}
-              // employees={employees}
-              // rankingDecisions={rankingDecisions}
               onExport={(selectedEmployees) => {
                 console.log(
                   "Selected Employees for Export:",
@@ -298,11 +284,11 @@ const BulkRankingGroup = () => {
             rowCount={totalElements}
             paginationMode="server"
             paginationModel={{
-              page: page - 1, // Adjusted for 0-based index
+              page: page - 1,
               pageSize: pageSize,
             }}
             onPaginationModelChange={(model) => {
-              setPage(model.page + 1); // Set 1-based page for backend
+              setPage(model.page + 1);
               setPageSize(model.pageSize);
             }}
             disableNextButton={page >= totalPages}
@@ -310,7 +296,7 @@ const BulkRankingGroup = () => {
           />
         </Box>
 
-        {/* Modal để người dùng tải file Excel lên */}
+        {/* Modal for users to upload Excel files */}
         <Modal
           open={isModalOpen}
           onClose={() => setIsModalOpen(false)}
@@ -328,7 +314,7 @@ const BulkRankingGroup = () => {
               backgroundColor: "white",
               padding: "20px",
               borderRadius: "8px",
-              boxShadow: 24, // Thêm bóng đổ cho modal
+              boxShadow: 24,
             }}
           >
             <Typography variant="h6" id="upload-excel-modal">

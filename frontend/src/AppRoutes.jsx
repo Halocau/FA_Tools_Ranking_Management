@@ -16,13 +16,12 @@ import Header from "./layouts/Header";
 import RankingGroups from "./pages/RankingGroup/RankingGroupsPage.jsx";
 import EditRankingGroup from './pages/RankingGroup/EditRankingGroups.jsx';
 import BulkRankingGroup from './pages/RankingGroup/BulkRankingGroup/BulkRankingGroup.jsx';
-import BulkRankingModal from "./pages/RankingGroup/BulkRankingGroup/BulkRankingModal.jsx";
 import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
+import ViewRankingDecision from "./pages/RankingDecision/EditRankingDecision/ViewRankingDecision.jsx";
 import EditRankingDecison from "./pages/RankingDecision/EditRankingDecision/EditRankingDecision.jsx";
 import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx';
 import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx';
 import EditCriteria from './pages/CriteriaManagement/EditCriterial.jsx';
-import CriteriaConfiguration from "./pages/RankingDecision/EditRankingDecision/CriteriaConfiguration.jsx";
 
 // Import Protected Routes
 import ProtectedRoutes from "./components/Protected/ProtectedRoute.jsx";
@@ -74,6 +73,14 @@ function AppRoutes() {
             </LayoutWrapper>
           </ProtectedRoutes>
 
+        }
+      />
+      <Route
+        path="/ranking-decision/view/:id"
+        element={
+          <LayoutWrapper>
+            <ViewRankingDecision />
+          </LayoutWrapper>
         }
       />
       <Route

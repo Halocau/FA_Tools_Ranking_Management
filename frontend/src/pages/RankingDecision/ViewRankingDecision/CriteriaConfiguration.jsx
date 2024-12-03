@@ -331,11 +331,6 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                             </Box>
                         </Box>
                     )}
-                    {/*  */}
-                    {decisionStatus === 'Draft' && (
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-                        </Box>
-                    )}
                 </Box>
             </Box>
         </div>

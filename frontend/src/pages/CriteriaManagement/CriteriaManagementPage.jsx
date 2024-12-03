@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-
+import { FaEye } from 'react-icons/fa';
+import { MdDeleteForever } from "react-icons/md";
+import { FaEdit, FaAngleRight } from "react-icons/fa";
 //Layout
 import { Box, Button, Typography, TextField, Modal } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import Slider from "../../layouts/Slider.jsx";
 import SearchComponent from "../../components/Common/Search.jsx";
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 //Hooks
 import { useNavigate } from "react-router-dom";
 import useNotification from "../../hooks/useNotification.jsx";
@@ -26,9 +26,7 @@ const CriteriaManagement = () => {
     const [showAddCriteriaModal, setShowAddCriteriaModal] = useState(false);
     //Use for save criteria name for add criteria
     const [criteriaName, setCriteriaName] = useState("");
-
     const [validationMessage, setValidationMessage] = useState("");
-
     //Use to show notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     //Use for save data of criteria
@@ -39,8 +37,6 @@ const CriteriaManagement = () => {
     const [filter, setFilter] = useState("");
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
-
-    //Use for pass data in data grid
     const [rows, setRows] = useState([]);
 
     //Use for get all criteria with pagination and filter
@@ -64,21 +60,16 @@ const CriteriaManagement = () => {
         getAllCriteria();
     }, [page, pageSize, filter]);
 
-
-    //Use for map data in data grid
-    useEffect(() => {
-        if (criteria) {
-            const mappedRows = criteria.map((criteria, index) => ({
-                id: criteria.criteriaId,
-                index: index + 1 + (page - 1) * 5,
-                criteriaName: criteria.criteriaName,
-                noOfOption: criteria.numOptions ? criteria.numOptions : 0,
-                maxScore: criteria.maxScore ? criteria.maxScore : 0,
-            }));
-            setRows(mappedRows);
+    ///////////////////////////////////////////////////////// Search ////////////////////////////////////////////////////////////////////////
+    const handleSearch = (event) => {
+        if (event) {
+            setFilter(sfLike("criteriaName", event).toString());
+        } else {
+            setFilter("");
         }
-    }, [criteria]);
-
+        setPage(1);
+    };
+    ///////////////////////////////////////////////////////// Add ////////////////////////////////////////////////////////////////////////
     //Use for open form add criteria
     const handleOpenAddCriteriaModal = () => {
         setShowAddCriteriaModal(true);
@@ -92,18 +83,6 @@ const CriteriaManagement = () => {
         setCriteriaName("");
         setValidationMessage("");
     };
-
-    //Use for search
-    const handleSearch = (event) => {
-        if (event) {
-            setFilter(sfLike("criteriaName", event).toString());
-        } else {
-            setFilter("");
-        }
-        setPage(1);
-    };
-
-    //Use for add criteria
     const handleAddCriteria = async () => {
         setValidationMessage("");
         let trimmedName = criteriaName.trim();
@@ -112,20 +91,16 @@ const CriteriaManagement = () => {
             setValidationMessage("Criteria name cannot be empty.");
             return;
         }
-
         if (trimmedName.length < 3 || trimmedName.length > 20) {
             setValidationMessage("Criteria name must be between 3 and 20 characters.");
             return;
         }
-
         const nameRegex = /^[a-zA-Z0-9 ]+$/;
         if (!nameRegex.test(trimmedName)) {
             setValidationMessage("Criteria name can only contain letters, numbers, and spaces.");
             return;
         }
-
         trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
-
         try {
             const newCriteria = await CriteriaAPI.createCriteria({ criteriaName: trimmedName, createdBy: localStorage.getItem("userId") });
             handleCloseAddCriteriaModal();
@@ -161,12 +136,13 @@ const CriteriaManagement = () => {
         }
     };
 
+    ///////////////////////////////////////////////////////// Table ////////////////////////////////////////////////////////////////////////
     //Use for map data header in data grid
     const columns = [
-        { field: "index", headerName: "ID", width: 80 },
-        { field: "criteriaName", headerName: "Criteria Name", width: 300 },
-        { field: "noOfOption", headerName: "No Of Option", width: 150 },
-        { field: "maxScore", headerName: "Max Score", width: 150 },
+        { field: "index", headerName: "ID", width: 100 },
+        { field: "criteriaName", headerName: "Criteria Name", width: 350 },
+        { field: "noOfOption", headerName: "No Of Option", width: 200 },
+        { field: "maxScore", headerName: "Max Score", width: 200 },
         {
             field: "action", headerName: "Action", width: 200, renderCell: (params) => (
                 <>
@@ -176,39 +152,48 @@ const CriteriaManagement = () => {
                             navigate(`/criteria/edit/${params.row.id}`);
                         }}
                     >
-                        <EditIcon />
+                        <FaEye />
                     </Button>
                     <Button
                         variant="outlined"
                         color="error"
-                        size="small"
                         onClick={() => handleDeleteCriteria(params.row.id)}
                         sx={{ marginLeft: 1 }}
                     >
-                        <DeleteIcon />
+                        <MdDeleteForever />
                     </Button>
                 </>
             ),
         },
     ];
+    //Use for map data in data grid
+    useEffect(() => {
+        if (criteria) {
+            const mappedRows = criteria.map((criteria, index) => ({
+                id: criteria.criteriaId,
+                index: index + 1 + (page - 1) * 5,
+                criteriaName: criteria.criteriaName,
+                noOfOption: criteria.numOptions ? criteria.numOptions : 0,
+                maxScore: criteria.maxScore ? criteria.maxScore : 0,
+            }));
+            setRows(mappedRows);
+        }
+    }, [criteria]);
 
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
-            <Box sx={{ marginTop: 4, padding: 2 }}>
+            <Box>
                 <Typography variant="h6">
-                    <a href="/ranking_decision">Ranking Decision List</a> {'>'} Criteria List
+                    <a href="/ranking_decision">Ranking Decision List</a>
+                    {<FaAngleRight />}
+                    Criteria List
                 </Typography>
-                <Box sx={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                    <Typography variant="h5">Criteria List</Typography>
-                    <SearchComponent onSearch={handleSearch} />
-                    <Button variant="contained" color="primary" onClick={handleOpenAddCriteriaModal} >
-                        Add New Criteria
-                    </Button>
-                </Box>
-
-                <Box sx={{ width: "100%", height: "50vh" }}>
+                <SearchComponent onSearch={handleSearch} />
+                {/* Table  */}
+                <Box sx={{ width: "100%", height: 370, marginTop: '30px' }}>
                     <DataGrid
+                        className="custom-data-grid"
                         apiRef={apiRef}
                         rows={rows}
                         columns={columns}
@@ -231,7 +216,12 @@ const CriteriaManagement = () => {
                         disableRowSelectionOnClick
                     />
                 </Box>
-
+                <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2, mb: 2 }}>
+                    <Button sx={{ height: 40, width: 200 }} variant="contained" color="primary" onClick={handleOpenAddCriteriaModal} >
+                        Add New Criteria
+                    </Button>
+                </Box>
+                {/* Add */}
                 <Modal open={showAddCriteriaModal} onClose={handleCloseAddCriteriaModal}>
                     <Box sx={{
                         padding: 2, backgroundColor: "white", borderRadius: 1, maxWidth: 400, margin: "auto", marginTop: "20vh"

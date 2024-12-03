@@ -120,34 +120,6 @@ const RankingGroups = () => {
       setValidationMessage("Group name already exists.");
       return;
     }
-    //   try {
-    //     const newGroup = {
-    //       groupName: trimmedName,
-    //       createdBy: localStorage.getItem('userId'),
-    //     };
-    //     await RankingGroupAPI.addRankingGroup(newGroup);
-    //     handleCloseAddRankingGroupModal()();
-    //     setTotalElements(totalElements + 1);
-    //     if (rankingGroups.length < pageSize) {
-    //       fetchAllRankingGroups();
-    //     } else {
-    //       setTotalPages(totalPages + 1);
-    //     }
-    //     showSuccessMessage("Ranking Group successfully added.");
-    //   } catch (error) {
-    //     console.error("Failed to add group:", error);
-
-    //     // Kiểm tra nếu lỗi từ backend có chứa thông báo lỗi liên quan đến tên nhóm
-    //     if (error.response && error.response.data && error.response.data.detailMessage) {
-    //       // Hiển thị thông báo lỗi từ backend (ví dụ: "RankingGroup name exists already!")
-    //       setValidationMessage(error.response.data.detailMessage);
-    //     } else {
-    //       // Nếu không có thông báo cụ thể từ backend, hiển thị thông báo lỗi mặc định
-    //       showErrorMessage("Error occurred adding Ranking Group. Please try again");
-    //     }
-    //   }
-    // };
-
     try {
       const newGroup = {
         groupName: trimmedName,
@@ -166,13 +138,13 @@ const RankingGroups = () => {
       console.error("Failed to add group:", error);
 
       if (error.response && error.response.data) {
-        // Kiểm tra và lấy thông báo lỗi từ phần exception
+        // Check and get the error message from the exception section
         if (error.response.data.exception && error.response.data.exception.groupName) {
-          setValidationMessage(error.response.data.exception.groupName); // Hiển thị thông báo lỗi từ exception
+          setValidationMessage(error.response.data.exception.groupName);
         } else if (error.response.data.detailMessage) {
-          setValidationMessage(error.response.data.detailMessage); // Hiển thị detailMessage nếu không có exception
+          setValidationMessage(error.response.data.detailMessage);
         } else if (error.response.data.message) {
-          setValidationMessage(error.response.data.message); // Hiển thị message chung nếu không có detailMessage
+          setValidationMessage(error.response.data.message);
         } else {
           showErrorMessage("Error occurred adding Ranking Decision. Please try again");
         }
@@ -342,110 +314,108 @@ const RankingGroups = () => {
   return (
     <div style={{ marginTop: "60px" }}>
       <Slider />
-      <div>
-        <h2>
-          Ranking Group List
-        </h2>
-        {/* Search Ranking Group */}
-        <SearchComponent onSearch={handleSearch} placeholder=" Sreach Group" />
-        {/* Table show Ranking Group */}
-        <Box sx={{ width: "100%", height: 370, marginTop: '50px' }}>
-          <DataGrid
-            className="custom-data-grid"
-            apiRef={apiRef}
-            rows={rows}
-            columns={columns}
-            checkboxSelection
-            pagination
-            pageSizeOptions={[5, 10, 25]}
-            getRowId={(row) => row.id}
-            rowCount={totalElements}
-            paginationMode="server"
-            paginationModel={{
-              page: page - 1,
-              pageSize: pageSize,
+      <h2>
+        Ranking Group List
+      </h2>
+      {/* Search Ranking Group */}
+      <SearchComponent onSearch={handleSearch} placeholder=" Sreach Group" />
+      {/* Table show Ranking Group */}
+      <Box sx={{ width: "100%", height: 370, marginTop: '50px' }}>
+        <DataGrid
+          className="custom-data-grid"
+          apiRef={apiRef}
+          rows={rows}
+          columns={columns}
+          checkboxSelection
+          pagination
+          pageSizeOptions={[5, 10, 25]}
+          getRowId={(row) => row.id}
+          rowCount={totalElements}
+          paginationMode="server"
+          paginationModel={{
+            page: page - 1,
+            pageSize: pageSize,
+          }}
+          onPaginationModelChange={(model) => {
+            setPage(model.page + 1);
+            setPageSize(model.pageSize);
+          }}
+          disableNextButton={page >= totalPages}
+          disablePrevButton={page <= 1}
+          disableRowSelectionOnClick
+          autoHeight={false}
+        />
+      </Box>
+      {/* Button Add new Group and Delete Selected Groups */}
+      <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+        <Button variant="contained" color="success" onClick={handleOpenAddRankingGroupModal}>
+          Add New Group
+        </Button>
+        <Button variant="contained" color="error" onClick={handleOpenBulkDeleteModal} sx={{ ml: 2 }}>
+          Delete Selected Groups
+        </Button>
+      </Box>
+      {/* Modal for adding a new group */}
+      <ModalCustom
+        show={showAddModal}
+        handleClose={handleCloseAddRankingGroupModal}
+        title="Add New Group"
+        bodyContent={
+          <TextField
+            label="Group Name"
+            variant="outlined"
+            fullWidth
+            value={newGroupName}
+            onChange={(e) => {
+              setNewGroupName(e.target.value);
+              setValidationMessage("");
             }}
-            onPaginationModelChange={(model) => {
-              setPage(model.page + 1);
-              setPageSize(model.pageSize);
-            }}
-            disableNextButton={page >= totalPages}
-            disablePrevButton={page <= 1}
-            disableRowSelectionOnClick
-            autoHeight={false}
+            error={!!validationMessage}
+            helperText={validationMessage}
           />
-        </Box>
-        {/* Button Add new Group and Delete Selected Groups */}
-        <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
-          <Button variant="contained" color="success" onClick={handleOpenAddRankingGroupModal}>
-            Add New Group
-          </Button>
-          <Button variant="contained" color="error" onClick={handleOpenBulkDeleteModal} sx={{ ml: 2 }}>
-            Delete Selected Groups
-          </Button>
-        </Box>
-        {/* Modal for adding a new group */}
-        <ModalCustom
-          show={showAddModal}
-          handleClose={handleCloseAddRankingGroupModal}
-          title="Add New Group"
-          bodyContent={
-            <TextField
-              label="Group Name"
-              variant="outlined"
-              fullWidth
-              value={newGroupName}
-              onChange={(e) => {
-                setNewGroupName(e.target.value);
-                setValidationMessage("");
-              }}
-              error={!!validationMessage}
-              helperText={validationMessage}
-            />
-          }
-          footerContent={
-            <ActionButtons
-              onCancel={handleCloseAddRankingGroupModal}
-              onConfirm={handleAddRankingGroup}
-              confirmText="Add"
-              cancelText="Cancel"
-              color="success"
-            />
-          }
-        />
-        {/* Modal for deleting a group */}
-        <ModalCustom
-          show={showDeleteModal}
-          handleClose={handleCloseDeleteRankingGroupModal}
-          title="Delete Group"
-          bodyContent="Are you sure you want to delete this group?"
-          footerContent={
-            <ActionButtons
-              onCancel={handleCloseDeleteRankingGroupModal}
-              onConfirm={handleDeleteRankingGroup}
-              confirmText="Delete"
-              cancelText="Cancel"
-              color="error"
-            />
-          }
-        />
-        {/* Modal for deleting select group */}
-        <ModalCustom
-          show={showBulkDeleteModal}
-          handleClose={handleCloseBulkDeleteModal}
-          title="Delete Selected Groups"
-          bodyContent="Are you sure you want to delete the selected groups?"
-          footerContent={
-            <ActionButtons
-              onCancel={handleCloseDeleteRankingGroupModal}
-              onConfirm={handleBulkDeleteRankingGroup}
-              confirmText="Delete"
-              cancelText="Cancel"
-              color="error"
-            />
-          }
-        />
-      </div>
+        }
+        footerContent={
+          <ActionButtons
+            onCancel={handleCloseAddRankingGroupModal}
+            onConfirm={handleAddRankingGroup}
+            confirmText="Add"
+            cancelText="Cancel"
+            color="success"
+          />
+        }
+      />
+      {/* Modal for deleting a group */}
+      <ModalCustom
+        show={showDeleteModal}
+        handleClose={handleCloseDeleteRankingGroupModal}
+        title="Delete Group"
+        bodyContent="Are you sure you want to delete this group?"
+        footerContent={
+          <ActionButtons
+            onCancel={handleCloseDeleteRankingGroupModal}
+            onConfirm={handleDeleteRankingGroup}
+            confirmText="Delete"
+            cancelText="Cancel"
+            color="error"
+          />
+        }
+      />
+      {/* Modal for deleting select group */}
+      <ModalCustom
+        show={showBulkDeleteModal}
+        handleClose={handleCloseBulkDeleteModal}
+        title="Delete Selected Groups"
+        bodyContent="Are you sure you want to delete the selected groups?"
+        footerContent={
+          <ActionButtons
+            onCancel={handleCloseDeleteRankingGroupModal}
+            onConfirm={handleBulkDeleteRankingGroup}
+            confirmText="Delete"
+            cancelText="Cancel"
+            color="error"
+          />
+        }
+      />
     </div >
   );
 };
