@@ -6,18 +6,21 @@ import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 const Header = () => {
   // console.log("Name" + localStorage.getItem("userFullName"));
   const userFullName = localStorage.getItem("userFullName") == "null" ? "User" : localStorage.getItem("userFullName");
+
   const handleLogout = () => {
     localStorage.removeItem("userFullName");
     localStorage.removeItem('jwtToken');
     localStorage.removeItem("userId");
     localStorage.removeItem("userRole");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("user");
     window.location.href = "/";
   };
+
   return (
     <header className="header">
       <div className="header-left">
-        <span className="web-title" onClick={() => window.location.href = "/ranking_group"} style={{ cursor: "pointer" }}> FPT Software </span>
+        <span className="web-title" onClick={() => window.location.href = "/ranking-group"} style={{ cursor: "pointer" }}> FPT Software </span>
       </div>
       <div className="header-right">
         <span className="welcome-text">Welcome, {userFullName}</span>

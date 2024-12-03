@@ -1,10 +1,20 @@
-import authClient from './authClient';
+// frontend/api/taskApi.js
+import authClient from "./baseapi/AuthorAPI";
 
-const taskAPI = {
-    // Fetch all tasks
-    getAllTasks: async () => {
+const TASK_API = '/task';
+
+const taskApi = {
+    getAllTaskWihtOutPagination: async () => {
+        const response = await authClient.get(`${TASK_API}/all`)
+        return response.data;
+    },
+
+    // Get all tasks with pagination
+    getAllTasks: async (page = 0, size = 5) => {
         try {
-            const response = await authClient.get('/task');
+            const response = await authClient.get(`${TASK_API}`, {
+                params: { page: page, size: size },
+            });
             return response.data;
         } catch (error) {
             console.error('Error fetching tasks:', error);
@@ -12,10 +22,15 @@ const taskAPI = {
         }
     },
 
-    // Fetch a task by ID
+    getAllTaskWihtOutPagination: async () => {
+        const response = await authClient.get(`${TASK_API}/all`)
+        return response.data;
+    },
+
+    // Get a single task by ID
     getTaskById: async (id) => {
         try {
-            const response = await authClient.get(`/task/get/${id}`);
+            const response = await authClient.get(`${TASK_API}/get/${id}`);
             return response.data;
         } catch (error) {
             console.error(`Error fetching task with ID ${id}:`, error);
@@ -24,20 +39,20 @@ const taskAPI = {
     },
 
     // Create a new task
-    addTask: async (taskData) => {
+    createTask: async (formData) => {
         try {
-            const response = await authClient.post('/task/add', taskData);
+            const response = await authClient.post(`${TASK_API}/add`, formData);
             return response.data;
         } catch (error) {
-            console.error('Error adding task:', error);
+            console.error('Error creating task:', error);
             throw error;
         }
     },
 
-    // Update an existing task
-    updateTask: async (id, taskData) => {
+    // Update a task by ID
+    updateTask: async (id, formData) => {
         try {
-            const response = await authClient.put(`/task/update/${id}`, taskData);
+            const response = await authClient.put(`${TASK_API}/update/${id}`, formData);
             return response.data;
         } catch (error) {
             console.error(`Error updating task with ID ${id}:`, error);
@@ -48,13 +63,26 @@ const taskAPI = {
     // Delete a task by ID
     deleteTaskById: async (id) => {
         try {
-            const response = await authClient.delete(`/task/delete/${id}`);
+            const response = await authClient.delete(`${TASK_API}/delete/${id}`);
             return response.data;
         } catch (error) {
             console.error(`Error deleting task with ID ${id}:`, error);
             throw error;
         }
     },
+
+    // Search tasks by name with pagination
+    searchByTaskName: async (filter = "", page = 0, size = 5) => {
+        try {
+            const response = await authClient.get(`${TASK_API}`, {
+                params: { filter: filter, page: page, size: size },
+            });
+            return response.data;
+        } catch (error) {
+            console.error(`Error searching tasks with name "${taskName}":`, error);
+            throw error;
+        }
+    },
 };
 
-export default taskAPI;
+export default taskApi;

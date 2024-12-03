@@ -1,5 +1,7 @@
 package backend.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +11,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,31 +20,46 @@ import java.time.LocalDateTime;
 @Table(name = "Options")
 @SuperBuilder
 public class Options {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "option_id")
-    private int optionId;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "option_id")
+        private int optionId;
 
-    @Column(name = "criteria_id")
-    private Integer criteriaId;
+        @Column(name = "criteria_id")
+        private Integer criteriaId;
 
-    @Column(name = "option_name")
-    private String optionName;
+        @ManyToOne
+        @JoinColumn(name = "criteria_id", insertable = false, updatable = false)
+        @JsonBackReference
+        private Criteria criteria;
 
-    @Column(name = "score")
-    private int score;
+        @Column(name = "option_name")
+        private String optionName;
 
-    @Column(name = "description")
-    private String description;
+        @Column(name = "score")
+        private int score;
 
-    @Column(name = "created_by")
-    private int createdBy;
+        @Column(name = "description")
+        private String description;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createAt;
+        @Column(name = "created_by")
+        private int createdBy;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+        @CreationTimestamp
+        @Column(name = "created_at", updatable = false)
+        private LocalDateTime createAt;
+
+        @UpdateTimestamp
+        @Column(name = "updated_at")
+        private LocalDateTime updatedAt;
+
+        @ManyToMany(fetch = FetchType.LAZY, cascade = {
+                        CascadeType.DETACH,
+                        CascadeType.MERGE,
+                        CascadeType.PERSIST,
+                        CascadeType.REFRESH
+        })
+        @JoinTable(name = "Ranking_Title_Option", joinColumns = @JoinColumn(name = "option_id"), inverseJoinColumns = @JoinColumn(name = "ranking_title_id"))
+        @JsonIgnore
+        private List<RankingTitle> rankingTitles;
 }

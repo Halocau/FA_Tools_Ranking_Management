@@ -1,14 +1,16 @@
 package backend.config.exception;
 
+import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
 
-import backend.config.exception.ErrorResponse;
+import backend.config.exception.exceptionEntity.StorageException;
+import backend.config.exception.exceptionEntity.PageException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
@@ -25,7 +27,6 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 
-
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.log4j.Log4j2;
@@ -35,7 +36,7 @@ import lombok.extern.log4j.Log4j2;
 public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
 
     // Default exception
-    @ExceptionHandler({ Exception.class })
+    @ExceptionHandler({Exception.class})
     public ResponseEntity<Object> handleAll(Exception exception) {
         String message = "Unexpected error";
         String detailMessage = exception.getLocalizedMessage();
@@ -167,7 +168,7 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
     }
 
     // Wrong parameter type
-    @ExceptionHandler({ MethodArgumentTypeMismatchException.class })
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class})
     public ResponseEntity<Object> handleMethodArgumentTypeMismatch(
             MethodArgumentTypeMismatchException exception) {
 
@@ -271,6 +272,118 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
         log.error(detailMessage, exception);
 
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(PageException.class)
+    public ResponseEntity<Object> handleInvalidPaginationParameterException(PageException exception) {
+        String message = "Invalid pagination parameters!";
+        String detailMessage = exception.getLocalizedMessage();
+        int code = 10;  // Mã lỗi tùy chỉnh cho ngoại lệ phân trang
+
+        // Tạo đối tượng ErrorResponse để trả về cho client
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                message,
+                detailMessage,
+                code,
+                exception,
+                null,
+                null
+        );
+
+        // Log lỗi chi tiết
+        log.error(detailMessage, exception);
+
+        // Trả về phản hồi với mã lỗi 400 (Bad Request)
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Object> handleEntityNotFoundException(EntityNotFoundException exception) {
+        String message = "Entity not found!";
+        String detailMessage = exception.getLocalizedMessage();
+        int code = 11; // Mã lỗi cho "Not Found"
+
+        // Tạo đối tượng ErrorResponse để trả về thông tin lỗi
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                message,
+                detailMessage,
+                code,
+                exception,
+                null,
+                null
+        );
+
+        // Log lỗi chi tiết
+        log.error(detailMessage, exception);
+
+        // Trả về phản hồi với mã lỗi 404 (Not Found)
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    //Lỗi định dạng đầu vào không hợp lệ (InvalidFormatException)
+    @ExceptionHandler(InvalidFormatException.class)
+    public ResponseEntity<Object> handleInvalidFormatException(InvalidFormatException exception) {
+        String message = "Invalid format for field " + exception.getPathReference();
+        String detailMessage = exception.getLocalizedMessage();
+        int code = 12;
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                message,
+                detailMessage,
+                code,
+                exception,
+                null,
+                null
+        );
+
+        log.error(detailMessage, exception);
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+    //Lỗi truy cập bị từ chối tài nguyên (Access Denied)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException exception) {
+        String message = "Access Denied";
+        String detailMessage = exception.getLocalizedMessage();
+        int code = 13;
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                message,
+                detailMessage,
+                code,
+                exception,
+                null,
+                null
+        );
+
+        log.error(detailMessage, exception);
+
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+    //File Exception
+    @ExceptionHandler({StorageException.class})
+    public ResponseEntity<Object> handleUploadException(Exception exception) {
+        String message = "File Upload error!";
+        String detailMessage = exception.getLocalizedMessage();
+        int code = 14;
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                message,
+                detailMessage,
+                code,
+                exception,
+                null,
+                null
+        );
+
+        log.error(detailMessage, exception);
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
 //    // Account blocked exception

@@ -1,48 +1,113 @@
-// Import các thư viện cần thiết từ React, Material-UI và các component khác
 import React, { useEffect, useState } from "react";
-import {
-    Box, Button, Typography, TextField, Alert
-} from "@mui/material";
+
+//Layout
+import { Box, Button, Typography, TextField, Modal } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
-import ModalCustom from "../../components/Common/Modal.jsx";
-import { useNavigate, useParams } from "react-router-dom";
 import Slider from "../../layouts/Slider.jsx";
-import useRankingGroup from "../../hooks/useRankingGroup.jsx";
-import useRankingDecision from "../../hooks/useRankingDecision.jsx";
-import "../../assets/css/RankingGroups.css";
+import SearchComponent from "../../components/Common/Search.jsx";
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+//Hooks
+import { useNavigate } from "react-router-dom";
+import useNotification from "../../hooks/useNotification.jsx";
+
+//API
+import CriteriaAPI from "../../api/CriteriaAPI.js";
+
+//Filter Query Builder
+import { sfLike } from 'spring-filter-query-builder';
 
 const CriteriaManagement = () => {
-    const navigate = useNavigate(); // Để điều hướng giữa các trang
-    const { id } = useParams(); // Lấy tham số id từ URL
-    const { fetchRankingGroupById, updateRankingGroup, fetchAllRankingGroups, data: group } = useRankingGroup(); // Các hàm từ hook để quản lý nhóm xếp hạng
-    const apiRef = useGridApiRef(); // Tạo apiRef để chọn nhiều group để xóa
+    //Use for navigation
+    const navigate = useNavigate();
+    //Use for table
+    const apiRef = useGridApiRef();
+    //Use for control form add criteria
+    const [showAddCriteriaModal, setShowAddCriteriaModal] = useState(false);
+    //Use for save criteria name for add criteria
+    const [criteriaName, setCriteriaName] = useState("");
 
-    // State cho việc chỉnh sửa và hiển thị thông tin nhóm
-    const [showAddCriteriaModal, setShowAddCriteriaModal] = useState(false); // Hiển thị modal thêm tiêu chí
-    const [criteriaName, setCriteriaName] = useState(""); // Tên quyết định mới
-    const [validationMessage, setValidationMessage] = useState(""); // Thông điệp xác thực cho người dùng
-    const [message, setMessage] = useState(""); // Thông điệp thông báo cho người dùng
-    const [messageType, setMessageType] = useState("success"); // Kiểu thông điệp (thành công hoặc lỗi)
+    const [validationMessage, setValidationMessage] = useState("");
 
-    // Handler mở/đóng modal thêm tiêu chí
+    //Use to show notification
+    const [showSuccessMessage, showErrorMessage] = useNotification();
+    //Use for save data of criteria
+    const [criteria, setCriteria] = useState([]);
+    //Use for pagination
+    const [pageSize, setpageSize] = useState(5);
+    const [page, setPage] = useState(1);
+    const [filter, setFilter] = useState("");
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
+
+    //Use for pass data in data grid
+    const [rows, setRows] = useState([]);
+
+    //Use for get all criteria with pagination and filter
+    const getAllCriteria = async () => {
+        try {
+            const data = await CriteriaAPI.searchCriteria(
+                filter,
+                page,
+                pageSize
+            );
+            setCriteria(data.result);
+            setTotalPages(data.pageInfo.total);
+            setTotalElements(data.pageInfo.element);
+        } catch (error) {
+            console.error("Failed to fetch criteria:", error);
+        }
+    }
+
+    //Use to get all criteria when first load and when page or pageSize or filter change.
+    useEffect(() => {
+        getAllCriteria();
+    }, [page, pageSize, filter]);
+
+
+    //Use for map data in data grid
+    useEffect(() => {
+        if (criteria) {
+            const mappedRows = criteria.map((criteria, index) => ({
+                id: criteria.criteriaId,
+                index: index + 1 + (page - 1) * 5,
+                criteriaName: criteria.criteriaName,
+                noOfOption: criteria.numOptions ? criteria.numOptions : 0,
+                maxScore: criteria.maxScore ? criteria.maxScore : 0,
+            }));
+            setRows(mappedRows);
+        }
+    }, [criteria]);
+
+    //Use for open form add criteria
     const handleOpenAddCriteriaModal = () => {
         setShowAddCriteriaModal(true);
         setCriteriaName("");
         setValidationMessage("");
     };
 
+    //Use for close form add criteria
     const handleCloseAddCriteriaModal = () => {
         setShowAddCriteriaModal(false);
         setCriteriaName("");
         setValidationMessage("");
     };
 
-    // Hàm thêm tiêu chí với các kiểm tra xác thực
+    //Use for search
+    const handleSearch = (event) => {
+        if (event) {
+            setFilter(sfLike("criteriaName", event).toString());
+        } else {
+            setFilter("");
+        }
+        setPage(1);
+    };
+
+    //Use for add criteria
     const handleAddCriteria = async () => {
         setValidationMessage("");
         let trimmedName = criteriaName.trim();
 
-        // Kiểm tra độ dài và yêu cầu ký tự của tên tiêu chí
         if (!trimmedName) {
             setValidationMessage("Criteria name cannot be empty.");
             return;
@@ -59,64 +124,68 @@ const CriteriaManagement = () => {
             return;
         }
 
-        // Capitalize the first letter of each word in the criteria name
         trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
 
-        // Kiểm tra trùng lặp
-        const isDuplicate = group?.rankingDecisions?.some(
-            decision => decision.criteriaName.toLowerCase() === trimmedName.toLowerCase()
-        );
-        if (isDuplicate) {
-            setValidationMessage("Criteria name already exists.");
-            return;
-        }
-
         try {
-            const newCriteria = {
-                criteriaName: trimmedName,
-                createdBy: 1, // Giả sử 1 là ID của người tạo tiêu chí
-            };
-            // Gọi API để thêm tiêu chí mới
-            await useRankingDecision().addCriteria(newCriteria);
-            setMessageType("success");
-            setMessage("Criteria added successfully!");
-            setTimeout(() => setMessage(null), 2000);
-            handleCloseAddCriteriaModal(); // Đóng modal sau khi thêm thành công
-            await useRankingDecision().fetchAllCriteria(); // Làm mới danh sách tiêu chí
+            const newCriteria = await CriteriaAPI.createCriteria({ criteriaName: trimmedName, createdBy: localStorage.getItem("userId") });
+            handleCloseAddCriteriaModal();
+            setTotalElements(totalElements + 1);
+            if (criteria.length < pageSize) {
+                setCriteria(prevCriteria => [...prevCriteria, newCriteria]);
+
+            } else {
+                setTotalPages(totalPages + 1);
+            }
+            showSuccessMessage("Criteria added successfully!");
         } catch (error) {
-            console.error("Failed to add criteria:", error);
-            setMessageType("error");
-            setMessage("Failed to add criteria. Please try again.");
-            setTimeout(() => setMessage(null), 2000);
+            showErrorMessage("Failed to add criteria. Please try again.");
         }
     };
 
-    // Cấu hình cột cho DataGrid
+    //Use for delete criteria
+    const handleDeleteCriteria = async (criteriaId) => {
+        try {
+            const response = await CriteriaAPI.deleteCriteria(criteriaId);
+            console.log("Response:", response);
+            setCriteria(criteria.filter((criteria) => criteria.criteriaId !== criteriaId));
+            if (criteria.length === 5) {
+                getAllCriteria();
+            }
+            if (criteria.length === 1) {
+                setPage(page - 1);
+            }
+            setTotalElements(totalElements - 1);
+            showSuccessMessage("Criteria deleted successfully!");
+        } catch (error) {
+            showErrorMessage("Failed to delete criteria. Please try again.");
+        }
+    };
+
+    //Use for map data header in data grid
     const columns = [
-        { field: "id", headerName: "ID", width: 80 },
-        { field: "name", headerName: "Criteria Name", width: 400 },
-        { field: "noOfOption", headerName: "No Of Option", width: 200 },
-        { field: "maxScore", headerName: "Max Score", width: 180 },
+        { field: "index", headerName: "ID", width: 80 },
+        { field: "criteriaName", headerName: "Criteria Name", width: 300 },
+        { field: "noOfOption", headerName: "No Of Option", width: 150 },
+        { field: "maxScore", headerName: "Max Score", width: 150 },
         {
-            field: "action", headerName: "Action", width: 150, renderCell: (params) => (
+            field: "action", headerName: "Action", width: 200, renderCell: (params) => (
                 <>
                     <Button
                         variant="outlined"
                         onClick={() => {
-                            navigate(`/ranking-decision/edit/${params.row.id}`);
+                            navigate(`/criteria/edit/${params.row.id}`);
                         }}
                     >
-                        Edit
+                        <EditIcon />
                     </Button>
                     <Button
                         variant="outlined"
                         color="error"
                         size="small"
-                        onClick={() => {
-                            // Hàm mở modal xóa nhóm
-                        }}
+                        onClick={() => handleDeleteCriteria(params.row.id)}
+                        sx={{ marginLeft: 1 }}
                     >
-                        Delete
+                        <DeleteIcon />
                     </Button>
                 </>
             ),
@@ -132,27 +201,42 @@ const CriteriaManagement = () => {
                 </Typography>
                 <Box sx={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                     <Typography variant="h5">Criteria List</Typography>
-                    <Button variant="contained" color="primary" onClick={handleOpenAddCriteriaModal}>
+                    <SearchComponent onSearch={handleSearch} />
+                    <Button variant="contained" color="primary" onClick={handleOpenAddCriteriaModal} >
                         Add New Criteria
                     </Button>
                 </Box>
 
-                <Box sx={{ width: "100%" }}>
-                    <DataGrid className="custom-data-grid"
+                <Box sx={{ width: "100%", height: "50vh" }}>
+                    <DataGrid
                         apiRef={apiRef}
-                        rows={group?.rankingDecisions || []}
+                        rows={rows}
                         columns={columns}
                         checkboxSelection
-                        pageSizeOptions={[5]}
+                        pagination
+                        pageSizeOptions={[5, 10, 20]}
+                        getRowId={(row) => row.id}
+                        rowCount={totalElements}
+                        paginationMode="server" // Kích hoạt phân trang phía server
+                        paginationModel={{
+                            page: page - 1,  // Adjusted for 0-based index
+                            pageSize: pageSize,
+                        }}
+                        onPaginationModelChange={(model) => {
+                            setPage(model.page + 1);  // Set 1-based page for backend
+                            setpageSize(model.pageSize);
+                        }}
+                        disableNextButton={page >= totalPages}
+                        disablePrevButton={page <= 1}
+                        disableRowSelectionOnClick
                     />
                 </Box>
 
-                {/* Modal for adding new Criteria */}
-                <ModalCustom
-                    show={showAddCriteriaModal}
-                    handleClose={handleCloseAddCriteriaModal}
-                    title="Add New Criteria"
-                    bodyContent={
+                <Modal open={showAddCriteriaModal} onClose={handleCloseAddCriteriaModal}>
+                    <Box sx={{
+                        padding: 2, backgroundColor: "white", borderRadius: 1, maxWidth: 400, margin: "auto", marginTop: "20vh"
+                    }}>
+                        <Typography variant="h6">Add New Criteria</Typography>
                         <TextField
                             label="Criteria Name"
                             variant="outlined"
@@ -164,26 +248,14 @@ const CriteriaManagement = () => {
                             }}
                             error={!!validationMessage}
                             helperText={validationMessage}
+                            sx={{ marginTop: 2 }}
                         />
-                    }
-                    footerContent={
-                        <>
-                            <Button variant="outlined" onClick={handleCloseAddCriteriaModal}>
-                                Cancel
-                            </Button>
-                            <Button variant="contained" color="success" onClick={handleAddCriteria}>
-                                Add
-                            </Button>
-                        </>
-                    }
-                />
-
-                {/* Hiển thị thông điệp */}
-                {message && (
-                    <Alert severity={messageType} sx={{ marginTop: 2 }}>
-                        {message}
-                    </Alert>
-                )}
+                        <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
+                            <Button variant="outlined" onClick={handleCloseAddCriteriaModal}>Cancel</Button>
+                            <Button variant="contained" color="success" onClick={handleAddCriteria} >Add</Button>
+                        </Box>
+                    </Box>
+                </Modal>
             </Box>
         </div>
     );

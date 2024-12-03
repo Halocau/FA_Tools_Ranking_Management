@@ -1,37 +1,54 @@
 package backend.service.Implement;
 
+import backend.config.common.PaginationUtils;
 import backend.dao.IAccount;
+import backend.dao.IDecisionCriteriaRepository;
 import backend.dao.ITaskRepository;
+import backend.dao.ITaskWagesRepository;
 import backend.model.dto.TaskResponse;
 import backend.model.entity.Account;
 import backend.model.entity.Task;
 import backend.model.form.Task.AddTaskRequest;
 import backend.model.form.Task.UpdateTaskRequest;
+import backend.model.page.ResultPaginationDTO;
 import backend.service.ITaskService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TaskService implements ITaskService {
     private ITaskRepository iTaskRepository;
     private IAccount iAccount;
     private ModelMapper modelMapper;
+    private ITaskWagesRepository iTaskWagesRepository;
+    private IDecisionCriteriaRepository idDecisionCriteriaRepository;
 
     @Autowired
-    public TaskService(ITaskRepository iTaskRepository, IAccount iAccount, ModelMapper modelMapper) {
+    public TaskService(ITaskRepository iTaskRepository, IAccount iAccount, ModelMapper modelMapper,
+            ITaskWagesRepository iTaskWagesRepository, IDecisionCriteriaRepository idDecisionCriteriaRepository) {
         this.iTaskRepository = iTaskRepository;
         this.iAccount = iAccount;
         this.modelMapper = modelMapper;
+        this.iTaskWagesRepository = iTaskWagesRepository;
+        this.idDecisionCriteriaRepository = idDecisionCriteriaRepository;
     }
 
     @Override
-    public List<Task> getTask() {
+    public ResultPaginationDTO getTask(Specification<Task> spec, Pageable pageable) {
+        Page<Task> pageTask = iTaskRepository.findAll(spec, pageable);
+        return new PaginationUtils().buildPaginationDTO(pageTask);
+    }
+
+    @Override
+    public List<Task> getAllTask() {
         return iTaskRepository.findAll();
     }
 
@@ -63,22 +80,19 @@ public class TaskService implements ITaskService {
         return iTaskRepository.findByCreatedBy(createdBy);
     }
 
-    // Response
     @Override
-    public List<TaskResponse> getAllTaskResponse(List<Task> tasks) {
+    public List<TaskResponse> getAllTaskResponse(List<Task> allTask) {
         List<TaskResponse> taskResponses = new ArrayList<>();
-        for (Task task : tasks) {
+
+        for (Task task : allTask) {
+
             TaskResponse response = modelMapper.map(task, TaskResponse.class);
 
             if (task.getCreatedBy() == null) {
                 response.setCreatedByName(null);
             } else {
-                Account account = iAccount.findById(task.getCreatedBy()).get();
-                if (account == null) {
-                    response.setCreatedByName(null);
-                } else {
-                    response.setCreatedByName(account.getUsername());
-                }
+                Account account = iAccount.findById(task.getCreatedBy()).orElse(null);
+                response.setCreatedByName(account != null ? account.getUsername() : null);
             }
             taskResponses.add(response);
         }

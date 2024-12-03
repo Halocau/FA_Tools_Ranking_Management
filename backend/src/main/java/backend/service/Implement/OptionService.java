@@ -1,16 +1,23 @@
 package backend.service.Implement;
 
+import backend.config.common.PaginationUtils;
 import backend.dao.IOptionRepository;
 import backend.model.dto.OptionResponse;
 import backend.model.entity.Options;
 import backend.model.form.Options.CreateOptionRequest;
 import backend.model.form.Options.UpdateOptionRequest;
 import backend.service.IOptionService;
+import backend.model.page.ResultPaginationDTO;
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +36,13 @@ public class OptionService implements IOptionService {
     @Override
     public List<Options> getAllOptions() {
         return iOptionRepository.findAll();
+    }
+
+    @Override
+    public ResultPaginationDTO getAllOptions(Specification<Options> spec, Pageable pageable) {
+        Page<OptionResponse> pageOptions = iOptionRepository.findAll(spec, pageable).map(this::convertToOptionResponse);
+
+        return new PaginationUtils().buildPaginationDTO(pageOptions);
     }
 
     @Override
@@ -68,16 +82,21 @@ public class OptionService implements IOptionService {
         return responses;
     }
 
-//    @Override
-//    public List<OptionResponse> getAllOptionResponses(Integer criteriaId) {
-//        List<Options> findIdOptionByCriteriaId = iOptionRepository.findByCriteriaId(criteriaId);
-//        List<OptionResponse> optionResponses = new ArrayList<>();
-//        for (Options option : findIdOptionByCriteriaId) {
-//            optionResponses.add(modelMapper.map(option, OptionResponse.class));
-//        }
-//        return optionResponses;
-//    }
+    @Override
+    public OptionResponse convertToOptionResponse(Options options) {
+        return modelMapper.map(options, OptionResponse.class);
+    }
 
+    // @Override
+    // public List<OptionResponse> getAllOptionResponses(Integer criteriaId) {
+    // List<Options> findIdOptionByCriteriaId =
+    // iOptionRepository.findByCriteriaId(criteriaId);
+    // List<OptionResponse> optionResponses = new ArrayList<>();
+    // for (Options option : findIdOptionByCriteriaId) {
+    // optionResponses.add(modelMapper.map(option, OptionResponse.class));
+    // }
+    // return optionResponses;
+    // }
 
     @Override
     @Transactional
@@ -96,16 +115,30 @@ public class OptionService implements IOptionService {
     @Transactional
     public void updateOption(UpdateOptionRequest form, int optionId) {
         // Tìm đối tượng Options theo optionId và xử lý khi không tìm thấy
-        Options findOptionId = iOptionRepository.findById(optionId).orElseThrow(() ->
-                new EntityNotFoundException("Option not found with id: " + optionId));
+        Options findOptionId = iOptionRepository.findById(optionId)
+                .orElseThrow(() -> new EntityNotFoundException("Option not found with id: " + optionId));
 
-        // Cập nhật trực tiếp các thuộc tính của đối tượng tìm thấy
+        // Kiểm tra trùng tên với các Options khác (không phải chính nó)
+        if (!findOptionId.getOptionName().equals(form.getOptionName())
+                && iOptionRepository.existsByOptionNameAndOptionIdNot(form.getOptionName(), optionId)) {
+            throw new IllegalArgumentException("Option name already exists.");
+        }
+
         findOptionId.setOptionName(form.getOptionName());
         findOptionId.setScore(form.getScore());
         findOptionId.setDescription(form.getDescription());
         findOptionId.setCriteriaId(form.getCriteriaId());
-        // Lưu lại đối tượng đã cập nhật (không cần gọi lại saveAndFlush vì JPA sẽ tự động đồng bộ)
         iOptionRepository.saveAndFlush(findOptionId);
+    }
+
+    @Override
+    public boolean existsByOptionName(String optionName) {
+        return iOptionRepository.existsByOptionName(optionName);
+    }
+
+    @Override
+    public boolean existsByOptionNameAndOptionIdNot(String optionName, Integer optionId) {
+        return iOptionRepository.existsByOptionNameAndOptionIdNot(optionName, optionId);
     }
 
 }
