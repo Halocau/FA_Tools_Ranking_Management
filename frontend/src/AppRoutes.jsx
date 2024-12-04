@@ -1,141 +1,268 @@
-// AppRoutes.jsx
-import React from "react";
+import React, { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
 
-// Import các component
-import HomePage from "./pages/HomePage";
+// Import LoginPage
 import LoginPage from "./pages/Auth/LoginPage";
-import SignupPage from "./pages/Auth/SignupPage";
-import ForgetPasswordPage from "./pages/Auth/ForgetPasswordPage";
-import NotFound from "./pages/Auth/Page404.jsx";
-import ForbiddenPage from "./pages/Auth/Page403.jsx";
-import Page500 from "./pages/Auth/Page500.jsx";
-import Sidebar from "./layouts/Sidebar";
-import Header from "./layouts/Header";
-import RankingGroups from "./pages/RankingGroup/RankingGroupsPage.jsx";
-import EditRankingGroup from './pages/RankingGroup/EditRankingGroups.jsx';
-import ViewRankingGroup from './pages/RankingGroup/ViewRankingGroup.jsx';
-import BulkRankingGroup from './pages/RankingGroup/BulkRankingGroup/BulkRankingGroup.jsx';
-import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
-import EditRankingDecison from "./pages/RankingDecision/EditRankingDecision/EditRankingDecision.jsx";
-import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx';
-import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx';
-import EditCriteria from './pages/CriteriaManagement/EditCriterial.jsx';
-import CriteriaConfiguration from "./pages/RankingDecision/EditRankingDecision/CriteriaConfiguration.jsx";
+//Import Loading
+import Loading from "./components/Common/LazyLoading";
 
-// Import Protected Routes
-import ProtectedRoutes from "./components/Protected/ProtectedRoute.jsx";
+// Lazy load components
+const HomePage = React.lazy(() => import("./pages/HomePage"));
+const SignupPage = React.lazy(() => import("./pages/Auth/SignupPage"));
+const ForgetPasswordPage = React.lazy(() =>
+  import("./pages/Auth/ForgetPasswordPage")
+);
+const NotFound = React.lazy(() => import("./pages/Auth/Page404"));
+const ForbiddenPage = React.lazy(() => import("./pages/Auth/Page403"));
+const Page500 = React.lazy(() => import("./pages/Auth/Page500"));
+const Sidebar = React.lazy(() => import("./layouts/Sidebar"));
+const Header = React.lazy(() => import("./layouts/Header"));
+const RankingGroups = React.lazy(() =>
+  import("./pages/RankingGroup/RankingGroupsPage")
+);
+const EditRankingGroup = React.lazy(() =>
+  import("./pages/RankingGroup/EditRankingGroups")
+);
+const ViewRankingGroup = React.lazy(() =>
+  import("./pages/RankingGroup/ViewRankingGroup")
+);
+const BulkRankingGroup = React.lazy(() =>
+  import("./pages/RankingGroup/BulkRankingGroup/BulkRankingGroup")
+);
+const RankingDecision = React.lazy(() =>
+  import("./pages/RankingDecision/RankingDecisionPage")
+);
+const EditRankingDecision = React.lazy(() =>
+  import("./pages/RankingDecision/EditRankingDecision/EditRankingDecision")
+);
+const TaskManagement = React.lazy(() =>
+  import("./pages/TaskManagement/TaskManagementPage")
+);
+const CriteriaManagement = React.lazy(() =>
+  import("./pages/CriteriaManagement/CriteriaManagementPage")
+);
+const EditCriteria = React.lazy(() =>
+  import("./pages/CriteriaManagement/EditCriterial")
+);
+const CriteriaConfiguration = React.lazy(() =>
+  import("./pages/RankingDecision/EditRankingDecision/CriteriaConfiguration")
+);
+const ProtectedRoutes = React.lazy(() =>
+  import("./components/Protected/ProtectedRoute")
+);
 
-function AppRoutes() {
-  return (
-    <Routes>
-      <Route path="/" element={<LoginPage />} />
-      <Route path="/homepage" element={
-        <ProtectedRoutes>
-          <HomePage />
-        </ProtectedRoutes>} />
-      <Route path="/register" element={<SignupPage />} />
-      <Route path="/forgetpassword" element={<ForgetPasswordPage />} />
-      <Route
-        path="/ranking-group"
-        element={
-          <ProtectedRoutes>
-
-            <LayoutWrapper>
-              <RankingGroups className="ml-2" />
-            </LayoutWrapper>
-          </ProtectedRoutes>
-
-        }
-      />
-      <Route
-        path="/ranking-group/view/:id"
-        element={
-          <LayoutWrapper>
-            <ViewRankingGroup />
-          </LayoutWrapper>
-        }
-      />
-      <Route
-        path="/ranking-group/edit/:id"
-        element={
-          <LayoutWrapper>
-            <EditRankingGroup />
-          </LayoutWrapper>
-        }
-      />
-      <Route
-        path="/ranking-group/bulk/:id"
-        element={
-          <LayoutWrapper>
-            <BulkRankingGroup />
-          </LayoutWrapper>
-        }
-      />
-      <Route
-        path="/ranking-decision"
-        element={
-          <ProtectedRoutes>
-            <LayoutWrapper>
-              <RankingDecision className="ml-2" />
-            </LayoutWrapper>
-          </ProtectedRoutes>
-
-        }
-      />
-      <Route
-        path="/ranking-decision/edit/:id"
-        element={
-          <LayoutWrapper>
-            <EditRankingDecison />
-          </LayoutWrapper>
-        }
-      />
-      <Route
-        path="/task-management"
-        element={
-          <LayoutWrapper>
-            <TaskManagement className="ml-2" />
-          </LayoutWrapper>
-        }
-      />
-      <Route
-        path="/criteria-management"
-        element={
-          <LayoutWrapper>
-            <CriteriaManagement className="ml-2" />
-          </LayoutWrapper>
-        }
-      />
-      <Route
-        path="/criteria/edit/:id"
-        element={
-          <LayoutWrapper>
-            <EditCriteria className="ml-2" />
-          </LayoutWrapper>
-        }
-      />
-      <Route path="403" element={<ForbiddenPage />} />
-      <Route path="500" element={<Page500 />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-}
-
-// Wrapper layout cho các Route có Sidebar và Header
 const LayoutWrapper = ({ children }) => (
   <>
     <Row>
-      <Header />
+      <Suspense>
+        <Header />
+      </Suspense>
     </Row>
     <Row>
       <Col md={2}>
-        <Sidebar />
+        <Suspense>
+          <Sidebar />
+        </Suspense>
       </Col>
       <Col md={10}>{children}</Col>
     </Row>
   </>
 );
+
+function AppRoutes() {
+  return (
+    <Routes>
+      {/* Trang Login */}
+      <Route path="/" element={<LoginPage />} />
+
+      {/* Trang chính (HomePage) */}
+      <Route
+        path="/homepage"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoutes>
+              <HomePage />
+            </ProtectedRoutes>
+          </Suspense>
+        }
+      />
+
+      {/* Đăng ký */}
+      <Route
+        path="/register"
+        element={
+          <Suspense fallback={<Loading />}>
+            <SignupPage />
+          </Suspense>
+        }
+      />
+
+      {/* Quên mật khẩu */}
+      <Route
+        path="/forgetpassword"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ForgetPasswordPage />
+          </Suspense>
+        }
+      />
+
+      {/* Quản lý nhóm xếp hạng */}
+      <Route
+        path="/ranking-group"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoutes>
+              <LayoutWrapper>
+                <RankingGroups />
+              </LayoutWrapper>
+            </ProtectedRoutes>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/ranking-group/view/:id"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoutes>
+              <LayoutWrapper>
+                <ViewRankingGroup />
+              </LayoutWrapper>
+            </ProtectedRoutes>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/ranking-group/edit/:id"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoutes>
+              <LayoutWrapper>
+                <EditRankingGroup />
+              </LayoutWrapper>
+            </ProtectedRoutes>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/ranking-group/bulk/:id"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoutes>
+              <LayoutWrapper>
+                <BulkRankingGroup />
+              </LayoutWrapper>
+            </ProtectedRoutes>
+          </Suspense>
+        }
+      />
+
+      {/* Quản lý quyết định xếp hạng */}
+      <Route
+        path="/ranking-decision"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoutes>
+              <LayoutWrapper>
+                <RankingDecision />
+              </LayoutWrapper>
+            </ProtectedRoutes>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/ranking-decision/edit/:id"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoutes>
+              <LayoutWrapper>
+                <EditRankingDecision />
+              </LayoutWrapper>
+            </ProtectedRoutes>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/ranking-decision/criteria/configuration"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoutes>
+              <LayoutWrapper>
+                <CriteriaConfiguration />
+              </LayoutWrapper>
+            </ProtectedRoutes>
+          </Suspense>
+        }
+      />
+
+      {/* Quản lý tác vụ */}
+      <Route
+        path="/task-management"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoutes>
+              <LayoutWrapper>
+                <TaskManagement />
+              </LayoutWrapper>
+            </ProtectedRoutes>
+          </Suspense>
+        }
+      />
+
+      {/* Quản lý tiêu chí */}
+      <Route
+        path="/criteria-management"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoutes>
+              <LayoutWrapper>
+                <CriteriaManagement />
+              </LayoutWrapper>
+            </ProtectedRoutes>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/criteria/edit/:id"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoutes>
+              <LayoutWrapper>
+                <EditCriteria />
+              </LayoutWrapper>
+            </ProtectedRoutes>
+          </Suspense>
+        }
+      />
+
+      {/* Các trang lỗi */}
+      <Route
+        path="/403"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ForbiddenPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/500"
+        element={
+          <Suspense fallback={<Loading />}>
+            <Page500 />
+          </Suspense>
+        }
+      />
+      <Route
+        path="*"
+        element={
+          <Suspense fallback={<Loading />}>
+            <NotFound />
+          </Suspense>
+        }
+      />
+    </Routes>
+  );
+}
 
 export default AppRoutes;
