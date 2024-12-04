@@ -17,7 +17,7 @@ import RankingGroups from "./pages/RankingGroup/RankingGroupsPage.jsx";
 import EditRankingGroup from './pages/RankingGroup/EditRankingGroups.jsx';
 import BulkRankingGroup from './pages/RankingGroup/BulkRankingGroup/BulkRankingGroup.jsx';
 import RankingDecision from "./pages/RankingDecision/RankingDecisionPage.jsx";
-import ViewRankingDecision from "./pages/RankingDecision/EditRankingDecision/ViewRankingDecision.jsx";
+import ViewRankingDecision from "./pages/RankingDecision/ViewRankingDecision/ViewRankingDecision.jsx";
 import EditRankingDecison from "./pages/RankingDecision/EditRankingDecision/EditRankingDecision.jsx";
 import TaskManagement from './pages/TaskManagement/TaskManagementPage.jsx';
 import CriteriaManagement from './pages/CriteriaManagement/CriteriaManagementPage.jsx';

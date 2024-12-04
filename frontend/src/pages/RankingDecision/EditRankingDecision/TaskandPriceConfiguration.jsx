@@ -241,13 +241,14 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
     //////////////////////////////////// Save ///////////////////////////////////////
     const handleSaveChanges = () => {
+        console.log(rows)
         const isRowValid = (row) => {
             return Object.keys(row).every((key) => {
                 if (['taskId', 'taskName', 'taskType'].includes(key)) {
                     return true;
                 }
                 const value = row[key];
-                if (value === '' || value === null || value === undefined) {
+                if (value === '') {
                     console.log(`Ô thiếu dữ liệu: ${key}, Dòng: ${JSON.stringify(row)}`);
                     return false;
                 }
@@ -255,7 +256,6 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             });
         };
         const allFieldsFilled = rows.every(isRowValid);
-
         if (!allFieldsFilled) {
             showErrorMessage('Tất cả các ô phải được điền đầy đủ');
             console.log('Có ô chưa điền dữ liệu');
@@ -319,7 +319,14 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                 <TableRow>
                                     {/* Task Name */}
                                     <TableCell
-                                        style={{ position: 'sticky', left: 0, backgroundColor: '#e0e0e0', width: '180px', zIndex: 2, boxSizing: 'border-box' }} >
+                                        style={{
+                                            position: 'sticky', left: 0, backgroundColor: '#e0e0e0', boxSizing: 'border-box',
+                                            width: '120px',
+                                            maxWidth: '120px',
+                                            minWidth: '120px',
+                                            overflow: 'hidden',
+                                            zIndex: 2,
+                                        }} >
                                         Task
                                     </TableCell>
                                     {/* Task Type */}
@@ -340,7 +347,9 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                             key={`wh-${index}`}
                                             style={{
                                                 backgroundColor: '#e0e0e0',
-                                                minWidth: 120,
+                                                width: '120px',
+                                                maxWidth: '120px',
+                                                minWidth: '120px',
                                                 zIndex: 1,
                                                 boxSizing: 'border-box',
                                             }}
@@ -352,9 +361,9 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                     <TableCell
                                         style={{
                                             position: 'sticky',
-                                            right: 0,
+                                            // right: 0,
                                             backgroundColor: '#e0e0e0',
-                                            zIndex: 2,
+                                            zIndex: 1,
                                             boxSizing: 'border-box',
                                         }}
                                         rowSpan={2}
@@ -414,6 +423,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                                                         e.preventDefault();
                                                                     }
                                                                 }}
+
                                                                 size="small"
                                                                 variant="outlined"
                                                                 fullWidth
@@ -427,7 +437,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                                 <TableCell
                                                     style={{
                                                         position: 'sticky',
-                                                        right: 0,
+                                                        // right: 0,
                                                         background: '#fff',
                                                         zIndex: 2,
                                                         boxSizing: 'border-box',
