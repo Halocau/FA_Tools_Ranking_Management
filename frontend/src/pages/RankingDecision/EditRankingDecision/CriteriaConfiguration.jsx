@@ -181,6 +181,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             headerName: 'Weight',
             width: 150,
             align: 'center',
+            headerAlign: 'center',
             editable: decisionStatus === 'Draft',
             renderCell: (params) =>
                 decisionStatus === 'Draft' ? (
@@ -329,11 +330,6 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                                     Save
                                 </Button>
                             </Box>
-                        </Box>
-                    )}
-                    {/*  */}
-                    {decisionStatus === 'Draft' && (
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                         </Box>
                     )}
                 </Box>

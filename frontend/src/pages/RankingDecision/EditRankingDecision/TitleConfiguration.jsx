@@ -294,18 +294,16 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
     // End 
     const handleSaveChanges = () => {
-        // Kiểm tra xem tất cả rankScore đã được tính toán
         const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
-        // console.log("Original Title:", originalTitle);
-        // console.log("Rows:", rows);
         if (!allRankScoresCalculated) {
             showErrorMessage('Tất cả Rank Score phải được tính toán.');
-            return; // Dừng lại nếu có lỗi
+            return;
         }
         syncDecisionTitle(rows, originalTitle);
         showSuccessMessage('Title Configuration successfully updated.');
+        getCriteriaConfiguration();
         getTitleConfiguration();
-        goToNextStep(); // Chuyển bước tiếp theo
+        goToNextStep();
     };
 
     // End 
@@ -320,42 +318,50 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             field: criteriaItem.criteriaName,
             headerName: criteriaItem.criteriaName,
             width: 200,
-            editable: decisionStatus === 'Draft',
+            editable: decisionStatus === 'Draft', // Cho phép chỉnh sửa nếu là Draft
             renderCell: (params) => {
                 const currentCriteria = criteria.find(
                     (c) => c.criteriaName === params.field
                 );
 
+                // Kiểm tra nếu không có dữ liệu hoặc danh sách tùy chọn
                 if (!currentCriteria || !Array.isArray(currentCriteria.options)) {
                     console.warn(`No options found for criteria: ${params.field}`);
                     return null;
                 }
 
-                return (
-                    <Select
-                        value={params.value || ''}
-                        onChange={(e) =>
-                            handleCellEditTitleCommit({
-                                id: params.row.index,
-                                field: params.field,
-                                value: e.target.value,
-                            })
-                        }
-                        fullWidth
-                        sx={{
-                            height: '30px',
-                            '.MuiSelect-select': { padding: '4px' },
-                        }}
-                    >
-                        {currentCriteria.options.map((option) => (
-                            <MenuItem key={option.optionId} value={option.optionName}>
-                                {`${option.score} - ${option.optionName}`} {/* Tên kèm score */}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                );
+                // Nếu là Draft, hiển thị Select để chỉnh sửa
+                if (decisionStatus === 'Draft') {
+                    return (
+                        <Select
+                            value={params.value || ''}
+                            onChange={(e) =>
+                                handleCellEditTitleCommit({
+                                    id: params.row.index,
+                                    field: params.field,
+                                    value: e.target.value,
+                                })
+                            }
+                            fullWidth
+                            sx={{
+                                height: '30px',
+                                '.MuiSelect-select': { padding: '4px' },
+                            }}
+                        >
+                            {currentCriteria.options.map((option) => (
+                                <MenuItem key={option.optionId} value={option.optionName}>
+                                    {`${option.score} - ${option.optionName}`} {/* Hiển thị tên và điểm */}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    );
+                }
+
+                // Nếu không phải Draft, chỉ hiển thị giá trị
+                return <Typography variant="body2">{params.value || 'N/A'}</Typography>;
             },
         }));
+
         // Column Title
         const fixedColumns = [
             { field: 'titleName', headerName: 'Title Name', width: 100, pinned: 'left' },

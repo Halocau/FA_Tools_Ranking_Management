@@ -234,6 +234,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     //////////////////////////////////// Cancel ///////////////////////////////////////
     const handleCancelChanges = () => {
         console.log('cancel');
+        console.log(originalTask)
         setRows(originalTask)
         setSelectedTask(null)
     };
@@ -241,7 +242,6 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
     //////////////////////////////////// Save ///////////////////////////////////////
     const handleSaveChanges = () => {
-        console.log(rows)
         const isRowValid = (row) => {
             return Object.keys(row).every((key) => {
                 if (['taskId', 'taskName', 'taskType'].includes(key)) {
@@ -261,6 +261,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             console.log('Có ô chưa điền dữ liệu');
             return;
         }
+        setOriginalTask(rows)
         synsDecisionTask(rows, originalTask);
         showSuccessMessage('Task & Price Configuration successfully updated.');
         goToNextStep({ stayOnCurrentStep: true });
@@ -311,266 +312,164 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                     flexDirection: 'column',
                     gap: 2,
                 }}>
-                <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
+                <Box sx={{ width: '100%', height: 400 }}>
                     {/* Table  */}
-                    <TableContainer component={Paper} sx={{ minWidth: 400, maxHeight: 400, height: 400, overflowX: 'auto', overflowY: 'auto' }}>
-                        <Table sx={{}} aria-label="task table">
-                            <TableHead>
-                                <TableRow>
-                                    {/* Task Name */}
-                                    <TableCell
-                                        style={{
-                                            position: 'sticky', left: 0, backgroundColor: '#e0e0e0', boxSizing: 'border-box',
-                                            width: '120px',
-                                            maxWidth: '120px',
-                                            minWidth: '120px',
-                                            overflow: 'hidden',
-                                            zIndex: 2,
-                                        }} >
-                                        Task
-                                    </TableCell>
-                                    {/* Task Type */}
-                                    <TableCell
-                                        style={{
-                                            position: 'sticky', backgroundColor: '#e0e0e0', left: 120, zIndex: 2, boxSizing: 'border-box',
-                                            width: '120px',
-                                            maxWidth: '120px',
-                                            minWidth: '120px',
-                                            overflow: 'hidden',
-                                        }} rowSpan={2}
-                                    >Task Type
-                                    </TableCell>
-
-                                    {/* Column title*/}
-                                    {allTitle.map((title, index) => (
-                                        <TableCell
-                                            key={`wh-${index}`}
-                                            style={{
-                                                backgroundColor: '#e0e0e0',
-                                                width: '120px',
-                                                maxWidth: '120px',
-                                                minWidth: '120px',
-                                                zIndex: 1,
-                                                boxSizing: 'border-box',
-                                            }}
-                                        >
-                                            {title.titleName}
+                    <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
+                        <TableContainer component={Paper} sx={{ height: 400, minWidth: 400, maxHeight: 400, overflow: 'auto' }}>
+                            <Table stickyHeader aria-label="sticky table">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell sx={{ position: 'sticky', top: 0, left: 0, backgroundColor: '#e0e0e0', zIndex: 3, width: '120px', maxWidth: '120px', minWidth: '120px' }}>
+                                            Task
                                         </TableCell>
-                                    ))}
-                                    {/* Column action*/}
-                                    <TableCell
-                                        style={{
-                                            position: 'sticky',
-                                            // right: 0,
-                                            backgroundColor: '#e0e0e0',
-                                            zIndex: 1,
-                                            boxSizing: 'border-box',
-                                        }}
-                                        rowSpan={2}
-                                    >
-                                        Action
-                                    </TableCell>
-                                </TableRow>
-                            </TableHead>
+                                        <TableCell sx={{ position: 'sticky', top: 0, left: 120, backgroundColor: '#e0e0e0', zIndex: 3, width: '120px', maxWidth: '120px', minWidth: '120px' }} rowSpan={2}>
+                                            Task Type
+                                        </TableCell>
+                                        {allTitle.map((title, index) => (
+                                            <TableCell
+                                                key={index}
+                                                sx={{ top: 0, backgroundColor: '#e0e0e0', zIndex: 1, width: '150px', maxWidth: '1520px', minWidth: '150px' }}
+                                            >
+                                                {title.titleName}
+                                            </TableCell>
+                                        ))}
+                                        {decisionStatus === 'Draft' && (
+                                            <TableCell sx={{ position: 'sticky', top: 0, right: 0, backgroundColor: '#e0e0e0', zIndex: 3, width: '120px', maxWidth: '120px', minWidth: '120px' }} rowSpan={2}>
+                                                Action
+                                            </TableCell>
+                                        )}
 
-                            <TableBody>
-                                {rows.map((task) => {
-                                    return (
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {rows.map((task) => (
                                         <>
-                                            {/* Row for In Working Hour */}
-                                            <TableRow key={`task-${task.taskId}-wh`}>
-                                                {/* Column Task Name */}
-                                                <TableCell
-                                                    style={{
-                                                        position: 'sticky', left: 0, background: '#fff', zIndex: 2, boxSizing: 'border-box',
-                                                        width: '120px',
-                                                        maxWidth: '120px',
-                                                        minWidth: '120px',
-                                                        overflow: 'hidden',
-                                                    }}
-                                                    rowSpan={2}
-                                                >
-                                                    {task.taskName}
-                                                </TableCell>
-                                                {/* Row task type Working Hour */}
-                                                <TableCell style={{
-                                                    position: 'sticky', left: 120, background: '#fff', zIndex: 2, boxSizing: 'border-box',
-                                                    width: '120px',
-                                                    maxWidth: '120px',
-                                                    minWidth: '120px',
-                                                    overflow: 'hidden',
-                                                }}>In Working Hour</TableCell>
-                                                {/* Rows Title for Working Hour */}
-                                                {allTitle.map((title, index) => {
-                                                    const titleData = task.taskWages.find(
-                                                        (wage) => wage.rankingTitleId === title.rankingTitleId
-                                                    ) || { rankingTitleId: title.rankingTitleId, workingHourWage: '' };
-
-                                                    const workingHourWage = titleData ? titleData.workingHourWage : "";
-                                                    return (
-                                                        <TableCell key={`wh-${index}`}>
-                                                            <TextField
-                                                                value={editedWages[`${task.taskId}-${title.rankingTitleId}-workingHourWage`] || workingHourWage}
-                                                                onChange={(e) => {
-                                                                    const value = e.target.value;
-                                                                    if (/^\d*$/.test(value)) {
-                                                                        handleCellEditTaskCommit(task.taskId, title.rankingTitleId, "workingHourWage", value);
-                                                                    }
-                                                                }}
-                                                                onKeyDown={(e) => {
-                                                                    const invalidKeys = ["e", "E", "+", "-", ".", ","];
-                                                                    if (invalidKeys.includes(e.key)) {
-                                                                        e.preventDefault();
-                                                                    }
-                                                                }}
-
-                                                                size="small"
-                                                                variant="outlined"
-                                                                fullWidth
-                                                                type="number"
-                                                                inputMode="numeric"
-                                                            />
+                                            {['In Working Hour', 'Overtime'].map((type, typeIndex) => (
+                                                <TableRow key={`task-${task.taskId}-${typeIndex}`}>
+                                                    {typeIndex === 0 && (
+                                                        <TableCell sx={{ position: 'sticky', left: 0, background: '#fff', zIndex: 2, width: '120px', maxWidth: '120px', minWidth: '120px' }} rowSpan={2}>
+                                                            {task.taskName}
                                                         </TableCell>
-                                                    );
-                                                })}
-                                                {/* Row Action */}
-                                                <TableCell
-                                                    style={{
-                                                        position: 'sticky',
-                                                        // right: 0,
-                                                        background: '#fff',
-                                                        zIndex: 2,
-                                                        boxSizing: 'border-box',
-                                                    }}
-                                                    rowSpan={2}
-                                                >
-                                                    <Button
-                                                        variant="outlined"
-                                                        color="error"
-                                                        onClick={() => handleDeleteRowData(task.taskId)} // Gọi hàm xóa khi nhấn nút
-                                                    >
-                                                        <MdDeleteForever />
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                            {/* Row for Overtime ( ở type Ovrertime thì không cần tablecell cho taskname và action vì lấy ở type In Working Hour */}
-                                            <TableRow key={`task-${task.taskId}-ot`}>
-                                                {/* Row task type Overtime */}
-                                                <TableCell style={{
-                                                    position: 'sticky', background: '#fff', left: 120, zIndex: 2, boxSizing: 'border-box',
-                                                    width: '120px',
-                                                    maxWidth: '120px',
-                                                    minWidth: '120px',
-                                                    overflow: 'hidden',
-                                                }}>Overtime</TableCell>
-                                                {/* Rows Title for cho Overtime */}
-                                                {allTitle.map((title, index) => {
-                                                    const titleData = task.taskWages.find(wage => wage.rankingTitleId === title.rankingTitleId);
-                                                    const overtimeWage = titleData ? titleData.overtimeWage : "";
-                                                    return (
-                                                        <TableCell key={`ot-${index}`}>
-                                                            <TextField
-                                                                value={editedWages[`${task.taskId}-${title.rankingTitleId}-overtimeWage`] || overtimeWage}
-                                                                onChange={(e) => {
-                                                                    const value = e.target.value;
-                                                                    // Chỉ cho phép số dương (hoặc rỗng)
-                                                                    if (/^\d*$/.test(value)) {
-                                                                        handleCellEditTaskCommit(task.taskId, title.rankingTitleId, "overtimeWage", value);
+                                                    )}
+                                                    <TableCell sx={{ position: 'sticky', left: 120, background: '#fff', zIndex: 2, width: '120px', maxWidth: '120px', minWidth: '120px' }}>
+                                                        {type}
+                                                    </TableCell>
+                                                    {allTitle.map((title, index) => {
+                                                        const wageKey =
+                                                            type === 'In Working Hour'
+                                                                ? 'workingHourWage'
+                                                                : 'overtimeWage';
+                                                        const wageData =
+                                                            task.taskWages.find(
+                                                                (wage) => wage.rankingTitleId === title.rankingTitleId
+                                                            ) || {};
+                                                        return (
+                                                            <TableCell sx={{ width: '150px', maxWidth: '150px', minWidth: '150px' }} key={index}>
+                                                                <TextField
+                                                                    value={editedWages[`${task.taskId}-${title.rankingTitleId}-${wageKey}`] || wageData[wageKey] || ''}
+                                                                    onChange={(e) =>
+                                                                        handleCellEditTaskCommit(
+                                                                            task.taskId,
+                                                                            title.rankingTitleId,
+                                                                            wageKey,
+                                                                            e.target.value
+                                                                        )
                                                                     }
-                                                                }}
-                                                                onKeyDown={(e) => {
-                                                                    // Chặn các ký tự không phải số (trừ phím điều khiển)
-                                                                    const invalidKeys = ["e", "E", "+", "-", ".", ","];
-                                                                    if (invalidKeys.includes(e.key)) {
-                                                                        e.preventDefault();
-                                                                    }
-                                                                }}
-                                                                size="small"
-                                                                variant="outlined"
-                                                                fullWidth
-                                                                type="text"
-                                                                inputMode="numeric"
-                                                            />
+                                                                    onKeyDown={(e) => { if (['e', 'E', '+', '-', '.', ','].includes(e.key)) e.preventDefault(); }}
+                                                                    size="small"
+                                                                    variant="outlined"
+                                                                    fullWidth
+                                                                    type="number"
+                                                                    inputMode="numeric"
+                                                                />
+                                                            </TableCell>
+                                                        );
+                                                    })}
+                                                    {typeIndex === 0 && decisionStatus === 'Draft' && (
+                                                        <TableCell sx={{ position: 'sticky', right: 0, background: '#fff', zIndex: 2, width: '120px', maxWidth: '120px', minWidth: '120px' }} rowSpan={2}>
+                                                            <Button variant="outlined" color="error" onClick={() => handleDeleteRowData(task.taskId)}>
+                                                                <MdDeleteForever />
+                                                            </Button>
                                                         </TableCell>
+                                                    )}
 
-                                                    );
-                                                })}
-                                            </TableRow>
+                                                </TableRow>
+                                            ))}
                                         </>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
 
-                    {/* Button */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-                        {/* Select to Add a new Task */}
-                        <Box>
-                            {decisionStatus === 'Draft' && (
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                                    <Select
-                                        isSearchable={true}
-                                        placeholder="Select to Add a new Task"
-                                        options={listtask
-                                            .filter((task) => !rows.some((row) => row.taskId === task.taskId))
-                                            .map((task) => ({ value: task.taskId, label: task.taskName }))}
-                                        styles={{
-                                            container: (provided) => ({ ...provided, width: '300px' }),
-                                            control: (provided) => ({
-                                                ...provided,
-                                                height: '40px',
-                                                fontSize: '16px',
+                        {/* Button */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
+                            {/* Select to Add a new Task */}
+                            <Box>
+                                {decisionStatus === 'Draft' && (
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+                                        <Select
+                                            isSearchable={true}
+                                            placeholder="Select to Add a new Task"
+                                            options={listtask
+                                                .filter((task) => !rows.some((row) => row.taskId === task.taskId))
+                                                .map((task) => ({ value: task.taskId, label: task.taskName }))}
+                                            styles={{
+                                                container: (provided) => ({ ...provided, width: '300px' }),
+                                                control: (provided) => ({
+                                                    ...provided,
+                                                    height: '40px',
+                                                    fontSize: '16px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                }),
+                                                placeholder: (provided) => ({ ...provided, color: '#888' }),
+                                                menu: (provided) => ({
+                                                    ...provided,
+                                                    maxHeight: 300,
+                                                    overflowY: 'auto',
+                                                    zIndex: 9999,
+                                                }),
+                                            }}
+                                            menuPlacement="top"
+                                            value={selectedTask}
+                                            onChange={(option) => {
+                                                setSelectedTask(option)
+                                            }}
+                                        />
+                                        <IconButton
+                                            onClick={handleAddTask}
+                                            color={selectedTask ? 'primary' : 'default'}
+                                            sx={{
+                                                marginLeft: 1,
+                                                height: '30px',
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                            }),
-                                            placeholder: (provided) => ({ ...provided, color: '#888' }),
-                                            menu: (provided) => ({
-                                                ...provided,
-                                                maxHeight: 300,
-                                                overflowY: 'auto',
-                                                zIndex: 9999,
-                                            }),
-                                        }}
-                                        menuPlacement="top"
-                                        value={selectedTask}
-                                        onChange={(option) => {
-                                            setSelectedTask(option)
-                                        }}
-                                    />
-                                    <IconButton
-                                        onClick={handleAddTask}
-                                        color={selectedTask ? 'primary' : 'default'}
-                                        sx={{
-                                            marginLeft: 1,
-                                            height: '30px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                        }}
-                                    >
-                                        <AddCircleIcon sx={{ fontSize: 30 }} />
-                                    </IconButton>
-                                </Box>
-                            )}
-                        </Box>
-                        {/* Cancel and Save */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2 }}>
-                            {/* Cancel*/}
-                            <Button
-                                variant="contained"
-                                color="error"
-                                onClick={handleCancelChanges}
-                            >
-                                Cancel
-                            </Button>
-                            {/* Save */}
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleSaveChanges}
-                            >
-                                Save
-                            </Button>
+                                            }}
+                                        >
+                                            <AddCircleIcon sx={{ fontSize: 30 }} />
+                                        </IconButton>
+                                    </Box>
+                                )}
+                            </Box>
+                            {/* Cancel and Save */}
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2 }}>
+                                {/* Cancel*/}
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    onClick={handleCancelChanges}
+                                >
+                                    Cancel
+                                </Button>
+                                {/* Save */}
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleSaveChanges}
+                                >
+                                    Save
+                                </Button>
+                            </Box>
                         </Box>
                     </Box>
                 </Box>

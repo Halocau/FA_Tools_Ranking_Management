@@ -13,9 +13,9 @@ import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
 // Hooks
 import useNotification from "../../../hooks/useNotification.jsx";
 //Steper
-import CriteriaConfiguration from "./CriteriaConfiguration.jsx";
-import TitleConfiguration from "./TitleConfiguration.jsx";
-import TaskandPriceConfiguration from "./TaskandPriceConfiguration.jsx";
+import CriteriaConfiguration from "../ViewRankingDecision/CriteriaConfiguration.jsx";
+import TitleConfiguration from "../ViewRankingDecision/TitleConfiguration.jsx";
+import TaskandPriceConfiguration from "../ViewRankingDecision/TaskandPriceConfiguration.jsx";
 
 const ViewDecision = () => {
     // const navigate = useNavigate(); // To navigate between pages
@@ -23,7 +23,7 @@ const ViewDecision = () => {
     // Edit
     const [viewDecision, setViewDecision] = useState({ decisionName: '', status: '' });
     // Step
-    const [activeStep, setActiveStep] = useState(2);
+    const [activeStep, setActiveStep] = useState(0);
     const [decisionStatus, setDecisionStatus] = useState('');
     const steps = ['Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'];
     // State saves data for each step
@@ -45,7 +45,6 @@ const ViewDecision = () => {
                 decisionName: decisionData.decisionName || "",
                 status: decisionData.status || "",
             });
-            console.log(decisionData)
             setDecisionStatus(decisionData.status)
         } catch (error) {
             console.error("Error fetching group:", error);
@@ -64,7 +63,7 @@ const ViewDecision = () => {
         2: isTaskSaved,
     });
     useEffect(() => {
-        if (decisionStatus === 'Finalized') {
+        if (decisionStatus === 'Finalized' || decisionStatus === 'Confirm') {
             setIsCriteriaSaved(true);
             setIsTitleSaved(true);
             setIsTaskSaved(true);
@@ -77,7 +76,7 @@ const ViewDecision = () => {
     }, [decisionStatus]);
     // The function checks to see if it is possible to move to another step
     const canMoveToNextStep = (step) => {
-        if (decisionStatus === 'Finalized') {
+        if (decisionStatus === 'Finalized' || decisionStatus === 'Confirm') {
             return true;
         } else if (decisionStatus === 'Draft') {
             if (step === 1 && !isCriteriaSaved) return false;
@@ -156,10 +155,21 @@ const ViewDecision = () => {
 
     //////////////////////////////////////////////////////////////////////////// Submit ////////////////////////////////////////////////////////////////////////////
 
-    const handleSubmit = () => {
-        setViewDecision({ status: 'Finalized' })
-        setDecisionStatus('Finalized')
-        showSuccessMessage('Submit successfully ');
+    const handleSubmit = async () => {
+        try {
+            const updatedDecision = {
+                decisionName: viewDecision.decisionName,
+                decisionStatus: 'Confirm',
+                createBy: localStorage.getItem('userId')
+            };
+            await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
+        } catch (error) {
+            console.error("Error updating decision:", error);
+            showErrorMessage("Error occurred updating decision info. Please try again.");
+        }
+        setViewDecision({ status: 'Confirm' })
+        setDecisionStatus('Confirm')
+        showSuccessMessage('Confirm successfully ');
     };
     return (
         <div style={{ marginTop: "60px" }}>
@@ -210,10 +220,10 @@ const ViewDecision = () => {
                                 color="primary"
                                 onClick={handleSubmit}
                                 sx={{
-                                    visibility: decisionStatus === 'Draft' ? 'visible' : 'hidden',
+                                    visibility: decisionStatus === 'Finalized' ? 'visible' : 'hidden',
                                 }}
                             >
-                                Submit
+                                Confirm
                             </Button>
                         )}
                     </Box>
@@ -225,7 +235,7 @@ const ViewDecision = () => {
                     <Stepper
                         activeStep={activeStep}
                         alternativeLabel={true}
-                        nonLinear={decisionStatus === 'Finalized'}
+                        nonLinear={['Finalized', 'Confirm'].includes(decisionStatus)}
                     >
                         {steps.map((label, index) => (
                             <Step key={label} completed={completed[index]}>

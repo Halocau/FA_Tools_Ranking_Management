@@ -204,7 +204,18 @@ const EditDecision = () => {
 
     //////////////////////////////////////////////////////////////////////////// Submit ////////////////////////////////////////////////////////////////////////////
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
+        try {
+            const updatedDecision = {
+                decisionName: editDecision.decisionName,
+                decisionStatus: 'Finalized',
+                createBy: localStorage.getItem('userId')
+            };
+            await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
+        } catch (error) {
+            console.error("Error updating decision:", error);
+            showErrorMessage("Error occurred updating decision info. Please try again.");
+        }
         setEditDecision({ status: 'Finalized' })
         setDecisionStatus('Finalized')
         showSuccessMessage('Submit successfully ');
