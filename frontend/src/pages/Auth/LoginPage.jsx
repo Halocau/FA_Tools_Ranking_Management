@@ -23,16 +23,18 @@ const LoginPage = () => {
   console.log(localStorage.getItem("jwtToken"));
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      console.log("User:", user);
-      navigate("/ranking-group");
-    }
-  }, [user, navigate]);
+  console.log(user);
+  // useEffect(() => {
+  //   if (user) {
+  //     console.log("User:", user);
+  //     navigate("/ranking-group");
+  //   }
+  // }, [user, navigate]);
 
   const handleLogin = async () => {
     try {
       await login(username, password);
+      navigate("/ranking-group");
     } catch (err) {
       console.log(err);
     }

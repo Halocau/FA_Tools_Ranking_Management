@@ -33,6 +33,8 @@ import Slider from "../../layouts/Slider.jsx";
 const RankingGroups = () => {
   const navigate = useNavigate(); // Initialize the useNavigate hook to navigate between pages in the application
   // State
+  const { user } = useAuth();
+  console.log(user);
   // Table  List Ranking Group (page, size) 
   const [rows, setRows] = useState([]); // Initialize with empty array
   const [rankingGroups, setRankingGroups] = useState([]);

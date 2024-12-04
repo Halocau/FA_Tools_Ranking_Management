@@ -15,6 +15,8 @@ public interface IEmployeeCriteriaService {
 
     List<EmployeeCriteria> findByEmployeeId(Integer employeeId);
 
+    public List<EmployeeCriteria> getEmployeeCriteriaByGroupId(Integer groupId);
+
     //delete
     void deleteByEmployeeId(Integer employeeId);
 

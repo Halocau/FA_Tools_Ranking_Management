@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.security.PublicKey;
 import java.util.List;
+import java.util.Optional;
 
 public interface IDecisionCriteriaService {
 
@@ -19,7 +20,7 @@ public interface IDecisionCriteriaService {
 
     public ResultPaginationDTO getAllDecisionCriteria(Specification<DecisionCriteria> spec, Pageable pageable);
 
-    public DecisionCriteria findByCriteriaIdAndDecisionId(Integer criteriaId, Integer decisionId);
+    public  Optional<DecisionCriteria> findByCriteriaIdAndDecisionId(Integer decisionId,Integer criteriaId);
 
     //crud
     public DecisionCriteria findByCriteriaId(Integer criteriaId);

@@ -1,16 +1,14 @@
 package backend.service.Implement;
 
-import backend.config.common.PaginationUtils;
 import backend.dao.*;
 import backend.model.dto.EmployeeResponse;
 import backend.model.entity.*;
-import backend.model.page.ResultPaginationDTO;
+import backend.model.form.Employee.UpsertEmployeeRequest;
 import backend.service.IEmployeeService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -38,9 +36,9 @@ public class EmployeeService implements IEmployeeService {
     }
 
     @Override
-    public ResultPaginationDTO getAllEmployee(Specification<Employee> spec, Pageable pageable) {
-        Page<Employee> employees = iEmployeeRepository.findAll(spec, pageable);
-        return new PaginationUtils().buildPaginationDTO(employees);
+    public List<Employee> getAllEmployee(Specification<Employee> spec) {
+        List<Employee> employees = iEmployeeRepository.findAll(spec);
+        return employees;
     }
 
     @Override
@@ -76,9 +74,9 @@ public class EmployeeService implements IEmployeeService {
             response.setCurrentRankingDecision(rankingDecision.getDecisionName());
 
             // Set CurrentRank
-            RankingTitle rankingTitle = iRankingTitleRepository.findById(employee.getRankingTitleId())
-                    .orElseThrow(() -> new EntityNotFoundException("RankingTitle not found for title ID: " + employee.getRankingTitleId()));
-            response.setCurrentRank(rankingTitle.getTitleName());
+//            RankingTitle rankingTitle = iRankingTitleRepository.findById(employee.getRankingTitleId())
+//                    .orElseThrow(() -> new EntityNotFoundException("RankingTitle not found for title ID: " + employee.getRankingTitleId()));
+//            response.setCurrentRank(rankingTitle.getTitleName());
 
             employeeResponses.add(response);
         }
@@ -89,5 +87,43 @@ public class EmployeeService implements IEmployeeService {
     @Override
     public EmployeeResponse findEmployeeResponseById(Employee employee) {
         return modelMapper.map(employee, EmployeeResponse.class);
+    }
+
+    @Override
+    @Transactional
+    public void upsertEmployee(UpsertEmployeeRequest form, Integer employeeId) {
+        Optional<Employee> exist = iEmployeeRepository.findById(employeeId);
+        if (exist.isPresent()) {
+            //Update
+            Employee employee = new Employee();
+            employee.setEmployeeId(form.getEmployeeId());
+            employee.setEmployeeName(form.getEmployeeName());
+            employee.setGroupId(form.getGroupId());
+//            employee.setRankingTitleId(form.getRankingTitleId());
+            employee.setBulkImportId(form.getBulkImportId());
+            employee.setRankingDecisionId(form.getRankingDecisionId());
+            iEmployeeRepository.saveAndFlush(employee);
+        } else {
+            //Insert
+            Employee newEmployee = Employee.builder()
+                    .employeeId(form.getEmployeeId())
+                    .employeeName(form.getEmployeeName())
+                    .groupId(form.getGroupId())
+//                    .rankingTitleId(form.getRankingTitleId())
+                    .bulkImportId(form.getBulkImportId())
+                    .rankingDecisionId(form.getRankingDecisionId())
+                    .build();
+            iEmployeeRepository.save(newEmployee);
+        }
+    }
+
+    @Override
+    public void upsertEmployeeList(List<UpsertEmployeeRequest> forms) {
+        if (forms == null || forms.isEmpty()) {
+            throw new IllegalArgumentException("The list of forms cannot be null or empty");
+        }
+        for (UpsertEmployeeRequest form : forms) {
+            upsertEmployee(form, form.getEmployeeId());
+        }
     }
 }
