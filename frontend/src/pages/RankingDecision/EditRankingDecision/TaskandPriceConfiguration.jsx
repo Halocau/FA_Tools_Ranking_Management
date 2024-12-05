@@ -35,7 +35,6 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         try {
             const response = await taskApi.getAllTaskWihtOutPagination();
             setListTask(response);
-            console.log('list', response)
         } catch (error) {
             console.error("Error fetching task:", error);
         }
@@ -49,7 +48,6 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     const getTaskConfiguration = async () => {
         try {
             const response = await DecisionTaskAPI.getDecisionTaskByDecisionId(id);
-            console.log(response)
             setOriginalTask(response);
         } catch (error) {
             console.error("Error fetching task:", error);
@@ -59,7 +57,6 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     const getTitleConfiguration = async () => {
         try {
             const response = await DecisionTitleAPI.getDecisionTitleByDecisionId(id);
-            // console.log(response)
             setTitle(response);
         } catch (error) {
             console.error("Error fetching task:", error);
@@ -108,8 +105,8 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         }
     }
 
-    console.log("Original Task:", originalTask);
-    console.log("Rows:", rows);
+
+
 
     const synsDecisionTask = async (rows, originalTask) => {
         const originalTaskMap = new Map(originalTask.map(task => [task.taskId, task]));
@@ -303,6 +300,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         rankingTitleId: title.rankingTitleId,
         titleName: title.rankingTitleName,
     }));
+
     // Hàm chuẩn hóa rows
     const normalizeRows = (rows, allTitles) => {
         return rows.map((row) => {
@@ -331,9 +329,11 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
     useEffect(() => {
         const normalized = normalizeRows(originalTask, allTitle);
+        console.log(normalized);
         setRows(normalized);
     }, [originalTask]);
 
+    console.log('rows', rows);
 
 
 
