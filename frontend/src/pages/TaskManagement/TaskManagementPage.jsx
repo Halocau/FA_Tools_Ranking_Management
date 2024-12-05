@@ -17,6 +17,8 @@ import SearchComponent from "../../components/Common/Search.jsx";
 // Import hook Notification
 import useNotification from "../../hooks/useNotification";
 import taskApi from "../../api/TaskAPI.js";
+// css
+import "../../assets/css/RankingGroups.css";
 
 const TaskManagement = () => {
   const navigate = useNavigate();
@@ -168,7 +170,7 @@ const TaskManagement = () => {
     setShowDeleteModal(true);
   };
 
-   const handleCloseDeleteModal = () => setShowDeleteModal(false);
+  const handleCloseDeleteModal = () => setShowDeleteModal(false);
   //Delete Task
   const handleDeleteTask = async () => {
     try {
@@ -304,8 +306,6 @@ const TaskManagement = () => {
   const formatDate = (dateString) => {
     return dateString ? format(new Date(dateString), "dd/MM/yyyy ") : "N/A";
   };
-
-  
 
   // Columns configuration
   const columns = [

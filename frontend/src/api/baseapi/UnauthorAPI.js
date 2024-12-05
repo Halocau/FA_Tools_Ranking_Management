@@ -4,7 +4,7 @@ import axios from 'axios';
 const API_URL = 'http://localhost:8080/api';
 
 // Axios instance for unauthenticated requests
-export const unauthClient = axios.create({
+const unauthClient = axios.create({
     baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',
@@ -34,3 +34,6 @@ unauthClient.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+export default unauthClient;
+
