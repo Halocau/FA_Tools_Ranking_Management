@@ -180,7 +180,6 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                         // Set error if validation fails
                         setStatus("Failed");
                         setNote("Wrong value template. Re-download latest template and try again.");
-                        showErrorMessage(validationHeaders.errorMessage);
                         setData([]); // Clear data state
                         return;
                     }

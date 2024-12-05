@@ -24,17 +24,17 @@ const LoginPage = () => {
   const { user } = useAuth();
 
   console.log(user);
-  // useEffect(() => {
-  //   if (user) {
-  //     console.log("User:", user);
-  //     navigate("/ranking-group");
-  //   }
-  // }, [user, navigate]);
 
-  const handleLogin = async () => {
-    try {
-      await login(username, password);
+  useEffect(() => {
+    if (user) {
+      console.log("User:", user);
       navigate("/ranking-group");
+    }
+  }, [user, navigate]);
+
+  const handleLogin = () => {
+    try {
+      login(username, password);
     } catch (err) {
       console.log(err);
     }
