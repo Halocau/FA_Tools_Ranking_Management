@@ -275,7 +275,7 @@ const EditDecision = () => {
                                     visibility: decisionStatus === 'Draft' ? 'visible' : 'hidden',
                                 }}
                             >
-                                Submit
+                                Finalized
                             </Button>
                         )}
                     </Box>

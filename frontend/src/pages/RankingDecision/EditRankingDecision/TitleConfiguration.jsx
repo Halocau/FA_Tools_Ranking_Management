@@ -329,7 +329,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                     console.warn(`No options found for criteria: ${params.field}`);
                     return null;
                 }
-
                 // Nếu là Draft, hiển thị Select để chỉnh sửa
                 if (decisionStatus === 'Draft') {
                     return (
@@ -469,6 +468,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                         rows={rows}
                         columns={columnsTitle}
                         getRowId={(row) => row.index}
+                        sx={{ '& .MuiDataGrid-columnHeaders': { backgroundColor: '#e0e0e0' } }}
                     />
                     {/* Button */}
                     {decisionStatus === 'Draft' && (

@@ -328,7 +328,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                         {allTitle.map((title, index) => (
                                             <TableCell
                                                 key={index}
-                                                sx={{ top: 0, backgroundColor: '#e0e0e0', zIndex: 1, width: '150px', maxWidth: '1520px', minWidth: '150px' }}
+                                                sx={{ top: 0, backgroundColor: '#e0e0e0', zIndex: 1, width: '150px', maxWidth: '150px', minWidth: '150px' }}
                                             >
                                                 {title.titleName}
                                             </TableCell>

@@ -11,6 +11,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
 // API
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
+import Feedback from 'react-bootstrap/esm/Feedback.js';
 
 const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
     // Data 
@@ -18,9 +19,12 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     const [originalTitle, setOriginalTitle] = useState([]);  // Lưu dữ liệu gốc
     const [criteria, setCriteria] = useState([]);
     const [columnsTitle, setColumnsTitle] = useState([]);
-
     // Row table
     const [rows, setRows] = useState([]);
+    const [note, setNote] = useState('');
+    const [statusNote, setStatusNote] = useState('');
+    const [savedNote, setSavedNote] = useState('')
+
     // Load data of table header
     const getCriteriaConfiguration = async () => {
         try {
@@ -48,6 +52,10 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
     /////////////////////////////////// Xử Lý backend //////////////////////////////////
     // End 
+    ///////////////////////////////// Note ///////////////////////////////////
+    const handleNote = (e) => {
+        showSuccessMessage('Feedback successfully')
+    };
     ///////////////////////////////// Column Title ///////////////////////////////////
     const ColumnsTitle = (criteria) => {
         if (!Array.isArray(criteria)) {
@@ -139,6 +147,25 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                         getRowId={(row) => row.index}
                         sx={{ '& .MuiDataGrid-columnHeaders': { backgroundColor: '#e0e0e0' } }}
                     />
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-start', marginTop: '10px' }}>
+                        <input
+                            type="text"
+                            value={note}
+                            onChange={(e) => {
+                                setStatusNote(e.target.value);
+                                setNote(e.target.value);
+                            }}
+                            placeholder="Note"
+                            style={{ height: '50px', width: '900px', padding: '5px', fontSize: '16px', borderRadius: '5px' }}
+                        />
+                        <Button sx={{ marginLeft: 1 }}
+                            variant="contained"
+                            color="primary"
+                            onClick={handleNote}
+                        >
+                            Note
+                        </Button>
+                    </Box>
                 </Box>
             </Box>
         </div>
