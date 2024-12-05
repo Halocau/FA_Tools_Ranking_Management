@@ -306,7 +306,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
         showSuccessMessage('Title Configuration successfully updated.');
         console.log("Title Configuration successfully updated.”");
-        // goToNextStep(); // Chuyển bước tiếp theo
+        goToNextStep(); // Chuyển bước tiếp theo
     };
 
     // End 
@@ -418,11 +418,20 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 };
             });
 
-            return {
+            const tempData = {
                 id: titleItem.rankingTitleId,
                 index: index + 1, // Row index
                 titleName: titleItem.rankingTitleName, // Title name
                 rankScore: titleItem.totalScore || 0, // Total score
+                ...criteriaFields, // Dynamic criteria fields with criteriaId
+                options: normalizedOptions, // All options, with defaults for missing ones
+            };
+
+            return {
+                id: titleItem.rankingTitleId,
+                index: index + 1, // Row index
+                titleName: titleItem.rankingTitleName, // Title name
+                rankScore: calculateRankScore(tempData).toFixed(2) ? calculateRankScore(tempData).toFixed(2) : titleItem.totalScore, // Total score
                 ...criteriaFields, // Dynamic criteria fields with criteriaId
                 options: normalizedOptions, // All options, with defaults for missing ones
             };
