@@ -140,9 +140,6 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         return true;
     };
 
-
-
-    // File change handler
     // File change handler
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -183,6 +180,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                         // Set error if validation fails
                         setStatus("Failed");
                         setNote("Wrong value template. Re-download latest template and try again.");
+                        showErrorMessage(validationHeaders.errorMessage);
                         setData([]); // Clear data state
                         return;
                     }
@@ -302,6 +300,11 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         try {
             console.log("Start uploading...\n", data);
             const isValid = validateData(data);
+            if (!isValid) {
+                setStatus("Failed");
+                setNote("Wrong value template. Re-download latest template and try again.");
+                return;
+            }
             const form = {
                 file: file,
                 folder: 'upload'
