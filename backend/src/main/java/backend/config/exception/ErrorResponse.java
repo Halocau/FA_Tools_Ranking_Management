@@ -15,20 +15,18 @@ public class ErrorResponse {
     private Integer code;
     @NonNull
     private Object exception;
-    private String moreInformation;
     private String timestamp;
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
 
-    public ErrorResponse(int status, @NonNull String message, @NonNull String detailMessage, @NonNull Integer code, @NonNull Object exception, String moreInformation, String timestamp) {
+    public ErrorResponse(int status, @NonNull String message, @NonNull String detailMessage, @NonNull Integer code, @NonNull Object exception, String timestamp) {
         this.status = status;
         this.message = message;
         this.detailMessage = detailMessage;
         this.code = code;
         this.exception = exception;
-        this.moreInformation = moreInformation;
-        this.timestamp = LocalDateTime.now().format(formatter);
+        this.timestamp = timestamp;
     }
 
     public int getStatus() {
@@ -71,13 +69,6 @@ public class ErrorResponse {
         this.exception = exception;
     }
 
-    public String getMoreInformation() {
-        return moreInformation;
-    }
-
-    public void setMoreInformation(String moreInformation) {
-        this.moreInformation = moreInformation;
-    }
 
     public String getTimestamp() {
         return timestamp;
