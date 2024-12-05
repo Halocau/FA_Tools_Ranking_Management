@@ -42,17 +42,6 @@ public class DecisionCriteriaController {
         return ResponseEntity.status(HttpStatus.OK).body(decisonCritaria);
     }
 
-    // @GetMapping("/all")
-    // public ResponseEntity<List<DecisionCriteriaResponse>>
-    // getAllDecisionCriteria() {
-    // List<DecisionCriteria> decisionCriteriaList =
-    // iDecisionCriteriaService.findAll();
-    // List<DecisionCriteriaResponse> decisionCriteriaResponseList =
-    // iDecisionCriteriaService
-    // .getDecisionCriteriaResponse(decisionCriteriaList);
-    // return
-    // ResponseEntity.status(HttpStatus.OK).body(decisionCriteriaResponseList);
-    // }
 
     @GetMapping("/get/{decisionId}")
     public ResponseEntity<ResultPaginationDTO> getDecisionCriteriaByDecisionId(

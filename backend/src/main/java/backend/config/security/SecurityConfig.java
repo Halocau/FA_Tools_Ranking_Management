@@ -1,8 +1,10 @@
 package backend.config.security;
 
+import backend.model.entity.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,9 +43,66 @@ public class SecurityConfig {
                 .csrf().disable() // Disable CSRF if needed
                 .authorizeHttpRequests(
                         request -> request
-                                .requestMatchers("/api/account/register", "/api/account/login", "/api/account/all",
-                                        "/api/account/generate-and-validate")
+                                .requestMatchers("/api/account/register",
+                                        "/api/account/login",
+                                        "/api/account/all",
+                                        "/api/account/generate-and-validate",
+
+                                        /* Ranking Group */
+                                        "api/ranking-group",
+                                        "api/ranking-group/get/{id}",
+
+                                        /* Ranking Decision */
+                                        "api/ranking-decision",
+                                        "api/ranking-decision/all",
+                                        "api/ranking-decision/get/{id}",
+
+                                        /* Ranking Title */
+                                        "api/ranking-title",
+                                        "api/ranking-title/get/{id}",
+
+                                        /* ranking-title-option */
+                                        "api/ranking-title-option",
+                                        "/api/ranking-title-option/get-decisionId/{id}",
+
+                                        /* task */
+                                        "api/task",
+                                        "api/task/all",
+                                        "api/task/get/{id}",
+                                        "api/task/full",
+
+                                        /* tasks-wage */
+                                        "api/tasks-wage",
+
+                                        /* option */
+                                        "api/option/get/{id}",
+                                        "api/option/all",
+
+                                        /* employee */
+                                        "api/employee",
+                                        "api/employee/group/{groupId}",
+
+                                        /* employee-criteria */
+                                        "api/employee-criteria",
+                                        "api/employee-criteria/get-groupId/{groupId}",
+
+                                        /* decision-task */
+                                        "api/decision-task",
+                                        "api/decision-task/{id}",
+
+                                        /*decision-criteria */
+                                        "api/decision-criteria",
+                                        "api/decision-criteria/get/{decisionId}",
+                                        "api/decision-criteria/get-all/{decisionId}",
+                                        "api/decision-criteria/options/{decisionId}",
+
+                                        /*bulk-ranking-history */
+                                        "api/bulk-ranking-history"
+                                )
                                 .permitAll()
+
+                                ///import file excel (.xlsx)
+//                                .requestMatchers(HttpMethod.POST, "api/storage/files").hasAnyAuthority(Role.)
                                 .anyRequest()
 //                                 .authenticated()
                                 .permitAll()
