@@ -76,7 +76,7 @@ function AppRoutes() {
       {/* Trang Login */}
       <Route path="/" element={<LoginPage />} />
 
-      {/* Trang chính (HomePage) */}
+      {/* HomePage */}
       <Route
         path="/homepage"
         element={
@@ -88,7 +88,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Đăng ký */}
+      {/* Register */}
       <Route
         path="/register"
         element={
@@ -98,7 +98,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Quên mật khẩu */}
+      {/*Forgetpassword  */}
       <Route
         path="/forgetpassword"
         element={
@@ -108,7 +108,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Quản lý nhóm xếp hạng */}
+      {/*Ranking Group*/}
       <Route
         path="/ranking-group"
         element={
@@ -158,7 +158,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Quản lý quyết định xếp hạng */}
+      {/*Ranking Decision*/}
       <Route
         path="/ranking-decision"
         element={
@@ -196,7 +196,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Quản lý tác vụ */}
+      {/*Task Management*/}
       <Route
         path="/task-management"
         element={
@@ -210,7 +210,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Quản lý tiêu chí */}
+      {/*Criteria Management*/}
       <Route
         path="/criteria-management"
         element={
@@ -236,7 +236,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Các trang lỗi */}
+      {/*Page Error*/}
       <Route
         path="/403"
         element={
