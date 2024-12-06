@@ -135,6 +135,7 @@ const BulkRankingGroup = () => {
       console.error("Error fetching group:", error);
     }
   }
+
   // Columns configuration for the DataGrid
   const columns = [
     { field: "fileName", headerName: "File Name", width: 200 },
@@ -144,6 +145,8 @@ const BulkRankingGroup = () => {
     { field: "status", headerName: "Status", width: 130 },
     { field: "note", headerName: "Note", width: 300 },
   ];
+
+
   useEffect(() => {
     if (bulkRankingGroup) {
       const mappedRows = bulkRankingGroup.map((bulkRankingGroup, index) => ({
@@ -162,16 +165,15 @@ const BulkRankingGroup = () => {
       setRows(mappedRows);
     }
   }, [bulkRankingGroup]);
+
   ///////////////////////////////////////////////////////// BulkRankingGroup /////////////////////////////////////////////////////////
   //// Import
   const handleOpenImportModal = () => {
     setIsImportModalOpen(true);
-    console.log("Modal open prop type:", typeof isImportModalOpen, "Value:", isImportModalOpen);
   };
 
   const handleCloseImportModal = () => {
     setIsImportModalOpen(false);
-    console.log("Modal Closed:", isImportModalOpen); // Debugging
   };
   //// Export
   // Toggle modal
@@ -179,30 +181,6 @@ const BulkRankingGroup = () => {
   const handleCloseExportModal = () => setIsExportModalOpen(false);
   // End code
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]); // Cập nhật file khi người dùng chọn
-  };
-
-  const handleUpload = () => {
-    if (file) {
-      // Đọc file Excel khi người dùng chọn tệp
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-
-        // Giả sử bạn có 1 sheet trong file Excel và lấy dữ liệu từ sheet đầu tiên
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-        console.log(jsonData); // In dữ liệu từ file Excel ra console
-
-        // Xử lý dữ liệu từ file Excel ở đây (ví dụ: gửi đến API, lưu vào trạng thái, v.v.)
-      };
-      reader.readAsArrayBuffer(file);
-    }
-    setIsModalOpen(false); // Đóng Modal sau khi tải tệp
-  };
 
   return (
     <div style={{ marginTop: "60px" }}>
@@ -326,57 +304,6 @@ const BulkRankingGroup = () => {
             disablePrevButton={page <= 1}
           />
         </Box>
-
-        {/* Modal để người dùng tải file Excel lên */}
-        <Modal
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          aria-labelledby="upload-excel-modal"
-          aria-describedby="upload-excel-modal-description"
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "600px",
-              height: "200px",
-              backgroundColor: "white",
-              padding: "20px",
-              borderRadius: "8px",
-              boxShadow: 24, // Thêm bóng đổ cho modal
-            }}
-          >
-            <Typography variant="h6" id="upload-excel-modal">
-              Upload Excel File
-            </Typography>
-            <div style={{ marginTop: "30px" }}>
-              <input
-                type="file"
-                accept=".xlsx, .xls"
-                onChange={handleFileChange}
-                style={{ marginBottom: "16px", width: "100%" }}
-              />
-              <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleUpload}
-                >
-                  Upload
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-              </Box>
-            </div>
-          </Box>
-        </Modal>
       </Box>
     </div>
   );
