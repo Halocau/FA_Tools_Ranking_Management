@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +19,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
@@ -34,6 +37,19 @@ public class SecurityConfig {
             AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
+//    @Bean
+//    @Autowired
+//    public JdbcUserDetailsManager userDetailsManager(DataSource dataSource) {
+//        JdbcUserDetailsManager userDetailsManager = new JdbcUserDetailsManager(dataSource);
+//        userDetailsManager.setUsersByUsernameQuery("SELECT username, password_hash, 1 AS enabled FROM Account WHERE username = ?");
+//        userDetailsManager.setAuthoritiesByUsernameQuery(
+//                "SELECT a.username, r.name AS role " +
+//                        "FROM Account a " +
+//                        "JOIN Role r ON a.role = r.role_id " +
+//                        "WHERE a.username = ?"
+//        );
+//        return userDetailsManager;
+//    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -50,25 +66,25 @@ public class SecurityConfig {
 
                                         /* Ranking Group */
                                         "api/ranking-group",
-                                        "api/ranking-group/get/{id}",
+                                        "api/ranking-group/get/**",
 
                                         /* Ranking Decision */
                                         "api/ranking-decision",
                                         "api/ranking-decision/all",
-                                        "api/ranking-decision/get/{id}",
+                                        "api/ranking-decision/get/**",
 
                                         /* Ranking Title */
                                         "api/ranking-title",
-                                        "api/ranking-title/get/{id}",
+                                        "api/ranking-title/get/**",
 
                                         /* ranking-title-option */
                                         "api/ranking-title-option",
-                                        "/api/ranking-title-option/get-decisionId/{id}",
+                                        "/api/ranking-title-option/get-decisionId/**",
 
                                         /* task */
                                         "api/task",
                                         "api/task/all",
-                                        "api/task/get/{id}",
+                                        "api/task/get/**",
                                         "api/task/full",
 
                                         /* tasks-wage */
@@ -80,21 +96,21 @@ public class SecurityConfig {
 
                                         /* employee */
                                         "api/employee",
-                                        "api/employee/group/{groupId}",
+                                        "api/employee/group/**",
 
                                         /* employee-criteria */
                                         "api/employee-criteria",
-                                        "api/employee-criteria/get-groupId/{groupId}",
+                                        "api/employee-criteria/get-groupId/**",
 
                                         /* decision-task */
                                         "api/decision-task",
-                                        "api/decision-task/{id}",
+                                        "api/decision-task/**",
 
                                         /*decision-criteria */
                                         "api/decision-criteria",
-                                        "api/decision-criteria/get/{decisionId}",
-                                        "api/decision-criteria/get-all/{decisionId}",
-                                        "api/decision-criteria/options/{decisionId}",
+                                        "api/decision-criteria/get/**",
+                                        "api/decision-criteria/get-all/**",
+                                        "api/decision-criteria/options/**",
 
                                         /*bulk-ranking-history */
                                         "api/bulk-ranking-history"
@@ -102,7 +118,7 @@ public class SecurityConfig {
                                 .permitAll()
 
                                 ///import file excel (.xlsx)
-//                                .requestMatchers(HttpMethod.POST, "api/storage/files").hasAnyAuthority(Role.)
+                                .requestMatchers(HttpMethod.POST, "api/storage/files").hasAnyAuthority("ADMIN")
                                 .anyRequest()
                                  .authenticated()
 //                                .permitAll()

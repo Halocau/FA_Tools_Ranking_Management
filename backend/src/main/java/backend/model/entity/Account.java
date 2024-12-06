@@ -1,7 +1,9 @@
 package backend.model.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -11,6 +13,8 @@ import java.util.Date;
 @Entity
 @Data
 @Table(name = "Account")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,9 +30,11 @@ public class Account {
     @Column(name = "email", length = 100, nullable = true)
     private String email;
 
-    @Column(name = "role", length = 50)
-    private String role;
-
+    //    @ManyToOne
+//    @JoinColumn(name = "role")  // Tên cột ngoại khóa trong bảng Account
+//    private Role role;
+    @Column(name = "role")
+    private Integer role;
     @Column(name = "status", length = 50)
     private String status;
 
@@ -62,6 +68,5 @@ public class Account {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public Account() {
-    }
+
 }
