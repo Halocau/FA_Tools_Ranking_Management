@@ -291,7 +291,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             return totalScore; // Không có option phù hợp, giữ nguyên điểm
         }, 0);
     };
-
     // End 
     const handleSaveChanges = () => {
         const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
@@ -305,7 +304,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         getTitleConfiguration();
         goToNextStep();
     };
-
     // End 
     ///////////////////////////////// Column Title ///////////////////////////////////
     const ColumnsTitle = (criteria, decisionStatus) => {
@@ -323,7 +321,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 const currentCriteria = criteria.find(
                     (c) => c.criteriaName === params.field
                 );
-
                 // Kiểm tra nếu không có dữ liệu hoặc danh sách tùy chọn
                 if (!currentCriteria || !Array.isArray(currentCriteria.options)) {
                     console.warn(`No options found for criteria: ${params.field}`);
@@ -349,18 +346,15 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                         >
                             {currentCriteria.options.map((option) => (
                                 <MenuItem key={option.optionId} value={option.optionName}>
-                                    {`${option.score} - ${option.optionName}`} {/* Hiển thị tên và điểm */}
+                                    {`${option.score} - ${option.optionName}`}
                                 </MenuItem>
                             ))}
                         </Select>
                     );
                 }
-
-                // Nếu không phải Draft, chỉ hiển thị giá trị
                 return <Typography variant="body2">{params.value || 'N/A'}</Typography>;
             },
         }));
-
         // Column Title
         const fixedColumns = [
             { field: 'titleName', headerName: 'Title Name', width: 100, pinned: 'left' },
@@ -394,21 +388,15 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     //////////////////////////////////// Row Title ////////////////////////////////////
     const setRowData = (title, criteria) => {
         const mappedRows = title.map((titleItem, index) => {
-            // Create fields for criteria columns, ensuring every criteria is included
             const criteriaFields = criteria.reduce((acc, criteriaItem) => {
-                // Find the option corresponding to this criteria
                 const matchingOption = titleItem.options?.find(
                     (option) => option.criteriaId === criteriaItem.criteriaId
                 );
-
-                // Set the field value to the matched optionName or an empty string if not found
                 acc[criteriaItem.criteriaName] = matchingOption ? matchingOption.optionName : "";
                 acc[`${criteriaItem.criteriaName}_id`] = criteriaItem.criteriaId;
 
                 return acc;
             }, {});
-
-            // Ensure all criteria are represented in the options array
             const normalizedOptions = criteria.map((criteriaItem) => {
                 const matchingOption = titleItem.options?.find(
                     (option) => option.criteriaId === criteriaItem.criteriaId
@@ -424,15 +412,13 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
             return {
                 id: titleItem.rankingTitleId,
-                index: index + 1, // Row index
-                titleName: titleItem.rankingTitleName, // Title name
-                rankScore: titleItem.totalScore || 0, // Total score
-                ...criteriaFields, // Dynamic criteria fields with criteriaId
-                options: normalizedOptions, // All options, with defaults for missing ones
+                index: index + 1,
+                titleName: titleItem.rankingTitleName,
+                rankScore: titleItem.totalScore || 0,
+                ...criteriaFields,
+                options: normalizedOptions,
             };
         });
-
-        // Update the state with the new rows
         setRows(mappedRows);
     };
 

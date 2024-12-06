@@ -21,9 +21,10 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     const [columnsTitle, setColumnsTitle] = useState([]);
     // Row table
     const [rows, setRows] = useState([]);
+    //Note
     const [note, setNote] = useState('');
     const [statusNote, setStatusNote] = useState('');
-    const [savedNote, setSavedNote] = useState('')
+
 
     // Load data of table header
     const getCriteriaConfiguration = async () => {
@@ -147,18 +148,24 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                         getRowId={(row) => row.index}
                         sx={{ '& .MuiDataGrid-columnHeaders': { backgroundColor: '#e0e0e0' } }}
                     />
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-start', marginTop: '10px' }}>
-                        <input
-                            type="text"
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginTop: '10px' }}>
+                        <textarea
                             value={note}
                             onChange={(e) => {
                                 setStatusNote(e.target.value);
                                 setNote(e.target.value);
                             }}
                             placeholder="Note"
-                            style={{ height: '50px', width: '900px', padding: '5px', fontSize: '16px', borderRadius: '5px' }}
+                            style={{
+                                height: '40px', // Chiều cao lớn hơn để nhập nhiều dòng
+                                width: '500px',
+                                padding: '10px',
+                                fontSize: '14px',
+                                borderRadius: '5px',
+                                resize: 'none', // Ngăn chặn thay đổi kích thước (nếu muốn)
+                            }}
                         />
-                        <Button sx={{ marginLeft: 1 }}
+                        <Button sx={{ height: '40px', marginLeft: 1 }}
                             variant="contained"
                             color="primary"
                             onClick={handleNote}

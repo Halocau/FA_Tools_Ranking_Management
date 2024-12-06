@@ -86,18 +86,24 @@ const CriteriaConfiguration = ({ decisionStatus, showErrorMessage, showSuccessMe
                         columns={columnsCriteria}
                         getRowId={(row) => row.id}
                     />
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-start', marginTop: '10px' }}>
-                        <input
-                            type="text"
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginTop: '10px' }}>
+                        <textarea
                             value={note}
                             onChange={(e) => {
                                 setStatusNote(e.target.value);
                                 setNote(e.target.value);
                             }}
                             placeholder="Note"
-                            style={{ height: '50px', width: '900px', padding: '5px', fontSize: '16px', borderRadius: '5px' }}
+                            style={{
+                                height: '40px', // Chiều cao lớn hơn để nhập nhiều dòng
+                                width: '500px',
+                                padding: '10px',
+                                fontSize: '14px',
+                                borderRadius: '5px',
+                                resize: 'none', // Ngăn chặn thay đổi kích thước (nếu muốn)
+                            }}
                         />
-                        <Button sx={{ marginLeft: 1 }}
+                        <Button sx={{ height: '40px', marginLeft: 1 }}
                             variant="contained"
                             color="primary"
                             onClick={handleNote}

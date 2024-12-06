@@ -19,6 +19,9 @@ const TaskandPriceConfiguration = ({ showErrorMessage, showSuccessMessage }) => 
     const [title, setTitle] = useState([]);  // Lưu dữ liệu gốc
     // Row table
     const [rows, setRows] = useState([]);
+    //Note
+    const [note, setNote] = useState('');
+    const [statusNote, setStatusNote] = useState('');
 
     // Load data getTaskConfiguration
     const getTaskConfiguration = async () => {
@@ -44,7 +47,10 @@ const TaskandPriceConfiguration = ({ showErrorMessage, showSuccessMessage }) => 
         getTaskConfiguration();
         getTitleConfiguration();
     }, [id]);
-
+    ///////////////////////////////// Note ///////////////////////////////////
+    const handleNote = (e) => {
+        showSuccessMessage('Feedback successfully')
+    };
     //////////////////////////////////// Column Task//////////////////////////////////
     // Get the list of titleNames from rankingTitles
     const allTitle = title.map((title) => ({
@@ -149,6 +155,32 @@ const TaskandPriceConfiguration = ({ showErrorMessage, showSuccessMessage }) => 
                                 </TableBody>
                             </Table>
                         </TableContainer>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginTop: '10px' }}>
+                            <textarea
+                                value={note}
+                                onChange={(e) => {
+                                    setStatusNote(e.target.value);
+                                    setNote(e.target.value);
+                                }}
+                                placeholder="Note"
+                                style={{
+                                    height: '40px', // Chiều cao lớn hơn để nhập nhiều dòng
+                                    width: '500px',
+                                    padding: '10px',
+                                    fontSize: '14px',
+                                    borderRadius: '5px',
+                                    resize: 'none', // Ngăn chặn thay đổi kích thước (nếu muốn)
+                                }}
+                            />
+                            <Button sx={{ height: '40px', marginLeft: 1 }}
+                                variant="contained"
+                                color="primary"
+                                onClick={handleNote}
+                            >
+                                Note
+                            </Button>
+                        </Box>
                     </Box>
                 </Box>
             </Box>
