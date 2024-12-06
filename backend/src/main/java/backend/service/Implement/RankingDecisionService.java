@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 
 import org.springframework.data.domain.Pageable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,17 +36,24 @@ public class RankingDecisionService implements IRankingDecisionService {
 
     @Override
     public ResultPaginationDTO getRankingDecisions(Specification<RankingDecision> spec, Pageable pageable) {
-         Page<RankingDecision> pageRankingDecision = iRankingDecisionRepository.findAll(spec,pageable);
-         return new PaginationUtils().buildPaginationDTO(pageRankingDecision);
+        Page<RankingDecision> pageRankingDecision = iRankingDecisionRepository.findAll(spec, pageable);
+        return new PaginationUtils().buildPaginationDTO(pageRankingDecision);
     }
+
+    /// CRUD
     @Override
     public List<RankingDecision> allRankingDecisions() {
+        // Return a list of all ranking decisions
         return iRankingDecisionRepository.findAll();
     }
+
     @Override
     public RankingDecision getRankingDecisionById(int id) {
-        return iRankingDecisionRepository.findById(id).get();
+        // Find a ranking decision by ID, throw an exception if not found
+        return iRankingDecisionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Ranking Decision not found with id: " + id));
     }
+
 
     @Override
     @Transactional
@@ -62,12 +70,17 @@ public class RankingDecisionService implements IRankingDecisionService {
     @Override
     @Transactional
     public void deleteRankingDecision(int id) {
+        // Check if the ranking decision exists before deleting
+        if (!iRankingDecisionRepository.existsById(id)) {
+            throw new EntityNotFoundException("Ranking Decision not found with id: " + id);
+        }
+        // Delete
         iRankingDecisionRepository.deleteById(id);
     }
 
-
     @Override
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions) {
+        // Convert a list of ranking decisions to DTO responses using ModelMapper
         List<RankingDecisionResponse> rankingDecisionResponses = new ArrayList<>();
         for (RankingDecision rankingDecision : rankingDecisions) {
             rankingDecisionResponses.add(modelMapper.map(rankingDecision, RankingDecisionResponse.class));
@@ -77,46 +90,46 @@ public class RankingDecisionService implements IRankingDecisionService {
 
     @Override
     public RankingDecisionResponse findRankingDecisionResponseById(int id) {
-        RankingDecision rankingDecision = iRankingDecisionRepository.findById(id).orElse(null);
+        // Find ranking decision by ID and map it to a response DTO
+        RankingDecision rankingDecision = iRankingDecisionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Ranking Decision not found with id: " + id));
         return modelMapper.map(rankingDecision, RankingDecisionResponse.class);
     }
 
+    /// Form
     @Override
     @Transactional
     public void createRankingDecision(CreateRankingDecision form) {
+        // Create a new ranking decision entity from the form data
         RankingDecision decision = RankingDecision.builder()
-//                .decisionId(form.getDecisionId())
                 .decisionName(form.getDecisionName())
                 .createdBy(form.getCreatedBy())
-                .status("Draft")
+                .status("Draft")// Set default status
                 .build();
+        //Save
         iRankingDecisionRepository.save(decision);
     }
-
 
 
     @Override
     @Transactional
     public void updateRankingDecision(UpdateRankingDecision form, int decisionId) {
+        // Find existing ranking decision by ID, throw an exception if not found
         RankingDecision decision = iRankingDecisionRepository.findById(decisionId).orElseThrow(() ->
                 new EntityNotFoundException("Option not found with id: " + decisionId));
+
+        // Update decision name with the form data
         decision.setDecisionName(form.getDecisionName());
+
+        //save
         iRankingDecisionRepository.saveAndFlush(decision);
     }
 
+    /// Valid
     @Override
     public boolean isRankingDecisionNameExist(String decisionName) {
+        // Check if a ranking decision with the given name already exists
         return iRankingDecisionRepository.existsByDecisionName(decisionName);
     }
-
-
-
-//    @Override
-//    @Transactional
-//    public RankingDecision updateDecisionName(Integer decisionId, String decisionName) {
-//        RankingDecision decision = iRankingDecisionRepository.findById(decisionId).get();
-//        decision.setDecisionName(decisionName);
-//        return iRankingDecisionRepository.saveAndFlush(decision);
-//    }
 
 }

@@ -1,5 +1,6 @@
 package backend.model.dto;
 
+import backend.model.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -11,7 +12,8 @@ import java.util.Date;
 public class LoginResponse {
     private int id;
     private String email;
-    private String role;
+    private Integer role;
+//    private Role role;
     private String fullName;
     private String token;
 }
