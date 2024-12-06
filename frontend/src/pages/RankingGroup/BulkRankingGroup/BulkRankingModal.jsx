@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 
 // Mui
-import { Box, Button, Link, Modal, Typography, IconButton } from "@mui/material";
+import { Box, Button, Link, Modal, Typography, IconButton, CircularProgress } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ClearIcon from "@mui/icons-material/Clear"; // Import the Clear icon
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+// import CircularProgress from "@mui/material";
 
 // XLSX library
 import * as XLSX from "xlsx"; // Import SheetJS library
@@ -35,6 +36,8 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
     const [status, setStatus] = useState('Success');
     const [note, setNote] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [loading, setLoading] = useState(false);
+
     const fileInputRef = useRef(null); // Reference to the file input
 
     const getCriteriaList = async () => {
@@ -67,6 +70,8 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             showErrorMessage("Failed to upload data to employee criteria list!!!");
         }
     }
+
+    console.log(loading);
 
     // Function to validate headers
     const validateHeaders = (headers, requiredColumns, criteriaList) => {
@@ -296,6 +301,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             alert("Please select a file before uploading.");
             return;
         }
+        setLoading(true);
         try {
             console.log("Start uploading...\n", data);
             const isValid = validateData(data);
@@ -340,6 +346,9 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             console.error("Error during upload process:", error);
             showErrorMessage("Failed to upload data from excel file!!!");
             handleCloseModal();
+        }
+        finally {
+            setLoading(false);
         }
     };
 
@@ -461,7 +470,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                         onClick={() => handleFileUpload(file)} // Pass selectedFile to onUpload
                         sx={{ textTransform: "none", fontWeight: "bold" }}
                     >
-                        Upload
+                        {loading ? <CircularProgress size={20} color="inherit" /> : "Upload"}
                     </Button>
                 </Box>
             </Box>
