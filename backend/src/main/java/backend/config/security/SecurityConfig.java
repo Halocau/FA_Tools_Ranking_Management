@@ -104,8 +104,8 @@ public class SecurityConfig {
                                 ///import file excel (.xlsx)
 //                                .requestMatchers(HttpMethod.POST, "api/storage/files").hasAnyAuthority(Role.)
                                 .anyRequest()
-//                                 .authenticated()
-                                .permitAll()
+                                 .authenticated()
+//                                .permitAll()
                 )
                 // .formLogin().disable() // Disable form login
                 // .httpBasic().disable() // Disable HTTP Basic authentication
