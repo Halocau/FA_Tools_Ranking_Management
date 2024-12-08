@@ -19,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Employee {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "employee_id")
     private Integer employeeId;
 

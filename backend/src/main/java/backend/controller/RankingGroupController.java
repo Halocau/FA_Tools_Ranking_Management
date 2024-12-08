@@ -1,6 +1,5 @@
 package backend.controller;
 
-import backend.config.common.PaginationUtils;
 import backend.config.exception.exceptionEntity.RankingGroupException;
 import backend.model.dto.RankingGroupResponse;
 import backend.model.entity.RankingGroup;
@@ -26,13 +25,10 @@ import java.util.Optional;
 public class RankingGroupController {
 
     private IRankingGroupService iRankingGroupService;
-    private IRankingDecisionService iRankingDecisionService;
 
     @Autowired
-    public RankingGroupController(IRankingGroupService iRankingGroupService,
-                                  IRankingDecisionService iRankingDecisionService) {
+    public RankingGroupController(IRankingGroupService iRankingGroupService) {
         this.iRankingGroupService = iRankingGroupService;
-        this.iRankingDecisionService = iRankingDecisionService;
     }
 
     @GetMapping
@@ -78,20 +74,6 @@ public class RankingGroupController {
             return ResponseEntity.ok("update successfully!");
         }
     }
-
-    // @PutMapping("/update-group-info/{id}")
-    // public ResponseEntity<String> updateRankingGroup(@RequestBody @Valid
-    // UpdateGroupInfo form,
-    // @PathVariable(name = "id") Integer groupId) {
-    // RankingGroup rankingGroup =
-    // iRankingGroupService.findRankingGroupById(groupId);
-    // if (rankingGroup == null) {
-    // throw new RankingGroupException("RankingGroup not found id: " + groupId);
-    // } else {
-    // iRankingGroupService.updateRankingGroupInfo(groupId, form);
-    // return ResponseEntity.ok("update group info successfully!");
-    // }
-    // }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteRankingGroup(@PathVariable int id) {

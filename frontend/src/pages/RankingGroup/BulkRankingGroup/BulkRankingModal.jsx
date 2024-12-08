@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 
 // Mui
-import { Box, Button, Link, Modal, Typography, IconButton } from "@mui/material";
+import { Box, Button, Link, Modal, Typography, IconButton, CircularProgress } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ClearIcon from "@mui/icons-material/Clear"; // Import the Clear icon
 import UploadFileIcon from '@mui/icons-material/UploadFile';
@@ -28,15 +28,26 @@ const modalStyle = {
 };
 
 const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMessage, currentGroup, addNewBulkRanking, fetchBulkRankings }) => {
+    // State of file name is in input fields
     const [selectedFile, setSelectedFile] = useState(null);
+    // State of file inputed
     const [file, setFile] = useState(null);
+    // State of data of file inputed
     const [data, setData] = useState(null);
+    // Criteria of current decision applied for current ranking group
     const [criteriaList, setListCriteria] = useState([]);
+    // State of status of upload
     const [status, setStatus] = useState('Success');
+    // State of note for upload
     const [note, setNote] = useState('');
+    // State of error message
     const [errorMessage, setErrorMessage] = useState('');
+    // State of loading indicator
+    const [loading, setLoading] = useState(false);
+
     const fileInputRef = useRef(null); // Reference to the file input
 
+    //Function to fetch criteria of current decision
     const getCriteriaList = async () => {
         try {
             const response = await DecisionCriteriaAPI.optionCriteria(currentGroup.decisionId);
@@ -45,13 +56,14 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             console.error("Error fetching criteria:", error);
         }
     };
-
+    //Fetch criteria of current decision
     useEffect(() => {
         if (currentGroup.decisionId) {
             getCriteriaList();
         }
     }, [currentGroup.decisionId]);
 
+    // Function to handle upload employee data
     const uploadEmployee = async (form) => {
         try {
             await EmployeeAPI.upsertEmployeeList(form);
@@ -60,6 +72,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         }
     }
 
+    // Function to handle upload each criteria fields of employee
     const uploadEmployeeCriteria = async (form) => {
         try {
             await EmployeeCriteriaAPI.upsertEmployeeCriteriaList(form);
@@ -114,6 +127,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
     };
 
 
+    // Function to validate data if it is not empty
     const validateData = (data) => {
         // Check if data is not provided or empty
         if (!data || data.length === 0) {
@@ -140,9 +154,6 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         return true;
     };
 
-
-
-    // File change handler
     // File change handler
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -293,15 +304,20 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
     }
 
 
-
+    // Handle file upload
     const handleFileUpload = async () => {
         if (!file) {
             alert("Please select a file before uploading.");
             return;
         }
+        setLoading(true);
         try {
             console.log("Start uploading...\n", data);
             const isValid = validateData(data);
+            if (!isValid) {
+                setStatus("Failed");
+                setNote("Wrong value template. Re-download latest template and try again.");
+            }
             const form = {
                 file: file,
                 folder: 'upload'
@@ -317,10 +333,10 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 status: status, // Default status
                 note: note, // Default note
             };
+            // Call the function to add a new bulk ranking
             const newBulkRanking = await addNewBulkRanking(bulkRankingform);
 
             if (status === 'Success') {
-                // Call the function to add a new bulk ranking
                 // Call the function to upload employees
                 await handleEmployeeUpload(newBulkRanking);
 
@@ -338,6 +354,9 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             console.error("Error during upload process:", error);
             showErrorMessage("Failed to upload data from excel file!!!");
             handleCloseModal();
+        }
+        finally {
+            setLoading(false);
         }
     };
 
@@ -459,7 +478,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                         onClick={() => handleFileUpload(file)} // Pass selectedFile to onUpload
                         sx={{ textTransform: "none", fontWeight: "bold" }}
                     >
-                        Upload
+                        {loading ? <CircularProgress size={20} color="inherit" /> : "Upload"}
                     </Button>
                 </Box>
             </Box>

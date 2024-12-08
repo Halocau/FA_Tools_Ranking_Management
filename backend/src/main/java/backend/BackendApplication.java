@@ -11,3 +11,8 @@ public class BackendApplication {
 	}
 
 }
+
+//        long startTime = System.nanoTime(); // Bắt đầu đo thời gian
+//        long endTime = System.nanoTime(); // Kết thúc đo thời gian
+//        long duration = endTime - startTime;
+//        System.out.println("Thời gian chạy: " + duration / 1_000_000 + " ms");

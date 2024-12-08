@@ -12,6 +12,7 @@ import backend.model.form.Task.AddTaskRequest;
 import backend.model.form.Task.UpdateTaskRequest;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.ITaskService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,17 +29,12 @@ public class TaskService implements ITaskService {
     private ITaskRepository iTaskRepository;
     private IAccount iAccount;
     private ModelMapper modelMapper;
-    private ITaskWagesRepository iTaskWagesRepository;
-    private IDecisionCriteriaRepository idDecisionCriteriaRepository;
 
     @Autowired
-    public TaskService(ITaskRepository iTaskRepository, IAccount iAccount, ModelMapper modelMapper,
-            ITaskWagesRepository iTaskWagesRepository, IDecisionCriteriaRepository idDecisionCriteriaRepository) {
+    public TaskService(ITaskRepository iTaskRepository, IAccount iAccount, ModelMapper modelMapper) {
         this.iTaskRepository = iTaskRepository;
         this.iAccount = iAccount;
         this.modelMapper = modelMapper;
-        this.iTaskWagesRepository = iTaskWagesRepository;
-        this.idDecisionCriteriaRepository = idDecisionCriteriaRepository;
     }
 
     @Override
@@ -54,7 +50,8 @@ public class TaskService implements ITaskService {
 
     @Override
     public Task getTaskById(int id) {
-        return iTaskRepository.findById(id).get();
+        return iTaskRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
     }
 
     @Override
@@ -72,6 +69,9 @@ public class TaskService implements ITaskService {
     @Override
     @Transactional
     public void deleteTaskById(int id) {
+        if (!iTaskRepository.existsById(id)) {
+            throw new EntityNotFoundException("Task not found with id: " + id);
+        }
         iTaskRepository.deleteById(id);
     }
 
@@ -118,18 +118,8 @@ public class TaskService implements ITaskService {
     @Override
     @Transactional
     public void updateTaskByForm(int id, UpdateTaskRequest form) {
-        Task task = iTaskRepository.findById(id).get();
-        // Account oldManager = department.getManager();
-        // if(oldManager.getId() != form.getManagerId()) {
-        // // update role of old manager
-        // oldManager.setRole(Role.EMPLOYEE);
-        // accountRepository.save(oldManager);
-        // // update role of new manager
-        // Account newManager = accountRepository.findById(form.getManagerId()).get();
-        // newManager.setRole(Role.MANAGER);
-        // // update manager of department
-        // department.setManager(newManager);
-        // }
+        Task task = iTaskRepository.findById(id).orElseThrow(() ->
+                new EntityNotFoundException("Task not found with id: " + id));
         task.setTaskName(form.getTaskName());
         task.setCreatedBy(form.getCreatedBy());
         iTaskRepository.saveAndFlush(task);

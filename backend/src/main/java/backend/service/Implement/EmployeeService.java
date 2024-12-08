@@ -20,19 +20,17 @@ import java.util.Optional;
 public class EmployeeService implements IEmployeeService {
     private IEmployeeRepository iEmployeeRepository;
     private ModelMapper modelMapper;
-    private IRankingTitleRepository iRankingTitleRepository;
-    private IBulkRankingHistoryRepository iBulkRankingHistoryRepository;
     private IRankingGroupRepository irankingGroupRepository;
     private IRankingDecisionRepository iRankingDecisionRepository;
+    private EmployeeCriteriaService employeeCriteriaService;
 
     @Autowired
-    public EmployeeService(IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingTitleRepository iRankingTitleRepository, IBulkRankingHistoryRepository iBulkRankingHistoryRepository, IRankingGroupRepository irankingGroupRepository, IRankingDecisionRepository iRankingDecisionRepository) {
+    public EmployeeService(IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingGroupRepository irankingGroupRepository, IRankingDecisionRepository iRankingDecisionRepository, EmployeeCriteriaService employeeCriteriaService) {
         this.iEmployeeRepository = iEmployeeRepository;
         this.modelMapper = modelMapper;
-        this.iRankingTitleRepository = iRankingTitleRepository;
-        this.iBulkRankingHistoryRepository = iBulkRankingHistoryRepository;
         this.irankingGroupRepository = irankingGroupRepository;
         this.iRankingDecisionRepository = iRankingDecisionRepository;
+        this.employeeCriteriaService = employeeCriteriaService;
     }
 
     @Override
@@ -64,6 +62,9 @@ public class EmployeeService implements IEmployeeService {
         List<EmployeeResponse> employeeResponses = new ArrayList<>();
 
         for (Employee employee : allEmployees) {
+            if (allEmployees.isEmpty()) {
+                throw new EntityNotFoundException("No find list employee.");
+            }
             EmployeeResponse response = modelMapper.map(employee, EmployeeResponse.class);
 
             // Set RankingGroupName
@@ -78,11 +79,9 @@ public class EmployeeService implements IEmployeeService {
             }
             response.setCurrentRankingDecision(rankingDecision.getDecisionName());
 
-            // Set CurrentRank
-//            RankingTitle rankingTitle = iRankingTitleRepository.findById(employee.getRankingTitleId())
-//                    .orElseThrow(() -> new EntityNotFoundException("RankingTitle not found for title ID: " + employee.getRankingTitleId()));
-//            response.setCurrentRank(rankingTitle.getTitleName());
-
+            // Tính toán currentRank
+            String currentRank = employeeCriteriaService.getCurrentRankForEmployee(employee.getEmployeeId());
+            response.setCurrentRank(currentRank);
             employeeResponses.add(response);
         }
 

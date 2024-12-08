@@ -2,6 +2,7 @@ package backend.controller;
 
 import backend.model.dto.RankingDecisionResponse;
 import backend.model.entity.RankingDecision;
+import backend.model.form.RankingDecision.AddCloneRankingDecisionRequest;
 import backend.model.form.RankingDecision.CreateRankingDecision;
 import backend.model.form.RankingDecision.UpdateRankingDecision;
 import backend.model.page.ResultPaginationDTO;
@@ -35,7 +36,7 @@ public class RankingDecisionController {
             @Filter Specification<RankingDecision> spec,
             Pageable pageable
     ) {
-        ResultPaginationDTO paginationDTO = iRankingDecisionService.getRankingDecisions(spec,pageable);
+        ResultPaginationDTO paginationDTO = iRankingDecisionService.getRankingDecisions(spec, pageable);
 
         List<RankingDecision> rankingDecisions = (List<RankingDecision>) paginationDTO.getResult();
         List<RankingDecisionResponse> rankingDecisionResponses = iRankingDecisionService.getRankingDecisionResponses(rankingDecisions);
@@ -43,27 +44,38 @@ public class RankingDecisionController {
         paginationDTO.setResult(rankingDecisionResponses);
         return ResponseEntity.status(HttpStatus.OK).body(paginationDTO);
     }
+
     @GetMapping("/get/{id}")
-    public  RankingDecisionResponse findRankingDecisionResponse(@PathVariable int id){
+    public RankingDecisionResponse findRankingDecisionResponse(@PathVariable int id) {
         return iRankingDecisionService.findRankingDecisionResponseById(id);
     }
 
     @GetMapping("/all")
-    public  ResponseEntity<List<RankingDecisionResponse>> findRankingDecisionResponse(){
+    public ResponseEntity<List<RankingDecisionResponse>> findRankingDecisionResponse() {
         List<RankingDecision> all = iRankingDecisionService.allRankingDecisions();
         List<RankingDecisionResponse> rankingDecisionResponses = iRankingDecisionService.getRankingDecisionResponses(all);
         return ResponseEntity.status(HttpStatus.OK).body(rankingDecisionResponses);
     }
 
     @PostMapping("/add")
-    public String addRankingDecision(@RequestBody @Valid CreateRankingDecision form) {
+    public ResponseEntity<String> addRankingDecision(@RequestBody @Valid CreateRankingDecision form) {
         iRankingDecisionService.createRankingDecision(form);
-        String s = form.toString();
-        return s;
+        return ResponseEntity.status(HttpStatus.CREATED).body("Ranking Decision created successfully");
     }
+
+    @PostMapping("/add-clone")
+    public ResponseEntity<?> addCloneRankingDecision(@RequestBody @Valid AddCloneRankingDecisionRequest form) {
+//        try {
+            RankingDecision cloneRankingDecision = iRankingDecisionService.cloneRankingDecision(form);
+            return ResponseEntity.status(HttpStatus.OK).body(cloneRankingDecision.toString());
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+    }
+
     @PutMapping("/update/{id}")
     public String updateRankingDecision(@RequestBody @Valid UpdateRankingDecision form, @PathVariable(name = "id") int decisionId) {
-        iRankingDecisionService.updateRankingDecision(form,decisionId);
+        iRankingDecisionService.updateRankingDecision(form, decisionId);
         return "Ranking Decision update Successfully";
     }
 

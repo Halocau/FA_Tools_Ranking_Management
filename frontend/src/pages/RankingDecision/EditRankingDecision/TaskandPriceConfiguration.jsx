@@ -40,6 +40,9 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         }
     }
 
+    console.log('originalTask', originalTask);
+    console.log("rows", rows);
+
     useEffect(() => {
         getListTask();
     }, [id]);

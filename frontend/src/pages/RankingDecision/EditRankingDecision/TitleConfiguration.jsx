@@ -264,6 +264,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             console.error("Không có dữ liệu ban đầu để load lại.");
         }
     };
+
     // End 
     //////////////////////////////////// Save ////////////////////////////////////////
     const calculateRankScore = (row) => {
