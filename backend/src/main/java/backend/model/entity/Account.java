@@ -30,11 +30,13 @@ public class Account {
     @Column(name = "email", length = 100, nullable = true)
     private String email;
 
-    //    @ManyToOne
-//    @JoinColumn(name = "role")  // Tên cột ngoại khóa trong bảng Account
-//    private Role role;
-    @Column(name = "role")
-    private Integer role;
+    @ManyToOne // Establish a Many-to-One relationship
+    @JoinColumn(name = "role_id", referencedColumnName = "role_id", insertable = false, updatable = false)
+    private Role role; // Maps to the Role entity
+
+    @Column(name = "role_id", nullable = false)
+    private Integer roleId; // Keeps the role_id as a separate field
+
     @Column(name = "status", length = 50)
     private String status;
 
@@ -68,5 +70,8 @@ public class Account {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-
+    // Custom getter for roleName
+    public String getRoleName() {
+        return role != null ? role.getName() : null;
+    }
 }
