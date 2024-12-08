@@ -61,7 +61,7 @@ public class SecurityConfig {
                         request -> request
                                 .requestMatchers("/api/account/register",
                                         "/api/account/login",
-                                        "/api/account/all",
+//                                        "/api/account/all",
                                         "/api/account/generate-and-validate",
 
                                         /* Ranking Group */
@@ -116,7 +116,7 @@ public class SecurityConfig {
                                         "api/bulk-ranking-history"
                                 )
                                 .permitAll()
-
+                                .requestMatchers(HttpMethod.GET, "/api/account/all").hasAnyAuthority("ADMIN")
                                 ///import file excel (.xlsx)
                                 .requestMatchers(HttpMethod.POST, "api/storage/files").hasAnyAuthority("ADMIN")
                                 .anyRequest()

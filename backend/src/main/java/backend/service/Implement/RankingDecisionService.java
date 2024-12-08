@@ -94,14 +94,7 @@ public class RankingDecisionService implements IRankingDecisionService {
         // Check if the ranking decision exists before deleting
         RankingDecision existingDecision = iRankingDecisionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Ranking Decision not found with id: " + id));
-        // Delete related entities (1-N relationships)
-
-        // Delete Employee
-//    if (existingDecision.getEmployees() != null) {
-//        iEmployeeRepository.deleteAll(existingDecision.getEmployees()); // Xóa tất cả Employees liên quan
-//    }
-
-// Xóa các DecisionCriteria liên quan đến RankingDecision
+ 
         iDecisionCriteriaRepository.deleteByDecisionId(id);
 
         // Xóa các DecisionTasks liên quan đến RankingDecision
@@ -247,7 +240,6 @@ public class RankingDecisionService implements IRankingDecisionService {
         cloneDecision = iRankingDecisionRepository.save(cloneDecision);  // Save cloneDecision to generate its ID
 
         // Clone Foreign Key 1-N or N-N relationships
-        cloneEmployees(existingDecision, cloneDecision);
         cloneRankingGroups(existingDecision, cloneDecision, form.getCreatedBy());
         cloneDecisionCriteria(existingDecision, cloneDecision);
         cloneDecisionTasks(existingDecision, cloneDecision);
@@ -257,20 +249,6 @@ public class RankingDecisionService implements IRankingDecisionService {
         return iRankingDecisionRepository.save(cloneDecision); // Ensure all entities are saved at once
     }
 
-    private void cloneEmployees(RankingDecision existingDecision, RankingDecision cloneDecision) {
-        if (existingDecision.getEmployees() != null) {
-            List<Employee> clonedEmployees = new ArrayList<>();
-            for (Employee employee : existingDecision.getEmployees()) {
-                Employee newEmployee = new Employee();
-                newEmployee.setEmployeeId(generateNewEmployeeId()); // Đảm bảo ID không bị trùng
-                newEmployee.setEmployeeName(employee.getEmployeeName());
-                newEmployee.setGroupId(employee.getGroupId());
-                newEmployee.setBulkImportId(employee.getBulkImportId());
-                newEmployee.setRankingDecisionId(cloneDecision.getDecisionId());
-                clonedEmployees.add(iEmployeeRepository.save(newEmployee)); // Lưu vào Persistence Context
-            }
-        }
-    }
 
 
     private void cloneRankingGroups(RankingDecision existingDecision, RankingDecision cloneDecision, Integer createdBy) {
@@ -341,11 +319,6 @@ public class RankingDecisionService implements IRankingDecisionService {
             iRankingTitleRepository.saveAll(clonedTitles);
             cloneDecision.setRankingTitles(clonedTitles);
         }
-    }
-
-    private int generateNewEmployeeId() {
-        Integer maxId = iEmployeeRepository.findMaxId();
-        return (maxId == null ? 1 : maxId + 1);
     }
 
 
