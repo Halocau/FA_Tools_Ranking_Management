@@ -181,6 +181,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             headerName: 'Weight',
             width: 150,
             align: 'center',
+            headerAlign: 'center',
             editable: decisionStatus === 'Draft',
             renderCell: (params) =>
                 decisionStatus === 'Draft' ? (
