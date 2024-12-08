@@ -24,9 +24,7 @@ const RankingGroups = React.lazy(() =>
 const EditRankingGroup = React.lazy(() =>
   import("./pages/RankingGroup/EditRankingGroups")
 );
-const ViewRankingGroup = React.lazy(() =>
-  import("./pages/RankingGroup/ViewRankingGroup")
-);
+
 const BulkRankingGroup = React.lazy(() =>
   import("./pages/RankingGroup/BulkRankingGroup/BulkRankingGroup")
 );
@@ -116,18 +114,6 @@ function AppRoutes() {
             <ProtectedRoutes>
               <LayoutWrapper>
                 <RankingGroups />
-              </LayoutWrapper>
-            </ProtectedRoutes>
-          </Suspense>
-        }
-      />
-      <Route
-        path="/ranking-group/view/:id"
-        element={
-          <Suspense fallback={<Loading />}>
-            <ProtectedRoutes>
-              <LayoutWrapper>
-                <ViewRankingGroup />
               </LayoutWrapper>
             </ProtectedRoutes>
           </Suspense>

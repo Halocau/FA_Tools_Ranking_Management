@@ -103,32 +103,7 @@ const RankingDecision = () => {
     }, [page, pageSize, filter]);
     ;
 
-    // Map decision data to rows for DataGrid when rows are fetched
-    useEffect(() => {
-        if (rankingDecisions) {
-            const mappedRows = rankingDecisions.map((decision, index) => ({
-                id: decision.decisionId,
-                index: index + 1 + (page - 1) * pageSize,
-                dicisionname: decision.decisionName,
-                finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
-                finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
-                status: decision.status
-            }));
-            setRows(mappedRows); // Update rows with data from decisions
-        }
-    }, [rankingDecisions]);
-
-    //// Handlers to open/close modals for adding decisions
-    // Open the modal
-    const handleOpenAddRankingDecisionModal = () => setShowAddModal(true);
-    // Close the modal
-    const handleCloseAddRankingDecisionModal = () => {
-        setShowAddModal(false);
-        setnewDecisionName("");
-        setValidationMessage("");
-        setSelectedCloneDecision(null);
-        setClone(false);
-    };
+    /////////////////////////////////////////////////////// Add Ranking Decision //////////////////////////////////////////////////////////////////////
     //  list ranking decision to choose from for clone
     const fetchlistRankingDecisionsClone = async () => {
         try {
@@ -145,7 +120,16 @@ const RankingDecision = () => {
     useEffect(() => {
         fetchlistRankingDecisionsClone();
     }, [totalElements, filter])
-
+    // Open the modal
+    const handleOpenAddRankingDecisionModal = () => setShowAddModal(true);
+    // Close the modal
+    const handleCloseAddRankingDecisionModal = () => {
+        setShowAddModal(false);
+        setnewDecisionName("");
+        setValidationMessage("");
+        setSelectedCloneDecision(null);
+        setClone(false);
+    };
     // Function to adding Ranking Decision
     const handleAddRankingDecision = async () => {
         setValidationMessage("");
@@ -165,7 +149,7 @@ const RankingDecision = () => {
         try {
             let newDecision = {
                 decisionName: trimmedName,
-                createdBy: localStorage.getItem('userId'), // ID của người tạo
+                createdBy: localStorage.getItem('userId'),
             };
             // Check condision Clone
             if (clone && selectedCloneDecision) {
@@ -192,15 +176,14 @@ const RankingDecision = () => {
             showSuccessMessage("Ranking Decision successfully added.");
         } catch (error) {
             console.error("Failed to add decision:", error);
-
             if (error.response && error.response.data) {
-                // Kiểm tra và lấy thông báo lỗi từ phần exception
+                // Check and get the error message from the exception section
                 if (error.response.data.exception && error.response.data.exception.decisionName) {
-                    setValidationMessage(error.response.data.exception.decisionName); // Hiển thị thông báo lỗi từ exception
+                    setValidationMessage(error.response.data.exception.decisionName);
                 } else if (error.response.data.detailMessage) {
-                    setValidationMessage(error.response.data.detailMessage); // Hiển thị detailMessage nếu không có exception
+                    setValidationMessage(error.response.data.detailMessage);
                 } else if (error.response.data.message) {
-                    setValidationMessage(error.response.data.message); // Hiển thị message chung nếu không có detailMessage
+                    setValidationMessage(error.response.data.message);
                 } else {
                     showErrorMessage("Error occurred adding Ranking Decision. Please try again");
                 }
@@ -210,7 +193,7 @@ const RankingDecision = () => {
         }
     };
 
-    //// Handlers to open/close modals for delete decision
+    /////////////////////////////////////////////////////// Delete Ranking Decision //////////////////////////////////////////////////////////////////////
     // Open the modal
     const handleOpenDeleteRankingDecisionModal = (decisionId) => {
         setDecisionToDelete(decisionId);
@@ -241,25 +224,21 @@ const RankingDecision = () => {
             handleCloseDeleteRankingDecisionModal();
         }
     };
-    // Function to delete a selected ranking decisions
+    /////////////////////////////////////////////////////// Bulk Delete Ranking Decision /////////////////////////////////////////////////////////////////
     // Open the modal
     const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
     // Close the modal
     const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false);
     const handleBulkDeleteRankingDecision = async () => {
-        // Lấy danh sách ID của các dòng đã chọn
         const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
         if (selectedIDs.length === 0) {
             showErrorMessage("Please select decisions to delete.");
             handleCloseBulkDeleteModal();
             return;
         }
-
         try {
-            // Xóa các quyết định đã chọn
             await Promise.all(selectedIDs.map((id) => RankingDecisionAPI.deleteRankingDecision(id)));
             showSuccessMessage("Selected decision deleted successfully!");
-            // Cập nhật danh sách các quyết định
             const updatedRankingDecisions = rankingDecisions.filter(
                 (decision) => !selectedIDs.includes(decision.decisionId)
             );
@@ -267,13 +246,10 @@ const RankingDecision = () => {
             if (rankingDecisions.length === 5) {
                 await fetchAllRankingDecisions();
             }
-            // Kiểm tra nếu còn đúng 1 nhóm sau khi xóa thì giảm Page đi 1
             if (rankingDecisions.length === 1) {
                 setPage(page - 1);
             }
-
             await fetchAllRankingDecisions();
-
             handleCloseBulkDeleteModal();
         } catch (error) {
             console.error("Error during bulk delete:", error);
@@ -281,9 +257,7 @@ const RankingDecision = () => {
         }
     };
 
-
-
-    ///// Search Decision 
+    /////////////////////////////////////////////////////// Search Ranking Decision /////////////////////////////////////////////////////////////////////
     const handleSearch = (event) => {
         // console
         console.log("Search", event)
@@ -295,6 +269,7 @@ const RankingDecision = () => {
         setPage(1);
     };
 
+    ///////////////////////////////////////////////////////// Table Ranking Decision ////////////////////////////////////////////////////////////////////////
     //// Define columns for DataGrid
     const columns = [
         { field: "index", headerName: "ID", width: 80 },
@@ -308,29 +283,36 @@ const RankingDecision = () => {
             width: 200,
             renderCell: (params) => (
                 <>
-                    <IconButton
-                        color="gray"
-                        onClick={() => {
-                            console.log(`Viewing decision with ID: ${params.row.id}`);
-                            navigate(`/ranking-decision/view/${params.row.id}`);
-                        }}
-                    >
-                        <FaEye />
-                    </IconButton>
-                    <Button
-                        variant="outlined"
-                        onClick={() => {
-                            console.log(`Navigating to edit decision with ID: ${params.row.id}`);
-                            navigate(`/ranking-decision/edit/${params.row.id}`);
-                        }}
-                    >
-                        <FaEdit />
-                    </Button>
-                    {params.row.status !== 'Finalized' && (
+                    {(params.row.status === 'Finalized' || params.row.status === 'Confirm') && (
+                        <Button
+                            variant="outlined"
+                            color="gray"
+                            sx={{ marginLeft: 1 }}
+                            onClick={() => {
+                                console.log(`Viewing decision with ID: ${params.row.id}`);
+                                navigate(`/ranking-decision/view/${params.row.id}`);
+                            }}
+                        >
+                            <FaEye />
+                        </Button>
+                    )}
+                    {(params.row.status !== 'Confirm') && (
+                        <Button
+                            variant="outlined"
+                            sx={{ marginLeft: 1 }}
+                            onClick={() => {
+                                console.log(`Navigating to edit decision with ID: ${params.row.id}`);
+                                navigate(`/ranking-decision/edit/${params.row.id}`);
+                            }}
+                        >
+                            <FaEdit />
+                        </Button>
+                    )}
+                    {(params.row.status === 'Draft') && (
                         <Button
                             variant="outlined"
                             color="error"
-                            sx={{ marginLeft: 1 }} // 
+                            sx={{ marginLeft: 1 }}
                             onClick={() => handleOpenDeleteRankingDecisionModal(params.row.id)}
                         >
                             <MdDeleteForever />
@@ -340,176 +322,188 @@ const RankingDecision = () => {
             ),
         },
     ];
+    // Map decision data to rows for DataGrid when rows are fetched
+    useEffect(() => {
+        if (rankingDecisions) {
+            const mappedRows = rankingDecisions.map((decision, index) => ({
+                id: decision.decisionId,
+                index: index + 1 + (page - 1) * pageSize,
+                dicisionname: decision.decisionName,
+                finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
+                finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
+                status: decision.status
+            }));
+            setRows(mappedRows); // Update rows with data from decisions
+        }
+    }, [rankingDecisions]);
 
     /////////////////////////////////////////////////////////// Return ///////////////////////////////////////////////////////////
     return (
         <div style={{ marginTop: "60px" }}>
             <Slider />
-            <div>
-                <h2 onClick={handleClick} style={{ cursor: 'pointer' }}>
-                    <IconButton onClick={handleClick} style={{ cursor: 'pointer' }}>
-                        <MenuIcon />
-                    </IconButton>
-                    Ranking Decision List
-                </h2>
-                {/* Menu list task and criteria */}
-                <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={handleClose}
-                >
-                    {/* Task Management */}
-                    <MenuItem onClick={handleTaskManagementClick}>
-                        Task Management
-                    </MenuItem>
-                    {/* Criteria Management */}
-                    <MenuItem onClick={handleCriteriaManagementClick}>
-                        Criteria Management
-                    </MenuItem>
-                </Menu>
-                {/* Search Decision */}
-                <SearchComponent onSearch={handleSearch} placeholder=" Sreach Decision" />
-                {/* Table show Ranking Decision */}
-                <Box sx={{ width: "100%", height: 370, marginTop: '60px' }}>
-                    {/* {loading ? <CircularProgress /> : ( */}
-                    <DataGrid
-                        className="custom-data-grid"
-                        apiRef={apiRef}
-                        rows={rows}
-                        columns={columns}
-                        checkboxSelection
-                        pagination
-                        pageSizeOptions={[5, 10, 25]}
-                        getRowId={(row) => row.id}
-                        rowCount={totalElements}
-                        paginationMode="server"
-                        paginationModel={{
-                            page: page - 1,  // Adjusted for 0-based index
-                            pageSize: pageSize,
+            <h2 onClick={handleClick} style={{ cursor: 'pointer' }}>
+                <IconButton onClick={handleClick} style={{ cursor: 'pointer' }}>
+                    <MenuIcon />
+                </IconButton>
+                Ranking Decision List
+            </h2>
+            {/* Menu list task and criteria */}
+            <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+            >
+                {/* Task Management */}
+                <MenuItem onClick={handleTaskManagementClick}>
+                    Task Management
+                </MenuItem>
+                {/* Criteria Management */}
+                <MenuItem onClick={handleCriteriaManagementClick}>
+                    Criteria Management
+                </MenuItem>
+            </Menu>
+            {/* Search Decision */}
+            <SearchComponent onSearch={handleSearch} placeholder=" Sreach Decision" />
+            {/* Table show Ranking Decision */}
+            <Box sx={{ width: "100%", height: 370, marginTop: '50px' }}>
+                {/* {loading ? <CircularProgress /> : ( */}
+                <DataGrid
+                    className="custom-data-grid"
+                    apiRef={apiRef}
+                    rows={rows}
+                    columns={columns}
+                    checkboxSelection
+                    pagination
+                    pageSizeOptions={[5, 10, 25]}
+                    getRowId={(row) => row.id}
+                    rowCount={totalElements}
+                    paginationMode="server"
+                    paginationModel={{
+                        page: page - 1,  // Adjusted for 0-based index
+                        pageSize: pageSize,
+                    }}
+                    onPaginationModelChange={(model) => {
+                        setPage(model.page + 1);  // Set 1-based page for backend
+                        setPageSize(model.pageSize);
+                    }}
+                    disableNextButton={page >= totalPages}
+                    disablePrevButton={page <= 1}
+                    disableRowSelectionOnClick
+                    autoHeight={false}
+                    sx={{
+                        height: '100%',
+                        overflow: 'auto',
+                        '& .MuiDataGrid-virtualScroller': {
+                            overflowY: 'auto',
+                        },
+                    }}
+                />
+                {/* )} */}
+            </Box>
+
+            {/* Button Add new Group and Delete Selected Decision */}
+            <Box style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                <Button variant="contained" color="success" onClick={handleOpenAddRankingDecisionModal}>
+                    Add New Decision
+                </Button>
+                <Button variant="contained" color="error" onClick={handleOpenBulkDeleteModal}>
+                    Delete Selected Decision
+                </Button>
+            </Box>
+
+            {/* Modal for adding new ranking decision */}
+            <Modal open={showAddModal} onClose={handleCloseAddRankingDecisionModal}>
+                <Box sx={{
+                    padding: 2,
+                    backgroundColor: 'white',
+                    borderRadius: 1,
+                    maxWidth: 400,
+                    margin: 'auto',
+                    marginTop: '100px'
+                }}>
+
+                    <Typography variant="h6" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        Add New Ranking Decision
+                        <button type="button" className="btn-close" aria-label="Close" onClick={handleCloseAddRankingDecisionModal}></button>
+                    </Typography>
+
+                    <TextField
+                        label="Decision Name"
+                        variant="outlined"
+                        fullWidth
+                        value={newDecisionName}
+                        onChange={(e) => {
+                            setnewDecisionName(e.target.value);
+                            setValidationMessage("");
                         }}
-                        onPaginationModelChange={(model) => {
-                            setPage(model.page + 1);  // Set 1-based page for backend
-                            setPageSize(model.pageSize);
-                        }}
-                        disableNextButton={page >= totalPages}
-                        disablePrevButton={page <= 1}
-                        disableRowSelectionOnClick
-                        autoHeight={false}
-                        sx={{
-                            height: '100%',
-                            overflow: 'auto',
-                            '& .MuiDataGrid-virtualScroller': {
-                                overflowY: 'auto',
-                            },
-                        }}
+                        error={!!validationMessage}
+                        helperText={validationMessage}
+                        sx={{ marginTop: 2 }}
                     />
-                    {/* )} */}
-                </Box>
+                    <FormControlLabel
+                        control={<Switch checked={clone} onChange={() => setClone(!clone)} />}
+                        label="Clone from other decision"
+                    />
+                    {clone && (
+                        <Autocomplete
+                            disablePortal
+                            options={listDecisionSearchClone}
+                            getOptionLabel={(option) => option.decisionName || ''}
+                            value={selectedCloneDecision}
+                            onChange={(event, value) => {
+                                setSelectedCloneDecision(value || null);
+                                console.log(selectedCloneDecision)
 
-                {/* Button Add new Group and Delete Selected Decision */}
-                <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-                    <Button variant="contained" color="success" onClick={handleOpenAddRankingDecisionModal}>
-                        Add New Decision
-                    </Button>
-                    <Button variant="contained" color="error" onClick={handleOpenBulkDeleteModal}>
-                        Delete Selected Decision
-                    </Button>
-                </div>
-
-                {/* Modal for adding new ranking decision */}
-                <Modal open={showAddModal} onClose={handleCloseAddRankingDecisionModal}>
-                    <Box sx={{
-                        padding: 2,
-                        backgroundColor: 'white',
-                        borderRadius: 1,
-                        maxWidth: 400,
-                        margin: 'auto',
-                        marginTop: '100px'
-                    }}>
-
-                        <Typography variant="h6" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            Add New Ranking Decision
-                            <button type="button" className="btn-close" aria-label="Close" onClick={handleCloseAddRankingDecisionModal}></button>
-                        </Typography>
-
-                        <TextField
-                            label="Decision Name"
-                            variant="outlined"
-                            fullWidth
-                            value={newDecisionName}
-                            onChange={(e) => {
-                                setnewDecisionName(e.target.value);
-                                setValidationMessage("");
                             }}
-                            error={!!validationMessage}
-                            helperText={validationMessage}
-                            sx={{ marginTop: 2 }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Choice Decision"
+                                    variant="outlined"
+                                    fullWidth
+                                    sx={{ marginTop: 2 }}
+                                />
+                            )}
                         />
-                        <FormControlLabel
-                            control={<Switch checked={clone} onChange={() => setClone(!clone)} />}
-                            label="Clone from other decision"
-                        />
-                        {clone && (
-                            <Autocomplete
-                                disablePortal
-                                options={listDecisionSearchClone}
-                                getOptionLabel={(option) => option.decisionName || ''}
-                                value={selectedCloneDecision}
-                                onChange={(event, value) => {
-                                    setSelectedCloneDecision(value || null);
-                                    console.log(selectedCloneDecision)
-
-                                }}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="Choice Decision"
-                                        variant="outlined"
-                                        fullWidth
-                                        sx={{ marginTop: 2 }}
-                                    />
-                                )}
-                            />
-                        )}
-                        <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
-                            <Button variant="outlined" onClick={handleCloseAddRankingDecisionModal}>Cancel</Button>
-                            <Button variant="contained" onClick={handleAddRankingDecision}>Save</Button>
-                        </Box>
+                    )}
+                    <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'space-between' }}>
+                        <Button variant="outlined" onClick={handleCloseAddRankingDecisionModal}>Cancel</Button>
+                        <Button variant="contained" onClick={handleAddRankingDecision}>Save</Button>
                     </Box>
-                </Modal>
-                {/* Modal for deleting a decision */}
-                <ModalCustom
-                    show={showDeleteModal}
-                    handleClose={handleCloseDeleteRankingDecisionModal}
-                    title="Delete decision"
-                    bodyContent="Are you sure you want to delete this decision?"
-                    footerContent={
-                        <ActionButtons
-                            onCancel={handleCloseDeleteRankingDecisionModal}
-                            onConfirm={handleDeleteRankingDecision}
-                            confirmText="Delete"
-                            cancelText="Cancel"
-                            color="error"
-                        />
-                    }
-                />
-                {/* Modal for deleting select decision */}
-                <ModalCustom
-                    show={showBulkDeleteModal}
-                    handleClose={handleCloseBulkDeleteModal}
-                    title="Delete Selected decisions"
-                    bodyContent="Are you sure you want to delete the selected decisions?"
-                    footerContent={
-                        <ActionButtons
-                            onCancel={handleCloseBulkDeleteModal}
-                            onConfirm={handleBulkDeleteRankingDecision}
-                            confirmText="Delete"
-                            cancelText="Cancel"
-                            color="error"
-                        />
-                    }
-                />
-            </div>
+                </Box>
+            </Modal>
+            {/* Modal for deleting a decision */}
+            <ModalCustom
+                show={showDeleteModal}
+                handleClose={handleCloseDeleteRankingDecisionModal}
+                title="Delete decision"
+                bodyContent="Are you sure you want to delete this decision?"
+                footerContent={
+                    <ActionButtons
+                        onCancel={handleCloseDeleteRankingDecisionModal}
+                        onConfirm={handleDeleteRankingDecision}
+                        confirmText="Delete"
+                        cancelText="Cancel"
+                        color="error"
+                    />
+                }
+            />
+            {/* Modal for deleting select decision */}
+            <ModalCustom
+                show={showBulkDeleteModal}
+                handleClose={handleCloseBulkDeleteModal}
+                title="Delete Selected decisions"
+                bodyContent="Are you sure you want to delete the selected decisions?"
+                footerContent={
+                    <ActionButtons
+                        onCancel={handleCloseBulkDeleteModal}
+                        onConfirm={handleBulkDeleteRankingDecision}
+                        confirmText="Delete"
+                        cancelText="Cancel"
+                        color="error"
+                    />
+                }
+            />
         </div>
     );
 };

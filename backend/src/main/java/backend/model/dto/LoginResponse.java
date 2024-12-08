@@ -12,8 +12,8 @@ import java.util.Date;
 public class LoginResponse {
     private int id;
     private String email;
-    private Integer role;
-//    private Role role;
+    // private Integer role;
+    private String role;
     private String fullName;
     private String token;
 }

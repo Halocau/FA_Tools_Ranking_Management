@@ -92,7 +92,7 @@ public class AccountService implements IAccountService {
         return new LoginResponse(
                 user.getId(),
                 user.getEmail(),
-                user.getRole(),
+                user.getRoleName(),
                 user.getFullName(),
                 token);
     }

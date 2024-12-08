@@ -5,22 +5,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Entity
-@Table(name = "Role")
 @Data
+@Table(name = "Role")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Role {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Specifies auto-increment for the primary key
+    @Column(name = "role_id") // Maps to the `role_id` column
     private Integer roleId;
 
-    @Column(name = "name")
-    private String roleName;
-
-//    @OneToMany(mappedBy = "role")  // mappedBy chỉ ra rằng quan hệ này được quản lý bởi thuộc tính 'role' trong lớp Account
-//    private List<Account> accounts;
+    @Column(name = "name", nullable = false, length = 255) // Maps to the `name` column
+    private String name;
 }
