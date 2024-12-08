@@ -65,4 +65,18 @@ public class Criteria {
             inverseJoinColumns = @JoinColumn(name = "employee_id")
     )
    private List<Employee> employees;
+
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL
+                  )
+    @JoinTable(
+            name = "Decision_Criteria",
+            joinColumns = @JoinColumn(name = "criteria_id"),
+            inverseJoinColumns = @JoinColumn(name = "decision_id")
+    )
+    private List<RankingDecision> decisions;
+
+
+//    @OneToMany(mappedBy = "criteriaId", cascade = CascadeType.ALL,fetch = FetchType.LAZY, orphanRemoval = true)
+//    private List<DecisionCriteria> decisionCriteria;
 }

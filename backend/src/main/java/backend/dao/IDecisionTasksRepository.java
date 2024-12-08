@@ -4,6 +4,7 @@ import backend.model.entity.DecisionTasks;
 import backend.model.entity.Serializable.DecisionTasksSerializable;
 import backend.model.entity.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -17,4 +18,8 @@ public interface IDecisionTasksRepository extends JpaRepository<DecisionTasks, D
 
     public List<DecisionTasks> findByDecisionId(int decisionId);
     public Optional<DecisionTasks> findByDecisionIdAndTaskId(int decisionId, int taskId);
+
+    @Modifying
+    @Query("DELETE FROM DecisionTasks dt WHERE dt.decisionId = :decisionId")
+    void deleteByDecisionId(@Param("decisionId") int decisionId);
 }

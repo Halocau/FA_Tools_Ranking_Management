@@ -37,21 +37,19 @@ public class SecurityConfig {
             AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
-    // @Bean
-    // @Autowired
-    // public JdbcUserDetailsManager userDetailsManager(DataSource dataSource) {
-    // JdbcUserDetailsManager userDetailsManager = new
-    // JdbcUserDetailsManager(dataSource);
-    // userDetailsManager.setUsersByUsernameQuery("SELECT username, password_hash, 1
-    // AS enabled FROM Account WHERE username = ?");
-    // userDetailsManager.setAuthoritiesByUsernameQuery(
-    // "SELECT a.username, r.name AS role " +
-    // "FROM Account a " +
-    // "JOIN Role r ON a.role = r.role_id " +
-    // "WHERE a.username = ?"
-    // );
-    // return userDetailsManager;
-    // }
+//    @Bean
+//    @Autowired
+//    public JdbcUserDetailsManager userDetailsManager(DataSource dataSource) {
+//        JdbcUserDetailsManager userDetailsManager = new JdbcUserDetailsManager(dataSource);
+//        userDetailsManager.setUsersByUsernameQuery("SELECT username, password_hash, 1 AS enabled FROM Account WHERE username = ?");
+//        userDetailsManager.setAuthoritiesByUsernameQuery(
+//                "SELECT a.username, r.name AS role " +
+//                        "FROM Account a " +
+//                        "JOIN Role r ON a.role = r.role_id " +
+//                        "WHERE a.username = ?"
+//        );
+//        return userDetailsManager;
+//    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -63,6 +61,7 @@ public class SecurityConfig {
                         request -> request
                                 .requestMatchers("/api/account/register",
                                         "/api/account/login",
+                                        "/api/account/all",
                                         "/api/account/generate-and-validate",
 
                                         /* Ranking Group */
@@ -107,21 +106,22 @@ public class SecurityConfig {
                                         "api/decision-task",
                                         "api/decision-task/**",
 
-                                        /* decision-criteria */
+                                        /*decision-criteria */
                                         "api/decision-criteria",
                                         "api/decision-criteria/get/**",
                                         "api/decision-criteria/get-all/**",
                                         "api/decision-criteria/options/**",
 
-                                        /* bulk-ranking-history */
-                                        "api/bulk-ranking-history")
+                                        /*bulk-ranking-history */
+                                        "api/bulk-ranking-history"
+                                )
                                 .permitAll()
-                                .requestMatchers(HttpMethod.GET, "api/account/all").hasAnyAuthority("ADMIN")
-                                /// import file excel (.xlsx)
+
+                                ///import file excel (.xlsx)
                                 .requestMatchers(HttpMethod.POST, "api/storage/files").hasAnyAuthority("ADMIN")
                                 .anyRequest()
-                                .authenticated()
-                // .permitAll()
+//                                 .authenticated()
+                                .permitAll()
                 )
                 // .formLogin().disable() // Disable form login
                 // .httpBasic().disable() // Disable HTTP Basic authentication
