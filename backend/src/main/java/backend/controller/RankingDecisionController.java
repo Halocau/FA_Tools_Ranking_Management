@@ -58,21 +58,15 @@ public class RankingDecisionController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<String> addRankingDecision(@RequestBody @Valid CreateRankingDecision form) {
-        iRankingDecisionService.createRankingDecision(form);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Ranking Decision created successfully");
-    }
-
-    @PostMapping("/add-clone")
-    public ResponseEntity<?> addCloneRankingDecision(@RequestBody @Valid AddCloneRankingDecisionRequest form) {
-//        try {
-            RankingDecision cloneRankingDecision = iRankingDecisionService.cloneRankingDecision(form);
+    public ResponseEntity<?> addRankingDecision(@RequestBody @Valid CreateRankingDecision form) {
+        try {
+            RankingDecision cloneRankingDecision = iRankingDecisionService.createRankingDecision(form);
             return ResponseEntity.status(HttpStatus.OK).body(cloneRankingDecision.toString());
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
-
+    
     @PutMapping("/update/{id}")
     public String updateRankingDecision(@RequestBody @Valid UpdateRankingDecision form, @PathVariable(name = "id") int decisionId) {
         iRankingDecisionService.updateRankingDecision(form, decisionId);

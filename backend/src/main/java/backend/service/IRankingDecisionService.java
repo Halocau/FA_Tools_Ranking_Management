@@ -26,9 +26,8 @@ public interface IRankingDecisionService {
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions);
     public RankingDecisionResponse findRankingDecisionResponseById(int id);
     // form
-    public void createRankingDecision(CreateRankingDecision form);
+    public RankingDecision createRankingDecision(CreateRankingDecision form);
     public void updateRankingDecision(UpdateRankingDecision form, int decisionId);
-    public RankingDecision cloneRankingDecision(AddCloneRankingDecisionRequest form);
     // validate
     boolean isRankingDecisionNameExist(String decisionName);
 
