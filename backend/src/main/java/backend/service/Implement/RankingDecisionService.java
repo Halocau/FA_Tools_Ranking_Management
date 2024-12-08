@@ -10,7 +10,9 @@ import backend.model.form.RankingDecision.UpdateRankingDecision;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.IDecisionCriteriaService;
 import backend.service.IRankingDecisionService;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +23,12 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class RankingDecisionService implements IRankingDecisionService {
@@ -138,6 +142,95 @@ public class RankingDecisionService implements IRankingDecisionService {
         iRankingDecisionRepository.save(decision);
     }
 
+//    @Override
+//    @Transactional
+//    public RankingDecision cloneRankingDecision(AddCloneRankingDecisionRequest form) {
+//        // Find the original RankingDecision
+//        RankingDecision existingDecision = iRankingDecisionRepository.findById(form.getDecisionToCloneId())
+//                .orElseThrow(() -> new RuntimeException("Ranking Decision not found!"));
+//
+//        // Clone the RankingDecision
+//        RankingDecision cloneDecision = RankingDecision.builder()
+//                .decisionName(form.getDecisionName())
+//                .createdBy(form.getCreatedBy())
+//                .status("Draft") // Default status
+//                .build();
+//        // Save cloneDecision to generate its ID
+//        cloneDecision = iRankingDecisionRepository.save(cloneDecision);
+//        ///clone Foreign Key 1-N
+//        //Employee
+//        if (existingDecision.getEmployees() != null) {
+//            List<Employee> clonedEmployees = new ArrayList<>();
+//            for (Employee employee : existingDecision.getEmployees()) {
+//                Employee newEmployee = new Employee();
+//                newEmployee.setEmployeeId(generateNewEmployeeId()); // Đảm bảo ID không bị trùng
+//                newEmployee.setEmployeeName(employee.getEmployeeName());
+//                newEmployee.setGroupId(employee.getGroupId());
+//                newEmployee.setBulkImportId(employee.getBulkImportId());
+//                newEmployee.setRankingDecisionId(cloneDecision.getDecisionId());
+//                clonedEmployees.add(iEmployeeRepository.save(newEmployee)); // Lưu vào Persistence Context
+//            }
+//            cloneDecision.setEmployees(clonedEmployees);
+//        }
+//        // Clone Ranking Groups
+//        if (existingDecision.getRankingGroups() != null) {
+//            List<RankingGroup> cloneRankingGroups = new ArrayList<>();
+//            for (RankingGroup rankingGroup : existingDecision.getRankingGroups()) {
+//                RankingGroup newRankingGroup = new RankingGroup();
+//                newRankingGroup.setGroupName(rankingGroup.getGroupName());
+//                newRankingGroup.setNumEmployees(rankingGroup.getNumEmployees());
+//                newRankingGroup.setCurrent_ranking_decision(rankingGroup.getCurrent_ranking_decision());
+//                newRankingGroup.setCreatedBy(form.getCreatedBy());
+//                cloneRankingGroups.add(iRankingGroupRepository.save(newRankingGroup)); // Save individually
+//            }
+//            cloneDecision.setRankingGroups(cloneRankingGroups);
+//        }
+//        // Clone DecisionCriteria (Bảng trung gian)
+//        if (existingDecision.getDecisionCriteria() != null) {
+//            List<DecisionCriteria> clonedCriteriaList = new ArrayList<>();
+//            for (DecisionCriteria decisionCriteria : existingDecision.getDecisionCriteria()) {
+//                DecisionCriteria newCriteria = new DecisionCriteria();
+//                newCriteria.setDecisionId(cloneDecision.getDecisionId()); // Liên kết với RankingDecision đã clone
+//                newCriteria.setCriteriaId(decisionCriteria.getCriteriaId()); // Sử dụng Criteria ID cũ
+//                newCriteria.setWeight(decisionCriteria.getWeight()); // Clone weight
+//                clonedCriteriaList.add(iDecisionCriteriaRepository.save(newCriteria)); // Save individually
+//            }
+//            cloneDecision.setDecisionCriteria(clonedCriteriaList); // Set cloned DecisionCriteria to the cloned RankingDecision
+//        }
+//
+//        // Clone DecisionTask (Bảng trung gian)
+//        if (existingDecision.getDecisionTasks() != null) {
+//            List<DecisionTasks> clonedDecisionTasks = new ArrayList<>();
+//            for (DecisionTasks decisionTasks : existingDecision.getDecisionTasks()) {
+//                DecisionTasks newDecisionTask = new DecisionTasks();
+//                newDecisionTask.setDecisionId(cloneDecision.getDecisionId());
+//                newDecisionTask.setTaskId(decisionTasks.getTaskId());
+//                clonedDecisionTasks.add(iDecisionTasksRepository.save(newDecisionTask));
+//            }
+//            cloneDecision.setDecisionTasks(clonedDecisionTasks);
+//        }
+//
+//        // Clone Ranking Title
+//        if (existingDecision.getRankingTitles() != null) {
+//            List<RankingTitle> clonedRankingTitles = new ArrayList<>();
+//            for (RankingTitle rankingTitle : existingDecision.getRankingTitles()) {
+//                RankingTitle newRankingTitle = new RankingTitle();
+//                newRankingTitle.setDecisionId(cloneDecision.getDecisionId());
+//                newRankingTitle.setTitleName(rankingTitle.getTitleName());
+//                newRankingTitle.setTotalScore(rankingTitle.getTotalScore());
+//                clonedRankingTitles.add(iRankingTitleRepository.save(newRankingTitle));
+//            }
+//            cloneDecision.setRankingTitles(clonedRankingTitles);
+//        }
+//
+//        return iRankingDecisionRepository.save(cloneDecision); // Save and return the cloned decision
+//    }
+//
+//    private int generateNewEmployeeId() {
+//        Integer maxId = iEmployeeRepository.findMaxId(); // Lấy ID lớn nhất
+//        return (maxId == null ? 1 : maxId + 1); // Tạo ID mới không bị trùng
+//    }
+
     @Override
     @Transactional
     public RankingDecision cloneRankingDecision(AddCloneRankingDecisionRequest form) {
@@ -151,10 +244,20 @@ public class RankingDecisionService implements IRankingDecisionService {
                 .createdBy(form.getCreatedBy())
                 .status("Draft") // Default status
                 .build();
-        // Save cloneDecision to generate its ID
-        cloneDecision = iRankingDecisionRepository.save(cloneDecision);
-        ///clone Foreign Key 1-N
-        //Employee
+        cloneDecision = iRankingDecisionRepository.save(cloneDecision);  // Save cloneDecision to generate its ID
+
+        // Clone Foreign Key 1-N or N-N relationships
+        cloneEmployees(existingDecision, cloneDecision);
+        cloneRankingGroups(existingDecision, cloneDecision, form.getCreatedBy());
+        cloneDecisionCriteria(existingDecision, cloneDecision);
+        cloneDecisionTasks(existingDecision, cloneDecision);
+        cloneRankingTitles(existingDecision, cloneDecision);
+
+        // Save and return the cloned decision with all associated entities
+        return iRankingDecisionRepository.save(cloneDecision); // Ensure all entities are saved at once
+    }
+
+    private void cloneEmployees(RankingDecision existingDecision, RankingDecision cloneDecision) {
         if (existingDecision.getEmployees() != null) {
             List<Employee> clonedEmployees = new ArrayList<>();
             for (Employee employee : existingDecision.getEmployees()) {
@@ -166,65 +269,83 @@ public class RankingDecisionService implements IRankingDecisionService {
                 newEmployee.setRankingDecisionId(cloneDecision.getDecisionId());
                 clonedEmployees.add(iEmployeeRepository.save(newEmployee)); // Lưu vào Persistence Context
             }
-            cloneDecision.setEmployees(clonedEmployees);
         }
-        // Clone Ranking Groups
+    }
+
+
+    private void cloneRankingGroups(RankingDecision existingDecision, RankingDecision cloneDecision, Integer createdBy) {
         if (existingDecision.getRankingGroups() != null) {
-            List<RankingGroup> cloneRankingGroups = new ArrayList<>();
-            for (RankingGroup rankingGroup : existingDecision.getRankingGroups()) {
-                RankingGroup newRankingGroup = new RankingGroup();
-                newRankingGroup.setGroupName(rankingGroup.getGroupName());
-                newRankingGroup.setNumEmployees(rankingGroup.getNumEmployees());
-                newRankingGroup.setCurrent_ranking_decision(rankingGroup.getCurrent_ranking_decision());
-                newRankingGroup.setCreatedBy(form.getCreatedBy());
-                cloneRankingGroups.add(iRankingGroupRepository.save(newRankingGroup)); // Save individually
-            }
-            cloneDecision.setRankingGroups(cloneRankingGroups);
+            List<RankingGroup> clonedGroups = existingDecision.getRankingGroups().stream()
+                    .map(group -> {
+                        RankingGroup newGroup = new RankingGroup();
+                        newGroup.setGroupName(group.getGroupName());
+                        newGroup.setNumEmployees(group.getNumEmployees());
+                        newGroup.setCurrent_ranking_decision(cloneDecision.getDecisionId());
+                        newGroup.setCreatedBy(createdBy);
+                        return newGroup;
+                    }).collect(Collectors.toList());
+
+            // Save all ranking groups in one go
+            iRankingGroupRepository.saveAll(clonedGroups);
+            cloneDecision.setRankingGroups(clonedGroups);
         }
-        // Clone DecisionCriteria (Bảng trung gian)
+    }
+
+    private void cloneDecisionCriteria(RankingDecision existingDecision, RankingDecision cloneDecision) {
         if (existingDecision.getDecisionCriteria() != null) {
-            List<DecisionCriteria> clonedCriteriaList = new ArrayList<>();
-            for (DecisionCriteria decisionCriteria : existingDecision.getDecisionCriteria()) {
-                DecisionCriteria newCriteria = new DecisionCriteria();
-                newCriteria.setDecisionId(cloneDecision.getDecisionId()); // Liên kết với RankingDecision đã clone
-                newCriteria.setCriteriaId(decisionCriteria.getCriteriaId()); // Sử dụng Criteria ID cũ
-                newCriteria.setWeight(decisionCriteria.getWeight()); // Clone weight
-                clonedCriteriaList.add(iDecisionCriteriaRepository.save(newCriteria)); // Save individually
-            }
-            cloneDecision.setDecisionCriteria(clonedCriteriaList); // Set cloned DecisionCriteria to the cloned RankingDecision
-        }
+            List<DecisionCriteria> clonedCriteriaList = existingDecision.getDecisionCriteria().stream()
+                    .map(criteria -> {
+                        DecisionCriteria newCriteria = new DecisionCriteria();
+                        newCriteria.setDecisionId(cloneDecision.getDecisionId());
+                        newCriteria.setCriteriaId(criteria.getCriteriaId());
+                        newCriteria.setWeight(criteria.getWeight());
+                        newCriteria.setCreatedAt(LocalDateTime.now());
+                        return newCriteria;
+                    }).collect(Collectors.toList());
 
-        // Clone DecisionTask (Bảng trung gian)
+            // Save all decision criteria in one go
+            iDecisionCriteriaRepository.saveAll(clonedCriteriaList);
+            cloneDecision.setDecisionCriteria(clonedCriteriaList);
+        }
+    }
+
+    private void cloneDecisionTasks(RankingDecision existingDecision, RankingDecision cloneDecision) {
         if (existingDecision.getDecisionTasks() != null) {
-            List<DecisionTasks> clonedDecisionTasks = new ArrayList<>();
-            for (DecisionTasks decisionTasks : existingDecision.getDecisionTasks()) {
-                DecisionTasks newDecisionTask = new DecisionTasks();
-                newDecisionTask.setDecisionId(cloneDecision.getDecisionId());
-                newDecisionTask.setTaskId(decisionTasks.getTaskId());
-                clonedDecisionTasks.add(iDecisionTasksRepository.save(newDecisionTask));
-            }
-            cloneDecision.setDecisionTasks(clonedDecisionTasks);
-        }
+            List<DecisionTasks> clonedTasks = existingDecision.getDecisionTasks().stream()
+                    .map(task -> {
+                        DecisionTasks newTask = new DecisionTasks();
+                        newTask.setDecisionId(cloneDecision.getDecisionId());
+                        newTask.setTaskId(task.getTaskId());
+                        newTask.setCreatedAt(LocalDate.now());
+                        return newTask;
+                    }).collect(Collectors.toList());
 
-        // Clone Ranking Title
+            // Save all decision tasks in one go
+            iDecisionTasksRepository.saveAll(clonedTasks);
+            cloneDecision.setDecisionTasks(clonedTasks);
+        }
+    }
+
+    private void cloneRankingTitles(RankingDecision existingDecision, RankingDecision cloneDecision) {
         if (existingDecision.getRankingTitles() != null) {
-            List<RankingTitle> clonedRankingTitles = new ArrayList<>();
-            for (RankingTitle rankingTitle : existingDecision.getRankingTitles()) {
-                RankingTitle newRankingTitle = new RankingTitle();
-                newRankingTitle.setDecisionId(cloneDecision.getDecisionId());
-                newRankingTitle.setTitleName(rankingTitle.getTitleName());
-                newRankingTitle.setTotalScore(rankingTitle.getTotalScore());
-                clonedRankingTitles.add(iRankingTitleRepository.save(newRankingTitle));
-            }
-            cloneDecision.setRankingTitles(clonedRankingTitles);
-        }
+            List<RankingTitle> clonedTitles = existingDecision.getRankingTitles().stream()
+                    .map(title -> {
+                        RankingTitle newTitle = new RankingTitle();
+                        newTitle.setDecisionId(cloneDecision.getDecisionId());
+                        newTitle.setTitleName(title.getTitleName());
+                        newTitle.setTotalScore(title.getTotalScore());
+                        return newTitle;
+                    }).collect(Collectors.toList());
 
-        return iRankingDecisionRepository.save(cloneDecision); // Save and return the cloned decision
+            // Save all ranking titles in one go
+            iRankingTitleRepository.saveAll(clonedTitles);
+            cloneDecision.setRankingTitles(clonedTitles);
+        }
     }
 
     private int generateNewEmployeeId() {
-        Integer maxId = iEmployeeRepository.findMaxId(); // Lấy ID lớn nhất
-        return (maxId == null ? 1 : maxId + 1); // Tạo ID mới không bị trùng
+        Integer maxId = iEmployeeRepository.findMaxId();
+        return (maxId == null ? 1 : maxId + 1);
     }
 
 

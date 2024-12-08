@@ -65,12 +65,12 @@ public class RankingDecisionController {
 
     @PostMapping("/add-clone")
     public ResponseEntity<?> addCloneRankingDecision(@RequestBody @Valid AddCloneRankingDecisionRequest form) {
-        try {
+//        try {
             RankingDecision cloneRankingDecision = iRankingDecisionService.cloneRankingDecision(form);
             return ResponseEntity.status(HttpStatus.OK).body(cloneRankingDecision.toString());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
     }
 
     @PutMapping("/update/{id}")
