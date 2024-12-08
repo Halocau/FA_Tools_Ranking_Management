@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-// ExportTemplateModal.jsx
 import {
   Box,
   Button,
@@ -25,9 +24,9 @@ import SearchComponent from "../../../components/Common/Search.jsx";
 import useNotification from "../../../hooks/useNotification";
 // Import Excel export library
 import * as XLSX from "xlsx";
+import EmployeeAPI from "../../../api/EmployeeAPI.js";
 
 const ExportTemplateModal = ({ open, handleClose, onExport }) => {
-  const navigate = useNavigate(); // To navigate between pages
   const { id } = useParams(); // Get the ID from the URL
   // ApiRef
   const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
@@ -49,18 +48,23 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
   ////////////////////////////////////////////////////////////// Load Data //////////////////////////////////////////////////////////////
   const getAllEmployees = async () => {
     try {
-      const data = await EmpoyeeAPI.getAllEmployee(id);
-      console.log(data);
+      // Gọi API từ bảng Employee
+      const data = await EmployeeAPI.getAllEmployee(id);
       setEmployees(data);
-      const uniqueRankingDecisions = [
-        ...new Set(data.map((item) => item.currentRankingDecision)),
-      ];
-      setRankingDecisions(uniqueRankingDecisions);
+
+      // Tạo danh sách dữ liệu để hiển thị
+      const mappedRows = data.map((employee) => ({
+        employeeId: employee.employeeId,
+        employeeName: employee.employeeName,
+        rankingGroup: employee.rankingGroupName,
+        currentDecision: employee.currentRankingDecision,
+        currentRank: employee.currentRank,
+      }));
+      setRows(mappedRows);
     } catch (error) {
-      // Extract the error message from the response
       const errorMessage =
-        error.response?.data?.detailMessage || "An unexpected error occurred."; // Default message if no specific message found
-      showErrorMessage(errorMessage); // Set the error message from API response
+        error.response?.data?.detailMessage || "An unexpected error occurred.";
+      showErrorMessage(errorMessage);
       setEmployees([]);
     }
   };
@@ -71,7 +75,6 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
   }, [id, open]);
 
   ////////////////////////////////////////////////////////////// Sreach //////////////////////////////////////////////////////////////
-  // Khi thay đổi giá trị tìm kiếm
   const handleSearch = (event) => {
     const query = event;
     setSearchQuery(query);
@@ -145,66 +148,64 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
 
   ////////////////////////////////////////////////////////////// Select //////////////////////////////////////////////////////////////
   // Function to export selected data to Excel
-  const handleSelectionModelChange = () => {
-    const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
-    const selectedRowsData = selectedIDs.map((employeeId) =>
-      rows.find((row) => row.employeeId === employeeId)
-    );
+  const handleSelectionModelChange = async () => {
+    try {
+      const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
 
-    if (selectedRowsData.length > 0) {
-      // Add criteria columns to the selected rows for Excel export
-      const worksheetData = selectedRowsData.map((row) => {
-        // Find the corresponding employee to get their criteria
-        const employee = employees.find(
-          (emp) => emp.employeeId === row.employeeId
-        );
+      if (selectedIDs.length === 0) {
+        showErrorMessage("No rows selected to export.");
+        return;
+      }
 
-        // Flatten the criteria data and add it to the row
+      // Gọi API từ bảng Employee-Criteria để lấy dữ liệu chi tiết
+      const detailedEmployees = await EmployeeAPI.getEmployeeCriteria(id);
+
+      // Lọc dữ liệu liên quan tới các nhân viên được chọn
+      const selectedData = detailedEmployees.filter((employee) =>
+        selectedIDs.includes(employee.employeeId)
+      );
+
+      // Chuẩn bị dữ liệu export
+      const worksheetData = selectedData.map((employee) => {
         const criteriaColumns = employee.criteriaList.reduce(
           (acc, criteria) => {
             acc[
-              criteria.cirteriaName
-            ] = `${criteria.score} - ${criteria.optionName}`; // Add score for each criteria
+              criteria.criteriaName
+            ] = `${criteria.score} - ${criteria.optionName}`;
             return acc;
           },
           {}
         );
 
-        const totalScore = employee.totalScore;
-        const assessmentRank = employee.assessmentRank;
-        // Return the row with the flattened criteria added
         return {
-          ...row,
+          employeeId: employee.employeeId,
+          employeeName: employee.employeeName,
           ...criteriaColumns,
-          totalScore,
-          assessmentRank,
+          totalScore: employee.totalScore,
+          assessmentRank: employee.assessmentRank,
         };
       });
 
-      // Generate headers dynamically (including criteria columns)
-      const headers = Object.keys(worksheetData[0]).map((key) => {
-        return key
-          .replace(/([A-Z])/g, " $1") // Add space before Uppercase Character
-          .replace(/^./, (str) => str.toUpperCase());
-      });
+      // Tạo và xuất file Excel
+      const headers = Object.keys(worksheetData[0]).map((key) =>
+        key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())
+      );
 
-      // Create worksheet from the data
       const worksheet = XLSX.utils.json_to_sheet(worksheetData);
-
-      // Update header to sheet (making sure the columns are correct)
       headers.forEach((header, index) => {
         worksheet[`${String.fromCharCode(65 + index)}1`] = { v: header };
       });
 
-      // Create workbook and append the worksheet
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
 
-      // Generate Excel file and trigger download
       XLSX.writeFile(workbook, "Selected_Employees.xlsx");
       handleClose();
-    } else {
-      showErrorMessage("No rows selected to export.");
+    } catch (error) {
+      showErrorMessage(
+        error.response?.data?.detailMessage ||
+          "An error occurred while exporting."
+      );
     }
   };
 
@@ -239,7 +240,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
       <Box
         sx={{
           maxWidth: 1200,
-          width: "95%", // Đảm bảo modal chiếm gần hết chiều ngang màn hình
+          width: "95%",
           margin: "auto",
           padding: 4,
           backgroundColor: "white",
@@ -277,12 +278,12 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
             <CloseIcon />
           </IconButton>
         </Box>
-        {/* Thanh tìm kiếm */}
+        {/* Search */}
         <Box sx={{ width: 1200, marginTop: 4, marginBottom: 3 }}>
           <SearchComponent onSearch={handleSearch} placeholder="Search" />
         </Box>
 
-        {/* Bộ lọc Ranking Decision và Current Rank */}
+        {/* Filter for Ranking Decision & Current Rank */}
         <Box
           sx={{
             marginTop: "20px",
@@ -296,7 +297,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
             {" "}
             Current Ranking Decision{" "}
           </Typography>
-          {/* Bộ lọc Ranking Decision */}
+          {/* Filter Ranking Decision */}
           <Box>
             <Select
               fullWidth
