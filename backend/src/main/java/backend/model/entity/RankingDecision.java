@@ -60,4 +60,32 @@ public class RankingDecision {
             inverseJoinColumns = @JoinColumn(name = "task_id")
     )
     private List<Task> tasks;
+
+    @ManyToMany(
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL
+    )
+    @JoinTable(
+            name = "Decision_Criteria",
+            joinColumns = @JoinColumn(name = "decision_id"),
+            inverseJoinColumns = @JoinColumn(name = "criteria_id")
+    )
+    private List<Criteria> criterias;
+
+    @OneToMany(mappedBy = "decisionId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<DecisionCriteria> decisionCriteria;
+
+    @OneToMany(mappedBy = "decisionId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<DecisionTasks> decisionTasks;
+
+    @OneToMany(mappedBy = "rankingDecisionId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Employee> employees;
+
+    @OneToMany(mappedBy = "current_ranking_decision", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<RankingGroup> rankingGroups;
+
+    @OneToMany(mappedBy = "decisionId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<RankingTitle> rankingTitles;
+
 }
+//orphanRemoval = true: Khi muốn tự động xóa các bản ghi con bị loại bỏ khỏi danh sách liên kết trong thực thể cha.
