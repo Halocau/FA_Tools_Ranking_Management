@@ -177,6 +177,7 @@ const EditDecision = () => {
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
                         showSuccessMessage={showSuccessMessage}
+                        activeStep={activeStep}
                     />
                 );
             case 1:
@@ -186,6 +187,7 @@ const EditDecision = () => {
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
                         showSuccessMessage={showSuccessMessage}
+                        activeStep={activeStep}
                     />
                 );
             case 2:
@@ -195,6 +197,7 @@ const EditDecision = () => {
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
                         showSuccessMessage={showSuccessMessage}
+                        activeStep={activeStep}
                     />
                 );
             default:
