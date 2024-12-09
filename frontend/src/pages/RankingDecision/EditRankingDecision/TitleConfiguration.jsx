@@ -264,6 +264,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             console.error("Không có dữ liệu ban đầu để load lại.");
         }
     };
+
     // End 
     //////////////////////////////////// Save ////////////////////////////////////////
     const calculateRankScore = (row) => {
@@ -291,19 +292,24 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             return totalScore; // Không có option phù hợp, giữ nguyên điểm
         }, 0);
     };
+
     // End 
     const handleSaveChanges = () => {
+        // Kiểm tra xem tất cả rankScore đã được tính toán
         const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
+        // console.log("Original Title:", originalTitle);
+        // console.log("Rows:", rows);
         if (!allRankScoresCalculated) {
             showErrorMessage('Tất cả Rank Score phải được tính toán.');
-            return;
+            return; // Dừng lại nếu có lỗi
         }
         syncDecisionTitle(rows, originalTitle);
+
         showSuccessMessage('Title Configuration successfully updated.');
-        getCriteriaConfiguration();
-        getTitleConfiguration();
-        goToNextStep();
+        console.log("Title Configuration successfully updated.”");
+        goToNextStep(); // Chuyển bước tiếp theo
     };
+
     // End 
     ///////////////////////////////// Column Title ///////////////////////////////////
     const ColumnsTitle = (criteria, decisionStatus) => {
@@ -316,43 +322,40 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             field: criteriaItem.criteriaName,
             headerName: criteriaItem.criteriaName,
             width: 200,
-            editable: decisionStatus === 'Draft', // Cho phép chỉnh sửa nếu là Draft
+            editable: decisionStatus === 'Draft',
             renderCell: (params) => {
                 const currentCriteria = criteria.find(
                     (c) => c.criteriaName === params.field
                 );
-                // Kiểm tra nếu không có dữ liệu hoặc danh sách tùy chọn
+
                 if (!currentCriteria || !Array.isArray(currentCriteria.options)) {
                     console.warn(`No options found for criteria: ${params.field}`);
                     return null;
                 }
-                // Nếu là Draft, hiển thị Select để chỉnh sửa
-                if (decisionStatus === 'Draft') {
-                    return (
-                        <Select
-                            value={params.value || ''}
-                            onChange={(e) =>
-                                handleCellEditTitleCommit({
-                                    id: params.row.index,
-                                    field: params.field,
-                                    value: e.target.value,
-                                })
-                            }
-                            fullWidth
-                            sx={{
-                                height: '30px',
-                                '.MuiSelect-select': { padding: '4px' },
-                            }}
-                        >
-                            {currentCriteria.options.map((option) => (
-                                <MenuItem key={option.optionId} value={option.optionName}>
-                                    {`${option.score} - ${option.optionName}`}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    );
-                }
-                return <Typography variant="body2">{params.value || 'N/A'}</Typography>;
+
+                return (
+                    <Select
+                        value={params.value || ''}
+                        onChange={(e) =>
+                            handleCellEditTitleCommit({
+                                id: params.row.index,
+                                field: params.field,
+                                value: e.target.value,
+                            })
+                        }
+                        fullWidth
+                        sx={{
+                            height: '30px',
+                            '.MuiSelect-select': { padding: '4px' },
+                        }}
+                    >
+                        {currentCriteria.options.map((option) => (
+                            <MenuItem key={option.optionId} value={option.optionName}>
+                                {`${option.score} - ${option.optionName}`} {/* Tên kèm score */}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                );
             },
         }));
         // Column Title
@@ -388,15 +391,21 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     //////////////////////////////////// Row Title ////////////////////////////////////
     const setRowData = (title, criteria) => {
         const mappedRows = title.map((titleItem, index) => {
+            // Create fields for criteria columns, ensuring every criteria is included
             const criteriaFields = criteria.reduce((acc, criteriaItem) => {
+                // Find the option corresponding to this criteria
                 const matchingOption = titleItem.options?.find(
                     (option) => option.criteriaId === criteriaItem.criteriaId
                 );
+
+                // Set the field value to the matched optionName or an empty string if not found
                 acc[criteriaItem.criteriaName] = matchingOption ? matchingOption.optionName : "";
                 acc[`${criteriaItem.criteriaName}_id`] = criteriaItem.criteriaId;
 
                 return acc;
             }, {});
+
+            // Ensure all criteria are represented in the options array
             const normalizedOptions = criteria.map((criteriaItem) => {
                 const matchingOption = titleItem.options?.find(
                     (option) => option.criteriaId === criteriaItem.criteriaId
@@ -410,15 +419,26 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 };
             });
 
+            const tempData = {
+                id: titleItem.rankingTitleId,
+                index: index + 1, // Row index
+                titleName: titleItem.rankingTitleName, // Title name
+                rankScore: titleItem.totalScore || 0, // Total score
+                ...criteriaFields, // Dynamic criteria fields with criteriaId
+                options: normalizedOptions, // All options, with defaults for missing ones
+            };
+
             return {
                 id: titleItem.rankingTitleId,
-                index: index + 1,
-                titleName: titleItem.rankingTitleName,
-                rankScore: titleItem.totalScore || 0,
-                ...criteriaFields,
-                options: normalizedOptions,
+                index: index + 1, // Row index
+                titleName: titleItem.rankingTitleName, // Title name
+                rankScore: calculateRankScore(tempData).toFixed(2) ? calculateRankScore(tempData).toFixed(2) : titleItem.totalScore, // Total score
+                ...criteriaFields, // Dynamic criteria fields with criteriaId
+                options: normalizedOptions, // All options, with defaults for missing ones
             };
         });
+
+        // Update the state with the new rows
         setRows(mappedRows);
     };
 
@@ -454,7 +474,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                         rows={rows}
                         columns={columnsTitle}
                         getRowId={(row) => row.index}
-                        sx={{ '& .MuiDataGrid-columnHeaders': { backgroundColor: '#e0e0e0' } }}
                     />
                     {/* Button */}
                     {decisionStatus === 'Draft' && (

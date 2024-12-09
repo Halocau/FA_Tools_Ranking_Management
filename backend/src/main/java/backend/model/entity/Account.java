@@ -1,7 +1,9 @@
 package backend.model.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -11,6 +13,8 @@ import java.util.Date;
 @Entity
 @Data
 @Table(name = "Account")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,8 +30,12 @@ public class Account {
     @Column(name = "email", length = 100, nullable = true)
     private String email;
 
-    @Column(name = "role", length = 50)
-    private String role;
+    @ManyToOne // Establish a Many-to-One relationship
+    @JoinColumn(name = "role_id", referencedColumnName = "role_id", insertable = false, updatable = false)
+    private Role role; // Maps to the Role entity
+
+    @Column(name = "role_id", nullable = false)
+    private Integer roleId; // Keeps the role_id as a separate field
 
     @Column(name = "status", length = 50)
     private String status;
@@ -62,6 +70,8 @@ public class Account {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public Account() {
+    // Custom getter for roleName
+    public String getRoleName() {
+        return role != null ? role.getName() : null;
     }
 }

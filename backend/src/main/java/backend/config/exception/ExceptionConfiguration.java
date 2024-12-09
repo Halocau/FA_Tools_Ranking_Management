@@ -48,7 +48,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 exception,
-                null,
                 null
         );
 
@@ -72,7 +71,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 exception,
-                null,
                 null
         );
 
@@ -96,7 +94,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 exception,
-                null,
                 null
         );
 
@@ -127,7 +124,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 exception,
-                null,
                 null
         );
 
@@ -158,7 +154,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 exception,
-                null,
                 null
         );
 
@@ -182,7 +177,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 new Exception(),
-                null,
                 null
         );
 
@@ -212,7 +206,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 errors,
-                null,
                 null
         );
 
@@ -242,7 +235,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 errors,
-                null,
                 null
         );
 
@@ -265,7 +257,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 exception,
-                null,
                 null
         );
 
@@ -287,7 +278,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 exception,
-                null,
                 null
         );
 
@@ -311,7 +301,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 exception,
-                null,
                 null
         );
 
@@ -335,7 +324,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 exception,
-                null,
                 null
         );
 
@@ -343,6 +331,7 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
     //Lỗi truy cập bị từ chối tài nguyên (Access Denied)
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException exception) {
@@ -356,7 +345,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 exception,
-                null,
                 null
         );
 
@@ -364,6 +352,7 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
+
     //File Exception
     @ExceptionHandler({StorageException.class})
     public ResponseEntity<Object> handleUploadException(Exception exception) {
@@ -377,7 +366,6 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
                 detailMessage,
                 code,
                 exception,
-                null,
                 null
         );
 

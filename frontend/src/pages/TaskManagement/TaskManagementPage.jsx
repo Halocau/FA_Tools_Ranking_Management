@@ -17,6 +17,8 @@ import SearchComponent from "../../components/Common/Search.jsx";
 // Import hook Notification
 import useNotification from "../../hooks/useNotification";
 import taskApi from "../../api/TaskAPI.js";
+// css
+import "../../assets/css/RankingGroups.css";
 
 const TaskManagement = () => {
   const navigate = useNavigate();
@@ -30,7 +32,8 @@ const TaskManagement = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editTaskName, setEditTaskName] = useState("");
   //Delete many
-  const [selectedTask, setSelectedTask] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null); // State to store selected task for editing
+  const [groupToDelete, setGroupToDelete] = useState(null);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   // Use hook notification
   const [showSuccessMessage, showErrorMessage] = useNotification();
@@ -48,6 +51,7 @@ const TaskManagement = () => {
   // Search
   const [rows, setRows] = useState([]); // Initialize with empty array
   const [filteredRows, setFilteredRows] = useState([]); // Initialize with empty array
+  const [searchValue, setSearchValue] = useState("");
 
   //Get props from useTask
 
@@ -67,8 +71,23 @@ const TaskManagement = () => {
     fetchAllTask();
   }, [page, pageSize, filter]);
 
+  // Map decision data to rows for DataGrid when rows are fetched
+  useEffect(() => {
+    if (task) {
+      const mappedRows = task.map((item, index) => ({
+        id: item.taskId,
+        index: index + 1 + (page - 1) * pageSize,
+        taskName: item.taskName,
+        createdBy: item.createdByName || "Unknown",
+        createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
+        updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
+      }));
+      setRows(mappedRows);
+      setFilteredRows(mappedRows);
+    }
+  }, [task]);
 
-  /////////////////////////////////////////////////////// Add //////////////////////////////////////////////////////////////////////
+  // Modal Add
   const handleOpenAddModal = () => {
     setValidationMessage("");
     setShowAddModal(true);
@@ -140,7 +159,7 @@ const TaskManagement = () => {
     }
   };
 
-  /////////////////////////////////////////////////////// Delete //////////////////////////////////////////////////////////////////////
+  // Modal Delete
   const handleOpenDeleteModal = (taskId) => {
     const selectedTask = task.find((task) => task.taskId === taskId);
     if (selectedTask && selectedTask.taskName === "") {
@@ -150,6 +169,7 @@ const TaskManagement = () => {
     setTaskToDelete(taskId);
     setShowDeleteModal(true);
   };
+
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
   //Delete Task
   const handleDeleteTask = async () => {
@@ -177,9 +197,10 @@ const TaskManagement = () => {
     }
   };
 
-  /////////////////////////////////////////////////////// Bulk Delete //////////////////////////////////////////////////////////////////////
+  // Delete many task
   const handleOpenBulkDeleteModal = () => setShowBulkDeleteModal(true);
   const handleCloseBulkDeleteModal = () => setShowBulkDeleteModal(false); //close
+
   // Delete many tasks
   const handleDeleteManyTask = async () => {
     const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
@@ -206,17 +227,19 @@ const TaskManagement = () => {
     }
   };
 
-  /////////////////////////////////////////////////////// Edit ///////////////////////////////////////////////////////////////////////
+  // Modal Edit
   const handleOpenEditModal = (task) => {
     setSelectedTask(task);
     setEditTaskName(task.taskName);
     setShowEditModal(true);
   };
+
   const handleCloseEditModal = () => {
     setShowEditModal(false);
     setEditTaskName("");
     setValidationMessage("");
   };
+
   // Update Task
   const handleUpdateTask = async () => {
     const trimmedName = editTaskName.trim();
@@ -225,10 +248,12 @@ const TaskManagement = () => {
       setValidationMessage("Task name cannot be empty!");
       return;
     }
+
     if (trimmedName.length < 3 || trimmedName.length > 20) {
       setValidationMessage("Task name must be between 3 and 20 characters.");
       return;
     }
+
     const nameRegex = /^[a-zA-Z0-9 ]+$/;
     if (!nameRegex.test(trimmedName)) {
       setValidationMessage(
@@ -236,34 +261,38 @@ const TaskManagement = () => {
       );
       return;
     }
+
     const isDuplicate = rows.some(
       (task) =>
         task.taskName.toLowerCase() === trimmedName.toLowerCase() &&
         task.id !== selectedTask.id
     );
+
     if (isDuplicate) {
       setValidationMessage(
         "Task name already exists. Please choose another name."
       );
       return;
     }
+
     const updatedTask = {
       taskName: trimmedName,
       createdBy: localStorage.getItem("userId"),
     };
 
     try {
+      // Assuming taskApi.updateTaskById exists and updates a task by its ID
       await taskApi.updateTask(selectedTask.id, updatedTask);
       showSuccessMessage("Task updated successfully!");
       handleCloseEditModal();
-      fetchAllTask();
+      fetchAllTask(); // Update task list after editing
     } catch (error) {
       console.error("Failed to update Task:", error);
       showErrorMessage("Failed to update task. Please try again.");
     }
   };
 
-  /////////////////////////////////////////////////////// Search /////////////////////////////////////////////////////////////////////
+  //Search Task
   const handleSearch = (event) => {
     if (event) {
       setFilter(sfLike("taskName", event).toString());
@@ -273,22 +302,22 @@ const TaskManagement = () => {
     setPage(1);
   };
 
-  ///////////////////////////////////////////////////////// Table ////////////////////////////////////////////////////////////////////////
   //Format Data
   const formatDate = (dateString) => {
     return dateString ? format(new Date(dateString), "dd/MM/yyyy ") : "N/A";
   };
+
   // Columns configuration
   const columns = [
     { field: "index", headerName: "ID", width: 80 },
     { field: "taskName", headerName: "Task Name", width: 400 },
     { field: "createdBy", headerName: "Created By", width: 200 },
-    { field: "createdAt", headerName: "Created At", width: 150 },
-    { field: "updatedAt", headerName: "Updated At", width: 150 },
+    { field: "createdAt", headerName: "Created At", width: 180 },
+    { field: "updatedAt", headerName: "Updated At", width: 159 },
     {
       field: "action",
       headerName: "Action",
-      width: 200,
+      width: 150,
       renderCell: (params) => (
         <>
           <Button
@@ -300,7 +329,7 @@ const TaskManagement = () => {
           <Button
             variant="outlined"
             color="error"
-            sx={{ marginLeft: 1 }}
+            // size="small"
             onClick={() => handleOpenDeleteModal(params.row.id)}
           >
             <MdDeleteForever />
@@ -309,32 +338,19 @@ const TaskManagement = () => {
       ),
     },
   ];
-  // Map decision data to rows for DataGrid when rows are fetched
-  useEffect(() => {
-    if (task) {
-      const mappedRows = task.map((item, index) => ({
-        id: item.taskId,
-        index: index + 1 + (page - 1) * pageSize,
-        taskName: item.taskName,
-        createdBy: item.createdByName || "Unknown",
-        createdAt: item.createdAt ? formatDate(item.createdAt) : "N/A",
-        updatedAt: item.updatedAt ? formatDate(item.updatedAt) : "N/A",
-      }));
-      setRows(mappedRows);
-      setFilteredRows(mappedRows);
-    }
-  }, [task]);
 
   return (
     <div style={{ marginTop: "60px" }}>
       <Slider />
-      <Typography variant="h6">
-        <a href="/ranking_decision">Ranking Decision List</a>{" "}
-        {<FaAngleRight />}
-        Task Management
-      </Typography>
-      <SearchComponent onSearch={handleSearch} placeholder=" Sreach Task" />
-      <Box sx={{ width: "100%", height: 370, marginTop: '50px' }}>
+      <Box sx={{ marginTop: 4, padding: 2 }}>
+        <Typography variant="h6">
+          <a href="/ranking_decision">Ranking Decision List</a>{" "}
+          {<FaAngleRight />}
+          Task Management
+        </Typography>
+        <div>
+          <SearchComponent onSearch={handleSearch} placeholder=" Sreach Task" />
+        </div>
         <DataGrid
           className="custom-data-grid"
           apiRef={apiRef}
@@ -347,152 +363,152 @@ const TaskManagement = () => {
           rowCount={totalElements}
           paginationMode="server"
           paginationModel={{
-            page: page - 1,
+            page: page - 1, // Adjusted for 0-based index
             pageSize: pageSize,
           }}
           onPaginationModelChange={(model) => {
-            setPage(model.page + 1);
+            setPage(model.page + 1); // Set 1-based page for backend
             setpageSize(model.pageSize);
           }}
           disableNextButton={page >= totalPages}
           disablePrevButton={page <= 1}
           disableRowSelectionOnClick
         />
-      </Box>
-      <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
-        <Button
-          variant="contained"
-          color="success"
-          onClick={handleOpenAddModal}
-        >
-          Add New Task
-        </Button>
-        <Button
-          variant="contained"
-          color="error"
-          onClick={handleOpenBulkDeleteModal}
-          sx={{ ml: 2 }}
-        >
-          Delete Selected Tasks
-        </Button>
-      </Box>
-      {/* Add Task Modal */}
-      <ModalCustom
-        show={showAddModal}
-        handleClose={handleCloseAddModal}
-        title="Add New Task"
-        bodyContent={
-          <TextField
-            label="Task Name"
-            variant="outlined"
-            fullWidth
-            value={newTaskName}
-            onChange={(e) => {
-              setNewTaskName(e.target.value);
-              setValidationMessage("");
-            }}
-            error={!!validationMessage}
-            helperText={validationMessage}
-          />
-        }
-        footerContent={
-          <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
-            <Button variant="outlined" onClick={handleCloseAddModal}>
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={handleAddTask}
-              sx={{ ml: 2 }}
-            >
-              Add
-            </Button>
-          </Box>
-        }
-      />
-      {/* Edit Task Modal */}
-      <ModalCustom
-        show={showEditModal}
-        handleClose={handleCloseEditModal}
-        title="Edit Task"
-        bodyContent={
-          <Box>
+        <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleOpenAddModal}
+          >
+            Add New Task
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleOpenBulkDeleteModal}
+            sx={{ ml: 2 }}
+          >
+            Delete Selected Tasks
+          </Button>
+        </Box>
+        {/* Add Task Modal */}
+        <ModalCustom
+          show={showAddModal}
+          handleClose={handleCloseAddModal}
+          title="Add New Task"
+          bodyContent={
             <TextField
               label="Task Name"
               variant="outlined"
               fullWidth
-              value={editTaskName}
+              value={newTaskName}
               onChange={(e) => {
-                setEditTaskName(e.target.value);
-                setValidationMessage(""); // Xóa thông báo khi người dùng nhập tên mới
+                setNewTaskName(e.target.value);
+                setValidationMessage("");
               }}
               error={!!validationMessage}
               helperText={validationMessage}
             />
-          </Box>
-        }
-        footerContent={
-          <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
-            <Button variant="outlined" onClick={handleCloseEditModal}>
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={handleUpdateTask}
-              sx={{ ml: 2 }}
-            >
-              Save
-            </Button>
-          </Box>
-        }
-      />
-      {/* Delete Many Task Modal */}
-      <ModalCustom
-        show={showBulkDeleteModal}
-        handleClose={handleCloseBulkDeleteModal}
-        title="Confirm Bulk Delete"
-        bodyContent="Are you sure you want to delete the selected tasks?"
-        footerContent={
-          <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
-            <Button variant="outlined" onClick={handleCloseBulkDeleteModal}>
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={handleDeleteManyTask}
-              sx={{ ml: 2 }}
-            >
-              Delete
-            </Button>
-          </Box>
-        }
-      />
-      {/* Delete Task Modal */}
-      <ModalCustom
-        show={showDeleteModal}
-        handleClose={handleCloseDeleteModal}
-        title="Confirm Delete"
-        bodyContent="Are you sure you want to delete this task?"
-        footerContent={
-          <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
-            <Button variant="outlined" onClick={handleCloseDeleteModal}>
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={handleDeleteTask}
-              sx={{ ml: 2 }}
-            >
-              Delete
-            </Button>
-          </Box>
-        }
-      />
-    </div >
+          }
+          footerContent={
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+              <Button variant="outlined" onClick={handleCloseAddModal}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={handleAddTask}
+                sx={{ ml: 2 }}
+              >
+                Add
+              </Button>
+            </Box>
+          }
+        />
+        {/* Edit Task Modal */}
+        <ModalCustom
+          show={showEditModal}
+          handleClose={handleCloseEditModal}
+          title="Edit Task"
+          bodyContent={
+            <Box>
+              <TextField
+                label="Task Name"
+                variant="outlined"
+                fullWidth
+                value={editTaskName}
+                onChange={(e) => {
+                  setEditTaskName(e.target.value);
+                  setValidationMessage(""); // Xóa thông báo khi người dùng nhập tên mới
+                }}
+                error={!!validationMessage}
+                helperText={validationMessage}
+              />
+            </Box>
+          }
+          footerContent={
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+              <Button variant="outlined" onClick={handleCloseEditModal}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={handleUpdateTask}
+                sx={{ ml: 2 }}
+              >
+                Save
+              </Button>
+            </Box>
+          }
+        />
+        {/* Delete Many Task Modal */}
+        <ModalCustom
+          show={showBulkDeleteModal}
+          handleClose={handleCloseBulkDeleteModal}
+          title="Confirm Bulk Delete"
+          bodyContent="Are you sure you want to delete the selected tasks?"
+          footerContent={
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+              <Button variant="outlined" onClick={handleCloseBulkDeleteModal}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={handleDeleteManyTask}
+                sx={{ ml: 2 }}
+              >
+                Delete
+              </Button>
+            </Box>
+          }
+        />
+        {/* Delete Task Modal */}
+        <ModalCustom
+          show={showDeleteModal}
+          handleClose={handleCloseDeleteModal}
+          title="Confirm Delete"
+          bodyContent="Are you sure you want to delete this task?"
+          footerContent={
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+              <Button variant="outlined" onClick={handleCloseDeleteModal}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={handleDeleteTask}
+                sx={{ ml: 2 }}
+              >
+                Delete
+              </Button>
+            </Box>
+          }
+        />
+      </Box>
+    </div>
   );
 };
 

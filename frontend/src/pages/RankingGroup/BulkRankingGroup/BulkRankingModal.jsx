@@ -1,18 +1,20 @@
-// React
 import React, { useEffect, useState, useRef } from "react";
+
 // Mui
-import { Box, Button, Link, Modal, Typography, IconButton } from "@mui/material";
+import { Box, Button, Link, Modal, Typography, IconButton, CircularProgress } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ClearIcon from "@mui/icons-material/Clear"; // Import the Clear icon
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+
 // XLSX library
 import * as XLSX from "xlsx"; // Import SheetJS library
+
 //API
 import FileUploadAPI from "../../../api/FileUploadAPI";
 import EmployeeCriteriaAPI from "../../../api/EmployeeCriteriaAPI";
 import EmployeeAPI from "../../../api/EmployeeAPI";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI";
-// Modal Style
+
 const modalStyle = {
     position: "absolute",
     top: "50%",
@@ -26,15 +28,26 @@ const modalStyle = {
 };
 
 const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMessage, currentGroup, addNewBulkRanking, fetchBulkRankings }) => {
+    // State of file name is in input fields
     const [selectedFile, setSelectedFile] = useState(null);
+    // State of file inputed
     const [file, setFile] = useState(null);
+    // State of data of file inputed
     const [data, setData] = useState(null);
+    // Criteria of current decision applied for current ranking group
     const [criteriaList, setListCriteria] = useState([]);
+    // State of status of upload
     const [status, setStatus] = useState('Success');
+    // State of note for upload
     const [note, setNote] = useState('');
+    // State of error message
     const [errorMessage, setErrorMessage] = useState('');
+    // State of loading indicator
+    const [loading, setLoading] = useState(false);
+
     const fileInputRef = useRef(null); // Reference to the file input
 
+    //Function to fetch criteria of current decision
     const getCriteriaList = async () => {
         try {
             const response = await DecisionCriteriaAPI.optionCriteria(currentGroup.decisionId);
@@ -43,13 +56,14 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             console.error("Error fetching criteria:", error);
         }
     };
-
+    //Fetch criteria of current decision
     useEffect(() => {
         if (currentGroup.decisionId) {
             getCriteriaList();
         }
     }, [currentGroup.decisionId]);
 
+    // Function to handle upload employee data
     const uploadEmployee = async (form) => {
         try {
             await EmployeeAPI.upsertEmployeeList(form);
@@ -58,6 +72,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         }
     }
 
+    // Function to handle upload each criteria fields of employee
     const uploadEmployeeCriteria = async (form) => {
         try {
             await EmployeeCriteriaAPI.upsertEmployeeCriteriaList(form);
@@ -112,6 +127,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
     };
 
 
+    // Function to validate data if it is not empty
     const validateData = (data) => {
         // Check if data is not provided or empty
         if (!data || data.length === 0) {
@@ -137,33 +153,42 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         }
         return true;
     };
+
     // File change handler
     const handleFileChange = (e) => {
         const file = e.target.files[0];
+
         if (file && (file.name.endsWith(".xlsx") || file.name.endsWith(".xls"))) {
             setSelectedFile(file.name);
             setFile(file); // Store the file object in state
+
             const reader = new FileReader();
+
             // Event handler for when file is read
             reader.onload = (event) => {
                 try {
                     const arrayBuffer = event.target.result;
+
                     // Attempt to read the workbook
                     const workbook = XLSX.read(arrayBuffer, { type: "array" });
                     if (!workbook || workbook.SheetNames.length === 0) {
                         throw new Error("Unable to read the file or no sheets found.");
                     }
+
                     const sheetName = workbook.SheetNames[0]; // Read the first sheet
                     const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
                         header: 1, // Extract raw rows, with the first row as headers
                     });
+
                     // Ensure sheetData contains at least headers
                     if (!sheetData || sheetData.length === 0) {
                         throw new Error("Sheet is empty or contains invalid data.");
                     }
+
                     // Extract headers and validate required columns
                     const headers = sheetData[0] || []; // The first row contains headers
                     const requiredColumns = ["Employer ID", "Employer Name"];
+
                     const validationHeaders = validateHeaders(headers, requiredColumns, criteriaList);
                     if (!validationHeaders.isValid) {
                         // Set error if validation fails
@@ -172,16 +197,19 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                         setData([]); // Clear data state
                         return;
                     }
+
                     // Convert sheet to JSON excluding the header row
                     const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
                     setData(jsonData); // Update data state with extracted data
                     // validateData(jsonData);
+
                 } catch (error) {
                     showErrorMessage("Failed to process the file. Ensure it is a valid template.");
                     handleRemoveFile();
                     setData([]); // Clear data state
                 }
             };
+
             // Event handler for when file fails to read
             reader.onerror = () => {
                 console.error("Error reading file.");
@@ -220,6 +248,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
 
     const handleEmployeeUpload = async (newBulkRanking) => {
         try {
+
             // Map the data to match the required employee form structure
             const employees = data.map((item) => ({
                 employeeId: item["Employer ID"], // Extract Employer ID
@@ -228,6 +257,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 bulkImportId: newBulkRanking.historyId, // From newBulkRanking.historyId
                 rankingDecisionId: currentGroup.decisionId, // From currentGroup.decisionId
             }));
+
             // Call the uploadEmployee function with the mapped data
             await uploadEmployee(employees);
 
@@ -235,8 +265,11 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             console.error("Error during employee upload process:", error);
         }
     };
+
+
     function extractEmployeeCriteriaOptions() {
         const result = [];
+
         // Create a lookup for criteria options by criteriaName and score
         const criteriaLookup = {};
         criteriaList.forEach(criteria => {
@@ -249,6 +282,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 options: optionsLookup
             };
         });
+
         // Map data to employeeId, criteriaId, and optionId
         data.forEach(employee => {
             const employeeId = employee["Employer ID"];
@@ -265,22 +299,32 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 }
             }
         });
+
         return result;
     }
+
+
+    // Handle file upload
     const handleFileUpload = async () => {
         if (!file) {
             alert("Please select a file before uploading.");
             return;
         }
+        setLoading(true);
         try {
             console.log("Start uploading...\n", data);
             const isValid = validateData(data);
+            if (!isValid) {
+                setStatus("Failed");
+                setNote("Wrong value template. Re-download latest template and try again.");
+            }
             const form = {
                 file: file,
                 folder: 'upload'
             }
             const response = await FileUploadAPI.uploadFile(form);
             const filePath = `D:\\upload\\${response.fileName}`;
+
             const bulkRankingform = {
                 fileName: response.fileName,
                 filePath: filePath,
@@ -289,11 +333,13 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 status: status, // Default status
                 note: note, // Default note
             };
+            // Call the function to add a new bulk ranking
             const newBulkRanking = await addNewBulkRanking(bulkRankingform);
+
             if (status === 'Success') {
-                // Call the function to add a new bulk ranking
                 // Call the function to upload employees
                 await handleEmployeeUpload(newBulkRanking);
+
                 // Call the function to upload employee criteria
                 const output = extractEmployeeCriteriaOptions(criteriaList, data);
                 await uploadEmployeeCriteria(output);
@@ -303,12 +349,17 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 throw new Error("Failed to upload data from excel file!!!");
             }
             handleCloseModal();
+
         } catch (error) {
             console.error("Error during upload process:", error);
             showErrorMessage("Failed to upload data from excel file!!!");
             handleCloseModal();
         }
+        finally {
+            setLoading(false);
+        }
     };
+
     return (
         <Modal open={open} onClose={handleCloseModal} >
             <Box sx={modalStyle}>
@@ -410,6 +461,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                         </IconButton>
                     </Box>
                 )}
+
                 {/* Footer */}
                 <Box mt={2} display="flex" justifyContent="space-between">
                     <Button
@@ -426,7 +478,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                         onClick={() => handleFileUpload(file)} // Pass selectedFile to onUpload
                         sx={{ textTransform: "none", fontWeight: "bold" }}
                     >
-                        Upload
+                        {loading ? <CircularProgress size={20} color="inherit" /> : "Upload"}
                     </Button>
                 </Box>
             </Box>

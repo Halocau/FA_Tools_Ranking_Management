@@ -1,8 +1,11 @@
 package backend.config.security;
 
+import backend.model.entity.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +19,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
@@ -32,6 +37,19 @@ public class SecurityConfig {
             AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
+//    @Bean
+//    @Autowired
+//    public JdbcUserDetailsManager userDetailsManager(DataSource dataSource) {
+//        JdbcUserDetailsManager userDetailsManager = new JdbcUserDetailsManager(dataSource);
+//        userDetailsManager.setUsersByUsernameQuery("SELECT username, password_hash, 1 AS enabled FROM Account WHERE username = ?");
+//        userDetailsManager.setAuthoritiesByUsernameQuery(
+//                "SELECT a.username, r.name AS role " +
+//                        "FROM Account a " +
+//                        "JOIN Role r ON a.role = r.role_id " +
+//                        "WHERE a.username = ?"
+//        );
+//        return userDetailsManager;
+//    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -41,9 +59,116 @@ public class SecurityConfig {
                 .csrf().disable() // Disable CSRF if needed
                 .authorizeHttpRequests(
                         request -> request
-                                .requestMatchers("/api/account/register", "/api/account/login", "/api/account/all",
-                                        "/api/account/generate-and-validate")
+                                /// Public endpoints
+                                .requestMatchers(
+                                        "/api/account/register",
+                                        "/api/account/login",
+                                        "/api/account/all",
+                                        "/api/account/generate-and-validate",
+
+                                        /* Ranking Group */
+                                        "api/ranking-group",
+                                        "api/ranking-group/get/**",
+
+                                        /* Ranking Decision */
+                                        "api/ranking-decision",
+                                        "api/ranking-decision/all",
+                                        "api/ranking-decision/get/**",
+
+                                        /* task */
+                                        "api/task",
+                                        "api/task/all",
+                                        "api/task/get/**",
+                                        "api/task/full",
+
+                                        /*Criteria*/
+                                        "api/criteria",
+                                        "api/criteria/get/**",
+
+                                        /* option */
+                                        "api/option/get/**",
+                                        "api/option/all"
+
+                                )
                                 .permitAll()
+
+                                /* GET, POST and PUT APIs => MANAGER and ADMIN */
+                                .requestMatchers(
+                                        /// GET
+                                        /* Ranking Title */
+                                        "api/ranking-title",
+                                        "api/ranking-title/get/**",
+
+                                        /* ranking-title-option */
+                                        "api/ranking-title-option",
+                                        "/api/ranking-title-option/get-decisionId/**",
+
+                                        /* tasks-wage */
+                                        "api/tasks-wage",
+
+                                        /* employee */
+                                        "api/employee",
+                                        "api/employee/group/**",
+
+                                        /* employee-criteria */
+                                        "api/employee-criteria",
+                                        "api/employee-criteria/get-groupId/**",
+
+                                        /* decision-task */
+                                        "api/decision-task",
+                                        "api/decision-task/**",
+
+                                        /*decision-criteria */
+                                        "api/decision-criteria",
+                                        "api/decision-criteria/get/**",
+                                        "api/decision-criteria/get-all/**",
+                                        "api/decision-criteria/options/**",
+
+                                        /// POST AND PUT
+                                        /*bulk-ranking-history */
+                                        "api/bulk-ranking-history",
+                                        "api/ranking-group/add",
+                                        "api/ranking-group/update/**",
+                                        "api/ranking-decision/add",
+                                        "api/ranking-title/add",
+                                        "api/ranking-title/upsert",
+                                        "api/ranking-title-option/update",
+                                        "api/criteria/add",
+                                        "api/decision-task/add",
+                                        "api/decision-task/add-list",
+                                        "api/tasks-wage/upsert",
+                                        "api/criteria/update/**",
+                                        "api/option/add",
+                                        "api/option/update/**",
+                                        "api/task/add",
+                                        "api/task/update/**",
+                                        "api/bulk-ranking-history/add",
+                                        "api/decision-criteria/add",
+                                        "api/decision-criteria/upsert/**",
+                                        "api/employee/upsert-list",
+                                        "api/employee-criteria/upsert",
+                                        "api/employee-criteria/upsert-list"
+                                ).hasAnyAuthority("MANAGER", "ADMIN")// Only MANAGER and ADMIN can access
+
+                                /* DELETE APIs */
+                                .requestMatchers(
+                                        "api/ranking-group/delete/**",
+                                        "api/ranking-decision/delete/**",
+                                        "api/ranking-title/delete/**",
+                                        "api/ranking-title-option/delete/**",
+                                        "api/criteria/delete/**",
+                                        "api/option/delete/**",
+                                        "api/task/delete/**",
+                                        "api/decision-criteria/delete/**",
+                                        "api/employee/delete/**",
+                                        "api/employee-criteria/delete/**",
+                                        "api/tasks-wage/delete/**",
+                                        "api/decision-task/delete/**"
+                                ).hasAuthority("ADMIN") // Only ADMIN can access
+
+
+                                ///import file excel (.xlsx)
+                                .requestMatchers(HttpMethod.POST, "api/storage/files").hasAnyAuthority("ADMIN")
                                 .anyRequest()
 //                                 .authenticated()
                                 .permitAll()

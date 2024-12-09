@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 @Data
@@ -31,8 +33,10 @@ public class TaskWages {
     private Float overtimeWage;
 
     @Column(name = "created_at")
+    @CreationTimestamp
     private LocalDate createdAt;
 
     @Column(name = "updated_at")
+    @UpdateTimestamp
     private LocalDate updatedAt;
 }

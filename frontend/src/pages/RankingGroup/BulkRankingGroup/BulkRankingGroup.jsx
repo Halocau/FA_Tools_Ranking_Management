@@ -1,12 +1,33 @@
 // react
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { MdDeleteForever } from "react-icons/md";
+import { FaInfo } from "react-icons/fa";
+import { FaEye } from "react-icons/fa";
+import { FaHistory } from "react-icons/fa";
 import { FaAngleRight } from "react-icons/fa";
 // Mui
 import {
-  InputAdornment, Box, Button, Typography, TextField, FormControl, Modal, IconButton,
+  InputAdornment,
+  Box,
+  Button,
+  Typography,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Modal,
+  IconButton,
+  Switch,
+  FormControlLabel,
+  Alert,
+  FormHelperText,
 } from "@mui/material";
+import ClearIcon from "@mui/icons-material/Clear";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
+import InfoIcon from "@mui/icons-material/Info";
+import Autocomplete from "@mui/material/Autocomplete";
 // Css
 import "../../../assets/css/RankingGroups.css";
 // Source code
@@ -114,6 +135,7 @@ const BulkRankingGroup = () => {
       console.error("Error fetching group:", error);
     }
   }
+
   // Columns configuration for the DataGrid
   const columns = [
     { field: "fileName", headerName: "File Name", width: 200 },
@@ -123,6 +145,8 @@ const BulkRankingGroup = () => {
     { field: "status", headerName: "Status", width: 130 },
     { field: "note", headerName: "Note", width: 300 },
   ];
+
+
   useEffect(() => {
     if (bulkRankingGroup) {
       const mappedRows = bulkRankingGroup.map((bulkRankingGroup, index) => ({
@@ -141,16 +165,15 @@ const BulkRankingGroup = () => {
       setRows(mappedRows);
     }
   }, [bulkRankingGroup]);
+
   ///////////////////////////////////////////////////////// BulkRankingGroup /////////////////////////////////////////////////////////
   //// Import
   const handleOpenImportModal = () => {
     setIsImportModalOpen(true);
-    console.log("Modal open prop type:", typeof isImportModalOpen, "Value:", isImportModalOpen);
   };
 
   const handleCloseImportModal = () => {
     setIsImportModalOpen(false);
-    console.log("Modal Closed:", isImportModalOpen); // Debugging
   };
   //// Export
   // Toggle modal
@@ -158,24 +181,6 @@ const BulkRankingGroup = () => {
   const handleCloseExportModal = () => setIsExportModalOpen(false);
   // End code
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
-  const handleUpload = () => {
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(sheet);
-        console.log(jsonData);
-      };
-      reader.readAsArrayBuffer(file);
-    }
-    setIsModalOpen(false);
-  };
 
   return (
     <div style={{ marginTop: "60px" }}>
@@ -232,6 +237,8 @@ const BulkRankingGroup = () => {
           </Typography>
           <SearchComponent onSearch={handleSearch} width={200} />
           <Box sx={{ display: "flex", gap: 1, height: 40 }}>
+            {" "}
+            {/* Sử dụng gap để tạo khoảng cách giữa các nút */}
             <Button
               sx={{ width: 160 }}
               variant="contained"
@@ -244,6 +251,8 @@ const BulkRankingGroup = () => {
             <ExportTemplateModal
               open={isExportModalOpen}
               handleClose={handleCloseExportModal}
+              // employees={employees}
+              // rankingDecisions={rankingDecisions}
               onExport={(selectedEmployees) => {
                 console.log(
                   "Selected Employees for Export:",
@@ -284,68 +293,17 @@ const BulkRankingGroup = () => {
             rowCount={totalElements}
             paginationMode="server"
             paginationModel={{
-              page: page - 1,
+              page: page - 1, // Adjusted for 0-based index
               pageSize: pageSize,
             }}
             onPaginationModelChange={(model) => {
-              setPage(model.page + 1);
+              setPage(model.page + 1); // Set 1-based page for backend
               setPageSize(model.pageSize);
             }}
             disableNextButton={page >= totalPages}
             disablePrevButton={page <= 1}
           />
         </Box>
-
-        {/* Modal for users to upload Excel files */}
-        <Modal
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          aria-labelledby="upload-excel-modal"
-          aria-describedby="upload-excel-modal-description"
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "600px",
-              height: "200px",
-              backgroundColor: "white",
-              padding: "20px",
-              borderRadius: "8px",
-              boxShadow: 24,
-            }}
-          >
-            <Typography variant="h6" id="upload-excel-modal">
-              Upload Excel File
-            </Typography>
-            <div style={{ marginTop: "30px" }}>
-              <input
-                type="file"
-                accept=".xlsx, .xls"
-                onChange={handleFileChange}
-                style={{ marginBottom: "16px", width: "100%" }}
-              />
-              <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleUpload}
-                >
-                  Upload
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-              </Box>
-            </div>
-          </Box>
-        </Modal>
       </Box>
     </div>
   );
