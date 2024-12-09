@@ -7,6 +7,7 @@ import backend.model.entity.*;
 import backend.model.form.RankingDecision.AddCloneRankingDecisionRequest;
 import backend.model.form.RankingDecision.CreateRankingDecision;
 import backend.model.form.RankingDecision.UpdateRankingDecision;
+import backend.model.form.RankingDecision.UpdateStatusRankingDecisionRequest;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.IDecisionCriteriaService;
 import backend.service.IRankingDecisionService;
@@ -19,15 +20,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,9 +41,9 @@ public class RankingDecisionService implements IRankingDecisionService {
     private IRankingTitleRepository iRankingTitleRepository;
     private IDecisionCriteriaService iDecisionCriteriaService;
     private IDecisionCriteriaService iDecisionTasksService;
+    private IAccount iAccount;
 
-    @Autowired
-    public RankingDecisionService(IRankingDecisionRepository iRankingDecisionRepository, IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository, IDecisionCriteriaRepository iDecisionCriteriaRepository, IDecisionTasksRepository iDecisionTasksRepository, IRankingTitleRepository iRankingTitleRepository, IDecisionCriteriaService iDecisionCriteriaService, IDecisionCriteriaService iDecisionTasksService) {
+    public RankingDecisionService(IRankingDecisionRepository iRankingDecisionRepository, IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository, IDecisionCriteriaRepository iDecisionCriteriaRepository, IDecisionTasksRepository iDecisionTasksRepository, IRankingTitleRepository iRankingTitleRepository, IDecisionCriteriaService iDecisionCriteriaService, IDecisionCriteriaService iDecisionTasksService, IAccount iAccount) {
         this.iRankingDecisionRepository = iRankingDecisionRepository;
         this.iEmployeeRepository = iEmployeeRepository;
         this.modelMapper = modelMapper;
@@ -53,6 +53,7 @@ public class RankingDecisionService implements IRankingDecisionService {
         this.iRankingTitleRepository = iRankingTitleRepository;
         this.iDecisionCriteriaService = iDecisionCriteriaService;
         this.iDecisionTasksService = iDecisionTasksService;
+        this.iAccount = iAccount;
     }
 
     @Override
@@ -326,7 +327,7 @@ public class RankingDecisionService implements IRankingDecisionService {
     public void updateRankingDecision(UpdateRankingDecision form, int decisionId) {
         // Find existing ranking decision by ID, throw an exception if not found
         RankingDecision decision = iRankingDecisionRepository.findById(decisionId).orElseThrow(() ->
-                new EntityNotFoundException("Option not found with id: " + decisionId));
+                new EntityNotFoundException("Ranking decision not found with id: " + decisionId));
 
         // Update decision name with the form data
         decision.setDecisionName(form.getDecisionName());
@@ -334,6 +335,39 @@ public class RankingDecisionService implements IRankingDecisionService {
         //save
         iRankingDecisionRepository.saveAndFlush(decision);
     }
+    @Override
+    @Transactional
+    public RankingDecision updateStatus(UpdateStatusRankingDecisionRequest form) {
+        // Tìm kiếm RankingDecision
+        RankingDecision decision = iRankingDecisionRepository.findById(form.getDecisionId()).orElseThrow(() ->
+                new EntityNotFoundException("Ranking decision not found with id: " + form.getDecisionId()));
+
+        // Lấy thông tin tài khoản từ SecurityContext
+        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // Lấy tên người dùng từ SecurityContext
+        Account account = (Account) iAccount.findByUsername(username).orElseThrow(() ->
+                new EntityNotFoundException("Account not found with username: " + username));
+
+        // Kiểm tra trạng thái bị cấm dựa trên vai trò
+        String roleName = account.getRoleName() != null ? account.getRoleName().trim() : "";
+        String status = form.getStatus().trim();
+        System.out.println("RoleName: " + roleName + ", Status: " + status); // Debug
+        if ("USER".equals(roleName)) {
+            if (Arrays.asList("Confirmed", "Rejected", "Finalized").contains(status)) {
+                throw new IllegalArgumentException("Role USER is not allowed to set status to: " + status);
+            }
+        } else if ("MANAGER".equals(roleName)) {
+            if ("Finalized".equals(status)) {
+                throw new IllegalArgumentException("Role MANAGER is not allowed to set status to: " + status);
+            }
+        } else if (!"ADMIN".equals(roleName)) {
+            throw new IllegalArgumentException("Unknown role: " + roleName);
+        }
+
+        // Cập nhật trạng thái nếu hợp lệ
+        decision.setStatus(status);
+        return iRankingDecisionRepository.save(decision);
+    }
+
 
     /// Valid
     @Override
