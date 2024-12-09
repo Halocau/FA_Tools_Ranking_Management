@@ -155,13 +155,13 @@ const RankingDecision = () => {
             if (clone && selectedCloneDecision) {
                 newDecision = {
                     ...newDecision,
-                    CloneDecision: selectedCloneDecision.decisionId
+                    decisionToCloneId: selectedCloneDecision.decisionId
                 };
                 await RankingDecisionAPI.addRankingDecision(newDecision);
             } else {
                 newDecision = {
                     ...newDecision,
-                    CloneDecision: null
+                    decisionToCloneId: null
                 };
                 await RankingDecisionAPI.addRankingDecision(newDecision);
             }
