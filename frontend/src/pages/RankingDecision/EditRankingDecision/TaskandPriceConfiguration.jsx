@@ -545,54 +545,54 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
                     {/* Button */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-                        {/* Select to Add a new Task*/}
-                        {/* Select to Add a new Task */}
-                        {decisionStatus === 'Draft' && (
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                                <Select
-                                    isSearchable={true}
-                                    placeholder="Select to Add a new Task"
-                                    options={listtask
-                                        .filter((task) => !rows.some((row) => row.taskId === task.taskId))
-                                        .map((task) => ({ value: task.taskId, label: task.taskName }))}
-                                    styles={{
-                                        container: (provided) => ({ ...provided, width: '300px' }),
-                                        control: (provided) => ({
-                                            ...provided,
-                                            height: '40px',
-                                            fontSize: '16px',
+                        <Box>
+                            {/* Select to Add a new Task */}
+                            {decisionStatus === 'Draft' && (
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+                                    <Select
+                                        isSearchable={true}
+                                        placeholder="Select to Add a new Task"
+                                        options={listtask
+                                            .filter((task) => !rows.some((row) => row.taskId === task.taskId))
+                                            .map((task) => ({ value: task.taskId, label: task.taskName }))}
+                                        styles={{
+                                            container: (provided) => ({ ...provided, width: '300px' }),
+                                            control: (provided) => ({
+                                                ...provided,
+                                                height: '40px',
+                                                fontSize: '16px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                            }),
+                                            placeholder: (provided) => ({ ...provided, color: '#888' }),
+                                            menu: (provided) => ({
+                                                ...provided,
+                                                maxHeight: 300,
+                                                overflowY: 'auto',
+                                                zIndex: 9999,
+                                            }),
+                                        }}
+                                        menuPlacement="top"
+                                        value={selectedTask}
+                                        onChange={(option) => {
+                                            setSelectedTask(option)
+                                        }}
+                                    />
+                                    <IconButton
+                                        onClick={handleAddTask}
+                                        color={selectedTask ? 'primary' : 'default'}
+                                        sx={{
+                                            marginLeft: 1,
+                                            height: '30px',
                                             display: 'flex',
                                             alignItems: 'center',
-                                        }),
-                                        placeholder: (provided) => ({ ...provided, color: '#888' }),
-                                        menu: (provided) => ({
-                                            ...provided,
-                                            maxHeight: 300,
-                                            overflowY: 'auto',
-                                            zIndex: 9999,
-                                        }),
-                                    }}
-                                    menuPlacement="top"
-                                    value={selectedTask}
-                                    onChange={(option) => {
-                                        setSelectedTask(option)
-                                    }}
-                                />
-                                <IconButton
-                                    onClick={handleAddTask}
-                                    color={selectedTask ? 'primary' : 'default'}
-                                    sx={{
-                                        marginLeft: 1,
-                                        height: '30px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                    }}
-                                >
-                                    <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
-                                </IconButton>
-                            </Box>
-                        )}
-
+                                        }}
+                                    >
+                                        <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
+                                    </IconButton>
+                                </Box>
+                            )}
+                        </Box>
                         {/* Cancel and Save */}
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                             {/* Cancel*/}

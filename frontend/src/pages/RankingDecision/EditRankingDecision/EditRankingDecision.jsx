@@ -214,8 +214,8 @@ const EditDecision = () => {
             console.error("Error updating decision:", error);
             showErrorMessage("Error occurred updating decision info. Please try again.");
         }
-        setEditDecision({ status: 'Submited' })
-        setDecisionStatus('Submited')
+        setEditDecision({ status: 'Submitted' })
+        setDecisionStatus('Submitted')
         showSuccessMessage('Submit successfully ');
     };
     return (
@@ -285,7 +285,7 @@ const EditDecision = () => {
                     <Stepper
                         activeStep={activeStep}
                         alternativeLabel={true}
-                        nonLinear={decisionStatus === 'Finalized'}
+                        nonLinear={decisionStatus === 'Finalized' || decisionStatus === 'Submitted' || decisionStatus === 'Confirm'}
                     >
                         {steps.map((label, index) => (
                             <Step key={label} completed={completed[index]}>

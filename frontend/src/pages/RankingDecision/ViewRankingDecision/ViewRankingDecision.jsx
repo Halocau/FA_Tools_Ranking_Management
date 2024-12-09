@@ -19,7 +19,7 @@ import TaskandPriceConfiguration from "../ViewRankingDecision/TaskandPriceConfig
 
 const ViewDecision = () => {
     const role = localStorage.getItem('userRole');
-
+    console.log(role)
     // const navigate = useNavigate(); // To navigate between pages
     const { id } = useParams(); // Get the ID from the URL
     // Edit
@@ -65,20 +65,17 @@ const ViewDecision = () => {
         2: isTaskSaved,
     });
     useEffect(() => {
-        if (decisionStatus === 'Finalized' || decisionStatus === 'Confirm') {
+        if (['Finalized', 'Confirmed', 'Submitted'].includes(decisionStatus)) {
             setIsCriteriaSaved(true);
             setIsTitleSaved(true);
             setIsTaskSaved(true);
-            setCompleted({
-                0: true,
-                1: true,
-                2: true,
-            });
+            setCompleted({ 0: true, 1: true, 2: true });
         }
     }, [decisionStatus]);
+
     // The function checks to see if it is possible to move to another step
     const canMoveToNextStep = (step) => {
-        if (decisionStatus === 'Finalized' || decisionStatus === 'Confirm') {
+        if (decisionStatus === 'Finalized' || decisionStatus === 'Confirmed' || decisionStatus === 'Submitted') {
             return true;
         } else if (decisionStatus === 'Draft') {
             if (step === 1 && !isCriteriaSaved) return false;
@@ -155,13 +152,12 @@ const ViewDecision = () => {
         }
     };
 
-    //////////////////////////////////////////////////////////////////////////// Submit ////////////////////////////////////////////////////////////////////////////
-
-    const handleSubmit = async () => {
+    //////////////////////////////////////////////////////////////////////////// Confirm ////////////////////////////////////////////////////////////////////////////
+    const handleConfirm = async () => {
         try {
             const updatedDecision = {
                 decisionName: viewDecision.decisionName,
-                decisionStatus: 'Confirm',
+                decisionStatus: 'Confirmed',
                 createBy: localStorage.getItem('userId')
             };
             await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
@@ -173,6 +169,41 @@ const ViewDecision = () => {
         setDecisionStatus('Confirm')
         showSuccessMessage('Confirm successfully ');
     };
+    const handleReject = async () => {
+        try {
+            const updatedDecision = {
+                decisionName: viewDecision.decisionName,
+                decisionStatus: 'Rejected',
+                createBy: localStorage.getItem('userId')
+            };
+            await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
+        } catch (error) {
+            console.error("Error updating decision:", error);
+            showErrorMessage("Error occurred updating decision info. Please try again.");
+        }
+        setViewDecision({ status: 'Rejected' })
+        setDecisionStatus('Rejected')
+        showSuccessMessage('Rejected successfully ');
+    };
+    //////////////////////////////////////////////////////////////////////////// Finalized ////////////////////////////////////////////////////////////////////////////
+
+    const handleFinalized = async () => {
+        try {
+            const updatedDecision = {
+                decisionName: viewDecision.decisionName,
+                decisionStatus: 'Finalized',
+                createBy: localStorage.getItem('userId')
+            };
+            await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
+        } catch (error) {
+            console.error("Error updating decision:", error);
+            showErrorMessage("Error occurred updating decision info. Please try again.");
+        }
+        setViewDecision({ status: 'Finalized' })
+        setDecisionStatus('Finalized')
+        showSuccessMessage('Finalized successfully ');
+    };
+
     return (
         <div style={{ marginTop: "60px" }}>
             <Box sx={{ marginTop: 4, padding: 2 }}>
@@ -183,9 +214,24 @@ const ViewDecision = () => {
                     View Ranking Decision
                 </Typography>
                 {/* Box Decision Info */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: 2 }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center', // Căn giữa theo chiều dọc
+                        justifyContent: 'space-between',
+                        gap: 2,
+                        marginTop: 2
+                    }}
+                >
                     {/* Ranking Decision Name */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%' }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            ustifyContent: 'flex-start',
+                            width: '40%'
+                        }}
+                    >
                         <Typography sx={{ marginRight: 1 }}>Ranking Decision Name:</Typography>
                         <TextField
                             variant="outlined"
@@ -200,44 +246,92 @@ const ViewDecision = () => {
                     </Box>
 
                     {/* Status */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-end' }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-end',
+                            width: '20%'
+                        }}
+                    >
                         <Typography sx={{ marginRight: 1 }}>Status:</Typography>
                         <TextField
                             variant="outlined"
-                            fullWidth
                             value={viewDecision.status}
                             disabled
-                            sx={{ width: '60%' }}
+                            sx={{
+                                width: '60%',
+                            }}
                             InputProps={{
                                 sx: { height: '30px' }
                             }}
                         />
                     </Box>
 
-                    {/* Submit */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-start ' }}>
-                        {isCriteriaSaved && isTitleSaved && isTaskSaved && (
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleSubmit}
-                                sx={{
-                                    visibility: decisionStatus === 'Finalized' ? 'visible' : 'hidden',
-                                }}
-                            >
-                                Confirm
-                            </Button>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-end',
+                            gap: 2,
+                            width: '40%' // Phần dành cho nút
+                        }}
+                    >
+                        {/* Button hiển thị dựa trên role và decisionStatus */}
+                        {(role === 'MANAGER' || role === 'ADMIN') && decisionStatus === 'Submitted' && (
+                            <>
+                                {/* Confirm Button */}
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleConfirm}
+                                    sx={{
+                                        width: '120px', // Chiều rộng cố định
+                                    }}
+                                >
+                                    Confirm
+                                </Button>
+
+                                {/* Reject Button */}
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleReject}
+                                    sx={{
+                                        width: '120px', // Chiều rộng cố định
+                                    }}
+                                >
+                                    Reject
+                                </Button>
+                            </>
+                        )}
+
+                        {role === 'ADMIN' && decisionStatus === 'Confirmed' && (
+                            <>
+                                {/* Finalized Button */}
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleFinalized}
+                                    sx={{
+                                        width: '120px', // Chiều rộng cố định
+                                    }}
+                                >
+                                    Finalized
+                                </Button>
+                            </>
                         )}
                     </Box>
 
                 </Box>
+
 
                 {/* Stepper */}
                 <Box sx={{ width: '100%', marginTop: 2 }}>
                     <Stepper
                         activeStep={activeStep}
                         alternativeLabel={true}
-                        nonLinear={['Finalized', 'Confirm'].includes(decisionStatus)}
+                        nonLinear={['Finalized', 'Confirmed', 'Submitted'].includes(decisionStatus)}
                     >
                         {steps.map((label, index) => (
                             <Step key={label} completed={completed[index]}>

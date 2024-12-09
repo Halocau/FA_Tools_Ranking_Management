@@ -276,14 +276,14 @@ const RankingDecision = () => {
         { field: "dicisionname", headerName: "Ranking Decision Name", width: 350 },
         { field: "finalizedAt", headerName: "Finalized At", width: 200 },
         { field: "finalizedBy", headerName: "Finalized By", width: 180 },
-        { field: "status", headerName: "Status", width: 150 },
+        { field: "status", headerName: "Status", width: 130 },
         {
             field: "action",
             headerName: "Action",
-            width: 200,
+            width: 240,
             renderCell: (params) => (
                 <>
-                    {(params.row.status === 'Finalized' || params.row.status === 'Confirm') && (
+                    {(params.row.status !== 'Draft') && (
                         <Button
                             variant="outlined"
                             color="gray"
