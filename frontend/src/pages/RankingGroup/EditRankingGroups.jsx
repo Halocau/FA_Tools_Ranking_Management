@@ -81,12 +81,12 @@ const EditRankingGroup = () => {
             setNewGroupName(groupData.groupName || "");
             setOriginalDecisionName(groupData.currentRankingDecision || "Decision Name");
             setselectedCurrentDecision(groupData.currentRankingDecision || "");
-            setRankingDecisions(groupData.rankingDecisions || []);
         } catch (error) {
             console.error("Error fetching group:", error);
         }
     };
 
+    console.log("Rows:", rows);
     //// Fetch Ranking Group on id change
     useEffect(() => {
         RankingGroupEdit();

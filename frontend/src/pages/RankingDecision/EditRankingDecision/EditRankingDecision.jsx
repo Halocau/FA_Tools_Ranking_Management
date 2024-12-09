@@ -210,9 +210,7 @@ const EditDecision = () => {
     const handleSubmit = async () => {
         try {
             const updatedDecision = {
-                decisionName: editDecision.decisionName,
-                decisionStatus: 'Finalized',
-                createBy: localStorage.getItem('userId')
+                decisionStatus: 'Submitted',
             };
             await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
         } catch (error) {
@@ -278,7 +276,7 @@ const EditDecision = () => {
                                     visibility: decisionStatus === 'Draft' ? 'visible' : 'hidden',
                                 }}
                             >
-                                Finalized
+                                Submit
                             </Button>
                         )}
                     </Box>

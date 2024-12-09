@@ -49,7 +49,9 @@ const CriteriaConfiguration = React.lazy(() =>
 const ProtectedRoutes = React.lazy(() =>
   import("./components/Protected/ProtectedRoute")
 );
-
+const ViewRankingDecision = React.lazy(() =>
+  import("./pages/RankingDecision/ViewRankingDecision/ViewRankingDecision")
+);
 const LayoutWrapper = ({ children }) => (
   <>
     <Row>
@@ -74,7 +76,7 @@ function AppRoutes() {
       {/* Trang Login */}
       <Route path="/" element={<LoginPage />} />
 
-      {/* Trang chính (HomePage) */}
+      {/* HomePage */}
       <Route
         path="/homepage"
         element={
@@ -86,7 +88,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Đăng ký */}
+      {/* Register */}
       <Route
         path="/register"
         element={
@@ -96,7 +98,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Quên mật khẩu */}
+      {/*Forgetpassword  */}
       <Route
         path="/forgetpassword"
         element={
@@ -106,7 +108,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Quản lý nhóm xếp hạng */}
+      {/*Ranking Group*/}
       <Route
         path="/ranking-group"
         element={
@@ -144,7 +146,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Quản lý quyết định xếp hạng */}
+      {/*Ranking Decision*/}
       <Route
         path="/ranking-decision"
         element={
@@ -170,6 +172,18 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/ranking-decision/view/:id"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoutes>
+              <LayoutWrapper>
+                <ViewRankingDecision />
+              </LayoutWrapper>
+            </ProtectedRoutes>
+          </Suspense>
+        }
+      />
+      <Route
         path="/ranking-decision/criteria/configuration"
         element={
           <Suspense fallback={<Loading />}>
@@ -182,7 +196,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Quản lý tác vụ */}
+      {/*Task Management*/}
       <Route
         path="/task-management"
         element={
@@ -196,7 +210,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Quản lý tiêu chí */}
+      {/*Criteria Management*/}
       <Route
         path="/criteria-management"
         element={
@@ -222,7 +236,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Các trang lỗi */}
+      {/*Page Error*/}
       <Route
         path="/403"
         element={
