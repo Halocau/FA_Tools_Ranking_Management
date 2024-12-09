@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class ApplyCriteriaResponse {
-    private String cirteriaName;
+    private String criteriaName;
     private String optionName;
     private Integer score;
     private Float weight;

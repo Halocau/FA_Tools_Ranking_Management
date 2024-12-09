@@ -164,7 +164,7 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
                 String uniqueKey = criteria.getCriteriaName() + "-" + option.getOptionName();
                 if (!criteriaSet.contains(uniqueKey)) {
                     ApplyCriteriaResponse applyCriteriaResponse = new ApplyCriteriaResponse();
-                    applyCriteriaResponse.setCirteriaName(criteria.getCriteriaName());
+                    applyCriteriaResponse.setCriteriaName(criteria.getCriteriaName());
                     applyCriteriaResponse.setOptionName(option.getOptionName());
                     applyCriteriaResponse.setScore(option.getScore());
                     applyCriteriaResponse.setWeight(decisionCriteria.getWeight());
@@ -293,7 +293,7 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
                             + employee.getRankingDecisionId() + " and criteria ID: " + empCriteria.getCriteriaId()));
 
             ApplyCriteriaResponse applyCriteriaResponse = new ApplyCriteriaResponse();
-            applyCriteriaResponse.setCirteriaName(criteria.getCriteriaName());
+            applyCriteriaResponse.setCriteriaName(criteria.getCriteriaName());
             applyCriteriaResponse.setOptionName(option.getOptionName());
             applyCriteriaResponse.setScore(option.getScore());
             applyCriteriaResponse.setWeight(decisionCriteria.getWeight());

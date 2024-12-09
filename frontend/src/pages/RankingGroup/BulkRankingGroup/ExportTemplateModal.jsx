@@ -180,9 +180,11 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
         return {
           employeeId: employee.employeeId,
           employeeName: employee.employeeName,
+          currentRankingDecision: employee.currentRankingDecision,
+          currentRank: employee.currentRank,
+          assessmentRank: employee.assessmentRank,
           ...criteriaColumns,
           totalScore: employee.totalScore,
-          assessmentRank: employee.assessmentRank,
         };
       });
 
