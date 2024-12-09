@@ -9,12 +9,12 @@ import org.hibernate.validator.constraints.Length;
 
 @Data
 public class CreateRankingDecision {
-
-//    private Integer decisionCloneId;
     @NotBlank
     @Length(max = 100)
     @RankingDecisionNameNotExits
     private String decisionName;
+
+    private Integer decisionToCloneId;//Id RankingDecison Clone
 
     @NotNull
     private Integer createdBy;

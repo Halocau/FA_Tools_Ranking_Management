@@ -94,7 +94,7 @@ public class RankingDecisionService implements IRankingDecisionService {
         // Check if the ranking decision exists before deleting
         RankingDecision existingDecision = iRankingDecisionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Ranking Decision not found with id: " + id));
- 
+
         iDecisionCriteriaRepository.deleteByDecisionId(id);
 
         // Xóa các DecisionTasks liên quan đến RankingDecision
@@ -124,16 +124,113 @@ public class RankingDecisionService implements IRankingDecisionService {
     /// Form
     @Override
     @Transactional
-    public void createRankingDecision(CreateRankingDecision form) {
-        // Create a new ranking decision entity from the form data
-        RankingDecision decision = RankingDecision.builder()
-                .decisionName(form.getDecisionName())
-                .createdBy(form.getCreatedBy())
-                .status("Draft")// Set default status
-                .build();
-        //Save
-        iRankingDecisionRepository.save(decision);
+    public RankingDecision createRankingDecision(CreateRankingDecision form) {
+        if (form.getDecisionToCloneId() != null) {
+            /// clone
+            // Find the original RankingDecision
+            RankingDecision existingDecision = iRankingDecisionRepository.findById(form.getDecisionToCloneId())
+                    .orElseThrow(() -> new RuntimeException("Ranking Decision not found!"));
+
+            // Clone the RankingDecision
+            RankingDecision cloneDecision = RankingDecision.builder()
+                    .decisionName(form.getDecisionName())
+                    .createdBy(form.getCreatedBy())
+                    .status("Draft") // Default status
+                    .build();
+            cloneDecision = iRankingDecisionRepository.save(cloneDecision);  // Save cloneDecision to generate its ID
+
+            // Clone Foreign Key 1-N or N-N relationships
+            cloneRankingGroups(existingDecision, cloneDecision, form.getCreatedBy());
+            cloneDecisionCriteria(existingDecision, cloneDecision);
+            cloneDecisionTasks(existingDecision, cloneDecision);
+            cloneRankingTitles(existingDecision, cloneDecision);
+
+            // Save and return the cloned decision with all associated entities
+            return iRankingDecisionRepository.save(cloneDecision); // Ensure all entities are saved at once
+        } else {
+            /// add new
+            // Create a new ranking decision entity from the form data
+            RankingDecision decision = RankingDecision.builder()
+                    .decisionName(form.getDecisionName())
+                    .createdBy(form.getCreatedBy())
+                    .status("Draft")// Set default status
+                    .build();
+            //Save
+            return iRankingDecisionRepository.save(decision);
+        }
+
     }
+
+    private void cloneRankingGroups(RankingDecision existingDecision, RankingDecision cloneDecision, Integer createdBy) {
+        if (existingDecision.getRankingGroups() != null) {
+            List<RankingGroup> clonedGroups = existingDecision.getRankingGroups().stream()
+                    .map(group -> {
+                        RankingGroup newGroup = new RankingGroup();
+                        newGroup.setGroupName(group.getGroupName());
+                        newGroup.setNumEmployees(group.getNumEmployees());
+                        newGroup.setCurrent_ranking_decision(cloneDecision.getDecisionId());
+                        newGroup.setCreatedBy(createdBy);
+                        return newGroup;
+                    }).collect(Collectors.toList());
+
+            // Save all ranking groups in one go
+            iRankingGroupRepository.saveAll(clonedGroups);
+            cloneDecision.setRankingGroups(clonedGroups);
+        }
+    }
+
+    private void cloneDecisionCriteria(RankingDecision existingDecision, RankingDecision cloneDecision) {
+        if (existingDecision.getDecisionCriteria() != null) {
+            List<DecisionCriteria> clonedCriteriaList = existingDecision.getDecisionCriteria().stream()
+                    .map(criteria -> {
+                        DecisionCriteria newCriteria = new DecisionCriteria();
+                        newCriteria.setDecisionId(cloneDecision.getDecisionId());
+                        newCriteria.setCriteriaId(criteria.getCriteriaId());
+                        newCriteria.setWeight(criteria.getWeight());
+                        newCriteria.setCreatedAt(LocalDateTime.now());
+                        return newCriteria;
+                    }).collect(Collectors.toList());
+
+            // Save all decision criteria in one go
+            iDecisionCriteriaRepository.saveAll(clonedCriteriaList);
+            cloneDecision.setDecisionCriteria(clonedCriteriaList);
+        }
+    }
+
+    private void cloneDecisionTasks(RankingDecision existingDecision, RankingDecision cloneDecision) {
+        if (existingDecision.getDecisionTasks() != null) {
+            List<DecisionTasks> clonedTasks = existingDecision.getDecisionTasks().stream()
+                    .map(task -> {
+                        DecisionTasks newTask = new DecisionTasks();
+                        newTask.setDecisionId(cloneDecision.getDecisionId());
+                        newTask.setTaskId(task.getTaskId());
+                        newTask.setCreatedAt(LocalDate.now());
+                        return newTask;
+                    }).collect(Collectors.toList());
+
+            // Save all decision tasks in one go
+            iDecisionTasksRepository.saveAll(clonedTasks);
+            cloneDecision.setDecisionTasks(clonedTasks);
+        }
+    }
+
+    private void cloneRankingTitles(RankingDecision existingDecision, RankingDecision cloneDecision) {
+        if (existingDecision.getRankingTitles() != null) {
+            List<RankingTitle> clonedTitles = existingDecision.getRankingTitles().stream()
+                    .map(title -> {
+                        RankingTitle newTitle = new RankingTitle();
+                        newTitle.setDecisionId(cloneDecision.getDecisionId());
+                        newTitle.setTitleName(title.getTitleName());
+                        newTitle.setTotalScore(title.getTotalScore());
+                        return newTitle;
+                    }).collect(Collectors.toList());
+
+            // Save all ranking titles in one go
+            iRankingTitleRepository.saveAll(clonedTitles);
+            cloneDecision.setRankingTitles(clonedTitles);
+        }
+    }
+
 
 //    @Override
 //    @Transactional
@@ -223,104 +320,6 @@ public class RankingDecisionService implements IRankingDecisionService {
 //        Integer maxId = iEmployeeRepository.findMaxId(); // Lấy ID lớn nhất
 //        return (maxId == null ? 1 : maxId + 1); // Tạo ID mới không bị trùng
 //    }
-
-    @Override
-    @Transactional
-    public RankingDecision cloneRankingDecision(AddCloneRankingDecisionRequest form) {
-        // Find the original RankingDecision
-        RankingDecision existingDecision = iRankingDecisionRepository.findById(form.getDecisionToCloneId())
-                .orElseThrow(() -> new RuntimeException("Ranking Decision not found!"));
-
-        // Clone the RankingDecision
-        RankingDecision cloneDecision = RankingDecision.builder()
-                .decisionName(form.getDecisionName())
-                .createdBy(form.getCreatedBy())
-                .status("Draft") // Default status
-                .build();
-        cloneDecision = iRankingDecisionRepository.save(cloneDecision);  // Save cloneDecision to generate its ID
-
-        // Clone Foreign Key 1-N or N-N relationships
-        cloneRankingGroups(existingDecision, cloneDecision, form.getCreatedBy());
-        cloneDecisionCriteria(existingDecision, cloneDecision);
-        cloneDecisionTasks(existingDecision, cloneDecision);
-        cloneRankingTitles(existingDecision, cloneDecision);
-
-        // Save and return the cloned decision with all associated entities
-        return iRankingDecisionRepository.save(cloneDecision); // Ensure all entities are saved at once
-    }
-
-
-
-    private void cloneRankingGroups(RankingDecision existingDecision, RankingDecision cloneDecision, Integer createdBy) {
-        if (existingDecision.getRankingGroups() != null) {
-            List<RankingGroup> clonedGroups = existingDecision.getRankingGroups().stream()
-                    .map(group -> {
-                        RankingGroup newGroup = new RankingGroup();
-                        newGroup.setGroupName(group.getGroupName());
-                        newGroup.setNumEmployees(group.getNumEmployees());
-                        newGroup.setCurrent_ranking_decision(cloneDecision.getDecisionId());
-                        newGroup.setCreatedBy(createdBy);
-                        return newGroup;
-                    }).collect(Collectors.toList());
-
-            // Save all ranking groups in one go
-            iRankingGroupRepository.saveAll(clonedGroups);
-            cloneDecision.setRankingGroups(clonedGroups);
-        }
-    }
-
-    private void cloneDecisionCriteria(RankingDecision existingDecision, RankingDecision cloneDecision) {
-        if (existingDecision.getDecisionCriteria() != null) {
-            List<DecisionCriteria> clonedCriteriaList = existingDecision.getDecisionCriteria().stream()
-                    .map(criteria -> {
-                        DecisionCriteria newCriteria = new DecisionCriteria();
-                        newCriteria.setDecisionId(cloneDecision.getDecisionId());
-                        newCriteria.setCriteriaId(criteria.getCriteriaId());
-                        newCriteria.setWeight(criteria.getWeight());
-                        newCriteria.setCreatedAt(LocalDateTime.now());
-                        return newCriteria;
-                    }).collect(Collectors.toList());
-
-            // Save all decision criteria in one go
-            iDecisionCriteriaRepository.saveAll(clonedCriteriaList);
-            cloneDecision.setDecisionCriteria(clonedCriteriaList);
-        }
-    }
-
-    private void cloneDecisionTasks(RankingDecision existingDecision, RankingDecision cloneDecision) {
-        if (existingDecision.getDecisionTasks() != null) {
-            List<DecisionTasks> clonedTasks = existingDecision.getDecisionTasks().stream()
-                    .map(task -> {
-                        DecisionTasks newTask = new DecisionTasks();
-                        newTask.setDecisionId(cloneDecision.getDecisionId());
-                        newTask.setTaskId(task.getTaskId());
-                        newTask.setCreatedAt(LocalDate.now());
-                        return newTask;
-                    }).collect(Collectors.toList());
-
-            // Save all decision tasks in one go
-            iDecisionTasksRepository.saveAll(clonedTasks);
-            cloneDecision.setDecisionTasks(clonedTasks);
-        }
-    }
-
-    private void cloneRankingTitles(RankingDecision existingDecision, RankingDecision cloneDecision) {
-        if (existingDecision.getRankingTitles() != null) {
-            List<RankingTitle> clonedTitles = existingDecision.getRankingTitles().stream()
-                    .map(title -> {
-                        RankingTitle newTitle = new RankingTitle();
-                        newTitle.setDecisionId(cloneDecision.getDecisionId());
-                        newTitle.setTitleName(title.getTitleName());
-                        newTitle.setTotalScore(title.getTotalScore());
-                        return newTitle;
-                    }).collect(Collectors.toList());
-
-            // Save all ranking titles in one go
-            iRankingTitleRepository.saveAll(clonedTitles);
-            cloneDecision.setRankingTitles(clonedTitles);
-        }
-    }
-
 
     @Override
     @Transactional
