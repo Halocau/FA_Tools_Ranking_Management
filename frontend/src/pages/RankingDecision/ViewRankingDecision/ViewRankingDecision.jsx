@@ -18,8 +18,8 @@ import TitleConfiguration from "../ViewRankingDecision/TitleConfiguration.jsx";
 import TaskandPriceConfiguration from "../ViewRankingDecision/TaskandPriceConfiguration.jsx";
 
 const ViewDecision = () => {
-    const role = localStorage.getItem('userRole')
-    console.log(role)
+    const role = localStorage.getItem('userRole');
+
     // const navigate = useNavigate(); // To navigate between pages
     const { id } = useParams(); // Get the ID from the URL
     // Edit

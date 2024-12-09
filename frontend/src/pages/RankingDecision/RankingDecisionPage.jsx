@@ -165,7 +165,7 @@ const RankingDecision = () => {
                 };
                 await RankingDecisionAPI.addRankingDecision(newDecision);
             }
-            // setRankingDecisions([...rankingDecisions, newDecision]);
+
             setTotalElements(totalElements + 1);
             if (rankingDecisions.length < pageSize) {
                 fetchAllRankingDecisions();
