@@ -216,8 +216,8 @@ const EditDecision = () => {
             console.error("Error updating decision:", error);
             showErrorMessage("Error occurred updating decision info. Please try again.");
         }
-        setEditDecision({ status: 'Finalized' })
-        setDecisionStatus('Finalized')
+        setEditDecision({ status: 'Submited' })
+        setDecisionStatus('Submited')
         showSuccessMessage('Submit successfully ');
     };
     return (
@@ -275,7 +275,7 @@ const EditDecision = () => {
                                     visibility: decisionStatus === 'Draft' ? 'visible' : 'hidden',
                                 }}
                             >
-                                Finalized
+                                Submit
                             </Button>
                         )}
                     </Box>
