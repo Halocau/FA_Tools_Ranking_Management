@@ -387,7 +387,9 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                             key={`wh-${index}`}
                                             style={{
                                                 backgroundColor: '#e0e0e0',
-                                                minWidth: 120, // Cố định chiều rộng cột này
+                                                width: '120px',
+                                                maxWidth: '120px',
+                                                minWidth: '120px',
                                                 zIndex: 1,
                                                 boxSizing: 'border-box',
                                             }}

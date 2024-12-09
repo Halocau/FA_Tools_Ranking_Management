@@ -34,8 +34,6 @@ const ViewDecision = () => {
     const [isTaskSaved, setIsTaskSaved] = useState(false);
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
-    // Validation error message
-    const [validationMessage, setValidationMessage] = useState("");
 
     //////////////////////////////////////////////////////////////////////////// Edit ////////////////////////////////////////////////////////////////////////////
     // Ranking Decision Edit
@@ -75,7 +73,7 @@ const ViewDecision = () => {
 
     // The function checks to see if it is possible to move to another step
     const canMoveToNextStep = (step) => {
-        if (decisionStatus === 'Finalized' || decisionStatus === 'Confirmed' || decisionStatus === 'Submitted') {
+        if (decisionStatus === 'Submitted' || decisionStatus === 'Confirmed' || decisionStatus === 'Finalized') {
             return true;
         } else if (decisionStatus === 'Draft') {
             if (step === 1 && !isCriteriaSaved) return false;
@@ -268,12 +266,11 @@ const ViewDecision = () => {
                         sx={{
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'flex-end',
                             gap: 2,
-                            width: '40%' // Phần dành cho nút
+                            width: '40%'
                         }}
                     >
-                        {/* Button hiển thị dựa trên role và decisionStatus */}
+                        {/* Button role và decisionStatus */}
                         {(role === 'MANAGER' || role === 'ADMIN') && decisionStatus === 'Submitted' && (
                             <>
                                 {/* Confirm Button */}
@@ -282,7 +279,7 @@ const ViewDecision = () => {
                                     color="primary"
                                     onClick={handleConfirm}
                                     sx={{
-                                        width: '120px', // Chiều rộng cố định
+                                        width: '120px',
                                     }}
                                 >
                                     Confirm
@@ -294,14 +291,13 @@ const ViewDecision = () => {
                                     color="primary"
                                     onClick={handleReject}
                                     sx={{
-                                        width: '120px', // Chiều rộng cố định
+                                        width: '120px',
                                     }}
                                 >
                                     Reject
                                 </Button>
                             </>
                         )}
-
                         {role === 'ADMIN' && decisionStatus === 'Confirmed' && (
                             <>
                                 {/* Finalized Button */}
@@ -310,10 +306,21 @@ const ViewDecision = () => {
                                     color="primary"
                                     onClick={handleFinalized}
                                     sx={{
-                                        width: '120px', // Chiều rộng cố định
+                                        width: '120px',
                                     }}
                                 >
                                     Finalized
+                                </Button>
+                                {/* Reject Button */}
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleReject}
+                                    sx={{
+                                        width: '120px',
+                                    }}
+                                >
+                                    Reject
                                 </Button>
                             </>
                         )}

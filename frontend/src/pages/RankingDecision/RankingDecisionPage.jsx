@@ -283,19 +283,17 @@ const RankingDecision = () => {
             width: 240,
             renderCell: (params) => (
                 <>
-                    {(params.row.status !== 'Draft') && (
-                        <Button
-                            variant="outlined"
-                            color="gray"
-                            sx={{ marginLeft: 1 }}
-                            onClick={() => {
-                                console.log(`Viewing decision with ID: ${params.row.id}`);
-                                navigate(`/ranking-decision/view/${params.row.id}`);
-                            }}
-                        >
-                            <FaEye />
-                        </Button>
-                    )}
+                    <Button
+                        variant="outlined"
+                        color="gray"
+                        sx={{ marginLeft: 1 }}
+                        onClick={() => {
+                            console.log(`Viewing decision with ID: ${params.row.id}`);
+                            navigate(`/ranking-decision/view/${params.row.id}`);
+                        }}
+                    >
+                        <FaEye />
+                    </Button>
                     {(params.row.status !== 'Confirm') && (
                         <Button
                             variant="outlined"

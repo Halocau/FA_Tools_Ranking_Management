@@ -112,7 +112,7 @@ const EditDecision = () => {
         2: isTaskSaved,
     });
     useEffect(() => {
-        if (['Finalized', 'Submitted', 'Confirm'].includes(decisionStatus)) {
+        if (['Submitted', 'Confirmed', 'Finalized'].includes(decisionStatus)) {
             setIsCriteriaSaved(true);
             setIsTitleSaved(true);
             setIsTaskSaved(true);
@@ -125,7 +125,7 @@ const EditDecision = () => {
     }, [decisionStatus]);
     // The function checks to see if it is possible to move to another step
     const canMoveToNextStep = (step) => {
-        if (decisionStatus === 'Finalized') {
+        if (decisionStatus === 'Submitted' || decisionStatus === 'Confirmed' || decisionStatus === 'Finalized') {
             return true;
         } else if (decisionStatus === 'Draft') {
             if (step === 1 && !isCriteriaSaved) return false;
@@ -154,7 +154,7 @@ const EditDecision = () => {
                 setIsTaskSaved(true);
                 setCompleted((prev) => ({ ...prev, 2: true }));
             }
-        } else if (decisionStatus === 'Finalized') {
+        } else if (decisionStatus === 'Submitted' || decisionStatus === 'Confirmed' || decisionStatus === 'Finalized') {
             setIsCriteriaSaved(true);
             setIsTitleSaved(true);
             setIsTaskSaved(true);
@@ -288,7 +288,7 @@ const EditDecision = () => {
                     <Stepper
                         activeStep={activeStep}
                         alternativeLabel={true}
-                        nonLinear={['Finalized', 'Submitted', 'Confirm'].includes(decisionStatus)}                    >
+                        nonLinear={['Submitted', 'Confirmed', 'Finalized'].includes(decisionStatus)}                    >
                         {steps.map((label, index) => (
                             <Step key={label} completed={completed[index]}>
                                 <StepButton

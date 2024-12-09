@@ -12,7 +12,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 // API
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 
-const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage, activeStep }) => {
+const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
     // Data
     const { id } = useParams(); // Get the ID from the URL
     const [originalCriteria, setOriginalCriteria] = useState([]);  // Lưu dữ liệu gốc
@@ -28,21 +28,15 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     const getCriteriaConfiguration = async () => {
         try {
             const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
-            setOriginalCriteria((prevCriteria) => {
-                if (JSON.stringify(prevCriteria) !== JSON.stringify(response)) {
-                    return response;
-                }
-                return prevCriteria;
-            });
+            setOriginalCriteria(response)
         } catch (error) {
             console.error("Error fetching criteria:", error);
         }
     };
 
     useEffect(() => {
-        if (!id) return; // Bỏ qua nếu `id` không xác định
         getCriteriaConfiguration();
-    }, [activeStep]);
+    }, [id]);
 
     //////////////////////////////////// Xử Lý backend /////////////////////////////////
     const updateDecisionCriteria = async (form) => {
