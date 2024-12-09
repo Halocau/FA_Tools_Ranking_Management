@@ -61,7 +61,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             console.error("Error deleting decision criteria:", error);
         }
     }
-    const syncDecisionCriteria = (rows, originalCriteria) => {
+    const syncDecisionCriteria = async (rows, originalCriteria) => {
         try {
             // Create a map of original criteria for quick lookup
             const originalCriteriaMap = new Map(
@@ -157,14 +157,14 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
         return totalWeight;
     };
     // End
-    const handleSaveChanges = () => {
+    const handleSaveChanges = async () => {
         const checkWeight = rows.some((row) => row.weight <= 0);
         if (checkWeight) {
             showErrorMessage('Weight must be greater than 0');
         } else {
             const totalWeight = calculateTotalWeight();
             if (totalWeight === 100) {
-                syncDecisionCriteria(rows, originalCriteria);
+                await syncDecisionCriteria(rows, originalCriteria);
                 showSuccessMessage("Criteria Configuration saved successfully!");
                 getCriteriaList();
                 goToNextStep();

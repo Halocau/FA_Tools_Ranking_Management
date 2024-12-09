@@ -45,7 +45,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
     useEffect(() => {
         getListTask();
-    }, [id]);
+    }, []);
 
     // Load data getTaskConfiguration
     const getTaskConfiguration = async () => {
@@ -69,7 +69,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     useEffect(() => {
         getTaskConfiguration()
         getTitleConfiguration();
-    }, [id]);
+    }, []);
 
     //////////////////////////////////// Xử Lý backend /////////////////////////////////
     const upsertDecisionTask = async (data) => {
@@ -112,78 +112,84 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
 
     const synsDecisionTask = async (rows, originalTask) => {
-        const originalTaskMap = new Map(originalTask.map(task => [task.taskId, task]));
-        const rowsMap = new Map(rows.map(task => [task.taskId, task]));
+        try {
+            const originalTaskMap = new Map(originalTask.map(task => [task.taskId, task]));
+            const rowsMap = new Map(rows.map(task => [task.taskId, task]));
 
-        // Task-level operations
-        for (const [taskId, original] of originalTaskMap) {
-            if (!rowsMap.has(taskId)) {
-                // Task deleted
-                await deleteDecisionTask(original.decisionId, original.taskId);
-            }
-        }
-
-        for (const [taskId, current] of rowsMap) {
-            if (!originalTaskMap.has(taskId)) {
-                // Task added
-                await upsertDecisionTask({ decisionId: current.decisionId, taskId: current.taskId });
-            } else {
-                // Task exists, check for updates
-                const original = originalTaskMap.get(taskId);
-                if (original.taskName !== current.taskName) {
-                    await upsertDecisionTask({ decisionId: current.decisionId, taskId: current.taskId });
+            // Task-level operations
+            for (const [taskId, original] of originalTaskMap) {
+                if (!rowsMap.has(taskId)) {
+                    // Task deleted
+                    await deleteDecisionTask(original.decisionId, original.taskId);
                 }
             }
-        }
 
-        // Task Wage-level operations
-        for (const [taskId, current] of rowsMap) {
-            const currentWages = new Map(current.taskWages.map(wage => [wage.rankingTitleId, wage]));
-            const originalWages = originalTaskMap.has(taskId)
-                ? new Map(originalTaskMap.get(taskId).taskWages.map(wage => [wage.rankingTitleId, wage]))
-                : new Map();
-
-            const upsertWages = [];
-            for (const [rankingTitleId, currentWage] of currentWages) {
-                if (!originalWages.has(rankingTitleId)) {
-                    // New wage added
-                    upsertWages.push({
-                        rankingTitleId: currentWage.rankingTitleId,
-                        taskId: taskId,
-                        workingHourWage: Number(currentWage.workingHourWage),
-                        overtimeWage: Number(currentWage.overtimeWage),
-                    });
+            for (const [taskId, current] of rowsMap) {
+                if (!originalTaskMap.has(taskId)) {
+                    // Task added
+                    await upsertDecisionTask({ decisionId: current.decisionId, taskId: current.taskId });
                 } else {
-                    const originalWage = originalWages.get(rankingTitleId);
-                    if (
-                        originalWage.workingHourWage != currentWage.workingHourWage ||
-                        originalWage.overtimeWage != currentWage.overtimeWage
-                    ) {
-                        // Wage updated
+                    // Task exists, check for updates
+                    const original = originalTaskMap.get(taskId);
+                    if (original.taskName !== current.taskName) {
+                        await upsertDecisionTask({ decisionId: current.decisionId, taskId: current.taskId });
+                    }
+                }
+            }
+
+            // Task Wage-level operations
+            for (const [taskId, current] of rowsMap) {
+                const currentWages = new Map(current.taskWages.map(wage => [wage.rankingTitleId, wage]));
+                const originalWages = originalTaskMap.has(taskId)
+                    ? new Map(originalTaskMap.get(taskId).taskWages.map(wage => [wage.rankingTitleId, wage]))
+                    : new Map();
+
+                const upsertWages = [];
+                for (const [rankingTitleId, currentWage] of currentWages) {
+                    if (!originalWages.has(rankingTitleId)) {
+                        // New wage added
                         upsertWages.push({
                             rankingTitleId: currentWage.rankingTitleId,
                             taskId: taskId,
                             workingHourWage: Number(currentWage.workingHourWage),
                             overtimeWage: Number(currentWage.overtimeWage),
                         });
+                    } else {
+                        const originalWage = originalWages.get(rankingTitleId);
+                        if (
+                            originalWage.workingHourWage != currentWage.workingHourWage ||
+                            originalWage.overtimeWage != currentWage.overtimeWage
+                        ) {
+                            // Wage updated
+                            upsertWages.push({
+                                rankingTitleId: currentWage.rankingTitleId,
+                                taskId: taskId,
+                                workingHourWage: Number(currentWage.workingHourWage),
+                                overtimeWage: Number(currentWage.overtimeWage),
+                            });
+                        }
+                    }
+                }
+
+                // Perform batch upsert for task wages
+                if (upsertWages.length > 0) {
+                    await upsertTaskWage(upsertWages);
+                }
+
+                console.log('upsertWages', upsertWages);
+
+                // Handle wage deletions
+                for (const [rankingTitleId] of originalWages) {
+                    if (!currentWages.has(rankingTitleId)) {
+                        await deleteTaskWage(taskId, rankingTitleId);
                     }
                 }
             }
-
-            // Perform batch upsert for task wages
-            if (upsertWages.length > 0) {
-                await upsertTaskWage(upsertWages);
-            }
-
-            console.log('upsertWages', upsertWages);
-
-            // Handle wage deletions
-            for (const [rankingTitleId] of originalWages) {
-                if (!currentWages.has(rankingTitleId)) {
-                    await deleteTaskWage(taskId, rankingTitleId);
-                }
-            }
         }
+        catch (error) {
+            showErrorMessage("Failed to saved data due to some error.");
+        }
+
     }
 
 
@@ -265,8 +271,11 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     };
     // End 
     //////////////////////////////////// Save ///////////////////////////////////////
-    const handleSaveChanges = () => {
-        console.log("TESTTTTTTT!");
+    const handleSaveChanges = async () => {
+        if (rows.length === 0) {
+            showErrorMessage('You need to have at least one task in the table.');
+            return;
+        }
         // Hàm kiểm tra giá trị của từng ô trong hàng
         const isRowValid = (row) => {
             return Object.keys(row).every((key) => {
@@ -291,9 +300,10 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             console.log('Có ô chưa điền dữ liệu');
             return; // Dừng nếu có lỗi
         }
-        synsDecisionTask(rows, originalTask);
+        await synsDecisionTask(rows, originalTask);
         // Hiển thị thông báo thành công và tiếp tục bước tiếp theo
         showSuccessMessage('Task & Price Configuration successfully updated.');
+        getTaskConfiguration();
         goToNextStep({ stayOnCurrentStep: true });
     };
 

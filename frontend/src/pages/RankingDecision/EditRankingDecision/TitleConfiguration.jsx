@@ -294,8 +294,11 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     };
 
     // End 
-    const handleSaveChanges = () => {
+    const handleSaveChanges = async () => {
         // Kiểm tra xem tất cả rankScore đã được tính toán
+        if (rows.length === 0) {
+            return showErrorMessage('You need to have at least one title in the table.');
+        }
         const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
         // console.log("Original Title:", originalTitle);
         // console.log("Rows:", rows);
@@ -303,8 +306,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             showErrorMessage('Tất cả Rank Score phải được tính toán.');
             return; // Dừng lại nếu có lỗi
         }
-        syncDecisionTitle(rows, originalTitle);
-
+        await syncDecisionTitle(rows, originalTitle);
         showSuccessMessage('Title Configuration successfully updated.');
         getTitleConfiguration();
         goToNextStep(); // Chuyển bước tiếp theo
