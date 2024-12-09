@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { FaEdit, FaAngleRight } from "react-icons/fa";
+import { MdDeleteForever } from "react-icons/md";
 
 //Layout
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
@@ -235,16 +237,15 @@ const EditCriteria = () => {
                         variant="outlined"
                         onClick={() => handleOpenEditOptionModal(params.row)}
                     >
-                        <EditIcon />
+                        <FaEdit />
                     </Button>
                     <Button
                         variant="outlined"
                         color="error"
-                        size="small"
                         onClick={() => handleDeleteOption(params.row.id)}
                         sx={{ marginLeft: 1 }}
                     >
-                        <DeleteIcon />
+                        <MdDeleteForever />
                     </Button>
                 </>
             ),
@@ -256,7 +257,7 @@ const EditCriteria = () => {
         <Box sx={{ marginTop: "60px" }}>
             <Slider />
             <Typography variant="h6">
-                <a href="/ranking-decision">Ranking Decision List</a> {'>'} <a href="/criteria-management">Criteria List</a> {'>'} Edit Criteria
+                <a href="/ranking-decision">Ranking Decision List</a> {<FaAngleRight />} <a href="/criteria-management">Criteria List</a> {<FaAngleRight />} Edit Criteria
             </Typography>
 
 
@@ -313,7 +314,7 @@ const EditCriteria = () => {
                 <Button
                     variant="contained"
                     color="primary"
-                    startIcon={<AddIcon />}
+                    // startIcon={<AddIcon />}
                     // sx={{ marginTop: 2 }}
                     onClick={handleOpenAddOptionModal}
                 >
