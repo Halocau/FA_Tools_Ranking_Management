@@ -17,7 +17,7 @@ import TaskWageAPI from '../../../api/TaskWageAPI.js';
 import taskApi from '../../../api/TaskAPI.js';
 
 
-const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
+const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage, activeStep }) => {
     // Data
     const { id } = useParams(); // Get the ID from the URL
     const [originalTask, setOriginalTask] = useState([]);  // Lưu dữ liệu gốc
@@ -45,7 +45,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
     useEffect(() => {
         getListTask();
-    }, [id]);
+    }, [activeStep]);
 
     // Load data getTaskConfiguration
     const getTaskConfiguration = async () => {
@@ -69,7 +69,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     useEffect(() => {
         getTaskConfiguration()
         getTitleConfiguration();
-    }, [id]);
+    }, [activeStep]);
 
     //////////////////////////////////// Xử Lý backend /////////////////////////////////
     const upsertDecisionTask = async (data) => {

@@ -12,7 +12,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 // API
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 
-const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
+const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage, activeStep }) => {
     // Data
     const { id } = useParams(); // Get the ID from the URL
     const [originalCriteria, setOriginalCriteria] = useState([]);  // Lưu dữ liệu gốc
@@ -41,7 +41,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     useEffect(() => {
         if (!id) return; // Bỏ qua nếu `id` không xác định
         getCriteriaConfiguration();
-    }, [id]);
+    }, [activeStep]);
 
     //////////////////////////////////// Xử Lý backend /////////////////////////////////
     const updateDecisionCriteria = async (form) => {

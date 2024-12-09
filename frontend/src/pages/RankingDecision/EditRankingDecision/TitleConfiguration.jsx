@@ -13,7 +13,7 @@ import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 import RankingTitleAPI from '../../../api/RankingTitleAPI.js';
 
-const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
+const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage, activeStep }) => {
     // Data 
     const { id } = useParams(); // Get the ID from the URL
     const [originalTitle, setOriginalTitle] = useState([]);  // Lưu dữ liệu gốc
@@ -51,7 +51,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     useEffect(() => {
         getCriteriaConfiguration()
         getTitleConfiguration();
-    }, [id]);
+    }, [activeStep]);
 
     /////////////////////////////////// Xử Lý backend //////////////////////////////////
     const upsertRankingTitle = async (form) => {
@@ -306,7 +306,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         syncDecisionTitle(rows, originalTitle);
 
         showSuccessMessage('Title Configuration successfully updated.');
-        console.log("Title Configuration successfully updated.”");
+        getTitleConfiguration();
         goToNextStep(); // Chuyển bước tiếp theo
     };
 
