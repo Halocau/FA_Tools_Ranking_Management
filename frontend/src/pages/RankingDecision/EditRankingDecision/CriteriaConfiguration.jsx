@@ -38,6 +38,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             console.error("Error fetching criteria:", error);
         }
     };
+
     useEffect(() => {
         if (!id) return; // Bỏ qua nếu `id` không xác định
         getCriteriaConfiguration();

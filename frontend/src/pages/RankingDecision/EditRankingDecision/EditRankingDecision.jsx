@@ -28,7 +28,7 @@ const EditDecision = () => {
     const [showEditDecisionInfoModal, setShowEditDecisionInfoModal] = useState(false); // Display decision editing modal
     const [newDecisionName, setNewDecisionName] = useState(""); // New decision Name
     // Step
-    const [activeStep, setActiveStep] = useState(2);
+    const [activeStep, setActiveStep] = useState(0);
     const [decisionStatus, setDecisionStatus] = useState('');
     const steps = ['Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'];
     // State saves data for each step
@@ -207,9 +207,7 @@ const EditDecision = () => {
     const handleSubmit = async () => {
         try {
             const updatedDecision = {
-                decisionName: editDecision.decisionName,
-                decisionStatus: 'Finalized',
-                createBy: localStorage.getItem('userId')
+                decisionStatus: 'Submitted',
             };
             await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
         } catch (error) {
@@ -275,7 +273,7 @@ const EditDecision = () => {
                                     visibility: decisionStatus === 'Draft' ? 'visible' : 'hidden',
                                 }}
                             >
-                                Finalized
+                                Submit
                             </Button>
                         )}
                     </Box>
