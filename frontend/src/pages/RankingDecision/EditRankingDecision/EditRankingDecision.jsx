@@ -112,7 +112,7 @@ const EditDecision = () => {
         2: isTaskSaved,
     });
     useEffect(() => {
-        if (decisionStatus === 'Finalized') {
+        if (['Finalized', 'Submitted', 'Confirm'].includes(decisionStatus)) {
             setIsCriteriaSaved(true);
             setIsTitleSaved(true);
             setIsTaskSaved(true);
@@ -135,7 +135,6 @@ const EditDecision = () => {
     };
     // The function handles when the user clicks on a step
     const handleStepChange = (step) => {
-        console.log(step)
         if (step < activeStep || canMoveToNextStep(step)) {
             setActiveStep(step);
         }
@@ -210,9 +209,10 @@ const EditDecision = () => {
     const handleSubmit = async () => {
         try {
             const updatedDecision = {
-                decisionStatus: 'Submitted',
+                decisionId: id,
+                status: 'Submitted'
             };
-            await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
+            await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
         } catch (error) {
             console.error("Error updating decision:", error);
             showErrorMessage("Error occurred updating decision info. Please try again.");
@@ -288,8 +288,7 @@ const EditDecision = () => {
                     <Stepper
                         activeStep={activeStep}
                         alternativeLabel={true}
-                        nonLinear={decisionStatus === 'Finalized' || decisionStatus === 'Submitted' || decisionStatus === 'Confirm'}
-                    >
+                        nonLinear={['Finalized', 'Submitted', 'Confirm'].includes(decisionStatus)}                    >
                         {steps.map((label, index) => (
                             <Step key={label} completed={completed[index]}>
                                 <StepButton
@@ -341,7 +340,6 @@ const EditDecision = () => {
                                     <InputAdornment position="end">
                                         <IconButton
                                             onClick={() => {
-                                                console.log(newDecisionName)
                                                 setNewDecisionName('');
                                                 setValidationMessage("");
                                             }}

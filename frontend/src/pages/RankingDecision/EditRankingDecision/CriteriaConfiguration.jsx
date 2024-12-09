@@ -129,7 +129,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     // Load list criteria
     useEffect(() => {
         getCriteriaList();
-    }, []);
+    }, [id]);
     const handleAddCriteria = async () => {
         const addedCriteria = listcriteria.find(
             (criteria) => criteria.criteriaId === selectedCriteria.value

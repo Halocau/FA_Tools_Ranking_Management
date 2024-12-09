@@ -156,11 +156,10 @@ const ViewDecision = () => {
     const handleConfirm = async () => {
         try {
             const updatedDecision = {
-                decisionName: viewDecision.decisionName,
-                decisionStatus: 'Confirmed',
-                createBy: localStorage.getItem('userId')
+                decisionId: id,
+                status: 'Confirmed'
             };
-            await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
+            await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
         } catch (error) {
             console.error("Error updating decision:", error);
             showErrorMessage("Error occurred updating decision info. Please try again.");
@@ -172,17 +171,16 @@ const ViewDecision = () => {
     const handleReject = async () => {
         try {
             const updatedDecision = {
-                decisionName: viewDecision.decisionName,
-                decisionStatus: 'Rejected',
-                createBy: localStorage.getItem('userId')
+                decisionId: id,
+                status: 'Draft'
             };
-            await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
+            await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
         } catch (error) {
             console.error("Error updating decision:", error);
             showErrorMessage("Error occurred updating decision info. Please try again.");
         }
-        setViewDecision({ status: 'Rejected' })
-        setDecisionStatus('Rejected')
+        setViewDecision({ status: 'Draft' })
+        setDecisionStatus('Draft')
         showSuccessMessage('Rejected successfully ');
     };
     //////////////////////////////////////////////////////////////////////////// Finalized ////////////////////////////////////////////////////////////////////////////
@@ -190,11 +188,10 @@ const ViewDecision = () => {
     const handleFinalized = async () => {
         try {
             const updatedDecision = {
-                decisionName: viewDecision.decisionName,
-                decisionStatus: 'Finalized',
-                createBy: localStorage.getItem('userId')
+                decisionId: id,
+                status: 'Finalized',
             };
-            await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
+            await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
         } catch (error) {
             console.error("Error updating decision:", error);
             showErrorMessage("Error occurred updating decision info. Please try again.");
@@ -203,7 +200,6 @@ const ViewDecision = () => {
         setDecisionStatus('Finalized')
         showSuccessMessage('Finalized successfully ');
     };
-
     return (
         <div style={{ marginTop: "60px" }}>
             <Box sx={{ marginTop: 4, padding: 2 }}>

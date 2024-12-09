@@ -62,7 +62,16 @@ const RankingDecisionAPI = {
             throw error;
         }
     },
-
+    // Update an existing ranking decision by ID
+    updateRankingDecisionStatus: async (formData) => {
+        try {
+            const response = await authClient.put(`${rankin_decision_api}/update-status`, formData);
+            return response.data;
+        } catch (error) {
+            console.error(`Error updating ranking decision with ID :`, error);
+            throw error;
+        }
+    },
     // Delete a ranking decision by ID
     deleteRankingDecision: async (id) => {
         try {
