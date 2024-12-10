@@ -275,7 +275,7 @@ const RankingDecision = () => {
         { field: "index", headerName: "ID", width: 80 },
         { field: "dicisionname", headerName: "Ranking Decision Name", width: 350 },
         { field: "finalizedAt", headerName: "Finalized At", width: 200 },
-        { field: "finalizedBy", headerName: "Finalized By", width: 180 },
+        { field: "finalizedBy", headerName: "Finalized By", width: 150 },
         { field: "status", headerName: "Status", width: 130 },
         {
             field: "action",
@@ -363,7 +363,7 @@ const RankingDecision = () => {
             {/* Search Decision */}
             <SearchComponent onSearch={handleSearch} placeholder=" Sreach Decision" />
             {/* Table show Ranking Decision */}
-            <Box sx={{ width: "100%", height: 370, marginTop: '50px' }}>
+            <Box sx={{ width: "100%", height: 370, marginTop: '30px' }}>
                 {/* {loading ? <CircularProgress /> : ( */}
                 <DataGrid
                     className="custom-data-grid"

@@ -282,7 +282,15 @@ const EditCriteria = () => {
                 <Typography variant="h5">Score List</Typography>
 
                 <SearchComponent onSearch={handleSearch}></SearchComponent>
-
+                <Button
+                    variant="contained"
+                    color="primary"
+                    // startIcon={<AddIcon />}
+                    // sx={{ marginTop: 2 }}
+                    onClick={handleOpenAddOptionModal}
+                >
+                    Add New Option
+                </Button>
             </Box>
 
             <Box sx={{ width: "100%" }}>
@@ -309,19 +317,6 @@ const EditCriteria = () => {
                     disableRowSelectionOnClick
                 />
             </Box>
-
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    // startIcon={<AddIcon />}
-                    // sx={{ marginTop: 2 }}
-                    onClick={handleOpenAddOptionModal}
-                >
-                    Add New Option
-                </Button>
-            </div>
-
 
             {/* Modal for editing criteria name */}
             <Modal open={showEditNameModal} onClose={() => setShowEditNameModal(false)}>
