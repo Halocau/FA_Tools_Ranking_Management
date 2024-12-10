@@ -20,6 +20,7 @@ import TitleConfiguration from "./TitleConfiguration.jsx";
 import TaskandPriceConfiguration from "./TaskandPriceConfiguration.jsx";
 
 const EditDecision = () => {
+    const role = localStorage.getItem('userRole');
     // const navigate = useNavigate(); // To navigate between pages
     const { id } = useParams(); // Get the ID from the URL
     // Edit
@@ -127,7 +128,7 @@ const EditDecision = () => {
     const canMoveToNextStep = (step) => {
         if (decisionStatus === 'Submitted' || decisionStatus === 'Confirmed' || decisionStatus === 'Finalized') {
             return true;
-        } else if (decisionStatus === 'Draft') {
+        } else if (decisionStatus === 'Draft' || decisionStatus === 'Rejected') {
             if (step === 1 && !isCriteriaSaved) return false;
             if (step === 2 && !isTitleSaved) return false;
         }
@@ -141,7 +142,7 @@ const EditDecision = () => {
     };
     // The function moves to the next step
     const goToNextStep = ({ stayOnCurrentStep = false } = {}) => {
-        if (decisionStatus === 'Draft') {
+        if (decisionStatus === 'Draft' || decisionStatus === 'Rejected') {
             if (activeStep === 0 && !isCriteriaSaved) {
                 setIsCriteriaSaved(true);
                 setCompleted((prev) => ({ ...prev, 0: true }));
@@ -273,7 +274,7 @@ const EditDecision = () => {
                                 color="primary"
                                 onClick={handleSubmit}
                                 sx={{
-                                    visibility: decisionStatus === 'Draft' ? 'visible' : 'hidden',
+                                    visibility: (decisionStatus === 'Draft' || decisionStatus === 'Rejected') ? 'visible' : 'hidden',
                                 }}
                             >
                                 Submit

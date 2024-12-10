@@ -18,6 +18,7 @@ import taskApi from '../../../api/TaskAPI.js';
 
 
 const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage, activeStep }) => {
+    const role = localStorage.getItem('userRole');
     // Data
     const { id } = useParams(); // Get the ID from the URL
     const [originalTask, setOriginalTask] = useState([]);  // Lưu dữ liệu gốc
@@ -399,18 +400,20 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                     ))}
 
                                     {/* Column action*/}
-                                    <TableCell
-                                        style={{
-                                            position: 'sticky',
-                                            right: 0,
-                                            backgroundColor: '#e0e0e0',
-                                            zIndex: 2,
-                                            boxSizing: 'border-box',
-                                        }}
-                                        rowSpan={2}
-                                    >
-                                        Action
-                                    </TableCell>
+                                    {(role === 'ADMIN' || role === 'MANAGER') && (
+                                        <TableCell
+                                            style={{
+                                                position: 'sticky',
+                                                right: 0,
+                                                backgroundColor: '#e0e0e0',
+                                                zIndex: 2,
+                                                boxSizing: 'border-box',
+                                            }}
+                                            rowSpan={2}
+                                        >
+                                            Action
+                                        </TableCell>
+                                    )}
                                 </TableRow>
                             </TableHead>
 
@@ -476,24 +479,26 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                                     );
                                                 })}
                                                 {/* Row Action */}
-                                                <TableCell
-                                                    style={{
-                                                        position: 'sticky',
-                                                        right: 0,
-                                                        background: '#fff',
-                                                        zIndex: 2,
-                                                        boxSizing: 'border-box',
-                                                    }}
-                                                    rowSpan={2}
-                                                >
-                                                    <Button
-                                                        variant="outlined"
-                                                        color="error"
-                                                        onClick={() => handleDeleteRowData(task.taskId)} // Gọi hàm xóa khi nhấn nút
+                                                {(role === 'ADMIN' || role === 'MANAGER' || role === 'MANAGER') && (
+                                                    <TableCell
+                                                        style={{
+                                                            position: 'sticky',
+                                                            right: 0,
+                                                            background: '#fff',
+                                                            zIndex: 2,
+                                                            boxSizing: 'border-box',
+                                                        }}
+                                                        rowSpan={2}
                                                     >
-                                                        <MdDeleteForever />
-                                                    </Button>
-                                                </TableCell>
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="error"
+                                                            onClick={() => handleDeleteRowData(task.taskId)} // Gọi hàm xóa khi nhấn nút
+                                                        >
+                                                            <MdDeleteForever />
+                                                        </Button>
+                                                    </TableCell>
+                                                )}
                                             </TableRow>
                                             {/* Hàng cho Overtime ( ở type Ovrertime thì không cần tablecell cho taskname và action vì lấy ở type In Working Hour */}
                                             <TableRow key={`task-${task.taskId}-ot`}>
@@ -549,7 +554,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                         <Box>
                             {/* Select to Add a new Task */}
-                            {decisionStatus === 'Draft' && (
+                            {(decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
                                 <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
                                     <Select
                                         isSearchable={true}
@@ -596,24 +601,26 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                             )}
                         </Box>
                         {/* Cancel and Save */}
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                            {/* Cancel*/}
-                            <Button
-                                variant="contained"
-                                color="error"
-                                onClick={handleCancelChanges}
-                            >
-                                Cancel
-                            </Button>
-                            {/* Save */}
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleSaveChanges}
-                            >
-                                Save
-                            </Button>
-                        </Box>
+                        {(role === 'ADMIN' || role === 'MANAGER' || decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                                {/* Cancel*/}
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    onClick={handleCancelChanges}
+                                >
+                                    Cancel
+                                </Button>
+                                {/* Save */}
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleSaveChanges}
+                                >
+                                    Save
+                                </Button>
+                            </Box>
+                        )}
                     </Box>
                 </Box>
             </Box>

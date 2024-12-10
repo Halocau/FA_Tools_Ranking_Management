@@ -177,9 +177,9 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             width: 150,
             align: 'center',
             headerAlign: 'center',
-            editable: decisionStatus === 'Draft',
+            editable: decisionStatus === 'Draft' || decisionStatus === 'Rejected',
             renderCell: (params) =>
-                decisionStatus === 'Draft' ? (
+                decisionStatus === 'Draft' || decisionStatus === 'Rejected' ? (
                     <TextField
                         sx={{
                             marginTop: '7px',
@@ -277,7 +277,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                         experimentalFeatures={{ newEditingApi: true }}
                     />
                     {/* Button */}
-                    {decisionStatus === 'Draft' && (
+                    {(decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                             {/* Select to Add a new Criteria */}
                             <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>

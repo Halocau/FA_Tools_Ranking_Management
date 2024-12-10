@@ -171,19 +171,18 @@ const ViewDecision = () => {
         try {
             const updatedDecision = {
                 decisionId: id,
-                status: 'Draft'
+                status: 'Rejected'
             };
             await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
         } catch (error) {
             console.error("Error updating decision:", error);
             showErrorMessage("Error occurred updating decision info. Please try again.");
         }
-        setViewDecision({ status: 'Draft' })
-        setDecisionStatus('Draft')
+        setViewDecision({ status: 'Rejected' })
+        setDecisionStatus('Rejected')
         showSuccessMessage('Rejected successfully ');
     };
     //////////////////////////////////////////////////////////////////////////// Finalized ////////////////////////////////////////////////////////////////////////////
-
     const handleFinalized = async () => {
         try {
             const updatedDecision = {
@@ -267,7 +266,6 @@ const ViewDecision = () => {
                             }}
                         />
                     </Box>
-
                     <Box
                         sx={{
                             display: 'flex',
@@ -340,7 +338,7 @@ const ViewDecision = () => {
                     <Stepper
                         activeStep={activeStep}
                         alternativeLabel={true}
-                        nonLinear={['Finalized', 'Confirmed', 'Submitted'].includes(decisionStatus)}
+                        nonLinear={['Rejected', 'Confirmed', 'Submitted', 'Finalized'].includes(decisionStatus)}
                     >
                         {steps.map((label, index) => (
                             <Step key={label} completed={completed[index]}>
@@ -363,35 +361,30 @@ const ViewDecision = () => {
                 </Box>
                 <Box>{renderStepContent(activeStep)}</Box>
                 {/* Feedback */}
-                <Typography sx={{ marginTop: '10px' }} variant="h6">
-                    Note
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
-                    <textarea
-                        value={note}
-                        onChange={(e) => {
-                            setStatusNote(e.target.value);
-                            setNote(e.target.value);
-                        }}
-                        // placeholder="Note"
-                        style={{
-                            height: '100px',
-                            width: '100%',
-                            padding: '10px',
-                            fontSize: '14px',
-                            borderRadius: '5px',
-                            resize: 'none', // Ngăn chặn thay đổi kích thước (nếu muốn)
-                        }}
-                    />
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
-                    <Button sx={{ height: '30px', marginLeft: 1 }}
-                        variant="contained"
-                        color="primary"
-                        onClick={handleNote}
-                    >
-                        Save
-                    </Button>
+                <Box sx={{ marginTop: '10px' }}>
+                    <Typography variant="h6">
+                        Note
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
+                        <textarea
+                            value={note}
+                            onChange={(e) => {
+                                setStatusNote(e.target.value);
+                                setNote(e.target.value);
+                            }}
+                            // placeholder="Note"
+                            style={{ height: '100px', width: '100%', padding: '10px', fontSize: '14px', borderRadius: '5px', resize: 'none' }}
+                        />
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
+                        <Button sx={{ height: '30px', marginLeft: 1 }}
+                            variant="contained"
+                            color="primary"
+                            onClick={handleNote}
+                        >
+                            Save
+                        </Button>
+                    </Box>
                 </Box>
             </Box >
         </div >

@@ -107,7 +107,6 @@ const CriteriaManagement = () => {
             setTotalElements(totalElements + 1);
             if (criteria.length < pageSize) {
                 setCriteria(prevCriteria => [...prevCriteria, newCriteria]);
-
             } else {
                 setTotalPages(totalPages + 1);
             }

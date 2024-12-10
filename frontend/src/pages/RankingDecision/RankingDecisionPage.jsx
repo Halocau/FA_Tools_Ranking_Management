@@ -142,7 +142,6 @@ const RankingDecision = () => {
             decision => decision.decisionName.toLowerCase() === trimmedName.toLowerCase()
         );
         if (isDuplicate) {
-
             setValidationMessage("Decision name already exists.");
             return;
         }
@@ -294,19 +293,19 @@ const RankingDecision = () => {
                     >
                         <FaEye />
                     </Button>
-                    {(params.row.status !== 'Confirm') && (
-                        <Button
-                            variant="outlined"
-                            sx={{ marginLeft: 1 }}
-                            onClick={() => {
-                                console.log(`Navigating to edit decision with ID: ${params.row.id}`);
-                                navigate(`/ranking-decision/edit/${params.row.id}`);
-                            }}
-                        >
-                            <FaEdit />
-                        </Button>
-                    )}
-                    {(params.row.status === 'Draft') && (
+                    {/* {(params.row.status !== 'Finalized') && ( */}
+                    <Button
+                        variant="outlined"
+                        sx={{ marginLeft: 1 }}
+                        onClick={() => {
+                            console.log(`Navigating to edit decision with ID: ${params.row.id}`);
+                            navigate(`/ranking-decision/edit/${params.row.id}`);
+                        }}
+                    >
+                        <FaEdit />
+                    </Button>
+                    {/* // )} */}
+                    {(params.row.status === 'Draft' || params.row.status === 'Rejected') && (
                         <Button
                             variant="outlined"
                             color="error"

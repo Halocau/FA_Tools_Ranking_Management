@@ -14,6 +14,7 @@ import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 import RankingTitleAPI from '../../../api/RankingTitleAPI.js';
 
 const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage, activeStep }) => {
+    const role = localStorage.getItem('userRole');
     // Data 
     const { id } = useParams(); // Get the ID from the URL
     const [originalTitle, setOriginalTitle] = useState([]);  // Lưu dữ liệu gốc
@@ -324,7 +325,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             field: criteriaItem.criteriaName,
             headerName: criteriaItem.criteriaName,
             width: 200,
-            editable: decisionStatus === 'Draft',
+            editable: (decisionStatus === 'Draft' || decisionStatus === 'Rejected'),
             renderCell: (params) => {
                 const currentCriteria = criteria.find(
                     (c) => c.criteriaName === params.field
@@ -365,7 +366,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             { field: 'titleName', headerName: 'Title Name', width: 100, pinned: 'left' },
             {
                 field: 'rankScore', headerName: 'Rank Score', width: 100, pinned: 'left',
-                editable: decisionStatus === 'Draft', align: 'center', headerAlign: 'center',
+                editable: (decisionStatus === 'Draft' || decisionStatus === 'Rejected'), align: 'center', headerAlign: 'center',
             },
         ];
         // Column Action
@@ -375,7 +376,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 headerName: 'Action',
                 width: 90,
                 renderCell: (params) =>
-                    decisionStatus === 'Draft' && (
+                    (decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
                         <Button
                             variant="outlined"
                             color="error"
@@ -478,7 +479,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                         getRowId={(row) => row.index}
                     />
                     {/* Button */}
-                    {decisionStatus === 'Draft' && (
+                    {(decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                             {/* Add a new Title */}
                             <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
