@@ -3,6 +3,7 @@ package backend.service.Implement;
 import backend.dao.*;
 import backend.model.dto.ApplyCriteriaResponse;
 import backend.model.dto.EmployeeCriteriaResponse;
+import backend.model.dto.CaculatorCurrentRank;
 import backend.model.entity.*;
 import backend.model.form.EmployeeCriteria.UpsertEmployeeCriteriaRequest;
 import backend.service.IEmployeeCriteriaService;
@@ -267,43 +268,69 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
     }
 
 
+//    public String getCurrentRankForEmployee(int employeeId) {
+//        // Lấy Employee
+//        Employee employee = iEmployeeRepository.findById(employeeId)
+//                .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeId));
+//
+//        // Lấy danh sách EmployeeCriteria
+//        List<EmployeeCriteria> employeeCriteriaList = iEmployeeCriteriaRepository.findByEmployeeId(employeeId);
+//        if (employeeCriteriaList.isEmpty()) {
+//            throw new IllegalArgumentException("No criteria found for employee with ID: " + employeeId);
+//        }
+//
+//        // Tạo danh sách ApplyCriteriaResponse từ EmployeeCriteria
+//        List<ApplyCriteriaResponse> applyCriteriaList = new ArrayList<>();
+//        for (EmployeeCriteria empCriteria : employeeCriteriaList) {
+//            Criteria criteria = iCriteriaRepository.findById(empCriteria.getCriteriaId())
+//                    .orElseThrow(() -> new EntityNotFoundException("Criteria not found for criteria ID: " + empCriteria.getCriteriaId()));
+//
+//            Options option = iOptionRepository.findById(empCriteria.getOptionId())
+//                    .orElseThrow(() -> new EntityNotFoundException("Option not found for option ID: " + empCriteria.getOptionId()));
+//
+//            DecisionCriteria decisionCriteria = iDecisionCriteriaRepository.findByDecisionIdAndCriteriaId(
+//                            employee.getRankingDecisionId(), empCriteria.getCriteriaId())
+//                    .orElseThrow(() -> new EntityNotFoundException("DecisionCriteria not found for decision ID: "
+//                            + employee.getRankingDecisionId() + " and criteria ID: " + empCriteria.getCriteriaId()));
+//
+//            ApplyCriteriaResponse applyCriteriaResponse = new ApplyCriteriaResponse();
+//            applyCriteriaResponse.setCriteriaName(criteria.getCriteriaName());
+//            applyCriteriaResponse.setOptionName(option.getOptionName());
+//            applyCriteriaResponse.setScore(option.getScore());
+//            applyCriteriaResponse.setWeight(decisionCriteria.getWeight());
+//            applyCriteriaResponse.setMaxScore(criteria.getMaxScore());
+//
+//            applyCriteriaList.add(applyCriteriaResponse);
+//        }
+//
+//        // Tính tổng điểm
+//        double totalScore = calculateTotalScore(applyCriteriaList);
+//        BigDecimal roundedTotalScore = new BigDecimal(totalScore).setScale(2, RoundingMode.HALF_UP);
+//
+//        // Lấy danh sách RankingTitle và tìm `currentRank`
+//        List<RankingTitle> rankingTitles = iRankingTitleRepository.findByDecisionIdOrderByTotalScoreAsc(employee.getRankingDecisionId());
+//        RankingTitle nearestRank = findNearestRank(roundedTotalScore.doubleValue(), rankingTitles);
+//
+//        // Trả về `currentRank`
+//        return nearestRank != null ? nearestRank.getTitleName() : null;
+//    }
+
     public String getCurrentRankForEmployee(int employeeId) {
         // Lấy Employee
         Employee employee = iEmployeeRepository.findById(employeeId)
                 .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeId));
 
-        // Lấy danh sách EmployeeCriteria
-        List<EmployeeCriteria> employeeCriteriaList = iEmployeeCriteriaRepository.findByEmployeeId(employeeId);
-        if (employeeCriteriaList.isEmpty()) {
+        // Lấy danh sách ApplyCriteriaResponse từ truy vấn SQL
+        List<CaculatorCurrentRank> applyCriteriaList = iEmployeeRepository.getApplyCriteriaResponsesForEmployee(employeeId);
+        if (applyCriteriaList.isEmpty()) {
             throw new IllegalArgumentException("No criteria found for employee with ID: " + employeeId);
         }
 
-        // Tạo danh sách ApplyCriteriaResponse từ EmployeeCriteria
-        List<ApplyCriteriaResponse> applyCriteriaList = new ArrayList<>();
-        for (EmployeeCriteria empCriteria : employeeCriteriaList) {
-            Criteria criteria = iCriteriaRepository.findById(empCriteria.getCriteriaId())
-                    .orElseThrow(() -> new EntityNotFoundException("Criteria not found for criteria ID: " + empCriteria.getCriteriaId()));
-
-            Options option = iOptionRepository.findById(empCriteria.getOptionId())
-                    .orElseThrow(() -> new EntityNotFoundException("Option not found for option ID: " + empCriteria.getOptionId()));
-
-            DecisionCriteria decisionCriteria = iDecisionCriteriaRepository.findByDecisionIdAndCriteriaId(
-                            employee.getRankingDecisionId(), empCriteria.getCriteriaId())
-                    .orElseThrow(() -> new EntityNotFoundException("DecisionCriteria not found for decision ID: "
-                            + employee.getRankingDecisionId() + " and criteria ID: " + empCriteria.getCriteriaId()));
-
-            ApplyCriteriaResponse applyCriteriaResponse = new ApplyCriteriaResponse();
-            applyCriteriaResponse.setCriteriaName(criteria.getCriteriaName());
-            applyCriteriaResponse.setOptionName(option.getOptionName());
-            applyCriteriaResponse.setScore(option.getScore());
-            applyCriteriaResponse.setWeight(decisionCriteria.getWeight());
-            applyCriteriaResponse.setMaxScore(criteria.getMaxScore());
-
-            applyCriteriaList.add(applyCriteriaResponse);
-        }
-
         // Tính tổng điểm
-        double totalScore = calculateTotalScore(applyCriteriaList);
+        double totalScore = applyCriteriaList.stream()
+                .mapToDouble(acr -> acr.getScore() * acr.getWeight())
+                .sum();
+
         BigDecimal roundedTotalScore = new BigDecimal(totalScore).setScale(2, RoundingMode.HALF_UP);
 
         // Lấy danh sách RankingTitle và tìm `currentRank`
@@ -313,5 +340,7 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
         // Trả về `currentRank`
         return nearestRank != null ? nearestRank.getTitleName() : null;
     }
+
+
 
 }

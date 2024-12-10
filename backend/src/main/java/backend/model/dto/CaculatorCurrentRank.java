@@ -1,6 +1,5 @@
 package backend.model.dto;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,12 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApplyCriteriaResponse {
-    private String criteriaName;
-    private String optionName;
+public class CaculatorCurrentRank {
+    private Integer criteriaId;
+    private Integer optionId;
     private Integer score;
     private Float weight;
     private int maxScore;
-
-
 }

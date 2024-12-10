@@ -43,6 +43,7 @@ public class RankingDecisionService implements IRankingDecisionService {
     private IDecisionCriteriaService iDecisionTasksService;
     private IAccount iAccount;
 
+    @Autowired
     public RankingDecisionService(IRankingDecisionRepository iRankingDecisionRepository, IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository, IDecisionCriteriaRepository iDecisionCriteriaRepository, IDecisionTasksRepository iDecisionTasksRepository, IRankingTitleRepository iRankingTitleRepository, IDecisionCriteriaService iDecisionCriteriaService, IDecisionCriteriaService iDecisionTasksService, IAccount iAccount) {
         this.iRankingDecisionRepository = iRankingDecisionRepository;
         this.iEmployeeRepository = iEmployeeRepository;
@@ -335,6 +336,7 @@ public class RankingDecisionService implements IRankingDecisionService {
         //save
         iRankingDecisionRepository.saveAndFlush(decision);
     }
+
     @Override
     @Transactional
     public RankingDecision updateStatus(UpdateStatusRankingDecisionRequest form) {
