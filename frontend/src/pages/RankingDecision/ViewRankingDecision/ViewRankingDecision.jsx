@@ -34,7 +34,8 @@ const ViewDecision = () => {
     const [isTaskSaved, setIsTaskSaved] = useState(false);
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
-
+    const [note, setNote] = useState('');
+    const [statusNote, setStatusNote] = useState('');
     //////////////////////////////////////////////////////////////////////////// Edit ////////////////////////////////////////////////////////////////////////////
     // Ranking Decision Edit
     const EditRankingDecision = async () => {
@@ -198,6 +199,11 @@ const ViewDecision = () => {
         setDecisionStatus('Finalized')
         showSuccessMessage('Finalized successfully ');
     };
+
+    ///////////////////////////////// Note ///////////////////////////////////
+    const handleNote = (e) => {
+        showSuccessMessage('Feedback successfully')
+    };
     return (
         <div style={{ marginTop: "60px" }}>
             <Box sx={{ marginTop: 4, padding: 2 }}>
@@ -356,6 +362,37 @@ const ViewDecision = () => {
                     </Stepper>
                 </Box>
                 <Box>{renderStepContent(activeStep)}</Box>
+                {/* Feedback */}
+                <Typography sx={{ marginTop: '10px' }} variant="h6">
+                    Note
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
+                    <textarea
+                        value={note}
+                        onChange={(e) => {
+                            setStatusNote(e.target.value);
+                            setNote(e.target.value);
+                        }}
+                        // placeholder="Note"
+                        style={{
+                            height: '100px',
+                            width: '100%',
+                            padding: '10px',
+                            fontSize: '14px',
+                            borderRadius: '5px',
+                            resize: 'none', // Ngăn chặn thay đổi kích thước (nếu muốn)
+                        }}
+                    />
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
+                    <Button sx={{ height: '30px', marginLeft: 1 }}
+                        variant="contained"
+                        color="primary"
+                        onClick={handleNote}
+                    >
+                        Save
+                    </Button>
+                </Box>
             </Box >
         </div >
 

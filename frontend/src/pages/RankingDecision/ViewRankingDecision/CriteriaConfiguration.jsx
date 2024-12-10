@@ -13,8 +13,6 @@ const CriteriaConfiguration = ({ decisionStatus, showErrorMessage, showSuccessMe
     const [originalCriteria, setOriginalCriteria] = useState([]);
     // Row table
     const [rows, setRows] = useState([]);
-    const [note, setNote] = useState('');
-    const [statusNote, setStatusNote] = useState('');
 
     // Load data getCriteriaConfiguration
     const getCriteriaConfiguration = async () => {
@@ -34,10 +32,6 @@ const CriteriaConfiguration = ({ decisionStatus, showErrorMessage, showSuccessMe
         if (!id) return; // Bỏ qua nếu `id` không xác định
         getCriteriaConfiguration();
     }, [id]);
-    ///////////////////////////////// Note ///////////////////////////////////
-    const handleNote = (e) => {
-        showSuccessMessage('Feedback successfully')
-    };
     /////////////////////////////////// Column Criteria //////////////////////////////////
     const columnsCriteria = [
         { field: 'criteria_name', headerName: 'Criteria Name', width: 500 },
@@ -70,7 +64,7 @@ const CriteriaConfiguration = ({ decisionStatus, showErrorMessage, showSuccessMe
             {/* Surrounding border */}
             <Box sx={{
                 width: "100%",
-                height: 500,
+                height: 450,
                 marginTop: '10px',
                 border: '2px solid black',
                 borderRadius: '8px',
@@ -86,31 +80,6 @@ const CriteriaConfiguration = ({ decisionStatus, showErrorMessage, showSuccessMe
                         columns={columnsCriteria}
                         getRowId={(row) => row.id}
                     />
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginTop: '10px' }}>
-                        <textarea
-                            value={note}
-                            onChange={(e) => {
-                                setStatusNote(e.target.value);
-                                setNote(e.target.value);
-                            }}
-                            placeholder="Note"
-                            style={{
-                                height: '40px', // Chiều cao lớn hơn để nhập nhiều dòng
-                                width: '500px',
-                                padding: '10px',
-                                fontSize: '14px',
-                                borderRadius: '5px',
-                                resize: 'none', // Ngăn chặn thay đổi kích thước (nếu muốn)
-                            }}
-                        />
-                        <Button sx={{ height: '40px', marginLeft: 1 }}
-                            variant="contained"
-                            color="primary"
-                            onClick={handleNote}
-                        >
-                            Note
-                        </Button>
-                    </Box>
                 </Box>
             </Box>
         </div>
