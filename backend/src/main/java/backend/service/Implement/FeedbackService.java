@@ -52,6 +52,19 @@ public class FeedbackService implements IFeedbackService {
     }
 
     @Override
+    public Optional<Feedback> findByDecisionId(Integer decisionId) {
+        if (decisionId == null) {
+            throw new IllegalArgumentException("decisionId must not be null");
+        }
+        Optional<Feedback> feedback = iFeedbackRepository.findByDecisionId(decisionId);
+        if (!feedback.isPresent()) {
+            throw new EntityNotFoundException("Feedback not found for id: " + decisionId);
+        }
+        return feedback;
+    }
+
+
+    @Override
     public List<FeedbackResponse> getAllFeedbackResponses(List<Feedback> list) {
         return list.stream()
                 .map(feedback -> modelMapper.map(feedback, FeedbackResponse.class))

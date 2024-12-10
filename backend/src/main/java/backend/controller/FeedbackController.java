@@ -4,7 +4,9 @@ import backend.model.dto.FeedbackResponse;
 import backend.model.entity.Feedback;
 import backend.model.form.Feedback.upsertFeedBackRequest;
 import backend.service.IFeedbackService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,15 +14,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/feedback")
 public class FeedbackController {
+    private final ModelMapper modelMapper;
     private IFeedbackService iFeedbackService;
 
     @Autowired
-    public FeedbackController(IFeedbackService iFeedbackService) {
+    public FeedbackController(IFeedbackService iFeedbackService, ModelMapper modelMapper) {
         this.iFeedbackService = iFeedbackService;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping
@@ -40,6 +45,16 @@ public class FeedbackController {
         return ResponseEntity.ok(feedbackResponseList);
     }
 
+    @GetMapping("/get/{id}")
+    public ResponseEntity<FeedbackResponse> findFeedback(@PathVariable Integer id) {
+        if (id == null) {
+            throw new IllegalArgumentException("id must not be null");
+        }
+        Optional<Feedback> find = iFeedbackService.findByDecisionId(id);
+        FeedbackResponse response = modelMapper.map(find.get(), FeedbackResponse.class);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @PutMapping("/upsert")
     public ResponseEntity<FeedbackResponse> upsertFeedback(@RequestBody @Valid upsertFeedBackRequest form) {
         FeedbackResponse feedbackResponse = iFeedbackService.upsertFeedback(form);
@@ -49,7 +64,7 @@ public class FeedbackController {
 
 
     @DeleteMapping("/delete/{feedbackId}")
-    public ResponseEntity<String> deleteFeedback(@PathVariable  Integer feedbackId) {
+    public ResponseEntity<String> deleteFeedback(@PathVariable Integer feedbackId) {
         iFeedbackService.deleteFeedbackById(feedbackId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
