@@ -17,7 +17,7 @@ const FeedbackAPI = {
     // Update an existing ranking decision by ID
     updateFeedback: async (formData) => {
         try {
-            const response = await authClient.put(`${feedback_api}/upsert/`, formData);
+            const response = await authClient.put(`${feedback_api}/upsert`, formData);
             return response.data;
         } catch (error) {
             console.error(`Error updating feedback:`, error);

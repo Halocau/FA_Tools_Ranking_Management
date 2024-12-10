@@ -10,6 +10,7 @@ import { Stepper, Step, StepButton } from '@mui/material';
 import "../../../assets/css/RankingGroups.css"
 // API
 import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
+import FeedbacknAPI from "../../../api/FeedbackAPI.js";
 // Hooks
 import useNotification from "../../../hooks/useNotification.jsx";
 //Steper
@@ -35,12 +36,13 @@ const ViewDecision = () => {
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     const [note, setNote] = useState('');
-    const [statusNote, setStatusNote] = useState('');
     //////////////////////////////////////////////////////////////////////////// Edit ////////////////////////////////////////////////////////////////////////////
     // Ranking Decision Edit
     const EditRankingDecision = async () => {
         try {
             const decisionData = await RankingDecisionAPI.getRankingDecisionById(id);
+            const Feedback = await FeedbacknAPI.getFeedbackById(id)
+            setNote(Feedback.note)
             // Ensure no undefined values are passed
             setViewDecision({
                 decisionName: decisionData.decisionName || "",
@@ -190,18 +192,30 @@ const ViewDecision = () => {
                 status: 'Finalized',
             };
             await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
+            setViewDecision({ status: 'Finalized' })
+            setDecisionStatus('Finalized')
+            showSuccessMessage('Finalized successfully ');
         } catch (error) {
             console.error("Error updating decision:", error);
             showErrorMessage("Error occurred updating decision info. Please try again.");
         }
-        setViewDecision({ status: 'Finalized' })
-        setDecisionStatus('Finalized')
-        showSuccessMessage('Finalized successfully ');
     };
 
     ///////////////////////////////// Note ///////////////////////////////////
-    const handleNote = () => {
-        showSuccessMessage('Feedback successfully')
+    const handleNote = async () => {
+        try {
+            const updatedFeedback = {
+                decisionId: id,
+                note: note,
+            };
+            console.log(updatedFeedback)
+            await FeedbacknAPI.updateFeedback(updatedFeedback);
+            showSuccessMessage('Feedback successfully')
+        } catch (error) {
+            console.error("Error updating :", error);
+            showErrorMessage("Error occurred updating . Please try again.");
+        }
+
     };
     return (
         <div style={{ marginTop: "60px" }}>
@@ -369,7 +383,6 @@ const ViewDecision = () => {
                         <textarea
                             value={note}
                             onChange={(e) => {
-                                setStatusNote(e.target.value);
                                 setNote(e.target.value);
                             }}
                             // placeholder="Note"
