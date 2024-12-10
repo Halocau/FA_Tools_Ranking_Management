@@ -200,7 +200,7 @@ const ViewDecision = () => {
     };
 
     ///////////////////////////////// Note ///////////////////////////////////
-    const handleNote = (e) => {
+    const handleNote = () => {
         showSuccessMessage('Feedback successfully')
     };
     return (

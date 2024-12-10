@@ -400,7 +400,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                     ))}
 
                                     {/* Column action*/}
-                                    {(role === 'ADMIN' || role === 'MANAGER') && (
+                                    {(decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
                                         <TableCell
                                             style={{
                                                 position: 'sticky',
@@ -419,134 +419,98 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
                             <TableBody>
                                 {rows.map((task) => {
-                                    return (
-                                        <>
-                                            {/* Hàng cho In Working Hour */}
-                                            <TableRow key={`task-${task.taskId}-wh`}>
-                                                {/* Cột Task Name */}
+                                    const renderCell = (taskId, rankingTitleId, wageType, defaultValue) => {
+                                        const isEditable = (role === 'ADMIN' || role === 'MANAGER');
+
+                                        if (role === 'USER' && ['Submitted', 'Confirmed', 'Finalized'].includes(decisionStatus)) {
+                                            // Chỉ hiển thị giá trị nếu vai trò là user có trạng thái 'Submitted', 'Confirmed', 'Finalized'
+                                            return <span>{defaultValue || 'N/A'}</span>;
+                                        }
+                                        return (
+                                            <TextField
+                                                value={editedWages[`${taskId}-${rankingTitleId}-${wageType}`] || defaultValue}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    if (/^\d*$/.test(value)) { // Chỉ cho phép số
+                                                        handleCellEditTaskCommit(taskId, rankingTitleId, wageType, value);
+                                                    }
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (["e", "E", "+", "-", ".", ","].includes(e.key)) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                                size="small"
+                                                variant="outlined"
+                                                fullWidth
+                                                type="number"
+                                                inputMode="numeric"
+                                                disabled={!isEditable} // Khóa chỉnh sửa nếu không phải Draft hoặc Admin
+                                            />
+                                        );
+                                    };
+                                    const renderRow = (type, wageKey) => (
+                                        <TableRow key={`task-${task.taskId}-${type}`}>
+                                            {/* Loại công việc */}
+                                            {type === "In Working Hour" && (
                                                 <TableCell
                                                     style={{
-                                                        position: 'sticky', left: 0, background: '#fff', zIndex: 2, boxSizing: 'border-box',
-                                                        width: '120px',
-                                                        maxWidth: '120px',
-                                                        minWidth: '120px',
-                                                        overflow: 'hidden',
+                                                        position: 'sticky', left: 0, background: '#fff', zIndex: 2,
+                                                        width: '120px', maxWidth: '120px', minWidth: '120px',
                                                     }}
                                                     rowSpan={2}
                                                 >
                                                     {task.taskName}
                                                 </TableCell>
-                                                {/* Row task type Working Hour */}
-                                                <TableCell style={{
-                                                    position: 'sticky', left: 120, background: '#fff', zIndex: 2, boxSizing: 'border-box',
-                                                    width: '120px',
-                                                    maxWidth: '120px',
-                                                    minWidth: '120px',
-                                                    overflow: 'hidden',
-                                                }}>In Working Hour</TableCell>
-                                                {/* Rows Title for Working Hour */}
-                                                {allTitle.map((title, index) => {
-                                                    const titleData = task.taskWages.find(
-                                                        (wage) => wage.rankingTitleId === title.rankingTitleId
-                                                    ) || { rankingTitleId: title.rankingTitleId, workingHourWage: '' };
-
-                                                    const workingHourWage = titleData ? titleData.workingHourWage : "";
-                                                    return (
-                                                        <TableCell key={`wh-${index}`}>
-                                                            <TextField
-                                                                value={editedWages[`${task.taskId}-${title.rankingTitleId}-workingHourWage`] || workingHourWage}
-                                                                onChange={(e) => {
-                                                                    const value = e.target.value;
-                                                                    // Chỉ cho phép số dương (hoặc rỗng)
-                                                                    if (/^\d*$/.test(value)) {
-                                                                        handleCellEditTaskCommit(task.taskId, title.rankingTitleId, "workingHourWage", value);
-                                                                    }
-                                                                }}
-                                                                onKeyDown={(e) => {
-                                                                    // Chặn các ký tự không phải số (trừ phím điều khiển)
-                                                                    const invalidKeys = ["e", "E", "+", "-", ".", ","];
-                                                                    if (invalidKeys.includes(e.key)) {
-                                                                        e.preventDefault();
-                                                                    }
-                                                                }}
-                                                                size="small"
-                                                                variant="outlined"
-                                                                fullWidth
-                                                                type="number"
-                                                                inputMode="numeric"
-                                                            />
-                                                        </TableCell>
-                                                    );
-                                                })}
-                                                {/* Row Action */}
-                                                {(role === 'ADMIN' || role === 'MANAGER' || role === 'MANAGER') && (
-                                                    <TableCell
-                                                        style={{
-                                                            position: 'sticky',
-                                                            right: 0,
-                                                            background: '#fff',
-                                                            zIndex: 2,
-                                                            boxSizing: 'border-box',
-                                                        }}
-                                                        rowSpan={2}
-                                                    >
-                                                        <Button
-                                                            variant="outlined"
-                                                            color="error"
-                                                            onClick={() => handleDeleteRowData(task.taskId)} // Gọi hàm xóa khi nhấn nút
-                                                        >
-                                                            <MdDeleteForever />
-                                                        </Button>
+                                            )}
+                                            <TableCell
+                                                style={{
+                                                    position: 'sticky', left: 120, background: '#fff', zIndex: 2,
+                                                    width: '120px', maxWidth: '120px', minWidth: '120px',
+                                                }}
+                                            >
+                                                {type}
+                                            </TableCell>
+                                            {allTitle.map((title, index) => {
+                                                const titleData = task.taskWages.find(
+                                                    (wage) => wage.rankingTitleId === title.rankingTitleId
+                                                ) || {};
+                                                const defaultValue = titleData[wageKey] || "";
+                                                return (
+                                                    <TableCell key={`${type}-${index}`}>
+                                                        {renderCell(task.taskId, title.rankingTitleId, wageKey, defaultValue)}
                                                     </TableCell>
-                                                )}
-                                            </TableRow>
-                                            {/* Hàng cho Overtime ( ở type Ovrertime thì không cần tablecell cho taskname và action vì lấy ở type In Working Hour */}
-                                            <TableRow key={`task-${task.taskId}-ot`}>
-                                                {/* Row task type Overtime */}
-                                                <TableCell style={{
-                                                    position: 'sticky', background: '#fff', left: 120, zIndex: 2, boxSizing: 'border-box',
-                                                    width: '120px',
-                                                    maxWidth: '120px',
-                                                    minWidth: '120px',
-                                                    overflow: 'hidden',
-                                                }}>Overtime</TableCell>
-                                                {/* Rows Title for cho Overtime */}
-                                                {allTitle.map((title, index) => {
-                                                    const titleData = task.taskWages.find(wage => wage.rankingTitleId === title.rankingTitleId);
-                                                    const overtimeWage = titleData ? titleData.overtimeWage : "";
-                                                    return (
-                                                        <TableCell key={`ot-${index}`}>
-                                                            <TextField
-                                                                value={editedWages[`${task.taskId}-${title.rankingTitleId}-overtimeWage`] || overtimeWage}
-                                                                onChange={(e) => {
-                                                                    const value = e.target.value;
-                                                                    // Chỉ cho phép số dương (hoặc rỗng)
-                                                                    if (/^\d*$/.test(value)) {
-                                                                        handleCellEditTaskCommit(task.taskId, title.rankingTitleId, "overtimeWage", value);
-                                                                    }
-                                                                }}
-                                                                onKeyDown={(e) => {
-                                                                    // Chặn các ký tự không phải số (trừ phím điều khiển)
-                                                                    const invalidKeys = ["e", "E", "+", "-", ".", ","];
-                                                                    if (invalidKeys.includes(e.key)) {
-                                                                        e.preventDefault();
-                                                                    }
-                                                                }}
-                                                                size="small"
-                                                                variant="outlined"
-                                                                fullWidth
-                                                                type="text"
-                                                                inputMode="numeric"
-                                                            />
-                                                        </TableCell>
+                                                );
+                                            })}
+                                            {/* Nút xóa chỉ xuất hiện ở hàng đầu tiên nếu không phải MANAGER */}
+                                            {type === "In Working Hour" && (decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
+                                                <TableCell
+                                                    style={{
+                                                        position: 'sticky', right: 0, background: '#fff', zIndex: 2,
+                                                    }}
+                                                    rowSpan={2}
+                                                >
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="error"
+                                                        onClick={() => handleDeleteRowData(task.taskId)}
+                                                    >
+                                                        <MdDeleteForever />
+                                                    </Button>
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
+                                    );
 
-                                                    );
-                                                })}
-                                            </TableRow>
+                                    return (
+                                        <>
+                                            {renderRow("In Working Hour", "workingHourWage")}
+                                            {renderRow("Overtime", "overtimeWage")}
                                         </>
                                     );
                                 })}
                             </TableBody>
+
                         </Table>
                     </TableContainer>
 

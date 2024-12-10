@@ -320,12 +320,14 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             console.error("Invalid criteria data:", criteria);
             return [];
         }
+        // Xác định trạng thái có cho phép chỉnh sửa hay không
+        const isEditable = decisionStatus === 'Draft' || decisionStatus === 'Rejected';
         // Column Criteria
         const criteriaColumns = criteria.map((criteriaItem) => ({
             field: criteriaItem.criteriaName,
             headerName: criteriaItem.criteriaName,
             width: 200,
-            editable: (decisionStatus === 'Draft' || decisionStatus === 'Rejected'),
+            editable: isEditable, // Chỉ cho phép chỉnh sửa nếu trạng thái là Draft hoặc Rejected
             renderCell: (params) => {
                 const currentCriteria = criteria.find(
                     (c) => c.criteriaName === params.field
@@ -335,8 +337,8 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                     console.warn(`No options found for criteria: ${params.field}`);
                     return null;
                 }
-
-                return (
+                // Nếu cho phép chỉnh sửa, hiển thị Select
+                return isEditable ? (
                     <Select
                         value={params.value || ''}
                         onChange={(e) =>
@@ -358,6 +360,8 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                             </MenuItem>
                         ))}
                     </Select>
+                ) : (
+                    <span>{params.value || ''}</span> // Hiển thị giá trị nếu không chỉnh sửa được
                 );
             },
         }));
