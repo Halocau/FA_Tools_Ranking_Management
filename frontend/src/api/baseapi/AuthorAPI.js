@@ -44,7 +44,7 @@ authClient.interceptors.response.use(
       // Internal Server Error
       if (status === 500) {
         console.error("Server error - Redirecting to 500 page.");
-        // window.location.href = '/500';
+        window.location.href = '/500';
       }
     }
 
