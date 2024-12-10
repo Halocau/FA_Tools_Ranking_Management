@@ -1,4 +1,5 @@
 import axios from "axios";
+import AuthAPI from "../AuthAPI";
 
 // Base URL for the backend API
 const API_URL = "http://localhost:8080/api";
@@ -15,7 +16,7 @@ const authClient = axios.create({
 // Interceptor to add the Authorization header for authenticated requests
 authClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("jwtToken");
+    const token = localStorage.getItem("accessToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -30,10 +31,27 @@ authClient.interceptors.response.use(
     // You can add any global response handling logic here
     return response; // Pass the successful response back
   },
-  (error) => {
+  async (error) => {
     // Handle specific response errors globally
+    const originalRequest = error.config;
     if (error.response) {
       const { status } = error.response;
+
+      if (status === 401) {
+        try {
+          console.log("Refreshing token...");
+          console.log("Original request:", originalRequest);
+          const data = await AuthAPI.refreshToken();
+          console.log(data);
+          localStorage.setItem("accessToken", data.accessToken);
+          localStorage.setItem("refreshToken", data.refreshToken);
+          return authClient(originalRequest);
+        } catch (error) {
+          console.log("Error refreshing token:", error);
+          return Promise.reject(error);
+        }
+        // return authClient(originalRequest);
+      }
 
       // Forbidden
       if (status === 403) {
