@@ -1,6 +1,6 @@
 // react
 import React, { useEffect, useState } from "react";
-import { FaEdit, FaAngleRight } from "react-icons/fa";
+import { FaEdit, FaAngleRight, FaEye } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
 //Filter Query Builder
@@ -306,28 +306,42 @@ const EditRankingGroup = () => {
         { field: "index", headerName: "ID", width: 80 },
         { field: "dicisionname", headerName: "Ranking Decision Name", width: 350 },
         { field: "finalizedAt", headerName: "Finalized At", width: 200 },
-        { field: "finalizedBy", headerName: "Finalized By", width: 180 },
-        { field: "status", headerName: "Status", width: 150 },
+        { field: "finalizedBy", headerName: "Finalized By", width: 150 },
+        { field: "status", headerName: "Status", width: 130 },
         {
             field: "action",
             headerName: "Action",
-            width: 150,
+            width: 240,
             renderCell: (params) => (
                 <>
                     <Button
                         variant="outlined"
+                        color="gray"
+                        sx={{ marginLeft: 1 }}
                         onClick={() => {
-                            console.log(`Navigating to edit decision with ID: ${params.row.id}`);
-                            navigate(`/ranking-decision/edit/${params.row.id}`);
+                            console.log(`Viewing decision with ID: ${params.row.id}`);
+                            navigate(`/ranking-decision/view/${params.row.id}`);
                         }}
                     >
-                        <FaEdit />
+                        <FaEye />
                     </Button>
-                    {/* Only show delete button if status is 'Finalized' */}
-                    {params.row.status !== 'Finalized' && (
+                    {(params.row.status !== 'Confirm') && (
+                        <Button
+                            variant="outlined"
+                            sx={{ marginLeft: 1 }}
+                            onClick={() => {
+                                console.log(`Navigating to edit decision with ID: ${params.row.id}`);
+                                navigate(`/ranking-decision/edit/${params.row.id}`);
+                            }}
+                        >
+                            <FaEdit />
+                        </Button>
+                    )}
+                    {(params.row.status === 'Draft') && (
                         <Button
                             variant="outlined"
                             color="error"
+                            sx={{ marginLeft: 1 }}
                             onClick={() => handleOpenDeleteRankingDecisionModal(params.row.id)}
                         >
                             <MdDeleteForever />

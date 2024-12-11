@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService implements IEmployeeService {
@@ -59,21 +62,35 @@ public class EmployeeService implements IEmployeeService {
     /// Response
     @Override
     public List<EmployeeResponse> getAllEmployeeResponses(List<Employee> allEmployees) {
+        if (allEmployees.isEmpty()) {
+            throw new EntityNotFoundException("No employees found.");
+        }
+
+        // Lấy tất cả các RankingGroup và RankingDecision cần thiết trong một lần
+        List<Integer> groupIds = allEmployees.stream().map(Employee::getGroupId).distinct().collect(Collectors.toList());
+        Map<Integer, RankingGroup> rankingGroupMap = irankingGroupRepository.findAllById(groupIds)
+                .stream().collect(Collectors.toMap(RankingGroup::getGroupId, Function.identity()));
+
+        Map<Integer, RankingDecision> rankingDecisionMap = allEmployees.stream()
+                .map(Employee::getRankingDecisionId)
+                .distinct()
+                .map(decisionId -> iRankingDecisionRepository.findByDecisionId(decisionId))
+                .collect(Collectors.toMap(RankingDecision::getDecisionId, Function.identity()));
+
         List<EmployeeResponse> employeeResponses = new ArrayList<>();
 
         for (Employee employee : allEmployees) {
-            if (allEmployees.isEmpty()) {
-                throw new EntityNotFoundException("No find list employee.");
-            }
             EmployeeResponse response = modelMapper.map(employee, EmployeeResponse.class);
 
             // Set RankingGroupName
-            RankingGroup rankingGroup = irankingGroupRepository.findById(employee.getGroupId())
-                    .orElseThrow(() -> new EntityNotFoundException("RankingGroup not found for group ID: " + employee.getGroupId()));
+            RankingGroup rankingGroup = rankingGroupMap.get(employee.getGroupId());
+            if (rankingGroup == null) {
+                throw new EntityNotFoundException("RankingGroup not found for group ID: " + employee.getGroupId());
+            }
             response.setRankingGroupName(rankingGroup.getGroupName());
 
             // Set CurrentRankingDecision
-            RankingDecision rankingDecision = iRankingDecisionRepository.findByDecisionId(employee.getRankingDecisionId());
+            RankingDecision rankingDecision = rankingDecisionMap.get(employee.getRankingDecisionId());
             if (rankingDecision == null) {
                 throw new EntityNotFoundException("RankingDecision not found for decision ID: " + employee.getRankingDecisionId());
             }
@@ -82,6 +99,7 @@ public class EmployeeService implements IEmployeeService {
             // Tính toán currentRank
             String currentRank = employeeCriteriaService.getCurrentRankForEmployee(employee.getEmployeeId());
             response.setCurrentRank(currentRank);
+
             employeeResponses.add(response);
         }
 

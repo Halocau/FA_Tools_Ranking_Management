@@ -11,9 +11,8 @@ import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
 // API
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
-import Feedback from 'react-bootstrap/esm/Feedback.js';
 
-const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
+const TitleConfiguration = ({ decisionStatus }) => {
     // Data 
     const { id } = useParams(); // Get the ID from the URL
     const [originalTitle, setOriginalTitle] = useState([]);  // Lưu dữ liệu gốc
@@ -21,11 +20,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     const [columnsTitle, setColumnsTitle] = useState([]);
     // Row table
     const [rows, setRows] = useState([]);
-    //Note
-    const [note, setNote] = useState('');
-    const [statusNote, setStatusNote] = useState('');
-
-
     // Load data of table header
     const getCriteriaConfiguration = async () => {
         try {
@@ -50,13 +44,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         getCriteriaConfiguration()
         getTitleConfiguration();
     }, [id]);
-
-    /////////////////////////////////// Xử Lý backend //////////////////////////////////
     // End 
-    ///////////////////////////////// Note ///////////////////////////////////
-    const handleNote = (e) => {
-        showSuccessMessage('Feedback successfully')
-    };
     ///////////////////////////////// Column Title ///////////////////////////////////
     const ColumnsTitle = (criteria) => {
         if (!Array.isArray(criteria)) {
@@ -130,7 +118,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             {/* Surrounding border */}
             <Box sx={{
                 width: "100%",
-                height: 500,
+                height: 450,
                 marginTop: '10px',
                 border: '2px solid black',
                 borderRadius: '8px',
@@ -148,31 +136,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                         getRowId={(row) => row.index}
                         sx={{ '& .MuiDataGrid-columnHeaders': { backgroundColor: '#e0e0e0' } }}
                     />
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginTop: '10px' }}>
-                        <textarea
-                            value={note}
-                            onChange={(e) => {
-                                setStatusNote(e.target.value);
-                                setNote(e.target.value);
-                            }}
-                            placeholder="Note"
-                            style={{
-                                height: '40px', // Chiều cao lớn hơn để nhập nhiều dòng
-                                width: '500px',
-                                padding: '10px',
-                                fontSize: '14px',
-                                borderRadius: '5px',
-                                resize: 'none', // Ngăn chặn thay đổi kích thước (nếu muốn)
-                            }}
-                        />
-                        <Button sx={{ height: '40px', marginLeft: 1 }}
-                            variant="contained"
-                            color="primary"
-                            onClick={handleNote}
-                        >
-                            Note
-                        </Button>
-                    </Box>
                 </Box>
             </Box>
         </div>

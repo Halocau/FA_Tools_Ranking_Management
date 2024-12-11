@@ -28,19 +28,13 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     const getCriteriaConfiguration = async () => {
         try {
             const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
-            setOriginalCriteria((prevCriteria) => {
-                if (JSON.stringify(prevCriteria) !== JSON.stringify(response)) {
-                    return response;
-                }
-                return prevCriteria;
-            });
+            setOriginalCriteria(response)
         } catch (error) {
             console.error("Error fetching criteria:", error);
         }
     };
 
     useEffect(() => {
-        if (!id) return; // Bỏ qua nếu `id` không xác định
         getCriteriaConfiguration();
     }, [id]);
 
@@ -129,7 +123,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     // Load list criteria
     useEffect(() => {
         getCriteriaList();
-    }, []);
+    }, [id]);
     const handleAddCriteria = async () => {
         const addedCriteria = listcriteria.find(
             (criteria) => criteria.criteriaId === selectedCriteria.value
@@ -183,9 +177,9 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             width: 150,
             align: 'center',
             headerAlign: 'center',
-            editable: decisionStatus === 'Draft',
+            editable: decisionStatus === 'Draft' || decisionStatus === 'Rejected',
             renderCell: (params) =>
-                decisionStatus === 'Draft' ? (
+                decisionStatus === 'Draft' || decisionStatus === 'Rejected' ? (
                     <TextField
                         sx={{
                             marginTop: '7px',
@@ -283,7 +277,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                         experimentalFeatures={{ newEditingApi: true }}
                     />
                     {/* Button */}
-                    {decisionStatus === 'Draft' && (
+                    {(decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                             {/* Select to Add a new Criteria */}
                             <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>

@@ -5,10 +5,12 @@ import backend.model.entity.RankingDecision;
 import backend.model.form.RankingDecision.AddCloneRankingDecisionRequest;
 import backend.model.form.RankingDecision.CreateRankingDecision;
 import backend.model.form.RankingDecision.UpdateRankingDecision;
+import backend.model.form.RankingDecision.UpdateStatusRankingDecisionRequest;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.IRankingDecisionService;
 
 import com.turkraft.springfilter.boot.Filter;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +74,19 @@ public class RankingDecisionController {
         iRankingDecisionService.updateRankingDecision(form, decisionId);
         return "Ranking Decision update Successfully";
     }
+    @PutMapping("/update-status")
+    public ResponseEntity<?> updateStatusRankingDecision(@RequestBody @Valid UpdateStatusRankingDecisionRequest form) {
+        try {
+            iRankingDecisionService.updateStatus(form);
+            return ResponseEntity.status(HttpStatus.OK).body(form);
+        } catch (EntityNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        }
+    }
+
+
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteRankingDecision(@PathVariable int id) {

@@ -10,6 +10,7 @@ import { Stepper, Step, StepButton } from '@mui/material';
 import "../../../assets/css/RankingGroups.css"
 // API
 import RankingDecisionAPI from "../../../api/rankingDecisionAPI.js";
+import FeedbacknAPI from "../../../api/FeedbackAPI.js";
 // Hooks
 import useNotification from "../../../hooks/useNotification.jsx";
 //Steper
@@ -19,7 +20,7 @@ import TaskandPriceConfiguration from "../ViewRankingDecision/TaskandPriceConfig
 
 const ViewDecision = () => {
     const role = localStorage.getItem('userRole');
-
+    console.log(role)
     // const navigate = useNavigate(); // To navigate between pages
     const { id } = useParams(); // Get the ID from the URL
     // Edit
@@ -34,14 +35,14 @@ const ViewDecision = () => {
     const [isTaskSaved, setIsTaskSaved] = useState(false);
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
-    // Validation error message
-    const [validationMessage, setValidationMessage] = useState("");
-
+    const [note, setNote] = useState('');
     //////////////////////////////////////////////////////////////////////////// Edit ////////////////////////////////////////////////////////////////////////////
     // Ranking Decision Edit
     const EditRankingDecision = async () => {
         try {
             const decisionData = await RankingDecisionAPI.getRankingDecisionById(id);
+            const Feedback = await FeedbacknAPI.getFeedbackById(id)
+            setNote(Feedback.note)
             // Ensure no undefined values are passed
             setViewDecision({
                 decisionName: decisionData.decisionName || "",
@@ -65,20 +66,17 @@ const ViewDecision = () => {
         2: isTaskSaved,
     });
     useEffect(() => {
-        if (decisionStatus === 'Finalized' || decisionStatus === 'Confirm') {
+        if (['Finalized', 'Confirmed', 'Submitted'].includes(decisionStatus)) {
             setIsCriteriaSaved(true);
             setIsTitleSaved(true);
             setIsTaskSaved(true);
-            setCompleted({
-                0: true,
-                1: true,
-                2: true,
-            });
+            setCompleted({ 0: true, 1: true, 2: true });
         }
     }, [decisionStatus]);
+
     // The function checks to see if it is possible to move to another step
     const canMoveToNextStep = (step) => {
-        if (decisionStatus === 'Finalized' || decisionStatus === 'Confirm') {
+        if (decisionStatus === 'Submitted' || decisionStatus === 'Confirmed' || decisionStatus === 'Finalized') {
             return true;
         } else if (decisionStatus === 'Draft') {
             if (step === 1 && !isCriteriaSaved) return false;
@@ -155,16 +153,14 @@ const ViewDecision = () => {
         }
     };
 
-    //////////////////////////////////////////////////////////////////////////// Submit ////////////////////////////////////////////////////////////////////////////
-
-    const handleSubmit = async () => {
+    //////////////////////////////////////////////////////////////////////////// Confirm ////////////////////////////////////////////////////////////////////////////
+    const handleConfirm = async () => {
         try {
             const updatedDecision = {
-                decisionName: viewDecision.decisionName,
-                decisionStatus: 'Confirm',
-                createBy: localStorage.getItem('userId')
+                decisionId: id,
+                status: 'Confirmed'
             };
-            await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
+            await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
         } catch (error) {
             console.error("Error updating decision:", error);
             showErrorMessage("Error occurred updating decision info. Please try again.");
@@ -172,6 +168,54 @@ const ViewDecision = () => {
         setViewDecision({ status: 'Confirm' })
         setDecisionStatus('Confirm')
         showSuccessMessage('Confirm successfully ');
+    };
+    const handleReject = async () => {
+        try {
+            const updatedDecision = {
+                decisionId: id,
+                status: 'Rejected'
+            };
+            await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
+        } catch (error) {
+            console.error("Error updating decision:", error);
+            showErrorMessage("Error occurred updating decision info. Please try again.");
+        }
+        setViewDecision({ status: 'Rejected' })
+        setDecisionStatus('Rejected')
+        showSuccessMessage('Rejected successfully ');
+    };
+    //////////////////////////////////////////////////////////////////////////// Finalized ////////////////////////////////////////////////////////////////////////////
+    const handleFinalized = async () => {
+        try {
+            const updatedDecision = {
+                decisionId: id,
+                status: 'Finalized',
+            };
+            await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
+            setViewDecision({ status: 'Finalized' })
+            setDecisionStatus('Finalized')
+            showSuccessMessage('Finalized successfully ');
+        } catch (error) {
+            console.error("Error updating decision:", error);
+            showErrorMessage("Error occurred updating decision info. Please try again.");
+        }
+    };
+
+    ///////////////////////////////// Note ///////////////////////////////////
+    const handleNote = async () => {
+        try {
+            const updatedFeedback = {
+                decisionId: id,
+                note: note,
+            };
+            console.log(updatedFeedback)
+            await FeedbacknAPI.updateFeedback(updatedFeedback);
+            showSuccessMessage('Feedback successfully')
+        } catch (error) {
+            console.error("Error updating :", error);
+            showErrorMessage("Error occurred updating . Please try again.");
+        }
+
     };
     return (
         <div style={{ marginTop: "60px" }}>
@@ -183,9 +227,24 @@ const ViewDecision = () => {
                     View Ranking Decision
                 </Typography>
                 {/* Box Decision Info */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: 2 }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center', // Căn giữa theo chiều dọc
+                        justifyContent: 'space-between',
+                        gap: 2,
+                        marginTop: 2
+                    }}
+                >
                     {/* Ranking Decision Name */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%' }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            ustifyContent: 'flex-start',
+                            width: '40%'
+                        }}
+                    >
                         <Typography sx={{ marginRight: 1 }}>Ranking Decision Name:</Typography>
                         <TextField
                             variant="outlined"
@@ -200,44 +259,100 @@ const ViewDecision = () => {
                     </Box>
 
                     {/* Status */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-end' }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-end',
+                            width: '20%'
+                        }}
+                    >
                         <Typography sx={{ marginRight: 1 }}>Status:</Typography>
                         <TextField
                             variant="outlined"
-                            fullWidth
                             value={viewDecision.status}
                             disabled
-                            sx={{ width: '60%' }}
+                            sx={{
+                                width: '60%',
+                            }}
                             InputProps={{
                                 sx: { height: '30px' }
                             }}
                         />
                     </Box>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2,
+                            width: '40%'
+                        }}
+                    >
+                        {/* Button role và decisionStatus */}
+                        {(role === 'MANAGER' || role === 'ADMIN') && decisionStatus === 'Submitted' && (
+                            <>
+                                {/* Confirm Button */}
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleConfirm}
+                                    sx={{
+                                        width: '120px',
+                                    }}
+                                >
+                                    Confirm
+                                </Button>
 
-                    {/* Submit */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '48%', justifyContent: 'flex-start ' }}>
-                        {isCriteriaSaved && isTitleSaved && isTaskSaved && (
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleSubmit}
-                                sx={{
-                                    visibility: decisionStatus === 'Finalized' ? 'visible' : 'hidden',
-                                }}
-                            >
-                                Confirm
-                            </Button>
+                                {/* Reject Button */}
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleReject}
+                                    sx={{
+                                        width: '120px',
+                                    }}
+                                >
+                                    Reject
+                                </Button>
+                            </>
+                        )}
+                        {role === 'ADMIN' && decisionStatus === 'Confirmed' && (
+                            <>
+                                {/* Finalized Button */}
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleFinalized}
+                                    sx={{
+                                        width: '120px',
+                                    }}
+                                >
+                                    Finalized
+                                </Button>
+                                {/* Reject Button */}
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleReject}
+                                    sx={{
+                                        width: '120px',
+                                    }}
+                                >
+                                    Reject
+                                </Button>
+                            </>
                         )}
                     </Box>
 
                 </Box>
+
 
                 {/* Stepper */}
                 <Box sx={{ width: '100%', marginTop: 2 }}>
                     <Stepper
                         activeStep={activeStep}
                         alternativeLabel={true}
-                        nonLinear={['Finalized', 'Confirm'].includes(decisionStatus)}
+                        nonLinear={['Rejected', 'Confirmed', 'Submitted', 'Finalized'].includes(decisionStatus)}
                     >
                         {steps.map((label, index) => (
                             <Step key={label} completed={completed[index]}>
@@ -259,6 +374,31 @@ const ViewDecision = () => {
                     </Stepper>
                 </Box>
                 <Box>{renderStepContent(activeStep)}</Box>
+                {/* Feedback */}
+                <Box sx={{ marginTop: '10px' }}>
+                    <Typography variant="h6">
+                        Note
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
+                        <textarea
+                            value={note}
+                            onChange={(e) => {
+                                setNote(e.target.value);
+                            }}
+                            // placeholder="Note"
+                            style={{ height: '100px', width: '100%', padding: '10px', fontSize: '14px', borderRadius: '5px', resize: 'none' }}
+                        />
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
+                        <Button sx={{ height: '30px', marginLeft: 1 }}
+                            variant="contained"
+                            color="primary"
+                            onClick={handleNote}
+                        >
+                            Save
+                        </Button>
+                    </Box>
+                </Box>
             </Box >
         </div >
 

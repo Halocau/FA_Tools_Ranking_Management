@@ -107,7 +107,6 @@ const CriteriaManagement = () => {
             setTotalElements(totalElements + 1);
             if (criteria.length < pageSize) {
                 setCriteria(prevCriteria => [...prevCriteria, newCriteria]);
-
             } else {
                 setTotalPages(totalPages + 1);
             }
@@ -185,7 +184,7 @@ const CriteriaManagement = () => {
             <Slider />
             <Box>
                 <Typography variant="h6">
-                    <a href="/ranking_decision">Ranking Decision List</a>
+                    <a href="/ranking-decision">Ranking Decision List</a>
                     {<FaAngleRight />}
                     Criteria List
                 </Typography>
