@@ -142,7 +142,7 @@ public class RankingDecisionService implements IRankingDecisionService {
             cloneDecision = iRankingDecisionRepository.save(cloneDecision);  // Save cloneDecision to generate its ID
 
             // Clone Foreign Key 1-N or N-N relationships
-            cloneRankingGroups(existingDecision, cloneDecision, form.getCreatedBy());
+//            cloneRankingGroups(existingDecision, cloneDecision, form.getCreatedBy());
             cloneDecisionCriteria(existingDecision, cloneDecision);
             cloneDecisionTasks(existingDecision, cloneDecision);
             cloneRankingTitles(existingDecision, cloneDecision);
@@ -163,23 +163,23 @@ public class RankingDecisionService implements IRankingDecisionService {
 
     }
 
-    private void cloneRankingGroups(RankingDecision existingDecision, RankingDecision cloneDecision, Integer createdBy) {
-        if (existingDecision.getRankingGroups() != null) {
-            List<RankingGroup> clonedGroups = existingDecision.getRankingGroups().stream()
-                    .map(group -> {
-                        RankingGroup newGroup = new RankingGroup();
-                        newGroup.setGroupName(group.getGroupName());
-                        newGroup.setNumEmployees(group.getNumEmployees());
-                        newGroup.setCurrent_ranking_decision(cloneDecision.getDecisionId());
-                        newGroup.setCreatedBy(createdBy);
-                        return newGroup;
-                    }).collect(Collectors.toList());
-
-            // Save all ranking groups in one go
-            iRankingGroupRepository.saveAll(clonedGroups);
-            cloneDecision.setRankingGroups(clonedGroups);
-        }
-    }
+//    private void cloneRankingGroups(RankingDecision existingDecision, RankingDecision cloneDecision, Integer createdBy) {
+//        if (existingDecision.getRankingGroups() != null) {
+//            List<RankingGroup> clonedGroups = existingDecision.getRankingGroups().stream()
+//                    .map(group -> {
+//                        RankingGroup newGroup = new RankingGroup();
+//                        newGroup.setGroupName(group.getGroupName());
+//                        newGroup.setNumEmployees(group.getNumEmployees());
+//                        newGroup.setCurrent_ranking_decision(cloneDecision.getDecisionId());
+//                        newGroup.setCreatedBy(createdBy);
+//                        return newGroup;
+//                    }).collect(Collectors.toList());
+//
+//            // Save all ranking groups in one go
+//            iRankingGroupRepository.saveAll(clonedGroups);
+//            cloneDecision.setRankingGroups(clonedGroups);
+//        }
+//    }
 
     private void cloneDecisionCriteria(RankingDecision existingDecision, RankingDecision cloneDecision) {
         if (existingDecision.getDecisionCriteria() != null) {

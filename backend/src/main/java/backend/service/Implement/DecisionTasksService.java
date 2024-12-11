@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DecisionTasksService implements IDecisionTasksService {
@@ -73,52 +74,50 @@ public class DecisionTasksService implements IDecisionTasksService {
     public List<DecisionTasksResponse> getDecisionTasksByDecisionId(Integer decisionId) {
         List<DecisionTasks> decisionTasks = iDecisionTasksRepository.findByDecisionId(decisionId);
 
-        // Chuẩn bị dữ liệu trước để giảm truy vấn
-        Map<Integer, Task> taskMap = new HashMap<>();
+        // Lấy danh sách các Task liên quan đến decisionId
+        List<Task> tasks = decisionTasks.stream()
+                .map(decisionTask -> iTaskRepository.findById(decisionTask.getTaskId()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+        // Chuẩn bị dữ liệu để giảm truy vấn
         Map<Integer, List<TaskWages>> taskWagesMap = new HashMap<>();
         Map<Integer, RankingTitle> rankingTitleMap = new HashMap<>();
 
-        // Lấy toàn bộ Task và lưu vào Map
-        for (DecisionTasks decisionTask : decisionTasks) {
-            Integer taskId = decisionTask.getTaskId();
-            if (!taskMap.containsKey(taskId)) {
-                Optional<Task> optionalTask = iTaskRepository.findById(taskId);
-                optionalTask.ifPresent(task -> taskMap.put(taskId, task));
+        for (Task task : tasks) {
+            // Lấy danh sách TaskWages cho từng Task
+            List<TaskWages> taskWagesList = iTaskWagesRepository.findByTaskId(task.getTaskId());
+
+            // Lọc TaskWages dựa trên RankingTitle có cùng decisionId
+            List<TaskWages> filteredTaskWages = taskWagesList.stream()
+                    .filter(taskWage -> {
+                        RankingTitle rankingTitle = iRankingTitleRepository.findById(taskWage.getRankingTitleId()).orElse(null);
+                        return rankingTitle != null && rankingTitle.getDecisionId().equals(decisionId);
+                    })
+                    .collect(Collectors.toList());
+
+            taskWagesMap.put(task.getTaskId(), filteredTaskWages);
+
+            // Lưu thông tin RankingTitle vào map
+            for (TaskWages taskWage : filteredTaskWages) {
+                rankingTitleMap.putIfAbsent(taskWage.getRankingTitleId(),
+                        iRankingTitleRepository.findById(taskWage.getRankingTitleId()).orElse(null));
             }
         }
 
-        // Lấy toàn bộ TaskWages và lưu vào Map theo taskId
-        for (Integer taskId : taskMap.keySet()) {
-            List<TaskWages> taskWagesList = iTaskWagesRepository.findByTaskId(taskId);
-            taskWagesMap.put(taskId, taskWagesList);
-
-            // Lấy RankingTitleId từ TaskWages
-            for (TaskWages taskWage : taskWagesList) {
-                Integer rankingTitleId = taskWage.getRankingTitleId();
-                if (!rankingTitleMap.containsKey(rankingTitleId)) {
-                    Optional<RankingTitle> optionalRankingTitle = iRankingTitleRepository.findById(rankingTitleId);
-                    optionalRankingTitle.ifPresent(rankingTitle -> rankingTitleMap.put(rankingTitleId, rankingTitle));
-                }
-            }
-        }
-
-        // Ánh xạ từ DecisionTasks sang DTO
+        // Ánh xạ dữ liệu sang DTO
         List<DecisionTasksResponse> response = new ArrayList<>();
-
         for (DecisionTasks task : decisionTasks) {
             DecisionTasksResponse taskResponse = new DecisionTasksResponse();
             taskResponse.setDecisionId(task.getDecisionId());
             taskResponse.setTaskId(task.getTaskId());
-
-            // Lấy taskName từ Map taskMap
-            Task taskFromDb = taskMap.get(task.getTaskId());
+            Task taskFromDb = iTaskRepository.findById(task.getTaskId()).orElse(null);
             if (taskFromDb != null) {
                 taskResponse.setTaskName(taskFromDb.getTaskName());
             }
 
             List<TaskWagesResponse> taskWages = new ArrayList<>();
-
-            // Lấy danh sách TaskWages từ Map
             List<TaskWages> taskWagesList = taskWagesMap.get(task.getTaskId());
             if (taskWagesList != null) {
                 for (TaskWages taskWage : taskWagesList) {
@@ -127,7 +126,6 @@ public class DecisionTasksService implements IDecisionTasksService {
                     taskWageResponse.setWorkingHourWage(taskWage.getWorkingHourWage());
                     taskWageResponse.setOvertimeWage(taskWage.getOvertimeWage());
 
-                    // Lấy titleName từ Map rankingTitleMap
                     RankingTitle rankingTitle = rankingTitleMap.get(taskWage.getRankingTitleId());
                     if (rankingTitle != null) {
                         taskWageResponse.setTitleName(rankingTitle.getTitleName());
@@ -143,6 +141,7 @@ public class DecisionTasksService implements IDecisionTasksService {
 
         return response;
     }
+
 
     //UPDATE AND ADD
     @Override

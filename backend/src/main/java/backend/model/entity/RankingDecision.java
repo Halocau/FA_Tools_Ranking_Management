@@ -81,8 +81,8 @@ public class RankingDecision {
 //    @OneToMany(mappedBy = "rankingDecisionId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 //    private List<Employee> employees;
 
-    @OneToMany(mappedBy = "current_ranking_decision", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<RankingGroup> rankingGroups;
+//    @OneToMany(mappedBy = "current_ranking_decision", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+//    private List<RankingGroup> rankingGroups;
 
     @OneToMany(mappedBy = "decisionId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<RankingTitle> rankingTitles;
