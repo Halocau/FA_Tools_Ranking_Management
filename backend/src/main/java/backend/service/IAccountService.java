@@ -3,6 +3,7 @@ package backend.service;
 import backend.model.entity.Account;
 import backend.model.dto.LoginResponse;
 import java.util.List;
+import java.util.Map;
 
 public interface IAccountService {
     public List<Account> getAllAccounts();
@@ -23,7 +24,7 @@ public interface IAccountService {
 
     public String findUsernameById(int id);
 
-    public String verify(Account user);
+    public Map<String, String> verify(Account user);
 
     public LoginResponse login(Account user);
 }
