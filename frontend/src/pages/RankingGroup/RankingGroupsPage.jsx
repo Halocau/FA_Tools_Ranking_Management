@@ -320,7 +320,7 @@ const RankingGroups = () => {
       {/* Search Ranking Group */}
       <SearchComponent onSearch={handleSearch} placeholder=" Sreach Group" />
       {/* Table show Ranking Group */}
-      <Box sx={{ width: "100%", height: 370, marginTop: '50px' }}>
+      <Box sx={{ width: "100%", height: 370, marginTop: '30px' }}>
         <DataGrid
           className="custom-data-grid"
           apiRef={apiRef}

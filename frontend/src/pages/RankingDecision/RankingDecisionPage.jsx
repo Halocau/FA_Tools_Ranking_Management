@@ -142,7 +142,6 @@ const RankingDecision = () => {
             decision => decision.decisionName.toLowerCase() === trimmedName.toLowerCase()
         );
         if (isDuplicate) {
-
             setValidationMessage("Decision name already exists.");
             return;
         }
@@ -155,17 +154,17 @@ const RankingDecision = () => {
             if (clone && selectedCloneDecision) {
                 newDecision = {
                     ...newDecision,
-                    CloneDecision: selectedCloneDecision.decisionId
+                    decisionToCloneId: selectedCloneDecision.decisionId
                 };
                 await RankingDecisionAPI.addRankingDecision(newDecision);
             } else {
                 newDecision = {
                     ...newDecision,
-                    CloneDecision: null
+                    decisionToCloneId: null
                 };
                 await RankingDecisionAPI.addRankingDecision(newDecision);
             }
-            // setRankingDecisions([...rankingDecisions, newDecision]);
+
             setTotalElements(totalElements + 1);
             if (rankingDecisions.length < pageSize) {
                 fetchAllRankingDecisions();
@@ -275,15 +274,15 @@ const RankingDecision = () => {
         { field: "index", headerName: "ID", width: 80 },
         { field: "dicisionname", headerName: "Ranking Decision Name", width: 350 },
         { field: "finalizedAt", headerName: "Finalized At", width: 200 },
-        { field: "finalizedBy", headerName: "Finalized By", width: 180 },
-        { field: "status", headerName: "Status", width: 150 },
+        { field: "finalizedBy", headerName: "Finalized By", width: 150 },
+        { field: "status", headerName: "Status", width: 130 },
         {
             field: "action",
             headerName: "Action",
-            width: 200,
+            width: 240,
             renderCell: (params) => (
                 <>
-                    {(params.row.status === 'Finalized' || params.row.status === 'Confirm') && (
+                    {(params.row.status !== 'Draft') && (
                         <Button
                             variant="outlined"
                             color="gray"
@@ -296,19 +295,19 @@ const RankingDecision = () => {
                             <FaEye />
                         </Button>
                     )}
-                    {(params.row.status !== 'Confirm') && (
-                        <Button
-                            variant="outlined"
-                            sx={{ marginLeft: 1 }}
-                            onClick={() => {
-                                console.log(`Navigating to edit decision with ID: ${params.row.id}`);
-                                navigate(`/ranking-decision/edit/${params.row.id}`);
-                            }}
-                        >
-                            <FaEdit />
-                        </Button>
-                    )}
-                    {(params.row.status === 'Draft') && (
+                    {/* {(params.row.status !== 'Finalized') && ( */}
+                    <Button
+                        variant="outlined"
+                        sx={{ marginLeft: 1 }}
+                        onClick={() => {
+                            console.log(`Navigating to edit decision with ID: ${params.row.id}`);
+                            navigate(`/ranking-decision/edit/${params.row.id}`);
+                        }}
+                    >
+                        <FaEdit />
+                    </Button>
+                    {/* // )} */}
+                    {(params.row.status === 'Draft' || params.row.status === 'Rejected') && (
                         <Button
                             variant="outlined"
                             color="error"
@@ -365,7 +364,7 @@ const RankingDecision = () => {
             {/* Search Decision */}
             <SearchComponent onSearch={handleSearch} placeholder=" Sreach Decision" />
             {/* Table show Ranking Decision */}
-            <Box sx={{ width: "100%", height: 370, marginTop: '50px' }}>
+            <Box sx={{ width: "100%", height: 370, marginTop: '30px' }}>
                 {/* {loading ? <CircularProgress /> : ( */}
                 <DataGrid
                     className="custom-data-grid"

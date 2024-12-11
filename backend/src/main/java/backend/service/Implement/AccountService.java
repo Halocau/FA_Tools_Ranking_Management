@@ -12,7 +12,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AccountService implements IAccountService {
@@ -75,25 +77,39 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public String verify(Account user) {
+    public Map<String, String> verify(Account user) {
+        // Authenticate the user
         Authentication authentication = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getUsername(),
-                        user.getPassword()));
+                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 
         if (authentication.isAuthenticated()) {
-            return jwtService.generateToken(user);
+            // Generate both access and refresh tokens
+            String accessToken = jwtService.generateToken(user);
+            String refreshToken = jwtService.generateRefreshToken(user);
+
+            // Return both tokens in a map
+            Map<String, String> tokens = new HashMap<>();
+            tokens.put("accessToken", accessToken);
+            tokens.put("refreshToken", refreshToken);
+
+            return tokens;
         }
         return null;
     }
 
     @Override
     public LoginResponse login(Account user) {
-        String token = verify(user);
-        return new LoginResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getRoleName(),
-                user.getFullName(),
-                token);
+        Map<String, String> tokens = verify(user);
+
+        if (tokens != null) {
+            return new LoginResponse(
+                    user.getId(),
+                    user.getEmail(),
+                    user.getRoleName(),
+                    user.getFullName(),
+                    tokens.get("accessToken"),
+                    tokens.get("refreshToken"));
+        }
+        throw new IllegalArgumentException("Invalid credentials");
     }
 }

@@ -13,7 +13,8 @@ import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 import RankingTitleAPI from '../../../api/RankingTitleAPI.js';
 
-const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
+const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage, activeStep }) => {
+    const role = localStorage.getItem('userRole');
     // Data 
     const { id } = useParams(); // Get the ID from the URL
     const [originalTitle, setOriginalTitle] = useState([]);  // Lưu dữ liệu gốc
@@ -51,7 +52,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     useEffect(() => {
         getCriteriaConfiguration()
         getTitleConfiguration();
-    }, [id]);
+    }, [activeStep]);
 
     /////////////////////////////////// Xử Lý backend //////////////////////////////////
     const upsertRankingTitle = async (form) => {
@@ -294,8 +295,11 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     };
 
     // End 
-    const handleSaveChanges = () => {
+    const handleSaveChanges = async () => {
         // Kiểm tra xem tất cả rankScore đã được tính toán
+        if (rows.length === 0) {
+            return showErrorMessage('You need to have at least one title in the table.');
+        }
         const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
         // console.log("Original Title:", originalTitle);
         // console.log("Rows:", rows);
@@ -303,10 +307,9 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             showErrorMessage('Tất cả Rank Score phải được tính toán.');
             return; // Dừng lại nếu có lỗi
         }
-        syncDecisionTitle(rows, originalTitle);
-
+        await syncDecisionTitle(rows, originalTitle);
         showSuccessMessage('Title Configuration successfully updated.');
-        console.log("Title Configuration successfully updated.”");
+        getTitleConfiguration();
         goToNextStep(); // Chuyển bước tiếp theo
     };
 
@@ -317,12 +320,14 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             console.error("Invalid criteria data:", criteria);
             return [];
         }
+        // Xác định trạng thái có cho phép chỉnh sửa hay không
+        const isEditable = decisionStatus === 'Draft' || decisionStatus === 'Rejected';
         // Column Criteria
         const criteriaColumns = criteria.map((criteriaItem) => ({
             field: criteriaItem.criteriaName,
             headerName: criteriaItem.criteriaName,
             width: 200,
-            editable: decisionStatus === 'Draft',
+            editable: isEditable, // Chỉ cho phép chỉnh sửa nếu trạng thái là Draft hoặc Rejected
             renderCell: (params) => {
                 const currentCriteria = criteria.find(
                     (c) => c.criteriaName === params.field
@@ -332,8 +337,8 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                     console.warn(`No options found for criteria: ${params.field}`);
                     return null;
                 }
-
-                return (
+                // Nếu cho phép chỉnh sửa, hiển thị Select
+                return isEditable ? (
                     <Select
                         value={params.value || ''}
                         onChange={(e) =>
@@ -355,6 +360,8 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                             </MenuItem>
                         ))}
                     </Select>
+                ) : (
+                    <span>{params.value || ''}</span> // Hiển thị giá trị nếu không chỉnh sửa được
                 );
             },
         }));
@@ -363,7 +370,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             { field: 'titleName', headerName: 'Title Name', width: 100, pinned: 'left' },
             {
                 field: 'rankScore', headerName: 'Rank Score', width: 100, pinned: 'left',
-                editable: decisionStatus === 'Draft', align: 'center', headerAlign: 'center',
+                editable: (decisionStatus === 'Draft' || decisionStatus === 'Rejected'), align: 'center', headerAlign: 'center',
             },
         ];
         // Column Action
@@ -373,7 +380,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 headerName: 'Action',
                 width: 90,
                 renderCell: (params) =>
-                    decisionStatus === 'Draft' && (
+                    (decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
                         <Button
                             variant="outlined"
                             color="error"
@@ -476,7 +483,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                         getRowId={(row) => row.index}
                     />
                     {/* Button */}
-                    {decisionStatus === 'Draft' && (
+                    {(decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                             {/* Add a new Title */}
                             <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>

@@ -5,6 +5,7 @@ import backend.model.entity.RankingDecision;
 import backend.model.form.RankingDecision.AddCloneRankingDecisionRequest;
 import backend.model.form.RankingDecision.CreateRankingDecision;
 import backend.model.form.RankingDecision.UpdateRankingDecision;
+import backend.model.form.RankingDecision.UpdateStatusRankingDecisionRequest;
 import backend.model.page.ResultPaginationDTO;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,7 @@ public interface IRankingDecisionService {
     // form
     public RankingDecision createRankingDecision(CreateRankingDecision form);
     public void updateRankingDecision(UpdateRankingDecision form, int decisionId);
+    public RankingDecision updateStatus(UpdateStatusRankingDecisionRequest form);
     // validate
     boolean isRankingDecisionNameExist(String decisionName);
 

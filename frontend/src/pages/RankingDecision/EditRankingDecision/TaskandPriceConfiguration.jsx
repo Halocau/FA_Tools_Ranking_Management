@@ -17,7 +17,8 @@ import TaskWageAPI from '../../../api/TaskWageAPI.js';
 import taskApi from '../../../api/TaskAPI.js';
 
 
-const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
+const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage, activeStep }) => {
+    const role = localStorage.getItem('userRole');
     // Data
     const { id } = useParams(); // Get the ID from the URL
     const [originalTask, setOriginalTask] = useState([]);  // Lưu dữ liệu gốc
@@ -45,7 +46,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
     useEffect(() => {
         getListTask();
-    }, [id]);
+    }, [activeStep]);
 
     // Load data getTaskConfiguration
     const getTaskConfiguration = async () => {
@@ -69,7 +70,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     useEffect(() => {
         getTaskConfiguration()
         getTitleConfiguration();
-    }, [id]);
+    }, [activeStep]);
 
     //////////////////////////////////// Xử Lý backend /////////////////////////////////
     const upsertDecisionTask = async (data) => {
@@ -189,6 +190,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
     ///////////////////////////// The update function changes //////////////////////////
     const handleCellEditTaskCommit = (taskId, rankingTitleId, wageType, value) => {
+        console.log(taskId, rankingTitleId, wageType, value);
         // Cập nhật giá trị trong editedWages
         setEditedWages({
             ...editedWages,
@@ -202,6 +204,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                     // Cập nhật taskWages cho dòng có taskId tương ứng
                     const updatedTaskWages = row.taskWages.map((wage) => {
                         if (wage.rankingTitleId === rankingTitleId) {
+                            console.log(wageType, value);
                             return {
                                 ...wage,
                                 [wageType]: value, // Cập nhật giá trị wageType
@@ -265,7 +268,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     };
     // End 
     //////////////////////////////////// Save ///////////////////////////////////////
-    const handleSaveChanges = () => {
+    const handleSaveChanges = async () => {
         console.log("TESTTTTTTT!");
         // Hàm kiểm tra giá trị của từng ô trong hàng
         const isRowValid = (row) => {
@@ -291,9 +294,10 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             console.log('Có ô chưa điền dữ liệu');
             return; // Dừng nếu có lỗi
         }
-        synsDecisionTask(rows, originalTask);
+        await synsDecisionTask(rows, originalTask);
         // Hiển thị thông báo thành công và tiếp tục bước tiếp theo
         showSuccessMessage('Task & Price Configuration successfully updated.');
+        getTaskConfiguration();
         goToNextStep({ stayOnCurrentStep: true });
     };
 
@@ -305,17 +309,18 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     }));
 
     // Hàm chuẩn hóa rows
-    const normalizeRows = (rows, allTitles) => {
+    const normalizeRows = (rows) => {
         return rows.map((row) => {
             const updatedRow = { ...row };
             const existingTitleIds = new Set((updatedRow.taskWages || []).map((wage) => wage.rankingTitleId));
 
             // Thêm `rankingTitleId` và `titleName` còn thiếu
-            allTitles.forEach(({ rankingTitleId, titleName }) => {
-                if (!existingTitleIds.has(rankingTitleId)) {
+            title.forEach((title, index) => {
+                console.log('Index: ', index, '+ Title: ', title);
+                if (!existingTitleIds.has(title.rankingTitleId)) {
                     updatedRow.taskWages.push({
-                        rankingTitleId,
-                        titleName,
+                        rankingTitleId: title.rankingTitleId,
+                        titleName: title.rankingTitleName,
                         workingHourWage: null,
                         overtimeWage: null,
                     });
@@ -331,8 +336,8 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
 
     useEffect(() => {
-        const normalized = normalizeRows(originalTask, allTitle);
-        console.log(normalized);
+        const normalized = normalizeRows(originalTask);
+        console.log("Normalized rows:", normalized);
         setRows(normalized);
     }, [originalTask]);
 
@@ -387,7 +392,9 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                             key={`wh-${index}`}
                                             style={{
                                                 backgroundColor: '#e0e0e0',
-                                                minWidth: 120, // Cố định chiều rộng cột này
+                                                width: '120px',
+                                                maxWidth: '120px',
+                                                minWidth: '120px',
                                                 zIndex: 1,
                                                 boxSizing: 'border-box',
                                             }}
@@ -397,221 +404,191 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                     ))}
 
                                     {/* Column action*/}
-                                    <TableCell
-                                        style={{
-                                            position: 'sticky',
-                                            right: 0,
-                                            backgroundColor: '#e0e0e0',
-                                            zIndex: 2,
-                                            boxSizing: 'border-box',
-                                        }}
-                                        rowSpan={2}
-                                    >
-                                        Action
-                                    </TableCell>
+                                    {(decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
+                                        <TableCell
+                                            style={{
+                                                position: 'sticky',
+                                                right: 0,
+                                                backgroundColor: '#e0e0e0',
+                                                zIndex: 2,
+                                                boxSizing: 'border-box',
+                                            }}
+                                            rowSpan={2}
+                                        >
+                                            Action
+                                        </TableCell>
+                                    )}
                                 </TableRow>
                             </TableHead>
 
                             <TableBody>
                                 {rows.map((task) => {
-                                    return (
-                                        <>
-                                            {/* Hàng cho In Working Hour */}
-                                            <TableRow key={`task-${task.taskId}-wh`}>
-                                                {/* Cột Task Name */}
+                                    const renderCell = (taskId, rankingTitleId, wageType, defaultValue) => {
+                                        const isEditable = (role === 'ADMIN' || role === 'MANAGER');
+
+                                        if (role === 'USER' && ['Submitted', 'Confirmed', 'Finalized'].includes(decisionStatus)) {
+                                            // Chỉ hiển thị giá trị nếu vai trò là user có trạng thái 'Submitted', 'Confirmed', 'Finalized'
+                                            return <span>{defaultValue || 'N/A'}</span>;
+                                        }
+                                        return (
+                                            <TextField
+                                                value={editedWages[`${taskId}-${rankingTitleId}-${wageType}`] || defaultValue}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    if (/^\d*$/.test(value)) { // Chỉ cho phép số
+                                                        handleCellEditTaskCommit(taskId, rankingTitleId, wageType, value);
+                                                    }
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (["e", "E", "+", "-", ".", ","].includes(e.key)) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                                size="small"
+                                                variant="outlined"
+                                                fullWidth
+                                                type="number"
+                                                inputMode="numeric"
+                                                disabled={!isEditable} // Khóa chỉnh sửa nếu không phải Draft hoặc Admin
+                                            />
+                                        );
+                                    };
+                                    const renderRow = (type, wageKey) => (
+                                        <TableRow key={`task-${task.taskId}-${type}`}>
+                                            {/* Loại công việc */}
+                                            {type === "In Working Hour" && (
                                                 <TableCell
                                                     style={{
-                                                        position: 'sticky', left: 0, background: '#fff', zIndex: 2, boxSizing: 'border-box',
-                                                        width: '120px',
-                                                        maxWidth: '120px',
-                                                        minWidth: '120px',
-                                                        overflow: 'hidden',
+                                                        position: 'sticky', left: 0, background: '#fff', zIndex: 2,
+                                                        width: '120px', maxWidth: '120px', minWidth: '120px',
                                                     }}
                                                     rowSpan={2}
                                                 >
                                                     {task.taskName}
                                                 </TableCell>
-                                                {/* Row task type Working Hour */}
-                                                <TableCell style={{
-                                                    position: 'sticky', left: 120, background: '#fff', zIndex: 2, boxSizing: 'border-box',
-                                                    width: '120px',
-                                                    maxWidth: '120px',
-                                                    minWidth: '120px',
-                                                    overflow: 'hidden',
-                                                }}>In Working Hour</TableCell>
-                                                {/* Rows Title for Working Hour */}
-                                                {allTitle.map((title, index) => {
-                                                    const titleData = task.taskWages.find(
-                                                        (wage) => wage.rankingTitleId === title.rankingTitleId
-                                                    ) || { rankingTitleId: title.rankingTitleId, workingHourWage: '' };
-
-                                                    const workingHourWage = titleData ? titleData.workingHourWage : "";
-                                                    return (
-                                                        <TableCell key={`wh-${index}`}>
-                                                            <TextField
-                                                                value={editedWages[`${task.taskId}-${title.rankingTitleId}-workingHourWage`] || workingHourWage}
-                                                                onChange={(e) => {
-                                                                    const value = e.target.value;
-                                                                    // Chỉ cho phép số dương (hoặc rỗng)
-                                                                    if (/^\d*$/.test(value)) {
-                                                                        handleCellEditTaskCommit(task.taskId, title.rankingTitleId, "workingHourWage", value);
-                                                                    }
-                                                                }}
-                                                                onKeyDown={(e) => {
-                                                                    // Chặn các ký tự không phải số (trừ phím điều khiển)
-                                                                    const invalidKeys = ["e", "E", "+", "-", ".", ","];
-                                                                    if (invalidKeys.includes(e.key)) {
-                                                                        e.preventDefault();
-                                                                    }
-                                                                }}
-                                                                size="small"
-                                                                variant="outlined"
-                                                                fullWidth
-                                                                type="number"
-                                                                inputMode="numeric"
-                                                            />
-                                                        </TableCell>
-                                                    );
-                                                })}
-                                                {/* Row Action */}
+                                            )}
+                                            <TableCell
+                                                style={{
+                                                    position: 'sticky', left: 120, background: '#fff', zIndex: 2,
+                                                    width: '120px', maxWidth: '120px', minWidth: '120px',
+                                                }}
+                                            >
+                                                {type}
+                                            </TableCell>
+                                            {allTitle.map((title, index) => {
+                                                const titleData = task.taskWages.find(
+                                                    (wage) => wage.rankingTitleId === title.rankingTitleId
+                                                ) || {};
+                                                const defaultValue = titleData[wageKey] || "";
+                                                return (
+                                                    <TableCell key={`${type}-${index}`}>
+                                                        {renderCell(task.taskId, title.rankingTitleId, wageKey, defaultValue)}
+                                                    </TableCell>
+                                                );
+                                            })}
+                                            {/* Nút xóa chỉ xuất hiện ở hàng đầu tiên nếu không phải MANAGER */}
+                                            {type === "In Working Hour" && (decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
                                                 <TableCell
                                                     style={{
-                                                        position: 'sticky',
-                                                        right: 0,
-                                                        background: '#fff',
-                                                        zIndex: 2,
-                                                        boxSizing: 'border-box',
+                                                        position: 'sticky', right: 0, background: '#fff', zIndex: 2,
                                                     }}
                                                     rowSpan={2}
                                                 >
                                                     <Button
                                                         variant="outlined"
                                                         color="error"
-                                                        onClick={() => handleDeleteRowData(task.taskId)} // Gọi hàm xóa khi nhấn nút
+                                                        onClick={() => handleDeleteRowData(task.taskId)}
                                                     >
                                                         <MdDeleteForever />
                                                     </Button>
                                                 </TableCell>
-                                            </TableRow>
-                                            {/* Hàng cho Overtime ( ở type Ovrertime thì không cần tablecell cho taskname và action vì lấy ở type In Working Hour */}
-                                            <TableRow key={`task-${task.taskId}-ot`}>
-                                                {/* Row task type Overtime */}
-                                                <TableCell style={{
-                                                    position: 'sticky', background: '#fff', left: 120, zIndex: 2, boxSizing: 'border-box',
-                                                    width: '120px',
-                                                    maxWidth: '120px',
-                                                    minWidth: '120px',
-                                                    overflow: 'hidden',
-                                                }}>Overtime</TableCell>
-                                                {/* Rows Title for cho Overtime */}
-                                                {allTitle.map((title, index) => {
-                                                    const titleData = task.taskWages.find(wage => wage.rankingTitleId === title.rankingTitleId);
-                                                    const overtimeWage = titleData ? titleData.overtimeWage : "";
-                                                    return (
-                                                        <TableCell key={`ot-${index}`}>
-                                                            <TextField
-                                                                value={editedWages[`${task.taskId}-${title.rankingTitleId}-overtimeWage`] || overtimeWage}
-                                                                onChange={(e) => {
-                                                                    const value = e.target.value;
-                                                                    // Chỉ cho phép số dương (hoặc rỗng)
-                                                                    if (/^\d*$/.test(value)) {
-                                                                        handleCellEditTaskCommit(task.taskId, title.rankingTitleId, "overtimeWage", value);
-                                                                    }
-                                                                }}
-                                                                onKeyDown={(e) => {
-                                                                    // Chặn các ký tự không phải số (trừ phím điều khiển)
-                                                                    const invalidKeys = ["e", "E", "+", "-", ".", ","];
-                                                                    if (invalidKeys.includes(e.key)) {
-                                                                        e.preventDefault();
-                                                                    }
-                                                                }}
-                                                                size="small"
-                                                                variant="outlined"
-                                                                fullWidth
-                                                                type="text"
-                                                                inputMode="numeric"
-                                                            />
-                                                        </TableCell>
+                                            )}
+                                        </TableRow>
+                                    );
 
-                                                    );
-                                                })}
-                                            </TableRow>
+                                    return (
+                                        <>
+                                            {renderRow("In Working Hour", "workingHourWage")}
+                                            {renderRow("Overtime", "overtimeWage")}
                                         </>
                                     );
                                 })}
                             </TableBody>
+
                         </Table>
                     </TableContainer>
 
                     {/* Button */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
-                        {/* Select to Add a new Task*/}
-                        {/* Select to Add a new Task */}
-                        {decisionStatus === 'Draft' && (
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                                <Select
-                                    isSearchable={true}
-                                    placeholder="Select to Add a new Task"
-                                    options={listtask
-                                        .filter((task) => !rows.some((row) => row.taskId === task.taskId))
-                                        .map((task) => ({ value: task.taskId, label: task.taskName }))}
-                                    styles={{
-                                        container: (provided) => ({ ...provided, width: '300px' }),
-                                        control: (provided) => ({
-                                            ...provided,
-                                            height: '40px',
-                                            fontSize: '16px',
+                        <Box>
+                            {/* Select to Add a new Task */}
+                            {(decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+                                    <Select
+                                        isSearchable={true}
+                                        placeholder="Select to Add a new Task"
+                                        options={listtask
+                                            .filter((task) => !rows.some((row) => row.taskId === task.taskId))
+                                            .map((task) => ({ value: task.taskId, label: task.taskName }))}
+                                        styles={{
+                                            container: (provided) => ({ ...provided, width: '300px' }),
+                                            control: (provided) => ({
+                                                ...provided,
+                                                height: '40px',
+                                                fontSize: '16px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                            }),
+                                            placeholder: (provided) => ({ ...provided, color: '#888' }),
+                                            menu: (provided) => ({
+                                                ...provided,
+                                                maxHeight: 300,
+                                                overflowY: 'auto',
+                                                zIndex: 9999,
+                                            }),
+                                        }}
+                                        menuPlacement="top"
+                                        value={selectedTask}
+                                        onChange={(option) => {
+                                            setSelectedTask(option)
+                                        }}
+                                    />
+                                    <IconButton
+                                        onClick={handleAddTask}
+                                        color={selectedTask ? 'primary' : 'default'}
+                                        sx={{
+                                            marginLeft: 1,
+                                            height: '30px',
                                             display: 'flex',
                                             alignItems: 'center',
-                                        }),
-                                        placeholder: (provided) => ({ ...provided, color: '#888' }),
-                                        menu: (provided) => ({
-                                            ...provided,
-                                            maxHeight: 300,
-                                            overflowY: 'auto',
-                                            zIndex: 9999,
-                                        }),
-                                    }}
-                                    menuPlacement="top"
-                                    value={selectedTask}
-                                    onChange={(option) => {
-                                        setSelectedTask(option)
-                                    }}
-                                />
-                                <IconButton
-                                    onClick={handleAddTask}
-                                    color={selectedTask ? 'primary' : 'default'}
-                                    sx={{
-                                        marginLeft: 1,
-                                        height: '30px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                    }}
+                                        }}
+                                    >
+                                        <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
+                                    </IconButton>
+                                </Box>
+                            )}
+                        </Box>
+                        {/* Cancel and Save */}
+                        {(role === 'ADMIN' || role === 'MANAGER' || decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                                {/* Cancel*/}
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    onClick={handleCancelChanges}
                                 >
-                                    <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
-                                </IconButton>
+                                    Cancel
+                                </Button>
+                                {/* Save */}
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleSaveChanges}
+                                >
+                                    Save
+                                </Button>
                             </Box>
                         )}
-
-                        {/* Cancel and Save */}
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                            {/* Cancel*/}
-                            <Button
-                                variant="contained"
-                                color="error"
-                                onClick={handleCancelChanges}
-                            >
-                                Cancel
-                            </Button>
-                            {/* Save */}
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleSaveChanges}
-                            >
-                                Save
-                            </Button>
-                        </Box>
                     </Box>
                 </Box>
             </Box>

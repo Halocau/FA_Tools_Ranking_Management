@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { FaEdit, FaAngleRight } from "react-icons/fa";
+import { MdDeleteForever } from "react-icons/md";
 
 //Layout
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
@@ -235,16 +237,15 @@ const EditCriteria = () => {
                         variant="outlined"
                         onClick={() => handleOpenEditOptionModal(params.row)}
                     >
-                        <EditIcon />
+                        <FaEdit />
                     </Button>
                     <Button
                         variant="outlined"
                         color="error"
-                        size="small"
                         onClick={() => handleDeleteOption(params.row.id)}
                         sx={{ marginLeft: 1 }}
                     >
-                        <DeleteIcon />
+                        <MdDeleteForever />
                     </Button>
                 </>
             ),
@@ -256,7 +257,7 @@ const EditCriteria = () => {
         <Box sx={{ marginTop: "60px" }}>
             <Slider />
             <Typography variant="h6">
-                <a href="/ranking-decision">Ranking Decision List</a> {'>'} <a href="/criteria-management">Criteria List</a> {'>'} Edit Criteria
+                <a href="/ranking-decision">Ranking Decision List</a> {<FaAngleRight />} <a href="/criteria-management">Criteria List</a> {<FaAngleRight />} Edit Criteria
             </Typography>
 
 
@@ -281,7 +282,15 @@ const EditCriteria = () => {
                 <Typography variant="h5">Score List</Typography>
 
                 <SearchComponent onSearch={handleSearch}></SearchComponent>
-
+                <Button
+                    variant="contained"
+                    color="primary"
+                    // startIcon={<AddIcon />}
+                    // sx={{ marginTop: 2 }}
+                    onClick={handleOpenAddOptionModal}
+                >
+                    Add New Option
+                </Button>
             </Box>
 
             <Box sx={{ width: "100%" }}>
@@ -308,19 +317,6 @@ const EditCriteria = () => {
                     disableRowSelectionOnClick
                 />
             </Box>
-
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<AddIcon />}
-                    // sx={{ marginTop: 2 }}
-                    onClick={handleOpenAddOptionModal}
-                >
-                    Add New Option
-                </Button>
-            </div>
-
 
             {/* Modal for editing criteria name */}
             <Modal open={showEditNameModal} onClose={() => setShowEditNameModal(false)}>

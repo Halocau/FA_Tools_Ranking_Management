@@ -312,12 +312,12 @@ const TaskManagement = () => {
     { field: "index", headerName: "ID", width: 80 },
     { field: "taskName", headerName: "Task Name", width: 400 },
     { field: "createdBy", headerName: "Created By", width: 200 },
-    { field: "createdAt", headerName: "Created At", width: 180 },
-    { field: "updatedAt", headerName: "Updated At", width: 159 },
+    { field: "createdAt", headerName: "Created At", width: 150 },
+    { field: "updatedAt", headerName: "Updated At", width: 150 },
     {
       field: "action",
       headerName: "Action",
-      width: 150,
+      width: 180,
       renderCell: (params) => (
         <>
           <Button
@@ -329,7 +329,7 @@ const TaskManagement = () => {
           <Button
             variant="outlined"
             color="error"
-            // size="small"
+            sx={{ ml: 1 }}
             onClick={() => handleOpenDeleteModal(params.row.id)}
           >
             <MdDeleteForever />
@@ -342,38 +342,38 @@ const TaskManagement = () => {
   return (
     <div style={{ marginTop: "60px" }}>
       <Slider />
-      <Box sx={{ marginTop: 4, padding: 2 }}>
+      <Box >
         <Typography variant="h6">
-          <a href="/ranking_decision">Ranking Decision List</a>{" "}
+          <a href="/ranking-decision">Ranking Decision List</a>{" "}
           {<FaAngleRight />}
           Task Management
         </Typography>
-        <div>
-          <SearchComponent onSearch={handleSearch} placeholder=" Sreach Task" />
-        </div>
-        <DataGrid
-          className="custom-data-grid"
-          apiRef={apiRef}
-          rows={rows}
-          columns={columns}
-          checkboxSelection
-          pagination
-          pageSizeOptions={[5, 10, 20]}
-          getRowId={(row) => row.id}
-          rowCount={totalElements}
-          paginationMode="server"
-          paginationModel={{
-            page: page - 1, // Adjusted for 0-based index
-            pageSize: pageSize,
-          }}
-          onPaginationModelChange={(model) => {
-            setPage(model.page + 1); // Set 1-based page for backend
-            setpageSize(model.pageSize);
-          }}
-          disableNextButton={page >= totalPages}
-          disablePrevButton={page <= 1}
-          disableRowSelectionOnClick
-        />
+        <SearchComponent onSearch={handleSearch} placeholder=" Sreach Task" />
+        <Box sx={{ width: "100%", height: 400, marginTop: '30px' }}>
+          <DataGrid
+            className="custom-data-grid"
+            apiRef={apiRef}
+            rows={rows}
+            columns={columns}
+            checkboxSelection
+            pagination
+            pageSizeOptions={[5, 10, 20]}
+            getRowId={(row) => row.id}
+            rowCount={totalElements}
+            paginationMode="server"
+            paginationModel={{
+              page: page - 1, // Adjusted for 0-based index
+              pageSize: pageSize,
+            }}
+            onPaginationModelChange={(model) => {
+              setPage(model.page + 1); // Set 1-based page for backend
+              setpageSize(model.pageSize);
+            }}
+            disableNextButton={page >= totalPages}
+            disablePrevButton={page <= 1}
+            disableRowSelectionOnClick
+          />
+        </Box>
         <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
           <Button
             variant="contained"

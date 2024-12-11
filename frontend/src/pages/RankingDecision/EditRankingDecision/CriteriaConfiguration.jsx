@@ -28,18 +28,13 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     const getCriteriaConfiguration = async () => {
         try {
             const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
-            setOriginalCriteria((prevCriteria) => {
-                if (JSON.stringify(prevCriteria) !== JSON.stringify(response)) {
-                    return response;
-                }
-                return prevCriteria;
-            });
+            setOriginalCriteria(response)
         } catch (error) {
             console.error("Error fetching criteria:", error);
         }
     };
+
     useEffect(() => {
-        if (!id) return; // Bỏ qua nếu `id` không xác định
         getCriteriaConfiguration();
     }, [id]);
 
@@ -60,7 +55,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             console.error("Error deleting decision criteria:", error);
         }
     }
-    const syncDecisionCriteria = (rows, originalCriteria) => {
+    const syncDecisionCriteria = async (rows, originalCriteria) => {
         try {
             // Create a map of original criteria for quick lookup
             const originalCriteriaMap = new Map(
@@ -128,7 +123,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     // Load list criteria
     useEffect(() => {
         getCriteriaList();
-    }, []);
+    }, [id]);
     const handleAddCriteria = async () => {
         const addedCriteria = listcriteria.find(
             (criteria) => criteria.criteriaId === selectedCriteria.value
@@ -156,14 +151,14 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
         return totalWeight;
     };
     // End
-    const handleSaveChanges = () => {
+    const handleSaveChanges = async () => {
         const checkWeight = rows.some((row) => row.weight <= 0);
         if (checkWeight) {
             showErrorMessage('Weight must be greater than 0');
         } else {
             const totalWeight = calculateTotalWeight();
             if (totalWeight === 100) {
-                syncDecisionCriteria(rows, originalCriteria);
+                await syncDecisionCriteria(rows, originalCriteria);
                 showSuccessMessage("Criteria Configuration saved successfully!");
                 getCriteriaList();
                 goToNextStep();
@@ -182,9 +177,9 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
             width: 150,
             align: 'center',
             headerAlign: 'center',
-            editable: decisionStatus === 'Draft',
+            editable: decisionStatus === 'Draft' || decisionStatus === 'Rejected',
             renderCell: (params) =>
-                decisionStatus === 'Draft' ? (
+                decisionStatus === 'Draft' || decisionStatus === 'Rejected' ? (
                     <TextField
                         sx={{
                             marginTop: '7px',
@@ -282,7 +277,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                         experimentalFeatures={{ newEditingApi: true }}
                     />
                     {/* Button */}
-                    {decisionStatus === 'Draft' && (
+                    {(decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, marginTop: '20px' }}>
                             {/* Select to Add a new Criteria */}
                             <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>

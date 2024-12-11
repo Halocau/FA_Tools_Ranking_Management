@@ -20,6 +20,7 @@ import TitleConfiguration from "./TitleConfiguration.jsx";
 import TaskandPriceConfiguration from "./TaskandPriceConfiguration.jsx";
 
 const EditDecision = () => {
+    const role = localStorage.getItem('userRole');
     // const navigate = useNavigate(); // To navigate between pages
     const { id } = useParams(); // Get the ID from the URL
     // Edit
@@ -112,7 +113,7 @@ const EditDecision = () => {
         2: isTaskSaved,
     });
     useEffect(() => {
-        if (decisionStatus === 'Finalized') {
+        if (['Submitted', 'Confirmed', 'Finalized'].includes(decisionStatus)) {
             setIsCriteriaSaved(true);
             setIsTitleSaved(true);
             setIsTaskSaved(true);
@@ -125,9 +126,9 @@ const EditDecision = () => {
     }, [decisionStatus]);
     // The function checks to see if it is possible to move to another step
     const canMoveToNextStep = (step) => {
-        if (decisionStatus === 'Finalized') {
+        if (decisionStatus === 'Submitted' || decisionStatus === 'Confirmed' || decisionStatus === 'Finalized') {
             return true;
-        } else if (decisionStatus === 'Draft') {
+        } else if (decisionStatus === 'Draft' || decisionStatus === 'Rejected') {
             if (step === 1 && !isCriteriaSaved) return false;
             if (step === 2 && !isTitleSaved) return false;
         }
@@ -135,14 +136,13 @@ const EditDecision = () => {
     };
     // The function handles when the user clicks on a step
     const handleStepChange = (step) => {
-        console.log(step)
         if (step < activeStep || canMoveToNextStep(step)) {
             setActiveStep(step);
         }
     };
     // The function moves to the next step
     const goToNextStep = ({ stayOnCurrentStep = false } = {}) => {
-        if (decisionStatus === 'Draft') {
+        if (decisionStatus === 'Draft' || decisionStatus === 'Rejected') {
             if (activeStep === 0 && !isCriteriaSaved) {
                 setIsCriteriaSaved(true);
                 setCompleted((prev) => ({ ...prev, 0: true }));
@@ -155,7 +155,7 @@ const EditDecision = () => {
                 setIsTaskSaved(true);
                 setCompleted((prev) => ({ ...prev, 2: true }));
             }
-        } else if (decisionStatus === 'Finalized') {
+        } else if (decisionStatus === 'Submitted' || decisionStatus === 'Confirmed' || decisionStatus === 'Finalized') {
             setIsCriteriaSaved(true);
             setIsTitleSaved(true);
             setIsTaskSaved(true);
@@ -177,6 +177,7 @@ const EditDecision = () => {
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
                         showSuccessMessage={showSuccessMessage}
+                        activeStep={activeStep}
                     />
                 );
             case 1:
@@ -186,6 +187,7 @@ const EditDecision = () => {
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
                         showSuccessMessage={showSuccessMessage}
+                        activeStep={activeStep}
                     />
                 );
             case 2:
@@ -195,6 +197,7 @@ const EditDecision = () => {
                         goToNextStep={goToNextStep}
                         showErrorMessage={showErrorMessage}
                         showSuccessMessage={showSuccessMessage}
+                        activeStep={activeStep}
                     />
                 );
             default:
@@ -207,17 +210,16 @@ const EditDecision = () => {
     const handleSubmit = async () => {
         try {
             const updatedDecision = {
-                decisionName: editDecision.decisionName,
-                decisionStatus: 'Finalized',
-                createBy: localStorage.getItem('userId')
+                decisionId: id,
+                status: 'Submitted'
             };
-            await RankingDecisionAPI.updateRankingDecision(id, updatedDecision);
+            await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
         } catch (error) {
             console.error("Error updating decision:", error);
             showErrorMessage("Error occurred updating decision info. Please try again.");
         }
-        setEditDecision({ status: 'Finalized' })
-        setDecisionStatus('Finalized')
+        setEditDecision({ status: 'Submitted' })
+        setDecisionStatus('Submitted')
         showSuccessMessage('Submit successfully ');
     };
     return (
@@ -272,10 +274,10 @@ const EditDecision = () => {
                                 color="primary"
                                 onClick={handleSubmit}
                                 sx={{
-                                    visibility: decisionStatus === 'Draft' ? 'visible' : 'hidden',
+                                    visibility: (decisionStatus === 'Draft' || decisionStatus === 'Rejected') ? 'visible' : 'hidden',
                                 }}
                             >
-                                Finalized
+                                Submit
                             </Button>
                         )}
                     </Box>
@@ -287,8 +289,7 @@ const EditDecision = () => {
                     <Stepper
                         activeStep={activeStep}
                         alternativeLabel={true}
-                        nonLinear={decisionStatus === 'Finalized'}
-                    >
+                        nonLinear={['Submitted', 'Confirmed', 'Finalized'].includes(decisionStatus)}                    >
                         {steps.map((label, index) => (
                             <Step key={label} completed={completed[index]}>
                                 <StepButton
@@ -340,7 +341,6 @@ const EditDecision = () => {
                                     <InputAdornment position="end">
                                         <IconButton
                                             onClick={() => {
-                                                console.log(newDecisionName)
                                                 setNewDecisionName('');
                                                 setValidationMessage("");
                                             }}

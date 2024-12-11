@@ -49,7 +49,9 @@ const CriteriaConfiguration = React.lazy(() =>
 const ProtectedRoutes = React.lazy(() =>
   import("./components/Protected/ProtectedRoute")
 );
-
+const ViewRankingDecision = React.lazy(() =>
+  import("./pages/RankingDecision/ViewRankingDecision/ViewRankingDecision")
+);
 const LayoutWrapper = ({ children }) => (
   <>
     <Row>
@@ -164,6 +166,18 @@ function AppRoutes() {
             <ProtectedRoutes>
               <LayoutWrapper>
                 <EditRankingDecision />
+              </LayoutWrapper>
+            </ProtectedRoutes>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/ranking-decision/view/:id"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoutes>
+              <LayoutWrapper>
+                <ViewRankingDecision />
               </LayoutWrapper>
             </ProtectedRoutes>
           </Suspense>

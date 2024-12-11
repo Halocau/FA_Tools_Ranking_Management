@@ -8,6 +8,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.io.Decoders;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.crypto.KeyGenerator;
@@ -21,18 +22,11 @@ import java.util.function.Function;
 @Service
 public class JWTService {
 
-    private String secretkey = "";
+    @Value("${jwt.accesstoken.secret}")
+    private String accessKey;
 
-    public JWTService() {
-
-        try {
-            KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
-            SecretKey sk = keyGen.generateKey();
-            secretkey = Base64.getEncoder().encodeToString(sk.getEncoded());
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    @Value("${jwt.refreshtoken.secret}")
+    private String refreshkey;
 
     public String generateToken(Account account) {
         Map<String, Object> claims = new HashMap<>();
@@ -41,46 +35,71 @@ public class JWTService {
                 .add(claims)
                 .subject(account.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 30))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
                 .and()
-                .signWith(getKey())
+                .signWith(getKey(accessKey))
                 .compact();
-
     }
 
-    private SecretKey getKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretkey);
+    public String generateRefreshToken(Account account) {
+        Map<String, Object> claims = new HashMap<>();
+        return Jwts.builder()
+                .claims()
+                .add(claims)
+                .subject(account.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7))
+                .and()
+                .signWith(getKey(refreshkey))
+                .compact();
+    }
+
+    private SecretKey getKey(String key) {
+        byte[] keyBytes = Base64.getDecoder().decode(key);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String extractUserName(String token) {
-        // extract the username from jwt token
-        return extractClaim(token, Claims::getSubject);
+    // extract the username from jwt token
+    public String extractUserName(String token, String type) {
+        if (type.equals("refresh")) {
+            return extractClaim(token, refreshkey, Claims::getSubject);
+        } else
+            return extractClaim(token, accessKey, Claims::getSubject);
     }
 
-    private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {
-        final Claims claims = extractAllClaims(token);
+    private <T> T extractClaim(String token, String key, Function<Claims, T> claimResolver) {
+        final Claims claims = extractAllClaims(token, key);
         return claimResolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token) {
+    private Claims extractAllClaims(String token, String key) {
         return Jwts.parser()
-                .verifyWith(getKey())
+                .verifyWith(getKey(key))
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
-        final String userName = extractUserName(token);
-        return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        final String userName = extractUserName(token, "access");
+        return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token, accessKey));
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+    public boolean validateRefreshToken(String token, UserDetails userDetails) {
+        final String userName = extractUserName(token, "refresh");
+        return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token, refreshkey));
     }
 
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    private boolean isTokenExpired(String token, String key) {
+        if (extractExpiration(token, key).before(new Date())) {
+            System.out.println("EXPIRED TOKEN");
+        } else {
+            System.out.println("NOT EXPIRED TOKEN");
+        }
+        return extractExpiration(token, key).before(new Date());
+    }
+
+    private Date extractExpiration(String token, String key) {
+        return extractClaim(token, key, Claims::getExpiration);
     }
 }

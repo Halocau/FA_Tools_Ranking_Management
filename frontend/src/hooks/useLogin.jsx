@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import the useNavigate hook
-import http from "../api/apiClient";
 import unauthClient from "../api/baseapi/UnauthorAPI";
 import { useAuth } from "../contexts/AuthContext"; // Import useAuth from AuthContext
 
@@ -17,15 +16,16 @@ const useLogin = () => {
         username,
         password
       });
-      const { id, email, role, fullName, token } = response.data;
+      const { id, email, role, fullName, token, refreshToken } = response.data;
 
       // Store the token and other user details in local storage
-      localStorage.setItem('jwtToken', token);
+      localStorage.setItem('accessToken', token);
       localStorage.setItem('userId', id);
       localStorage.setItem('userRole', role);
       localStorage.setItem('userFullName', fullName);
       localStorage.setItem('userEmail', email);
       localStorage.setItem('user', response.data);
+      localStorage.setItem('refreshToken', refreshToken);
       console.log(response.data);
       setData(response.data); // Store the response data in the component state
       // Navigate to /ranking-groups after successful login
@@ -37,11 +37,23 @@ const useLogin = () => {
     }
   };
 
+  const logout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userFullName');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('user');
+    localStorage.removeItem('refreshToken');
+    window.location.href = "/";
+  }
+
   return {
     data,
     loading,
     error,
     login,
+    logout
   };
 };
 
