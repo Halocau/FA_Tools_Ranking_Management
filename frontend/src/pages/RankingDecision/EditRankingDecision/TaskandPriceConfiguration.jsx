@@ -268,7 +268,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     };
     // End 
     //////////////////////////////////// Save ///////////////////////////////////////
-    const handleSaveChanges = () => {
+    const handleSaveChanges = async () => {
         console.log("TESTTTTTTT!");
         // Hàm kiểm tra giá trị của từng ô trong hàng
         const isRowValid = (row) => {
@@ -294,9 +294,10 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             console.log('Có ô chưa điền dữ liệu');
             return; // Dừng nếu có lỗi
         }
-        synsDecisionTask(rows, originalTask);
+        await synsDecisionTask(rows, originalTask);
         // Hiển thị thông báo thành công và tiếp tục bước tiếp theo
         showSuccessMessage('Task & Price Configuration successfully updated.');
+        getTaskConfiguration();
         goToNextStep({ stayOnCurrentStep: true });
     };
 
