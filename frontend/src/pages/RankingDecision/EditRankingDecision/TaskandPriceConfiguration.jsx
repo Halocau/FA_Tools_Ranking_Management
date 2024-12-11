@@ -190,6 +190,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
     ///////////////////////////// The update function changes //////////////////////////
     const handleCellEditTaskCommit = (taskId, rankingTitleId, wageType, value) => {
+        console.log(taskId, rankingTitleId, wageType, value);
         // Cập nhật giá trị trong editedWages
         setEditedWages({
             ...editedWages,
@@ -203,6 +204,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                     // Cập nhật taskWages cho dòng có taskId tương ứng
                     const updatedTaskWages = row.taskWages.map((wage) => {
                         if (wage.rankingTitleId === rankingTitleId) {
+                            console.log(wageType, value);
                             return {
                                 ...wage,
                                 [wageType]: value, // Cập nhật giá trị wageType
@@ -266,7 +268,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     };
     // End 
     //////////////////////////////////// Save ///////////////////////////////////////
-    const handleSaveChanges = () => {
+    const handleSaveChanges = async () => {
         console.log("TESTTTTTTT!");
         // Hàm kiểm tra giá trị của từng ô trong hàng
         const isRowValid = (row) => {
@@ -292,9 +294,10 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             console.log('Có ô chưa điền dữ liệu');
             return; // Dừng nếu có lỗi
         }
-        synsDecisionTask(rows, originalTask);
+        await synsDecisionTask(rows, originalTask);
         // Hiển thị thông báo thành công và tiếp tục bước tiếp theo
         showSuccessMessage('Task & Price Configuration successfully updated.');
+        getTaskConfiguration();
         goToNextStep({ stayOnCurrentStep: true });
     };
 
@@ -306,17 +309,18 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     }));
 
     // Hàm chuẩn hóa rows
-    const normalizeRows = (rows, allTitles) => {
+    const normalizeRows = (rows) => {
         return rows.map((row) => {
             const updatedRow = { ...row };
             const existingTitleIds = new Set((updatedRow.taskWages || []).map((wage) => wage.rankingTitleId));
 
             // Thêm `rankingTitleId` và `titleName` còn thiếu
-            allTitles.forEach(({ rankingTitleId, titleName }) => {
-                if (!existingTitleIds.has(rankingTitleId)) {
+            title.forEach((title, index) => {
+                console.log('Index: ', index, '+ Title: ', title);
+                if (!existingTitleIds.has(title.rankingTitleId)) {
                     updatedRow.taskWages.push({
-                        rankingTitleId,
-                        titleName,
+                        rankingTitleId: title.rankingTitleId,
+                        titleName: title.rankingTitleName,
                         workingHourWage: null,
                         overtimeWage: null,
                     });
@@ -332,8 +336,8 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
 
     useEffect(() => {
-        const normalized = normalizeRows(originalTask, allTitle);
-        console.log(normalized);
+        const normalized = normalizeRows(originalTask);
+        console.log("Normalized rows:", normalized);
         setRows(normalized);
     }, [originalTask]);
 

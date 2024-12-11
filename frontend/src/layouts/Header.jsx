@@ -2,19 +2,14 @@
 import React from "react";
 import "../assets/css/Header.css";
 import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
-
+import useLogin from "../hooks/useLogin";
 const Header = () => {
   // console.log("Name" + localStorage.getItem("userFullName"));
   const userFullName = localStorage.getItem("userFullName") == "null" ? "User" : localStorage.getItem("userFullName");
 
+  const { logout } = useLogin();
   const handleLogout = () => {
-    localStorage.removeItem("userFullName");
-    localStorage.removeItem('jwtToken');
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("user");
-    window.location.href = "/";
+    logout();
   };
 
   return (

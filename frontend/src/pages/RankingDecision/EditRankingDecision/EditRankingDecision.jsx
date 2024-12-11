@@ -29,7 +29,7 @@ const EditDecision = () => {
     const [showEditDecisionInfoModal, setShowEditDecisionInfoModal] = useState(false); // Display decision editing modal
     const [newDecisionName, setNewDecisionName] = useState(""); // New decision Name
     // Step
-    const [activeStep, setActiveStep] = useState(0);
+    const [activeStep, setActiveStep] = useState(2);
     const [decisionStatus, setDecisionStatus] = useState('');
     const steps = ['Criteria Configuration', 'Title Configuration', 'Task & Price Configuration'];
     // State saves data for each step

@@ -15,7 +15,6 @@ const AuthAPI = {
             localStorage.clear();
             throw error;
         }
-        return;
     }
 };
 

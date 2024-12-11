@@ -35,8 +35,7 @@ public class JWTService {
                 .add(claims)
                 .subject(account.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 5))
-                // .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
                 .and()
                 .signWith(getKey(accessKey))
                 .compact();
@@ -49,7 +48,7 @@ public class JWTService {
                 .add(claims)
                 .subject(account.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 30))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7))
                 .and()
                 .signWith(getKey(refreshkey))
                 .compact();
