@@ -3,7 +3,7 @@ import useFetchAccounts from "../hooks/useFetchAccount";
 export default function TestComponent() {
   const { data, error, loading } = useFetchAccounts();
 
-  console.log(localStorage.getItem('jwtToken'));
+  console.log(localStorage.getItem('accessToken'));
 
   // Log data after it has been fetched and updated
   console.log("Fetched Data:", data);
