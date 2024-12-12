@@ -24,6 +24,8 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     // Row table
     const [rows, setRows] = useState([]);
 
+    const [errorMessage, setErrorMessage] = useState(null);
+
     // Add Title 
     const [statusAddTitle, setstatusAddTitle] = useState(null);
     const [newTitleName, setNewTitleName] = useState(''); // State lưu tên tiêu đề mới
@@ -174,6 +176,19 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             return;
         }
 
+        if (newTitleName.length < 3) {
+            setErrorMessage('Title must be larger or equals 3 characters.');
+            setNewTitleName('');
+            setstatusAddTitle(null);
+            return;
+        }
+        if (newTitleName.length > 100) {
+            setErrorMessage('Title must be smaller or equals 100 characters.');
+            setNewTitleName('');
+            setstatusAddTitle(null);
+            return;
+        }
+
         const newTitle = {
             id: null,  // Or get the real ID from the server
             index: rows.length + 1,  // Or get the real ID from the server
@@ -270,10 +285,8 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     //////////////////////////////////// Save ////////////////////////////////////////
     const calculateRankScore = (row) => {
         if (!row || !criteria) {
-            console.warn("Dữ liệu không hợp lệ:", { row, criteria });
             return 0;
         }
-        console.log("Tính toán RankScore cho hàng:", row);
         return criteria.reduce((totalScore, criteriaItem) => {
             const currentValue = row[criteriaItem.criteriaName]; // Lấy giá trị từ row theo tên tiêu chí
             // Tìm option trong criteria tương ứng với giá trị hiện tại
@@ -286,26 +299,28 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 const { weight, maxScore } = criteriaItem;
                 // Công thức tính RankScore
                 const calculatedScore = (score * weight) / (maxScore || 1); // Tránh chia 0
-                console.log(`Tiêu chí: ${criteriaItem.criteriaName}, score: ${score}, weight: ${weight}, maxScore: ${maxScore} `)
                 return totalScore + calculatedScore;
             }
-            console.warn(`Không tìm thấy option phù hợp cho tiêu chí: ${criteriaItem.criteriaName}`);
             return totalScore; // Không có option phù hợp, giữ nguyên điểm
         }, 0);
     };
 
     // End 
     const handleSaveChanges = async () => {
+        console.log(rows);
         // Kiểm tra xem tất cả rankScore đã được tính toán
         if (rows.length === 0) {
             return showErrorMessage('You need to have at least one title in the table.');
         }
         const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
-        // console.log("Original Title:", originalTitle);
-        // console.log("Rows:", rows);
         if (!allRankScoresCalculated) {
-            showErrorMessage('Tất cả Rank Score phải được tính toán.');
+            showErrorMessage('Every Ranking Score must be calculated.');
             return; // Dừng lại nếu có lỗi
+        }
+        const rankScoreSet = new Set(rows.map((row) => row.rankScore));
+        if (rankScoreSet.size !== rows.length) {
+            showErrorMessage('Every Rank Score must be unique.');
+            return;
         }
         await syncDecisionTitle(rows, originalTitle);
         showSuccessMessage('Title Configuration successfully updated.');
@@ -494,6 +509,10 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                                         setstatusAddTitle(e.target.value);
                                         setNewTitleName(e.target.value);
                                     }}
+                                    onClick={(e) => {
+                                        setErrorMessage('');
+                                    }
+                                    }
                                     placeholder="Input name for new Ranking Title"
                                     style={{ height: '30px', width: '300px', padding: '5px', fontSize: '16px', borderRadius: '5px' }}
                                 />
@@ -506,6 +525,12 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                                     <AddCircleIcon sx={{ fontSize: 30 }} />
                                 </IconButton>
                             </Box>
+                            {/* Display error message if present */}
+                            {errorMessage && errorMessage.length > 0 && (
+                                <span style={{ color: 'red', marginTop: '8px', fontSize: '14px' }}>
+                                    {errorMessage}
+                                </span>
+                            )}
                             {/* Cancel and Save */}
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                                 <Button

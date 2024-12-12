@@ -248,8 +248,8 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
                 rankingTitleId: titleItem.rankingTitleId,
                 titleName: titleItem.rankingTitleName,
-                workingHourWage: '',
-                overtimeWage: '',
+                workingHourWage: 0,
+                overtimeWage: 0,
             })),
         };
         // Thêm object vào mảng rows
@@ -321,8 +321,8 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                     updatedRow.taskWages.push({
                         rankingTitleId: title.rankingTitleId,
                         titleName: title.rankingTitleName,
-                        workingHourWage: null,
-                        overtimeWage: null,
+                        workingHourWage: 0,
+                        overtimeWage: 0,
                     });
                 }
             });
@@ -432,7 +432,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                         }
                                         return (
                                             <TextField
-                                                value={editedWages[`${taskId}-${rankingTitleId}-${wageType}`] || defaultValue}
+                                                value={defaultValue ? defaultValue : 0}
                                                 onChange={(e) => {
                                                     const value = e.target.value;
                                                     if (/^\d*$/.test(value)) { // Chỉ cho phép số

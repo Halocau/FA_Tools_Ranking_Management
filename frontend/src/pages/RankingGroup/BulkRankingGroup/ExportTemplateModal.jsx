@@ -97,7 +97,6 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
     let filteredEmployees = employees;
     // Filter based on search query (ID and Name)
     if (query) {
-      console.log(query);
       filteredEmployees = filteredEmployees.filter(
         (employee) =>
           employee.employeeId.toString().includes(query) || // Tìm theo ID
@@ -111,12 +110,14 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
         (employee) => employee.currentRankingDecision === decision
       );
     }
+
     // Filter based on the selected rank
     if (rank && rank.length > 0) {
       filteredEmployees = filteredEmployees.filter(
         (employee) => employee.currentRank === rank
       );
     }
+
 
     // Map the filtered data to the table rows
     const mappedRows = filteredEmployees.map((employee) => ({
@@ -199,7 +200,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
       setGlobalLoading(false); // Stop global loading on error
       showErrorMessage(
         error.response?.data?.detailMessage ||
-          "An error occurred while exporting."
+        "An error occurred while exporting."
       );
     }
   };

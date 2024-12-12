@@ -151,7 +151,7 @@ const CriteriaManagement = () => {
                             navigate(`/criteria/edit/${params.row.id}`);
                         }}
                     >
-                        <FaEye />
+                        <FaEdit />
                     </Button>
                     <Button
                         variant="outlined"
