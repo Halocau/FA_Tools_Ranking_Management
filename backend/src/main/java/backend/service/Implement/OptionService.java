@@ -123,6 +123,12 @@ public class OptionService implements IOptionService {
                 && iOptionRepository.existsByOptionNameAndOptionIdNot(form.getOptionName(), optionId)) {
             throw new IllegalArgumentException("Option name already exists.");
         }
+        
+        // Kiểm tra trùng lặp score trong cùng criteriaId (không so với chính nó)
+        if (form.getScore() != null && !form.getScore().equals(findOptionId.getScore())
+                && iOptionRepository.existsByScoreAndCriteriaIdAndOptionIdNot(form.getScore(), form.getCriteriaId(), optionId)) {
+            throw new IllegalArgumentException("Score already exists for this criteria.");
+        }
 
         findOptionId.setOptionName(form.getOptionName());
         findOptionId.setScore(form.getScore());
