@@ -248,8 +248,8 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
                 rankingTitleId: titleItem.rankingTitleId,
                 titleName: titleItem.rankingTitleName,
-                workingHourWage: '',
-                overtimeWage: '',
+                workingHourWage: 0,
+                overtimeWage: 0,
             })),
         };
         // Thêm object vào mảng rows
@@ -321,8 +321,8 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                     updatedRow.taskWages.push({
                         rankingTitleId: title.rankingTitleId,
                         titleName: title.rankingTitleName,
-                        workingHourWage: null,
-                        overtimeWage: null,
+                        workingHourWage: 0,
+                        overtimeWage: 0,
                     });
                 }
             });

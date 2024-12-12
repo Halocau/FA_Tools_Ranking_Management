@@ -24,6 +24,8 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     // Row table
     const [rows, setRows] = useState([]);
 
+    const [errorMessage, setErrorMessage] = useState(null);
+
     // Add Title 
     const [statusAddTitle, setstatusAddTitle] = useState(null);
     const [newTitleName, setNewTitleName] = useState(''); // State lưu tên tiêu đề mới
@@ -171,6 +173,19 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         const decisionId = id;  // Ensure this id is valid
         if (!decisionId) {
             console.error("decisionId không hợp lệ");
+            return;
+        }
+
+        if (newTitleName.length < 3) {
+            setErrorMessage('Title must be larger or equals 3 characters.');
+            setNewTitleName('');
+            setstatusAddTitle(null);
+            return;
+        }
+        if (newTitleName.length > 100) {
+            setErrorMessage('Title must be smaller or equals 100 characters.');
+            setNewTitleName('');
+            setstatusAddTitle(null);
             return;
         }
 
@@ -494,6 +509,10 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                                         setstatusAddTitle(e.target.value);
                                         setNewTitleName(e.target.value);
                                     }}
+                                    onClick={(e) => {
+                                        setErrorMessage('');
+                                    }
+                                    }
                                     placeholder="Input name for new Ranking Title"
                                     style={{ height: '30px', width: '300px', padding: '5px', fontSize: '16px', borderRadius: '5px' }}
                                 />
@@ -506,6 +525,12 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                                     <AddCircleIcon sx={{ fontSize: 30 }} />
                                 </IconButton>
                             </Box>
+                            {/* Display error message if present */}
+                            {errorMessage && errorMessage.length > 0 && (
+                                <span style={{ color: 'red', marginTop: '8px', fontSize: '14px' }}>
+                                    {errorMessage}
+                                </span>
+                            )}
                             {/* Cancel and Save */}
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                                 <Button
