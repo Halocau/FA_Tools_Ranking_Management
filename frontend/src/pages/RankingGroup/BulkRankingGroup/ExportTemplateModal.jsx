@@ -73,7 +73,6 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
   const handleSearch = (event) => {
     const query = event;
     setSearchQuery(query);
-
     // Filter employees based on search query, selected ranking decision, and selected rank
     filterRows(query, selectedRankingDecision, selectedRank);
   };
@@ -91,13 +90,11 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
     const rank = event.target.value;
     setSelectedRank(rank);
     setRankError(false);
-
     // Filter rows based on the selected rank
     filterRows(searchQuery, selectedRankingDecision, rank);
   };
   const filterRows = (query, decision, rank) => {
     let filteredEmployees = employees;
-
     // Filter based on search query (ID and Name)
     if (query) {
       console.log(query);
@@ -109,13 +106,13 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
     }
 
     // Filter based on the selected ranking decision
-    if (decision) {
+    if (decision && decision.length > 0) {
       filteredEmployees = filteredEmployees.filter(
         (employee) => employee.currentRankingDecision === decision
       );
     }
     // Filter based on the selected rank
-    if (rank) {
+    if (rank && rank.length > 0) {
       filteredEmployees = filteredEmployees.filter(
         (employee) => employee.currentRank === rank
       );
