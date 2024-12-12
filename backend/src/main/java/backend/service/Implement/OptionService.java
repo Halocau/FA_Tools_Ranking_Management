@@ -1,6 +1,7 @@
 package backend.service.Implement;
 
 import backend.config.common.PaginationUtils;
+import backend.config.exception.exceptionEntity.OptionException;
 import backend.dao.IOptionRepository;
 import backend.model.dto.OptionResponse;
 import backend.model.entity.Options;
@@ -121,13 +122,13 @@ public class OptionService implements IOptionService {
         // Kiểm tra trùng tên với các Options khác (không phải chính nó)
         if (!findOptionId.getOptionName().equals(form.getOptionName())
                 && iOptionRepository.existsByOptionNameAndOptionIdNot(form.getOptionName(), optionId)) {
-            throw new IllegalArgumentException("Option name already exists.");
+            throw new OptionException("Option name already exists.");
         }
         
         // Kiểm tra trùng lặp score trong cùng criteriaId (không so với chính nó)
         if (form.getScore() != null && !form.getScore().equals(findOptionId.getScore())
                 && iOptionRepository.existsByScoreAndCriteriaIdAndOptionIdNot(form.getScore(), form.getCriteriaId(), optionId)) {
-            throw new IllegalArgumentException("Score already exists for this criteria.");
+            throw new OptionException("Score already exists for this criteria.");
         }
 
         findOptionId.setOptionName(form.getOptionName());

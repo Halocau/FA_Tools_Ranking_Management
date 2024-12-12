@@ -4,6 +4,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
 
+import backend.config.exception.exceptionEntity.OptionException;
 import backend.config.exception.exceptionEntity.StorageException;
 import backend.config.exception.exceptionEntity.PageException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -373,6 +374,30 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(OptionException.class)
+    public ResponseEntity<Object> handleInvalidOptionParameterException(OptionException exception) {
+        String message = exception.getMessage();
+        String detailMessage = exception.getLocalizedMessage();
+        int code = 15;  // Mã lỗi tùy chỉnh cho ngoại lệ phân trang
+
+        // Tạo đối tượng ErrorResponse để trả về cho client
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                message,
+                detailMessage,
+                code,
+                exception,
+                null
+        );
+
+        // Log lỗi chi tiết
+        log.error(detailMessage, exception);
+
+        // Trả về phản hồi với mã lỗi 400 (Bad Request)
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
 
 //    // Account blocked exception
 //    @ExceptionHandler({ AccountBlockException.class })
