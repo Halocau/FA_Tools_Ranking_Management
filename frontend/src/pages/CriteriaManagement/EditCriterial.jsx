@@ -169,6 +169,7 @@ const EditCriteria = () => {
             showSuccessMessage("Option added successfully!");
             setShowAddOptionModal(false);
         } catch (error) {
+            console.log(error);
             showErrorMessage("Failed to add option.")
         }
     };

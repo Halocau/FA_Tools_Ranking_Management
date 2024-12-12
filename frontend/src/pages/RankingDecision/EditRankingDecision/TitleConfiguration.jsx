@@ -285,10 +285,8 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     //////////////////////////////////// Save ////////////////////////////////////////
     const calculateRankScore = (row) => {
         if (!row || !criteria) {
-            console.warn("Dữ liệu không hợp lệ:", { row, criteria });
             return 0;
         }
-        console.log("Tính toán RankScore cho hàng:", row);
         return criteria.reduce((totalScore, criteriaItem) => {
             const currentValue = row[criteriaItem.criteriaName]; // Lấy giá trị từ row theo tên tiêu chí
             // Tìm option trong criteria tương ứng với giá trị hiện tại
@@ -301,26 +299,28 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 const { weight, maxScore } = criteriaItem;
                 // Công thức tính RankScore
                 const calculatedScore = (score * weight) / (maxScore || 1); // Tránh chia 0
-                console.log(`Tiêu chí: ${criteriaItem.criteriaName}, score: ${score}, weight: ${weight}, maxScore: ${maxScore} `)
                 return totalScore + calculatedScore;
             }
-            console.warn(`Không tìm thấy option phù hợp cho tiêu chí: ${criteriaItem.criteriaName}`);
             return totalScore; // Không có option phù hợp, giữ nguyên điểm
         }, 0);
     };
 
     // End 
     const handleSaveChanges = async () => {
+        console.log(rows);
         // Kiểm tra xem tất cả rankScore đã được tính toán
         if (rows.length === 0) {
             return showErrorMessage('You need to have at least one title in the table.');
         }
         const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
-        // console.log("Original Title:", originalTitle);
-        // console.log("Rows:", rows);
         if (!allRankScoresCalculated) {
-            showErrorMessage('Tất cả Rank Score phải được tính toán.');
+            showErrorMessage('Every Ranking Score must be calculated.');
             return; // Dừng lại nếu có lỗi
+        }
+        const rankScoreSet = new Set(rows.map((row) => row.rankScore));
+        if (rankScoreSet.size !== rows.length) {
+            showErrorMessage('Every Rank Score must be unique.');
+            return;
         }
         await syncDecisionTitle(rows, originalTitle);
         showSuccessMessage('Title Configuration successfully updated.');
