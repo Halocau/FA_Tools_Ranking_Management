@@ -20,7 +20,7 @@ import TaskandPriceConfiguration from "../ViewRankingDecision/TaskandPriceConfig
 
 const ViewDecision = () => {
     const role = localStorage.getItem('userRole');
-    console.log(role)
+
     // const navigate = useNavigate(); // To navigate between pages
     const { id } = useParams(); // Get the ID from the URL
     // Edit
@@ -38,11 +38,9 @@ const ViewDecision = () => {
     const [note, setNote] = useState('');
     //////////////////////////////////////////////////////////////////////////// Edit ////////////////////////////////////////////////////////////////////////////
     // Ranking Decision Edit
-    const EditRankingDecision = async () => {
+    const ViewRankingDecision = async () => {
         try {
             const decisionData = await RankingDecisionAPI.getRankingDecisionById(id);
-            const Feedback = await FeedbacknAPI.getFeedbackById(id)
-            setNote(Feedback.note)
             // Ensure no undefined values are passed
             setViewDecision({
                 decisionName: decisionData.decisionName || "",
@@ -53,11 +51,21 @@ const ViewDecision = () => {
             console.error("Error fetching group:", error);
         }
     };
+
+
+    const FeedBack = async () => {
+        try {
+            const Feedback = await FeedbacknAPI.getFeedbackById(id)
+            setNote(Feedback.note)
+        } catch (error) {
+            console.error("Error fetching group:", error);
+        }
+    };
     // Fetch Ranking Decision on id change
     useEffect(() => {
-        EditRankingDecision();
-    }, [id]);
-
+        ViewRankingDecision();
+        FeedBack();
+    }, [id, decisionStatus]);
     //////////////////////////////////////////////////////////////////////////// Stepp /////////////////////////////////////////////////////////////////////////
     // Completion status of each step
     const [completed, setCompleted] = useState({
@@ -230,8 +238,8 @@ const ViewDecision = () => {
                 <Box
                     sx={{
                         display: 'flex',
-                        alignItems: 'center', // Căn giữa theo chiều dọc
-                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        ustifyContent: 'flex-start',
                         gap: 2,
                         marginTop: 2
                     }}
@@ -241,7 +249,6 @@ const ViewDecision = () => {
                         sx={{
                             display: 'flex',
                             alignItems: 'center',
-                            ustifyContent: 'flex-start',
                             width: '40%'
                         }}
                     >
@@ -257,13 +264,11 @@ const ViewDecision = () => {
                             }}
                         />
                     </Box>
-
                     {/* Status */}
                     <Box
                         sx={{
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'flex-end',
                             width: '20%'
                         }}
                     >
@@ -272,81 +277,11 @@ const ViewDecision = () => {
                             variant="outlined"
                             value={viewDecision.status}
                             disabled
-                            sx={{
-                                width: '60%',
-                            }}
-                            InputProps={{
-                                sx: { height: '30px' }
-                            }}
+                            sx={{ width: '60%' }}
+                            InputProps={{ sx: { height: '30px' } }}
                         />
                     </Box>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 2,
-                            width: '40%'
-                        }}
-                    >
-                        {/* Button role và decisionStatus */}
-                        {(role === 'MANAGER' || role === 'ADMIN') && decisionStatus === 'Submitted' && (
-                            <>
-                                {/* Confirm Button */}
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={handleConfirm}
-                                    sx={{
-                                        width: '120px',
-                                    }}
-                                >
-                                    Confirm
-                                </Button>
-
-                                {/* Reject Button */}
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={handleReject}
-                                    sx={{
-                                        width: '120px',
-                                    }}
-                                >
-                                    Reject
-                                </Button>
-                            </>
-                        )}
-                        {role === 'ADMIN' && decisionStatus === 'Confirmed' && (
-                            <>
-                                {/* Finalized Button */}
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={handleFinalized}
-                                    sx={{
-                                        width: '120px',
-                                    }}
-                                >
-                                    Finalized
-                                </Button>
-                                {/* Reject Button */}
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={handleReject}
-                                    sx={{
-                                        width: '120px',
-                                    }}
-                                >
-                                    Reject
-                                </Button>
-                            </>
-                        )}
-                    </Box>
-
                 </Box>
-
-
                 {/* Stepper */}
                 <Box sx={{ width: '100%', marginTop: 2 }}>
                     <Stepper
@@ -374,30 +309,138 @@ const ViewDecision = () => {
                     </Stepper>
                 </Box>
                 <Box>{renderStepContent(activeStep)}</Box>
+
                 {/* Feedback */}
+
+
                 <Box sx={{ marginTop: '10px' }}>
                     <Typography variant="h6">
                         Note
                     </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
-                        <textarea
-                            value={note}
-                            onChange={(e) => {
-                                setNote(e.target.value);
-                            }}
-                            // placeholder="Note"
-                            style={{ height: '100px', width: '100%', padding: '10px', fontSize: '14px', borderRadius: '5px', resize: 'none' }}
-                        />
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
-                        <Button sx={{ height: '30px', marginLeft: 1 }}
-                            variant="contained"
-                            color="primary"
-                            onClick={handleNote}
-                        >
-                            Save
-                        </Button>
-                    </Box>
+                    {(role === 'MANAGER' || role === 'ADMIN') ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
+                            <textarea
+                                value={note}
+                                onChange={(e) => {
+                                    setNote(e.target.value);
+                                }}
+                                style={{
+                                    height: '100px',
+                                    width: '100%',
+                                    padding: '10px',
+                                    fontSize: '14px',
+                                    borderRadius: '5px',
+                                    resize: 'none'
+                                }}
+                            />
+                        </Box>
+                    ) : (
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
+                            <textarea
+                                value={note}
+                                readOnly
+                                style={{
+                                    height: '100px',
+                                    width: '100%',
+                                    padding: '10px',
+                                    fontSize: '14px',
+                                    borderRadius: '5px',
+                                    resize: 'none',
+                                    backgroundColor: '#f5f5f5',
+                                    cursor: 'not-allowed'
+                                }}
+                            />
+                        </Box>
+                    )}
+                    {(role === 'MANAGER' || role === 'ADMIN') && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
+                            <Button sx={{ height: '30px', marginLeft: 1 }}
+                                variant="contained"
+                                color="primary"
+                                onClick={handleNote}
+                            >
+                                Save
+                            </Button>
+                        </Box>
+                    )}
+                </Box>
+                {/* Submit */}
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        ustifyContent: 'flex-end',
+                        marginTop: 2,
+                        width: '40%',
+                        gap: 2,
+                    }}
+                >
+                    {/* Button role và decisionStatus */}
+                    {(role === 'MANAGER' || role === 'ADMIN') && decisionStatus === 'Submitted' && (
+                        <>
+                            {/* Confirm Button */}
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleConfirm}
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    ustifyContent: 'flex-end',
+                                    width: '120px',
+                                }}
+                            >
+                                Confirm
+                            </Button>
+
+                            {/* Reject Button */}
+                            <Button
+                                variant="contained"
+                                color="error"
+                                onClick={handleReject}
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    ustifyContent: 'flex-end',
+                                    width: '120px',
+                                }}
+                            >
+                                Reject
+                            </Button>
+                        </>
+                    )}
+                    {role === 'ADMIN' && decisionStatus === 'Confirmed' && (
+                        <>
+                            {/* Finalized Button */}
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleFinalized}
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    ustifyContent: 'flex-end',
+                                    width: '120px',
+                                }}
+                            >
+                                Finalized
+                            </Button>
+                            {/* Reject Button */}
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleReject}
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'error',
+                                    ustifyContent: 'flex-end',
+                                    width: '120px',
+                                }}
+                            >
+                                Reject
+                            </Button>
+                        </>
+                    )}
                 </Box>
             </Box >
         </div >
