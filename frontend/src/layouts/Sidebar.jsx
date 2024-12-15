@@ -10,14 +10,19 @@ import {
   ExpandMore,
   ExpandLess,
 } from "@mui/icons-material";
+import { useLocation } from "react-router-dom"; // Dùng để lấy đường dẫn hiện tại
 import "../assets/css/Sidebar.css";
 
 const Sidebar = () => {
-  const [openLogWork, setOpenLogWork] = useState(false);
+  const [openLogWork, setOpenLogWork] = useState(true); // Mặc định mở menu
+  const location = useLocation(); // Lấy đường dẫn hiện tại
 
   const toggleLogWork = () => {
     setOpenLogWork(!openLogWork);
   };
+
+  // Kiểm tra mục con nào đang được chọn
+  const isActive = (path) => location.pathname === path;
 
   return (
     <div className="sidebar d-flex flex-column bg-light">
@@ -29,10 +34,30 @@ const Sidebar = () => {
         </Nav.Link>
         {openLogWork && (
           <div className="submenu ms-4">
-            <Nav.Link href="/ranking-group">Ranking Group List</Nav.Link>
-            <Nav.Link href="/ranking-decision">Ranking Decision List</Nav.Link>
-            <Nav.Link href="/task-management">Task Managerment</Nav.Link>
-            <Nav.Link href="/criteria-management">Criteria Managerment</Nav.Link>
+            <Nav.Link
+              href="/ranking-group"
+              className={isActive("/ranking-group") ? "active" : ""}
+            >
+              Ranking Group List
+            </Nav.Link>
+            <Nav.Link
+              href="/ranking-decision"
+              className={isActive("/ranking-decision") ? "active" : ""}
+            >
+              Ranking Decision List
+            </Nav.Link>
+            <Nav.Link
+              href="/task-management"
+              className={isActive("/task-management") ? "active" : ""}
+            >
+              Task Management
+            </Nav.Link>
+            <Nav.Link
+              href="/criteria-management"
+              className={isActive("/criteria-management") ? "active" : ""}
+            >
+              Criteria Management
+            </Nav.Link>
           </div>
         )}
 
