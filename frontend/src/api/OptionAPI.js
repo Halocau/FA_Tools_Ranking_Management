@@ -36,7 +36,7 @@ const OptionAPI = {
             return response.data;
         } catch (error) {
             console.error("Error creating option:", error);
-            throw error;
+            throw error.response.data;
         }
     },
 
@@ -48,7 +48,7 @@ const OptionAPI = {
             return response.data;
         } catch (error) {
             console.error(`Error updating option with ID ${id}:`, error);
-            throw error;
+            throw error.response.data;
         }
     },
 

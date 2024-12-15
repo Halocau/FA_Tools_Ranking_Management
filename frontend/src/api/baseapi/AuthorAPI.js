@@ -39,10 +39,7 @@ authClient.interceptors.response.use(
 
       if (status === 401) {
         try {
-          console.log("Refreshing token...");
-          console.log("Original request:", originalRequest);
           const data = await AuthAPI.refreshToken();
-          console.log(data);
           localStorage.setItem("accessToken", data.accessToken);
           localStorage.setItem("refreshToken", data.refreshToken);
           return authClient(originalRequest);

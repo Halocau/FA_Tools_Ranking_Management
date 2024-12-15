@@ -49,10 +49,11 @@ const EditCriteria = () => {
 
     //Use for show notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
-
-    const [message, setMessage] = useState("");
-    const [messageType, setMessageType] = useState("success");
-
+    //Use for validation
+    const [validationMessage, setValidationMessage] = useState("Test message");
+    const [optionMessage, setOptionMessage] = useState("Test message");
+    const [scoreMessage, setScoreMessage] = useState("Test message");
+    const [descriptionMessage, setDescriptionMessage] = useState("Test message");
     //Use for load data of option
     const [options, setOptions] = useState([]);
 
@@ -120,6 +121,7 @@ const EditCriteria = () => {
 
     //Use for open edit criteria name modal
     const handleOpenEditNameModal = () => {
+        setValidationMessage("");
         setNewCriteriaName(criteria?.criteriaName || "");
         setShowEditNameModal(true);
     };
@@ -138,18 +140,60 @@ const EditCriteria = () => {
 
     //Use for open add option modal
     const handleOpenAddOptionModal = () => {
+        setOptionMessage("");
+        setScoreMessage("");
+        setDescriptionMessage("");
         setNewOption({ name: "", score: "", description: "" });
         setShowAddOptionModal(true);
     };
 
     //Use for open edit option modal
     const handleOpenEditOptionModal = (option) => {
+        setOptionMessage("");
+        setScoreMessage("");
+        setDescriptionMessage("");
         setNewOption(option);
         setShowEditOptionModal(true);
     };
 
+    const handleValidationError = (errorResponse) => {
+        if (errorResponse.exception) {
+            console.log(errorResponse.detailMessage);
+            if (errorResponse.detailMessage == "Option name already exists.") {
+                setOptionMessage("Option Name already existed");
+            }
+            if (errorResponse.exception.optionName) {
+                if (errorResponse.exception.optionName.includes("name exists already!")) {
+                    setOptionMessage("Option Name already existed");
+                } else {
+                    setOptionMessage("Option Name is required");
+                }
+            }
+            if (errorResponse.exception.score) {
+                setScoreMessage("Score is required");
+            }
+            if (errorResponse.exception.description) {
+                setDescriptionMessage("Description is required");
+            }
+        } else {
+            errorResponse.errors.forEach((error) => {
+                if (error.code === "UniqueScoreCreate") {
+                    setScoreMessage("Score already exists");
+                }
+                if (error.code === "NotBlank" && error.field === "description") {
+                    setDescriptionMessage("Description is required");
+                } else if (error.code === "NotBlank" && error.field === "optionName") {
+                    setOptionMessage("Option Name is required");
+                } else if (error.code === "NotBlank" && error.field === "score") { // Check for score-specific NotBlank error
+                    setScoreMessage("Score is required");
+                }
+            });
+        }
+    }
+
     //Use for add new option
     const handleAddOption = async () => {
+        setValidationMessage("");
         try {
             const optionData = {
                 optionName: newOption.name,
@@ -170,6 +214,7 @@ const EditCriteria = () => {
             setShowAddOptionModal(false);
         } catch (error) {
             console.log(error);
+            handleValidationError(error);
             showErrorMessage("Failed to add option.")
         }
     };
@@ -194,6 +239,7 @@ const EditCriteria = () => {
 
     //Use for update option
     const handleEditOption = async () => {
+        setValidationMessage("");
         try {
             const optionUpdate = {
                 optionName: newOption.optionName,
@@ -207,6 +253,8 @@ const EditCriteria = () => {
             setShowEditOptionModal(false);
             showSuccessMessage("Option updated successfully!");
         } catch (error) {
+            console.log(error);
+            handleValidationError(error);
             showErrorMessage("Failed to update option. Please try again.");
         }
     };
@@ -330,6 +378,8 @@ const EditCriteria = () => {
                         value={newCriteriaName}
                         onChange={(e) => setNewCriteriaName(e.target.value)}
                         sx={{ marginTop: 2 }}
+                        error={!!validationMessage}
+                        helperText={validationMessage}
                     />
                     <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
                         <Button variant="outlined" onClick={() => setShowEditNameModal(false)}>Cancel</Button>
@@ -350,8 +400,13 @@ const EditCriteria = () => {
                             variant="outlined"
                             fullWidth
                             value={newOption.name}
-                            onChange={(e) => setNewOption({ ...newOption, name: e.target.value })}
+                            onChange={(e) => {
+                                setNewOption({ ...newOption, name: e.target.value })
+                                setOptionMessage('');
+                            }}
                             sx={{ marginBottom: 2 }}
+                            error={!!optionMessage}
+                            helperText={optionMessage}
                         />
                         <TextField
                             label="Score"
@@ -359,8 +414,14 @@ const EditCriteria = () => {
                             fullWidth
                             type="number"
                             value={newOption.score}
-                            onChange={(e) => setNewOption({ ...newOption, score: e.target.value })}
+                            onChange={(e) => {
+                                setNewOption({ ...newOption, score: e.target.value })
+                                setScoreMessage('');
+                            }}
+
                             sx={{ marginBottom: 2 }}
+                            error={!!scoreMessage}
+                            helperText={scoreMessage}
                         />
                         <TextField
                             label="Explanation"
@@ -369,7 +430,12 @@ const EditCriteria = () => {
                             multiline
                             rows={3}
                             value={newOption.description}
-                            onChange={(e) => setNewOption({ ...newOption, description: e.target.value })}
+                            onChange={(e) => {
+                                setNewOption({ ...newOption, description: e.target.value })
+                                setDescriptionMessage('');
+                            }}
+                            error={!!descriptionMessage}
+                            helperText={descriptionMessage}
                         />
                     </>
                 }
@@ -393,8 +459,13 @@ const EditCriteria = () => {
                             variant="outlined"
                             fullWidth
                             value={newOption.optionName}
-                            onChange={(e) => setNewOption({ ...newOption, optionName: e.target.value })}
+                            onChange={(e) => {
+                                setNewOption({ ...newOption, optionName: e.target.value })
+                                setOptionMessage('');
+                            }}
                             sx={{ marginBottom: 2 }}
+                            error={!!optionMessage}
+                            helperText={optionMessage}
                         />
                         <TextField
                             label="Score"
@@ -402,8 +473,13 @@ const EditCriteria = () => {
                             fullWidth
                             type="number"
                             value={newOption.score}
-                            onChange={(e) => setNewOption({ ...newOption, score: e.target.value })}
+                            onChange={(e) => {
+                                setNewOption({ ...newOption, score: e.target.value })
+                                setScoreMessage('');
+                            }}
                             sx={{ marginBottom: 2 }}
+                            error={!!scoreMessage}
+                            helperText={scoreMessage}
                         />
                         <TextField
                             label="Explanation"
@@ -412,7 +488,12 @@ const EditCriteria = () => {
                             multiline
                             rows={3}
                             value={newOption.description}
-                            onChange={(e) => setNewOption({ ...newOption, description: e.target.value })}
+                            onChange={(e) => {
+                                setNewOption({ ...newOption, description: e.target.value })
+                                setDescriptionMessage('');
+                            }}
+                            error={!!descriptionMessage}
+                            helperText={descriptionMessage}
                         />
                     </>
                 }
@@ -423,13 +504,6 @@ const EditCriteria = () => {
                     </>
                 }
             />
-
-            {/* Display success or error message */}
-            {message && (
-                <Alert severity={messageType} sx={{ marginTop: 2 }}>
-                    {message}
-                </Alert>
-            )}
         </Box>
     );
 };
