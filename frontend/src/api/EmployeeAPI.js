@@ -4,7 +4,7 @@ const employee_api = "/employee";
 const EmployeeAPI = {
   // Lấy dữ liệu employee từ bảng Employee
   getAllEmployee: async (groupId) => {
-    const response = await authClient.get(`${employee_api}/group/${groupId}`);
+    const response = await authClient.get(`${employee_api}/group/${groupId}`);    
     return response.data;
   },
 

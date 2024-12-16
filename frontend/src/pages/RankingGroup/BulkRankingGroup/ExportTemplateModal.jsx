@@ -47,6 +47,11 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
       const data = await EmployeeAPI.getAllEmployee(id);
       setEmployees(data);
 
+      const uniqueRankingDecisions = [
+        ...new Set(data.map((item) => item.currentRankingDecision)),
+      ];
+      setRankingDecisions(uniqueRankingDecisions);
+
       // Tạo danh sách dữ liệu để hiển thị
       const mappedRows = data.map((employee) => ({
         employeeId: employee.employeeId,
