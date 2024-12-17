@@ -129,6 +129,14 @@ const EditCriteria = () => {
     //Use for save new criteria name
     const handleSaveNewCriteriaName = async () => {
         try {
+            if (!newCriteriaName) {
+                setValidationMessage("Criteria Name is required.");
+                return;
+            }
+            if (newCriteriaName.length < 3 || newCriteriaName.length > 20) {
+                setValidationMessage("Criteria name must be between 3 and 20 characters.");
+                return;
+            }
             const data = await CriteriaAPI.updateCriteria(id, { criteriaName: newCriteriaName, updatedBy: localStorage.getItem("userId") });
             setCriteria(data);
             showSuccessMessage("Criteria name updated successfully!");
@@ -162,6 +170,10 @@ const EditCriteria = () => {
             if (errorResponse.detailMessage == "Option name already exists.") {
                 setOptionMessage("Option Name already existed");
             }
+            if (errorResponse.detailMessage == "Score already exists for this criteria.") {
+                setScoreMessage("Option Name already existed");
+            }
+
             if (errorResponse.exception.optionName) {
                 if (errorResponse.exception.optionName.includes("name exists already!")) {
                     setOptionMessage("Option Name already existed");

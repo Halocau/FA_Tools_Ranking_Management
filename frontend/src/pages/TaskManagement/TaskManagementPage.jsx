@@ -103,7 +103,7 @@ const TaskManagement = () => {
     setValidationMessage("");
     let trimmedName = newTaskName.trim();
     if (!trimmedName) {
-      setValidationMessage("Task name cannot be empty !");
+      setValidationMessage("Task name is required.");
       return;
     }
 
@@ -245,7 +245,7 @@ const TaskManagement = () => {
     const trimmedName = editTaskName.trim();
     setValidationMessage("");
     if (!trimmedName) {
-      setValidationMessage("Task name cannot be empty!");
+      setValidationMessage("Task name is required.");
       return;
     }
 

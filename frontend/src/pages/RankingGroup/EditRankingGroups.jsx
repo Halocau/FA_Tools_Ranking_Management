@@ -150,12 +150,13 @@ const EditRankingGroup = () => {
         try {
             const updatedGroup = {
                 groupName: trimmedName,
-                currentRankingDecision: selectedCurrentDecision.decisionId || null,
+                currentRankingDecision: rankingDecisions.find(decision => decision.decisionName === selectedCurrentDecision).decisionId,
                 createBy: localStorage.getItem('userId')
             };
+            console.log("Selected Current decision:", selectedCurrentDecision);
             await RankingGroupAPI.updateRankingGroup(id, updatedGroup);
             setOriginalGroupName(trimmedName);
-            setOriginalDecisionName(selectedCurrentDecision ? selectedCurrentDecision.decisionName : editGroup.currentRankingDecision);
+            setOriginalDecisionName(selectedCurrentDecision ? selectedCurrentDecision : editGroup.currentRankingDecision);
             showSuccessMessage("Group Info successfully updated");
 
             setShowEditGroupInfoModal(false);

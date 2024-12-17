@@ -18,6 +18,7 @@ import useNotification from "../../../hooks/useNotification.jsx";
 import CriteriaConfiguration from "./CriteriaConfiguration.jsx";
 import TitleConfiguration from "./TitleConfiguration.jsx";
 import TaskandPriceConfiguration from "./TaskandPriceConfiguration.jsx";
+import { set } from "date-fns";
 
 const EditDecision = () => {
     const role = localStorage.getItem('userRole');
@@ -67,6 +68,7 @@ const EditDecision = () => {
     ////Handlers to open/close modals for editing of the decision info 
     // Open modal
     const handleOpenEditRankingDecisionInfoModal = () => {
+        setNewDecisionName(editDecision.decisionName);
         setShowEditDecisionInfoModal(true);
         setValidationMessage("");
     };
@@ -81,7 +83,7 @@ const EditDecision = () => {
         let trimmedName = newDecisionName.trim();
 
         if (!trimmedName) {
-            setValidationMessage("Decision name cannot be empty.");
+            setValidationMessage("Ranking Decision Name is required.");
             return;
         }
         if (trimmedName.length < 3 || trimmedName.length > 20) {

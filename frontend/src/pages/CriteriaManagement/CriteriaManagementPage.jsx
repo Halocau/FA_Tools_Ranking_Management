@@ -38,6 +38,8 @@ const CriteriaManagement = () => {
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
     const [rows, setRows] = useState([]);
+    //Use for validation
+    const [criteriaNameMessage, setCriteriaNameMessage] = useState("");
 
     //Use for get all criteria with pagination and filter
     const getAllCriteria = async () => {
@@ -88,7 +90,7 @@ const CriteriaManagement = () => {
         let trimmedName = criteriaName.trim();
 
         if (!trimmedName) {
-            setValidationMessage("Criteria name cannot be empty.");
+            setValidationMessage("Criteria Name is required.");
             return;
         }
         if (trimmedName.length < 3 || trimmedName.length > 20) {
@@ -112,7 +114,14 @@ const CriteriaManagement = () => {
             }
             showSuccessMessage("Criteria added successfully!");
         } catch (error) {
-            showErrorMessage("Failed to add criteria. Please try again.");
+            if (error.exception) {
+                if (error.exception.criteriaName.includes("name exists already!")) {
+                    console.log(error.exception);
+                    setValidationMessage("Criteria Name already existed");
+                }
+            } else {
+                showErrorMessage("Failed to add criteria. Please try again.");
+            }
         }
     };
 
