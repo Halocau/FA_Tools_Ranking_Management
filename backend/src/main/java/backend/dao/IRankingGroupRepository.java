@@ -14,6 +14,5 @@ public interface IRankingGroupRepository extends JpaRepository<RankingGroup, Int
     boolean existsByGroupName(String groupName);// check group name
 
     boolean existsByGroupNameAndGroupIdNot(String groupName, Integer groupId);
-
     List<RankingGroup> findByGroupNameContainingIgnoreCase(String groupName, Pageable pageable);
 }
