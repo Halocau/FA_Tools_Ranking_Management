@@ -1,6 +1,7 @@
 package backend.service.Implement;
 
 import backend.config.common.PaginationUtils;
+import backend.config.exception.exceptionEntity.RankingDecisionException;
 import backend.dao.*;
 import backend.model.dto.RankingDecisionResponse;
 import backend.model.entity.*;
@@ -329,6 +330,10 @@ public class RankingDecisionService implements IRankingDecisionService {
         // Find existing ranking decision by ID, throw an exception if not found
         RankingDecision decision = iRankingDecisionRepository.findById(decisionId).orElseThrow(() ->
                 new EntityNotFoundException("Ranking decision not found with id: " + decisionId));
+        if (!decision.getDecisionName().equals(form.getDecisionName())
+                && iRankingDecisionRepository.existsByDecisionNameNot(form.getDecisionName())) {
+                throw new RankingDecisionException("Ranking decision already exists with name: " + form.getDecisionName());
+        }
 
         // Update decision name with the form data
         decision.setDecisionName(form.getDecisionName());

@@ -18,5 +18,7 @@ public interface IOptionRepository extends JpaRepository<Options, Integer>, JpaS
 
     boolean existsByScoreAndCriteriaId(@NotNull Integer score, @NotNull Integer criteriaId);
 
+    boolean existsByOptionNameAndCriteriaId(@NotNull String optionName, @NotNull Integer criteriaId);
+
     boolean existsByScoreAndCriteriaIdAndOptionIdNot(@NotNull Integer score, @NotNull Integer criteriaId, Integer optionId);
 }

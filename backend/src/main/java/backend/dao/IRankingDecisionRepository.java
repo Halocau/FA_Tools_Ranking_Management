@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 public interface IRankingDecisionRepository extends JpaRepository<RankingDecision, Integer>, JpaSpecificationExecutor<RankingDecision> {
 
     public RankingDecision findByDecisionId(int decisionId);
+    boolean existsByDecisionNameNot(String decisionName);
 
     boolean existsByDecisionName(String decisionName);
 

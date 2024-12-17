@@ -1,7 +1,7 @@
 package backend.controller;
 
 import backend.model.entity.Account;
-import backend.model.form.LoginRequest;
+import backend.model.form.Account.LoginRequest;
 import backend.service.IAccountService;
 import backend.service.JWTService;
 
