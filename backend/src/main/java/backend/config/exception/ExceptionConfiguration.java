@@ -4,10 +4,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
 
-import backend.config.exception.exceptionEntity.OptionException;
-import backend.config.exception.exceptionEntity.RankingDecisionException;
-import backend.config.exception.exceptionEntity.StorageException;
-import backend.config.exception.exceptionEntity.PageException;
+import backend.config.exception.exceptionEntity.*;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpHeaders;
@@ -398,11 +395,35 @@ public class ExceptionConfiguration extends ResponseEntityExceptionHandler {
         // Trả về phản hồi với mã lỗi 400 (Bad Request)
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler(RankingDecisionException.class)
     public ResponseEntity<Object> handleRankingDecisionException(RankingDecisionException exception) {
         String message = exception.getMessage();
         String detailMessage = exception.getLocalizedMessage();
         int code = 16;  // Mã lỗi tùy chỉnh cho ngoại lệ phân trang
+
+        // Tạo đối tượng ErrorResponse để trả về cho client
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                message,
+                detailMessage,
+                code,
+                exception,
+                null
+        );
+
+        // Log lỗi chi tiết
+        log.error(detailMessage, exception);
+
+        // Trả về phản hồi với mã lỗi 400 (Bad Request)
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CriteriaException.class)
+    public ResponseEntity<Object> handleCriteriaException(CriteriaException exception) {
+        String message = exception.getMessage();
+        String detailMessage = exception.getLocalizedMessage();
+        int code = 17;  // Mã lỗi tùy chỉnh cho ngoại lệ phân trang
 
         // Tạo đối tượng ErrorResponse để trả về cho client
         ErrorResponse response = new ErrorResponse(
