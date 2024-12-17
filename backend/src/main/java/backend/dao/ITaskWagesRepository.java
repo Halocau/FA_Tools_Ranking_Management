@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface ITaskWagesRepository extends JpaRepository<TaskWages, Integer> {
     Optional<TaskWages> findByRankingTitleIdAndTaskId(Integer rankingTitleId, Integer taskId);
     List<TaskWages> findByTaskId(Integer taskId);
+
 }
