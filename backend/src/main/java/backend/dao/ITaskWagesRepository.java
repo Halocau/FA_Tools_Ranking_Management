@@ -12,4 +12,7 @@ public interface ITaskWagesRepository extends JpaRepository<TaskWages, Integer> 
     Optional<TaskWages> findByRankingTitleIdAndTaskId(Integer rankingTitleId, Integer taskId);
     List<TaskWages> findByTaskId(Integer taskId);
 
+    void deleteByRankingTitleId(Integer rankingTitleId);
+
+    List<TaskWages> findByRankingTitleId(Integer rankingTitleId);
 }
