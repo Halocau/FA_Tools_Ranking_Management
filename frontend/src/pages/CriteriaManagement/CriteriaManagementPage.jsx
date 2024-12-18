@@ -7,6 +7,9 @@ import { Box, Button, Typography, TextField, Modal } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import Slider from "../../layouts/Slider.jsx";
 import SearchComponent from "../../components/Common/Search.jsx";
+import ModalCustom from "../../components/Common/Modal.jsx";
+import ActionButtons from "../../components/Common/ActionButtons.jsx";
+
 //Hooks
 import { useNavigate } from "react-router-dom";
 import useNotification from "../../hooks/useNotification.jsx";
@@ -38,9 +41,10 @@ const CriteriaManagement = () => {
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
     const [rows, setRows] = useState([]);
-    //Use for validation
-    const [criteriaNameMessage, setCriteriaNameMessage] = useState("");
-
+    //Use for show delete modal
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    //Use for save criteria id
+    const [selectedCriteriaId, setSelectedCriteriaId] = useState(null);
     //Use for get all criteria with pagination and filter
     const getAllCriteria = async () => {
         try {
@@ -85,6 +89,18 @@ const CriteriaManagement = () => {
         setCriteriaName("");
         setValidationMessage("");
     };
+
+    const handleOpenDeleteModal = (criteriaId) => {
+        setSelectedCriteriaId(criteriaId);
+        setShowDeleteModal(true);
+    };
+
+    const handleCloseDeleteModal = () => {
+        setSelectedCriteriaId(null);
+        setShowDeleteModal(false);
+    };
+
+
     const handleAddCriteria = async () => {
         setValidationMessage("");
         let trimmedName = criteriaName.trim();
@@ -126,11 +142,11 @@ const CriteriaManagement = () => {
     };
 
     //Use for delete criteria
-    const handleDeleteCriteria = async (criteriaId) => {
+    const handleDeleteCriteria = async () => {
         try {
-            const response = await CriteriaAPI.deleteCriteria(criteriaId);
+            const response = await CriteriaAPI.deleteCriteria(selectedCriteriaId);
             console.log("Response:", response);
-            setCriteria(criteria.filter((criteria) => criteria.criteriaId !== criteriaId));
+            setCriteria(criteria.filter((criteria) => criteria.criteriaId !== selectedCriteriaId));
             if (criteria.length === 5) {
                 getAllCriteria();
             }
@@ -139,6 +155,7 @@ const CriteriaManagement = () => {
             }
             setTotalElements(totalElements - 1);
             showSuccessMessage("Criteria deleted successfully!");
+            handleCloseDeleteModal();
         } catch (error) {
             showErrorMessage("Failed to delete criteria. Please try again.");
         }
@@ -165,7 +182,7 @@ const CriteriaManagement = () => {
                     <Button
                         variant="outlined"
                         color="error"
-                        onClick={() => handleDeleteCriteria(params.row.id)}
+                        onClick={() => handleOpenDeleteModal(params.row.id)}
                         sx={{ marginLeft: 1 }}
                     >
                         <MdDeleteForever />
@@ -255,6 +272,23 @@ const CriteriaManagement = () => {
                     </Box>
                 </Modal>
             </Box>
+
+            {/* Delete Modal */}
+            <ModalCustom
+                show={showDeleteModal}
+                handleClose={handleCloseDeleteModal}
+                title="Delete Criteria"
+                bodyContent="Are you sure you want to remove this criteria?"
+                footerContent={
+                    <ActionButtons
+                        onCancel={handleCloseDeleteModal}
+                        onConfirm={handleDeleteCriteria}
+                        confirmText="Yes"
+                        cancelText="No"
+                        color="error"
+                    />
+                }
+            />
         </div>
     );
 };

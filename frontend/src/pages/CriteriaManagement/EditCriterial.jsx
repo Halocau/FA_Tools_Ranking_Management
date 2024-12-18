@@ -23,6 +23,7 @@ import CriteriaAPI from "../../api/CriteriaAPI.js";
 //Components
 import SearchComponent from "../../components/Common/Search.jsx";
 import ModalCustom from "../../components/Common/Modal.jsx";
+import ActionButtons from "../../components/Common/ActionButtons.jsx";
 
 //Filter Query Builder
 import { sfAnd, sfEqual, sfLike } from 'spring-filter-query-builder';
@@ -40,13 +41,13 @@ const EditCriteria = () => {
     const [showEditNameModal, setShowEditNameModal] = useState(false);
     const [showAddOptionModal, setShowAddOptionModal] = useState(false);
     const [showEditOptionModal, setShowEditOptionModal] = useState(false);
-
+    const [showDeleteOptionModal, setShowDeleteOptionModal] = useState(false);
     //Use for save new criteria name
     const [newCriteriaName, setNewCriteriaName] = useState("");
 
     //Use for add and update option
     const [newOption, setNewOption] = useState({ name: "", score: "", description: "" });
-
+    const [deleteOption, setDeleteOption] = useState(null);
     //Use for show notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     //Use for validation
@@ -164,6 +165,16 @@ const EditCriteria = () => {
         setShowEditOptionModal(true);
     };
 
+    const handleOpenDeleteOptionModal = (option) => {
+        setNewOption(option);
+        setShowDeleteOptionModal(true);
+    }
+
+    const handleCloseDeleteOptionModal = () => {
+        setNewOption({ name: "", score: "", description: "" });
+        setShowDeleteOptionModal(false);
+    }
+
     const handleValidationError = (errorResponse) => {
         if (errorResponse.exception) {
             console.log(errorResponse.detailMessage);
@@ -232,10 +243,10 @@ const EditCriteria = () => {
     };
 
     //Use for delete option
-    const handleDeleteOption = async (optionId) => {
+    const handleDeleteOption = async () => {
         try {
-            await OptionAPI.deleteOption(optionId);
-            setOptions(options.filter((option) => option.optionId !== optionId));
+            await OptionAPI.deleteOption(newOption.id);
+            setOptions(options.filter((option) => option.optionId !== newOption.id));
             if (options.length === 5) {
                 getAllOptionByID();
             }
@@ -243,7 +254,8 @@ const EditCriteria = () => {
                 setPage(page - 1);
             }
             setTotalElements(totalElements - 1);
-            showSuccessMessage("Option deleted successfully!")
+            showSuccessMessage("Option deleted successfully!");
+            handleCloseDeleteOptionModal();
         } catch (error) {
             showErrorMessage("Failed to delete option. Please try again.");
         }
@@ -303,7 +315,7 @@ const EditCriteria = () => {
                     <Button
                         variant="outlined"
                         color="error"
-                        onClick={() => handleDeleteOption(params.row.id)}
+                        onClick={() => handleOpenDeleteOptionModal(params.row)}
                         sx={{ marginLeft: 1 }}
                     >
                         <MdDeleteForever />
@@ -514,6 +526,23 @@ const EditCriteria = () => {
                         <Button variant="outlined" onClick={() => setShowEditOptionModal(false)}>Cancel</Button>
                         <Button variant="contained" color="success" onClick={handleEditOption}>Save</Button>
                     </>
+                }
+            />
+
+            {/* Modal for delete option */}
+            <ModalCustom
+                show={showDeleteOptionModal}
+                handleClose={handleCloseDeleteOptionModal}
+                title="Delete Criteria"
+                bodyContent="Are you sure you want to remove this criteria?"
+                footerContent={
+                    <ActionButtons
+                        onCancel={handleCloseDeleteOptionModal}
+                        onConfirm={handleDeleteOption}
+                        confirmText="Yes"
+                        cancelText="No"
+                        color="error"
+                    />
                 }
             />
         </Box>
