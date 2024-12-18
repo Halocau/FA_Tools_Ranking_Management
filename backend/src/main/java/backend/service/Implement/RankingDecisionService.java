@@ -133,19 +133,36 @@ public class RankingDecisionService implements IRankingDecisionService {
         iRankingDecisionRepository.deleteById(id);
     }
 
-
-
-
-
+    ///  Response
     @Override
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions) {
         // Convert a list of ranking decisions to DTO responses using ModelMapper
         List<RankingDecisionResponse> rankingDecisionResponses = new ArrayList<>();
         for (RankingDecision rankingDecision : rankingDecisions) {
-            rankingDecisionResponses.add(modelMapper.map(rankingDecision, RankingDecisionResponse.class));
+            // Map basic fields using ModelMapper
+            RankingDecisionResponse response = modelMapper.map(rankingDecision, RankingDecisionResponse.class);
+
+            // Check if the status is "Finalized"
+            if ("Finalized".equalsIgnoreCase(rankingDecision.getStatus())) {
+                // Retrieve the finalizedByName from the Account repository
+                Optional<Account> accountOptional = iAccount.findById(rankingDecision.getFinalizedBy());
+                if (accountOptional.isPresent()) {
+                    // Set the finalizedByName if account exists
+                    response.setFinalizedByName(accountOptional.get().getUsername());
+                } else {
+                    // Set finalizedByName to empty if account is not found
+                    response.setFinalizedByName("");
+                }
+            } else {
+                // Do not set finalizedByName if status is not "Finalized"
+                response.setFinalizedByName(null);
+            }
+
+            rankingDecisionResponses.add(response);
         }
         return rankingDecisionResponses;
     }
+
 
     @Override
     public RankingDecisionResponse findRankingDecisionResponseById(int id) {
