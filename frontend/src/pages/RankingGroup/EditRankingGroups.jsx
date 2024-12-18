@@ -317,30 +317,30 @@ const EditRankingGroup = () => {
             width: 240,
             renderCell: (params) => (
                 <>
-                    <Button
-                        variant="outlined"
-                        color="gray"
-                        sx={{ marginLeft: 1 }}
-                        onClick={() => {
-                            console.log(`Viewing decision with ID: ${params.row.id}`);
-                            navigate(`/ranking-decision/view/${params.row.id}`);
-                        }}
-                    >
-                        <FaEye />
-                    </Button>
-                    {(params.row.status !== 'Confirm') && (
+                    {(params.row.status !== 'Draft') && (
                         <Button
                             variant="outlined"
+                            color="gray"
                             sx={{ marginLeft: 1 }}
                             onClick={() => {
-                                console.log(`Navigating to edit decision with ID: ${params.row.id}`);
-                                navigate(`/ranking-decision/edit/${params.row.id}`);
+                                console.log(`Viewing decision with ID: ${params.row.id}`);
+                                navigate(`/ranking-decision/view/${params.row.id}`);
                             }}
                         >
-                            <FaEdit />
+                            <FaEye />
                         </Button>
                     )}
-                    {(params.row.status === 'Draft') && (
+                    <Button
+                        variant="outlined"
+                        sx={{ marginLeft: 1 }}
+                        onClick={() => {
+                            console.log(`Navigating to edit decision with ID: ${params.row.id}`);
+                            navigate(`/ranking-decision/edit/${params.row.id}`);
+                        }}
+                    >
+                        <FaEdit />
+                    </Button>
+                    {(params.row.status === 'Draft' || params.row.status === 'Rejected') && (
                         <Button
                             variant="outlined"
                             color="error"
