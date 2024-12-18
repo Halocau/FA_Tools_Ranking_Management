@@ -91,6 +91,7 @@ const RankingDecision = () => {
                 pageSize
             );
             setRankingDecisions(data.result);
+            console.log(data.result)
             setTotalPages(data.pageInfo.total);
             setTotalElements(data.pageInfo.element);
         } catch (error) {
@@ -328,8 +329,9 @@ const RankingDecision = () => {
                 id: decision.decisionId,
                 index: index + 1 + (page - 1) * pageSize,
                 dicisionname: decision.decisionName,
-                finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
-                finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
+                finalizedAt: decision.status === 'Finalized'
+                    ? (decision.finalizedAt ? decision.finalizedAt.slice(0, 10) : '-')
+                    : '-', finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "-" : decision.finalizedBy) : '-',
                 status: decision.status
             }));
             setRows(mappedRows); // Update rows with data from decisions
