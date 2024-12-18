@@ -27,5 +27,5 @@ public interface IEmployeeRepository extends JpaRepository<Employee, Integer>, J
             "WHERE e.employeeId = :employeeId")
     List<CaculatorCurrentRank> getApplyCriteriaResponsesForEmployee(@Param("employeeId") int employeeId);
 
-
+    Integer countByGroupId(Integer groupId);
 }
