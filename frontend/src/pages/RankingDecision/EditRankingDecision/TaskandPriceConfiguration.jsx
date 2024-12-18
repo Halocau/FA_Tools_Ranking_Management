@@ -19,7 +19,6 @@ import taskApi from '../../../api/TaskAPI.js';
 
 const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage, activeStep }) => {
     const role = localStorage.getItem('userRole');
-    console.log("role", role);
     // Data
     const { id } = useParams(); // Get the ID from the URL
     const [originalTask, setOriginalTask] = useState([]);  // Lưu dữ liệu gốc
@@ -202,13 +201,12 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         setRows((prevRows) =>
             prevRows.map((row) => {
                 if (row.taskId === taskId) {
-                    // Cập nhật taskWages cho dòng có taskId tương ứng
                     const updatedTaskWages = row.taskWages.map((wage) => {
                         if (wage.rankingTitleId === rankingTitleId) {
                             console.log(wageType, value);
                             return {
                                 ...wage,
-                                [wageType]: value, // Cập nhật giá trị wageType
+                                [wageType]: value,
                             };
                         }
                         return wage;
@@ -216,10 +214,10 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
 
                     return {
                         ...row,
-                        taskWages: updatedTaskWages, // Cập nhật lại taskWages
+                        taskWages: updatedTaskWages,
                     };
                 }
-                return row; // Không thay đổi các dòng khác
+                return row;
             })
         );
     };
@@ -228,9 +226,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     //////////////////////////////////// Remove row ///////////////////////////////////////
     const handleDeleteRowData = (taskId) => {
         setRows((prevRows) => {
-            // Tìm taskName từ taskId
             const taskName = taskId;
-            // Lọc bỏ tất cả các hàng liên quan đến taskName
             const updatedRows = prevRows.filter((row) => row.taskId !== taskName);
             return updatedRows;
         });
@@ -253,13 +249,9 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                 overtimeWage: 0,
             })),
         };
-        // Thêm object vào mảng rows
         setRows((prevRows) => normalizeRows([...prevRows, newRow], allTitle));
-        // Đặt lại selectedTask về null
         setSelectedTask(null);
     };
-
-
     // End 
     //////////////////////////////////// Cancel ///////////////////////////////////////
     const handleCancelChanges = () => {
@@ -270,15 +262,12 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     // End 
     //////////////////////////////////// Save ///////////////////////////////////////
     const handleSaveChanges = async () => {
-        console.log("TESTTTTTTT!");
-        // Hàm kiểm tra giá trị của từng ô trong hàng
         const isRowValid = (row) => {
             return Object.keys(row).every((key) => {
                 if (['taskId', 'taskName', 'taskType'].includes(key)) {
-                    return true; // Bỏ qua các cột cố định
+                    return true;
                 }
                 const value = row[key];
-                // Kiểm tra ô có giá trị hợp lệ (không phải rỗng, null, hoặc undefined)
                 if (value === '' || value === null || value === undefined) {
                     console.log(`Ô thiếu dữ liệu: ${key}, Dòng: ${JSON.stringify(row)}`);
                     return false;
@@ -286,36 +275,27 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                 return true;
             });
         };
-
-        // Kiểm tra tất cả các hàng
         const allFieldsFilled = rows.every(isRowValid);
-
         if (!allFieldsFilled) {
             showErrorMessage('Tất cả các ô phải được điền đầy đủ');
             console.log('Có ô chưa điền dữ liệu');
-            return; // Dừng nếu có lỗi
+            return;
         }
         await synsDecisionTask(rows, originalTask);
-        // Hiển thị thông báo thành công và tiếp tục bước tiếp theo
         showSuccessMessage('Task & Price Configuration successfully updated.');
         getTaskConfiguration();
         goToNextStep({ stayOnCurrentStep: true });
     };
 
     //////////////////////////////////// Column Task//////////////////////////////////
-    // Lấy danh sách các titleName từ rankingTitles
     const allTitle = title.map((title) => ({
         rankingTitleId: title.rankingTitleId,
         titleName: title.rankingTitleName,
     }));
-
-    // Hàm chuẩn hóa rows
     const normalizeRows = (rows) => {
         return rows.map((row) => {
             const updatedRow = { ...row };
             const existingTitleIds = new Set((updatedRow.taskWages || []).map((wage) => wage.rankingTitleId));
-
-            // Thêm `rankingTitleId` và `titleName` còn thiếu
             title.forEach((title, index) => {
                 console.log('Index: ', index, '+ Title: ', title);
                 if (!existingTitleIds.has(title.rankingTitleId)) {
@@ -327,15 +307,10 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                     });
                 }
             });
-
-            // Sắp xếp lại `taskWages` theo `titleName`
             updatedRow.taskWages = updatedRow.taskWages.sort((a, b) => a.titleName.localeCompare(b.titleName));
-
             return updatedRow;
         });
     };
-
-
     useEffect(() => {
         const normalized = normalizeRows(originalTask);
         console.log("Normalized rows:", normalized);
@@ -343,8 +318,6 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     }, [originalTask]);
 
     console.log('rows', rows);
-
-
 
     //////////////////////////////////// Return //////////////////////////////////////
     return (
@@ -368,13 +341,11 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                         <Table sx={{}} aria-label="task table">
                             <TableHead>
                                 <TableRow>
-                                    {/* Cột Task: Cố định chiều rộng và sử dụng sticky */}
                                     {/* Task Name */}
                                     <TableCell
                                         style={{ position: 'sticky', left: 0, backgroundColor: '#e0e0e0', width: '180px', zIndex: 2, boxSizing: 'border-box' }} >
                                         Task
                                     </TableCell>
-                                    {/* Cột Task Type: Cố định chiều rộng và sử dụng sticky */}
                                     {/* Task Type */}
                                     <TableCell
                                         style={{
@@ -386,7 +357,6 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                         }} rowSpan={2}
                                     >Task Type
                                     </TableCell>
-
                                     {/* Column title*/}
                                     {allTitle.map((title, index) => (
                                         <TableCell
@@ -403,7 +373,6 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                             {title.titleName}
                                         </TableCell>
                                     ))}
-
                                     {/* Column action*/}
                                     {(decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
                                         <TableCell
