@@ -145,14 +145,9 @@ public class RankingDecisionService implements IRankingDecisionService {
             // Check if the status is "Finalized"  
             if ("Finalized".equalsIgnoreCase(rankingDecision.getStatus())) {
                 // Retrieve the finalizedByName from the Account repository
-                Optional<Account> accountOptional = iAccount.findById(rankingDecision.getFinalizedBy());
-                if (accountOptional.isPresent()) {
-                    // Set the finalizedByName if account exists
-                    response.setFinalizedByName(accountOptional.get().getUsername());
-                } else {
-                    // Set finalizedByName to empty if account is not found
-                    response.setFinalizedByName("");
-                }
+                Account accountOptional = iAccount.findById(rankingDecision.getFinalizedBy()).orElse(null);
+                response.setFinalizedByName(accountOptional.getUsername());
+
             } else {
                 // Do not set finalizedByName if status is not "Finalized"
                 response.setFinalizedByName(null);
@@ -446,7 +441,7 @@ public class RankingDecisionService implements IRankingDecisionService {
 
         // Cập nhật trạng thái nếu hợp lệ
         decision.setStatus(status);
-        if(status.equals("Finalized")) {
+        if (status.equals("Finalized")) {
             decision.setFinalizedAt(LocalDateTime.now());
             decision.setFinalizedBy(form.getFinalized_by());
         }
