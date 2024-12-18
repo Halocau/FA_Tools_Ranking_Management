@@ -142,7 +142,7 @@ public class RankingDecisionService implements IRankingDecisionService {
             // Map basic fields using ModelMapper
             RankingDecisionResponse response = modelMapper.map(rankingDecision, RankingDecisionResponse.class);
 
-            // Check if the status is "Finalized"
+            // Check if the status is "Finalized"  
             if ("Finalized".equalsIgnoreCase(rankingDecision.getStatus())) {
                 // Retrieve the finalizedByName from the Account repository
                 Optional<Account> accountOptional = iAccount.findById(rankingDecision.getFinalizedBy());
