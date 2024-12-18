@@ -8,6 +8,7 @@ import backend.dao.ITaskWagesRepository;
 import backend.model.dto.TaskResponse;
 import backend.model.entity.Account;
 import backend.model.entity.Task;
+import backend.model.entity.TaskWages;
 import backend.model.form.Task.AddTaskRequest;
 import backend.model.form.Task.UpdateTaskRequest;
 import backend.model.page.ResultPaginationDTO;
@@ -23,18 +24,21 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TaskService implements ITaskService {
     private ITaskRepository iTaskRepository;
     private IAccount iAccount;
     private ModelMapper modelMapper;
+    private ITaskWagesRepository iTaskWagesRepository;
 
     @Autowired
-    public TaskService(ITaskRepository iTaskRepository, IAccount iAccount, ModelMapper modelMapper) {
+    public TaskService(ITaskRepository iTaskRepository, IAccount iAccount, ModelMapper modelMapper, ITaskWagesRepository iTaskWagesRepository) {
         this.iTaskRepository = iTaskRepository;
         this.iAccount = iAccount;
         this.modelMapper = modelMapper;
+        this.iTaskWagesRepository = iTaskWagesRepository;
     }
 
     @Override
@@ -69,11 +73,23 @@ public class TaskService implements ITaskService {
     @Override
     @Transactional
     public void deleteTaskById(int id) {
+        // Kiểm tra xem task có tồn tại trong repository không
         if (!iTaskRepository.existsById(id)) {
             throw new EntityNotFoundException("Task not found with id: " + id);
         }
+
+        // Kiểm tra xem task có tồn tại trong bảng Task_Wages không
+        List<TaskWages> taskWagesList = iTaskWagesRepository.findByTaskId(id);
+        if (taskWagesList != null && !taskWagesList.isEmpty()) {
+            // Nếu danh sách không rỗng, có nghĩa là task đang được liên kết với Task_Wages
+            throw new EntityNotFoundException("Task cannot be deleted because it is associated with Task_Wages.");
+        }
+
+        // Nếu không có liên kết trong Task_Wages, tiếp tục xóa task
         iTaskRepository.deleteById(id);
     }
+
+
 
     @Override
     public Task findTaskByCreatedBy(int createdBy) {
