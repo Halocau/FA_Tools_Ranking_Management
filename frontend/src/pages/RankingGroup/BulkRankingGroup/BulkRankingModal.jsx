@@ -316,7 +316,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             const isValid = validateData(data);
             if (!isValid) {
                 setStatus("Failed");
-                setNote("Wrong value template. Re-download latest template and try again.");
+                setNote("Wrong value input for criteria options. Update and try again.");
             }
             const form = {
                 file: file,

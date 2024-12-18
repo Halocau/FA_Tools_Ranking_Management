@@ -314,7 +314,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         }
         const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
         if (!allRankScoresCalculated) {
-            showErrorMessage('Every Ranking Score must be calculated.');
+            showErrorMessage('All field is required.');
             return; // Dừng lại nếu có lỗi
         }
         const rankScoreSet = new Set(rows.map((row) => row.rankScore));

@@ -19,6 +19,7 @@ import taskApi from '../../../api/TaskAPI.js';
 
 const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage, activeStep }) => {
     const role = localStorage.getItem('userRole');
+    console.log("role", role);
     // Data
     const { id } = useParams(); // Get the ID from the URL
     const [originalTask, setOriginalTask] = useState([]);  // Lưu dữ liệu gốc

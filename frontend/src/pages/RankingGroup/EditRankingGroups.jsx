@@ -118,6 +118,7 @@ const EditRankingGroup = () => {
     /////////////////////////////////////////////////////////// Handlers to open/close modals for editing of the group info ///////////////////////////////////////////////////////////
     // Open the modal
     const handleOpenEditGroupInfoModal = () => {
+        setNewGroupName(editGroup.groupName);
         setShowEditGroupInfoModal(true);
         setValidationMessage("");
     };
@@ -150,7 +151,7 @@ const EditRankingGroup = () => {
         try {
             const updatedGroup = {
                 groupName: trimmedName,
-                currentRankingDecision: rankingDecisions.find(decision => decision.decisionName === selectedCurrentDecision).decisionId,
+                currentRankingDecision: selectedCloneDecision ? rankingDecisions.find(decision => decision.decisionName === selectedCurrentDecision).decisionId : '',
                 createBy: localStorage.getItem('userId')
             };
             console.log("Selected Current decision:", selectedCurrentDecision);
@@ -161,8 +162,13 @@ const EditRankingGroup = () => {
 
             setShowEditGroupInfoModal(false);
         } catch (error) {
+            if (error.response.data.detailMessage.includes("already exists")) {
+                setValidationMessage("Ranking Group Name already exists.");
+            } else {
+                setValidationMessage("Error occurred updating Group Info. Please try again.");
+            }
             console.error("Error updating group:", error);
-            showErrorMessage("Error occurred updating Group Info. Please try again.");
+            // showErrorMessage("Error occurred updating Group Info. Please try again.");
         }
     };
 
