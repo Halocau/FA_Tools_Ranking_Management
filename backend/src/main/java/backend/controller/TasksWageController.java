@@ -49,4 +49,12 @@ public class TasksWageController {
         iTaskWagesService.deleteTaskWages(rankingTitleId, taskId);
         return new ResponseEntity<>("Task wages deleted successfully", HttpStatus.OK);
     }
+
+
+    @DeleteMapping("delete-wages/{rankingTitleId}")
+    public ResponseEntity<String> deleteTaskWagesByRankingTitleId(
+            @PathVariable(name = "rankingTitleId") Integer rankingTitleId){
+        iTaskWagesService.deleteTaskWagesByRankingTitleId(rankingTitleId);
+        return new ResponseEntity<>("Task wages deleted successfully", HttpStatus.OK);
+    }
 }

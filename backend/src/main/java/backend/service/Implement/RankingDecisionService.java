@@ -12,6 +12,8 @@ import backend.model.form.RankingDecision.UpdateStatusRankingDecisionRequest;
 import backend.model.page.ResultPaginationDTO;
 import backend.service.IDecisionCriteriaService;
 import backend.service.IRankingDecisionService;
+import backend.service.IRankingTitleOptionService;
+import backend.service.ITaskWagesService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
@@ -44,10 +46,13 @@ public class RankingDecisionService implements IRankingDecisionService {
     private IDecisionCriteriaService iDecisionTasksService;
     private IAccount iAccount;
     private IRankingTitleOptionRepository iRankingTitleOptionRepository;
+    private IRankingTitleOptionService rankingTitleOptionService;
+    private ITaskWagesService taskWagesService;
     private ITaskWagesRepository iTaskWagesRepository;
+    private EntityManager entityManager;
 
     @Autowired
-    public RankingDecisionService(IRankingDecisionRepository iRankingDecisionRepository, IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository, IDecisionCriteriaRepository iDecisionCriteriaRepository, IDecisionTasksRepository iDecisionTasksRepository, IRankingTitleRepository iRankingTitleRepository, IDecisionCriteriaService iDecisionCriteriaService, IDecisionCriteriaService iDecisionTasksService, IAccount iAccount, IRankingTitleOptionRepository iRankingTitleOptionRepository, ITaskWagesRepository iTaskWagesRepository) {
+    public RankingDecisionService(IRankingDecisionRepository iRankingDecisionRepository, IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository, IDecisionCriteriaRepository iDecisionCriteriaRepository, IDecisionTasksRepository iDecisionTasksRepository, IRankingTitleRepository iRankingTitleRepository, IDecisionCriteriaService iDecisionCriteriaService, IDecisionCriteriaService iDecisionTasksService, IAccount iAccount, IRankingTitleOptionRepository iRankingTitleOptionRepository, IRankingTitleOptionService rankingTitleOptionService, ITaskWagesService taskWagesService, ITaskWagesRepository iTaskWagesRepository, EntityManager entityManager) {
         this.iRankingDecisionRepository = iRankingDecisionRepository;
         this.iEmployeeRepository = iEmployeeRepository;
         this.modelMapper = modelMapper;
@@ -59,7 +64,10 @@ public class RankingDecisionService implements IRankingDecisionService {
         this.iDecisionTasksService = iDecisionTasksService;
         this.iAccount = iAccount;
         this.iRankingTitleOptionRepository = iRankingTitleOptionRepository;
+        this.rankingTitleOptionService = rankingTitleOptionService;
+        this.taskWagesService = taskWagesService;
         this.iTaskWagesRepository = iTaskWagesRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -111,30 +119,22 @@ public class RankingDecisionService implements IRankingDecisionService {
         // Xóa các RankingTitles liên quan đến RankingDecision
         List<RankingTitle> rankingTitles = iRankingTitleRepository.findByDecisionId(id);
         for (RankingTitle rankingTitle : rankingTitles) {
-            // Lấy danh sách RankingTitleOption liên quan đến RankingTitle
-            List<RankingTitleOption> rankingTitleOptions = iRankingTitleOptionRepository.findByRankingTitleId(rankingTitle.getRankingTitleId());
+            int rankingTitleId = rankingTitle.getRankingTitleId();
 
-            // Cập nhật optionId thành null
-            for (RankingTitleOption option : rankingTitleOptions) {
-                option.setOptionId(null);
-            }
-            // Lưu các thay đổi
-            iRankingTitleOptionRepository.saveAll(rankingTitleOptions);
+            // Xóa các RankingTitleOption liên quan đến RankingTitle
+            iRankingTitleOptionRepository.deleteByRankingTitleId(rankingTitleId);
 
-            iRankingTitleOptionRepository.deleteByRankingTitleId(rankingTitle.getRankingTitleId());
             // Xóa các TaskWages liên quan đến RankingTitle
-            iTaskWagesRepository.deleteByRankingTitleId(rankingTitle.getRankingTitleId());
-
+            iTaskWagesRepository.deleteByRankingTitleId(rankingTitleId);
+// Gọi flush() để đồng bộ Session
+            entityManager.flush();
             // Xóa RankingTitle
-            iRankingTitleRepository.deleteById(rankingTitle.getRankingTitleId());
+            iRankingTitleRepository.deleteById(rankingTitleId);
         }
 
         // Cuối cùng, xóa RankingDecision
         iRankingDecisionRepository.deleteById(id);
     }
-
-
-
 
 
     @Override

@@ -59,6 +59,17 @@ public class TaskWagesService implements ITaskWagesService {
         // Giải nén Optional và xóa đối tượng
         iTaskWagesRepository.delete(find.get());
     }
+
+    @Override
+    @Transactional
+    public void deleteTaskWagesByRankingTitleId(Integer rankingTitleId) {
+        List<TaskWages> find = iTaskWagesRepository.findByRankingTitleId(rankingTitleId);
+        if (!find.isEmpty()) {
+            // Xóa tất cả các bản ghi này
+            iTaskWagesRepository.deleteAll(find);
+        }
+    }
+
     /**
      * Form
      */
@@ -87,6 +98,7 @@ public class TaskWagesService implements ITaskWagesService {
             iTaskWagesRepository.save(existingTaskWages);
         }
     }
+
     @Override  //UPDATE AND ADD LIST tasksWage
     @Transactional
     public void upsertTaskWagesList(List<UpsertTasksWage> forms) {

@@ -22,7 +22,7 @@ public interface IRankingTitleOptionService {
     public RankingTitleOption updateRankingTitleOption(RankingTitleOption rankingTitleOption);
 
     public void deleteRankingTitleOption(Integer rankingTitleId, Integer optionId);
-
+    public void deleteByRankingTitleId(Integer rankingTitleId);
     // form
     public void createRankingTitleOption(AddRankingTitleOptionRequest form);
     // public void updateRankingTitleOption(UpdateRankingTitleOptionRequest

@@ -16,7 +16,7 @@ public interface ITaskWagesService {
     public List<TaskWages> getTaskWages();
 
     public void deleteTaskWages(Integer rankingTitleId, Integer taskId);
-
+    public void deleteTaskWagesByRankingTitleId(Integer rankingTitleId);
     //form
     public void upsertTaskWages(UpsertTasksWage form, Integer rankingTitleId, Integer taskId);
     public void upsertTaskWagesList(List<UpsertTasksWage> forms);
