@@ -45,6 +45,8 @@ public class RankingDecision {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+
     //Task <-> RankingDecision
     @ManyToMany(
             fetch = FetchType.LAZY,
