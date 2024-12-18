@@ -150,51 +150,73 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
       setGlobalLoading(true); // Start global loading
       const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
 
-      if (selectedIDs.length === 0) {
-        showErrorMessage("No rows selected to export.");
-        setGlobalLoading(false); // Stop global loading
-        return;
-      }
-
+      // Lấy danh sách nhân viên chi tiết từ API
       const detailedEmployees = await EmployeeAPI.getEmployeeCriteria(id);
-      const selectedData = detailedEmployees.filter((employee) =>
-        selectedIDs.includes(employee.employeeId)
-      );
 
-      const worksheetData = selectedData.map((employee) => {
-        const criteriaColumns = employee.criteriaList.reduce(
+      let worksheetData = [];
+      if (selectedIDs.length === 0) {
+        // Nếu không có nhân viên nào được chọn, lấy nhân viên đầu tiên và thêm giá trị null vào các cột
+        const firstEmployee = detailedEmployees[0];
+        const criteriaColumns = firstEmployee.criteriaList.reduce(
           (acc, criteria) => {
-            acc[
-              criteria.criteriaName
-            ] = `${criteria.score} - ${criteria.optionName}`;
+            acc[criteria.criteriaName] = "Null"; // Giá trị null cho các cột criteria
             return acc;
           },
           {}
         );
 
-        return {
-          employeeId: employee.employeeId,
-          employeeName: employee.employeeName,
-          currentRankingDecision: employee.currentRankingDecision,
-          currentRank: employee.currentRank,
-          assessmentRank: employee.assessmentRank,
+        worksheetData.push({
+          employeeId: firstEmployee.employeeId,
+          employeeName: firstEmployee.employeeName,
+          currentRankingDecision: "Null",
+          currentRank: "Null",
+          assessmentRank: "Null",
           ...criteriaColumns,
-          totalScore: employee.totalScore,
-        };
-      });
+          totalScore: "Null",
+        });
+      } else {
+        // Nếu có nhân viên được chọn, lấy dữ liệu chi tiết của họ
+        const selectedData = detailedEmployees.filter((employee) =>
+          selectedIDs.includes(employee.employeeId)
+        );
 
+        worksheetData = selectedData.map((employee) => {
+          const criteriaColumns = employee.criteriaList.reduce(
+            (acc, criteria) => {
+              acc[
+                criteria.criteriaName
+              ] = `${criteria.score} - ${criteria.optionName}`;
+              return acc;
+            },
+            {}
+          );
+
+          return {
+            employeeId: employee.employeeId,
+            employeeName: employee.employeeName,
+            currentRankingDecision: employee.currentRankingDecision,
+            currentRank: employee.currentRank,
+            assessmentRank: employee.assessmentRank,
+            ...criteriaColumns,
+            totalScore: employee.totalScore,
+          };
+        });
+      }
+
+      // Tạo header
       const headers = Object.keys(worksheetData[0]).map((key) =>
         key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())
       );
 
+      // Tạo worksheet
       const worksheet = XLSX.utils.json_to_sheet(worksheetData);
       headers.forEach((header, index) => {
         worksheet[`${String.fromCharCode(65 + index)}1`] = { v: header };
       });
 
+      // Tạo workbook và lưu file
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
-
       XLSX.writeFile(workbook, "Selected_Employees.xlsx");
 
       setGlobalLoading(false); // Stop global loading
