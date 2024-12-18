@@ -198,6 +198,7 @@ const ViewDecision = () => {
             const updatedDecision = {
                 decisionId: id,
                 status: 'Finalized',
+                finalized_by: localStorage.getItem('userId'),
             };
             await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
             setViewDecision({ status: 'Finalized' })

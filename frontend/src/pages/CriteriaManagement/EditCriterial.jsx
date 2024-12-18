@@ -511,8 +511,22 @@ const EditCriteria = () => {
                 }
                 footerContent={
                     <>
-                        <Button variant="outlined" onClick={() => setShowEditOptionModal(false)}>Cancel</Button>
-                        <Button variant="contained" color="success" onClick={handleEditOption}>Save</Button>
+                        <Button
+                            variant="outlined"
+                            sx={{ mr: 2 }}
+                            onClick={() => setShowEditOptionModal(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            sx={{ gap: 1 }}
+                            variant="contained"
+                            color="success"
+                            onClick={handleEditOption}
+                        >
+                            Save
+                        </Button>
+
                     </>
                 }
             />
