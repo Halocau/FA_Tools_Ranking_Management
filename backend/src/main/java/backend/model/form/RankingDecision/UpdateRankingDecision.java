@@ -1,5 +1,6 @@
 package backend.model.form.RankingDecision;
 
+import backend.model.validation.RankingDecision.RankingDecisionNameNotExits;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;

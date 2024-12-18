@@ -17,7 +17,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Constraint(validatedBy = { AddOptionNameNotDuplicateValidator.class })
 @Repeatable(AddOptionNameNotDuplicate.List.class)
 public @interface AddOptionNameNotDuplicate {
-    String message() default "{RankingGroup name exists already!}";
+    String message() default "{Option name exists already!}";
 
     Class<?>[] groups() default {};
 

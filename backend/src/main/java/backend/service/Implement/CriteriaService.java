@@ -1,6 +1,7 @@
 package backend.service.Implement;
 
 import backend.config.common.PaginationUtils;
+import backend.config.exception.exceptionEntity.CriteriaException;
 import backend.dao.ICriteriaRepository;
 import backend.model.dto.CriteriaResponse;
 import backend.model.dto.TitleConfiguration.DecisionCriteriaDTO;
@@ -82,6 +83,15 @@ public class CriteriaService implements ICriteriaService {
         Optional<Criteria> criteriaOptional = criteriaRepository.findById(criteriaId);
         if (criteriaOptional.isPresent()) {
             Criteria criteria = criteriaOptional.get();
+
+            // Kiểm tra xem có tồn tại criteria nào khác trùng tên không
+            boolean isDuplicateName = criteriaRepository.existsByCriteriaNameAndCriteriaIdNot(
+                    request.getCriteriaName(), criteriaId);
+            if (isDuplicateName) {
+                // Nếu tên đã tồn tại và không phải của chính nó, không cho phép cập nhật
+                throw new CriteriaException("Criteria already exist with name: " + criteria.getCriteriaName());
+            }
+
             criteria.setCriteriaName(request.getCriteriaName());
             // criteria.setCreatedBy(request.getUpdatedBy());
             return Optional.of(criteriaRepository.save(criteria));

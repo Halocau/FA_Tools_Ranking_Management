@@ -68,4 +68,10 @@ public class RankingTitle {
             inverseJoinColumns = @JoinColumn(name = "task_id")
     )
     private List<Task> tasks;
+
+    @OneToMany(mappedBy = "rankingTitleId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<RankingTitleOption> rankingTitleOptions;
+
+    @OneToMany(mappedBy = "rankingTitleId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<TaskWages> taskWages;
 }

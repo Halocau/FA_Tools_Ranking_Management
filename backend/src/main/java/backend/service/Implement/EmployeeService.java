@@ -62,9 +62,9 @@ public class EmployeeService implements IEmployeeService {
     /// Response
     @Override
     public List<EmployeeResponse> getAllEmployeeResponses(List<Employee> allEmployees) {
-        if (allEmployees.isEmpty()) {
-            throw new EntityNotFoundException("No employees found.");
-        }
+//        if (allEmployees.isEmpty()) {
+//            throw new EntityNotFoundException("No employees found.");
+//        }
 
         // Lấy tất cả các RankingGroup và RankingDecision cần thiết trong một lần
         List<Integer> groupIds = allEmployees.stream().map(Employee::getGroupId).distinct().collect(Collectors.toList());

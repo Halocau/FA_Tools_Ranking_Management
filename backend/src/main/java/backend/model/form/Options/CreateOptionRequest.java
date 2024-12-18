@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @UniqueScoreCreate
+@AddOptionNameNotDuplicate
 public class CreateOptionRequest {
     @NotBlank
-    @AddOptionNameNotDuplicate
     private String optionName;
 
     @NotNull

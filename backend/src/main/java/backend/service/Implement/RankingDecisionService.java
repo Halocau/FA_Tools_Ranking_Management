@@ -1,6 +1,7 @@
 package backend.service.Implement;
 
 import backend.config.common.PaginationUtils;
+import backend.config.exception.exceptionEntity.RankingDecisionException;
 import backend.dao.*;
 import backend.model.dto.RankingDecisionResponse;
 import backend.model.entity.*;
@@ -42,9 +43,11 @@ public class RankingDecisionService implements IRankingDecisionService {
     private IDecisionCriteriaService iDecisionCriteriaService;
     private IDecisionCriteriaService iDecisionTasksService;
     private IAccount iAccount;
+    private IRankingTitleOptionRepository iRankingTitleOptionRepository;
+    private ITaskWagesRepository iTaskWagesRepository;
 
     @Autowired
-    public RankingDecisionService(IRankingDecisionRepository iRankingDecisionRepository, IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository, IDecisionCriteriaRepository iDecisionCriteriaRepository, IDecisionTasksRepository iDecisionTasksRepository, IRankingTitleRepository iRankingTitleRepository, IDecisionCriteriaService iDecisionCriteriaService, IDecisionCriteriaService iDecisionTasksService, IAccount iAccount) {
+    public RankingDecisionService(IRankingDecisionRepository iRankingDecisionRepository, IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository, IDecisionCriteriaRepository iDecisionCriteriaRepository, IDecisionTasksRepository iDecisionTasksRepository, IRankingTitleRepository iRankingTitleRepository, IDecisionCriteriaService iDecisionCriteriaService, IDecisionCriteriaService iDecisionTasksService, IAccount iAccount, IRankingTitleOptionRepository iRankingTitleOptionRepository, ITaskWagesRepository iTaskWagesRepository) {
         this.iRankingDecisionRepository = iRankingDecisionRepository;
         this.iEmployeeRepository = iEmployeeRepository;
         this.modelMapper = modelMapper;
@@ -55,6 +58,8 @@ public class RankingDecisionService implements IRankingDecisionService {
         this.iDecisionCriteriaService = iDecisionCriteriaService;
         this.iDecisionTasksService = iDecisionTasksService;
         this.iAccount = iAccount;
+        this.iRankingTitleOptionRepository = iRankingTitleOptionRepository;
+        this.iTaskWagesRepository = iTaskWagesRepository;
     }
 
     @Override
@@ -93,17 +98,44 @@ public class RankingDecisionService implements IRankingDecisionService {
     @Override
     @Transactional
     public void deleteRankingDecision(int id) {
-        // Check if the ranking decision exists before deleting
+        // Kiểm tra xem RankingDecision có tồn tại không trước khi xóa
         RankingDecision existingDecision = iRankingDecisionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Ranking Decision not found with id: " + id));
 
+        // Xóa các DecisionCriteria liên quan đến RankingDecision
         iDecisionCriteriaRepository.deleteByDecisionId(id);
 
         // Xóa các DecisionTasks liên quan đến RankingDecision
         iDecisionTasksRepository.deleteByDecisionId(id);
-        // Delete tổng
+
+        // Xóa các RankingTitles liên quan đến RankingDecision
+        List<RankingTitle> rankingTitles = iRankingTitleRepository.findByDecisionId(id);
+        for (RankingTitle rankingTitle : rankingTitles) {
+            // Lấy danh sách RankingTitleOption liên quan đến RankingTitle
+            List<RankingTitleOption> rankingTitleOptions = iRankingTitleOptionRepository.findByRankingTitleId(rankingTitle.getRankingTitleId());
+
+            // Cập nhật optionId thành null
+            for (RankingTitleOption option : rankingTitleOptions) {
+                option.setOptionId(null);
+            }
+            // Lưu các thay đổi
+            iRankingTitleOptionRepository.saveAll(rankingTitleOptions);
+
+            iRankingTitleOptionRepository.deleteByRankingTitleId(rankingTitle.getRankingTitleId());
+            // Xóa các TaskWages liên quan đến RankingTitle
+            iTaskWagesRepository.deleteByRankingTitleId(rankingTitle.getRankingTitleId());
+
+            // Xóa RankingTitle
+            iRankingTitleRepository.deleteById(rankingTitle.getRankingTitleId());
+        }
+
+        // Cuối cùng, xóa RankingDecision
         iRankingDecisionRepository.deleteById(id);
     }
+
+
+
+
 
     @Override
     public List<RankingDecisionResponse> getRankingDecisionResponses(List<RankingDecision> rankingDecisions) {
@@ -216,20 +248,46 @@ public class RankingDecisionService implements IRankingDecisionService {
         }
     }
 
-    private void cloneRankingTitles(RankingDecision existingDecision, RankingDecision cloneDecision) {
-        if (existingDecision.getRankingTitles() != null) {
-            List<RankingTitle> clonedTitles = existingDecision.getRankingTitles().stream()
-                    .map(title -> {
-                        RankingTitle newTitle = new RankingTitle();
-                        newTitle.setDecisionId(cloneDecision.getDecisionId());
-                        newTitle.setTitleName(title.getTitleName());
-                        newTitle.setTotalScore(title.getTotalScore());
-                        return newTitle;
-                    }).collect(Collectors.toList());
+    @Transactional
+    public void cloneRankingTitles(RankingDecision existingDecision, RankingDecision cloneDecision) {
+        List<RankingTitle> existingTitles = existingDecision.getRankingTitles(); // Giả sử bạn có getter cho danh sách RankingTitles trong RankingDecision
 
-            // Save all ranking titles in one go
-            iRankingTitleRepository.saveAll(clonedTitles);
-            cloneDecision.setRankingTitles(clonedTitles);
+        for (RankingTitle existingTitle : existingTitles) {
+            // Clone RankingTitle
+            RankingTitle clonedTitle = RankingTitle.builder()
+                    .decisionId(cloneDecision.getDecisionId()) // Gán ID của quyết định mới
+                    .titleName(existingTitle.getTitleName())
+                    .totalScore(existingTitle.getTotalScore())
+                    .createdAt(LocalDate.now())
+                    .updatedAt(LocalDate.now())
+                    .build();
+            clonedTitle = iRankingTitleRepository.save(clonedTitle); // Lưu để lấy ID mới
+
+            // Clone RankingTitleOption
+            List<RankingTitleOption> existingOptions = existingTitle.getRankingTitleOptions();
+            for (RankingTitleOption existingOption : existingOptions) {
+                RankingTitleOption clonedOption = RankingTitleOption.builder()
+                        .rankingTitleId(clonedTitle.getRankingTitleId()) // Gán ID của title mới
+                        .optionId(existingOption.getOptionId())
+                        .createdAt(LocalDate.now())
+                        .updatedAt(LocalDate.now())
+                        .build();
+                iRankingTitleOptionRepository.save(clonedOption);
+            }
+
+            //clone TaskWage
+            List<TaskWages> existTaskWages = existingTitle.getTaskWages();
+            for (TaskWages existTaskWage : existTaskWages) {
+                TaskWages clonedWages = TaskWages.builder()
+                        .rankingTitleId(clonedTitle.getRankingTitleId())
+                        .taskId(existTaskWage.getTaskId())
+                        .workingHourWage(existTaskWage.getWorkingHourWage())
+                        .overtimeWage(existTaskWage.getOvertimeWage())
+                        .createdAt(LocalDate.now())
+                        .updatedAt(LocalDate.now())
+                        .build();
+                iTaskWagesRepository.save(clonedWages);
+            }
         }
     }
 
@@ -329,6 +387,10 @@ public class RankingDecisionService implements IRankingDecisionService {
         // Find existing ranking decision by ID, throw an exception if not found
         RankingDecision decision = iRankingDecisionRepository.findById(decisionId).orElseThrow(() ->
                 new EntityNotFoundException("Ranking decision not found with id: " + decisionId));
+        if (!decision.getDecisionName().equals(form.getDecisionName())
+                && iRankingDecisionRepository.existsByDecisionNameNot(form.getDecisionName())) {
+            throw new RankingDecisionException("Ranking decision already exists with name: " + form.getDecisionName());
+        }
 
         // Update decision name with the form data
         decision.setDecisionName(form.getDecisionName());

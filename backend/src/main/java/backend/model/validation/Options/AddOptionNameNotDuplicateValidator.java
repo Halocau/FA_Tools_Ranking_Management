@@ -1,25 +1,25 @@
 package backend.model.validation.Options;
 
+import backend.dao.IOptionRepository;
+import backend.model.form.Options.CreateOptionRequest;
 import backend.service.IOptionService;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
-public class AddOptionNameNotDuplicateValidator implements ConstraintValidator<AddOptionNameNotDuplicate, String> {
+public class AddOptionNameNotDuplicateValidator implements ConstraintValidator<AddOptionNameNotDuplicate, CreateOptionRequest> {
 
-    private IOptionService iOptionService;
+    private IOptionRepository iOptionRepository;
 
     @Autowired
-    public AddOptionNameNotDuplicateValidator(IOptionService iOptionService) {
-        this.iOptionService = iOptionService;
+    public AddOptionNameNotDuplicateValidator(IOptionRepository iOptionRepository) {
+        this.iOptionRepository = iOptionRepository;
     }
 
     @Override
-    public boolean isValid(String optionName, ConstraintValidatorContext constraintValidatorContext) {
-        if (StringUtils.isEmpty(optionName)) {
-            return true;
-        }
-        return !iOptionService.existsByOptionName(optionName);
+    public boolean isValid(CreateOptionRequest request, ConstraintValidatorContext constraintValidatorContext) {
+        boolean exists = iOptionRepository.existsByOptionNameAndCriteriaId(request.getOptionName(), request.getCriteriaId());
+        return !exists;
     }
 }
