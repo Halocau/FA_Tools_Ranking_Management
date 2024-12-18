@@ -3,13 +3,12 @@ import { MdDeleteForever } from 'react-icons/md';
 import { useNavigate, useParams } from "react-router-dom";
 import Select from "react-select";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
-
 // MUI
 import {
     Box, Button, Typography, TextField, IconButton,
 } from "@mui/material";
 import { DataGrid } from '@mui/x-data-grid';
-import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 // API
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 import DecisionTaskAPI from "../../../api/DecisionTaskAPI.js";
@@ -20,16 +19,15 @@ import taskApi from '../../../api/TaskAPI.js';
 const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage, activeStep }) => {
     const role = localStorage.getItem('userRole');
     // Data
-    const { id } = useParams(); // Get the ID from the URL
-    const [originalTask, setOriginalTask] = useState([]);  // Lưu dữ liệu gốc
-    const [title, setTitle] = useState([]);  // Lưu dữ liệu gốc
+    const { id } = useParams();
+    const [originalTask, setOriginalTask] = useState([]);
+    const [title, setTitle] = useState([]);
     // Row table
     const [rows, setRows] = useState([]);
-    // State để lưu trữ giá trị đang chỉnh sửa của từng ô
     const [editedWages, setEditedWages] = useState({});
     //Select to Add a new Task
     const [selectedTask, setSelectedTask] = useState(null);
-    // Sử dụng useState để lưu danh sách tên task
+    //
     const [listtask, setListTask] = useState([]);
 
     const getListTask = async () => {
@@ -44,7 +42,6 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     useEffect(() => {
         getListTask();
     }, [activeStep]);
-
     // Load data getTaskConfiguration
     const getTaskConfiguration = async () => {
         try {
@@ -70,7 +67,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         getTitleConfiguration();
     }, [activeStep]);
 
-    //////////////////////////////////// Xử Lý backend /////////////////////////////////
+    //////////////////////////////////// Backend /////////////////////////////////
     const upsertDecisionTask = async (data) => {
         try {
             const response = await DecisionTaskAPI.updateDecisionTask(data);
@@ -109,39 +106,30 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     const synsDecisionTask = async (rows, originalTask) => {
         const originalTaskMap = new Map(originalTask.map(task => [task.taskId, task]));
         const rowsMap = new Map(rows.map(task => [task.taskId, task]));
-
-        // Task-level operations
         for (const [taskId, original] of originalTaskMap) {
             if (!rowsMap.has(taskId)) {
                 // Task deleted
                 await deleteDecisionTask(original.decisionId, original.taskId);
             }
         }
-
         for (const [taskId, current] of rowsMap) {
             if (!originalTaskMap.has(taskId)) {
-                // Task added
                 await upsertDecisionTask({ decisionId: current.decisionId, taskId: current.taskId });
             } else {
-                // Task exists, check for updates
                 const original = originalTaskMap.get(taskId);
                 if (original.taskName !== current.taskName) {
                     await upsertDecisionTask({ decisionId: current.decisionId, taskId: current.taskId });
                 }
             }
         }
-
-        // Task Wage-level operations
         for (const [taskId, current] of rowsMap) {
             const currentWages = new Map(current.taskWages.map(wage => [wage.rankingTitleId, wage]));
             const originalWages = originalTaskMap.has(taskId)
                 ? new Map(originalTaskMap.get(taskId).taskWages.map(wage => [wage.rankingTitleId, wage]))
                 : new Map();
-
             const upsertWages = [];
             for (const [rankingTitleId, currentWage] of currentWages) {
                 if (!originalWages.has(rankingTitleId)) {
-                    // New wage added
                     upsertWages.push({
                         rankingTitleId: currentWage.rankingTitleId,
                         taskId: taskId,
@@ -154,7 +142,6 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                         originalWage.workingHourWage != currentWage.workingHourWage ||
                         originalWage.overtimeWage != currentWage.overtimeWage
                     ) {
-                        // Wage updated
                         upsertWages.push({
                             rankingTitleId: currentWage.rankingTitleId,
                             taskId: taskId,
@@ -164,15 +151,10 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                     }
                 }
             }
-
-            // Perform batch upsert for task wages
             if (upsertWages.length > 0) {
                 await upsertTaskWage(upsertWages);
             }
-
             console.log('upsertWages', upsertWages);
-
-            // Handle wage deletions
             for (const [rankingTitleId] of originalWages) {
                 if (!currentWages.has(rankingTitleId)) {
                     await deleteTaskWage(taskId, rankingTitleId);
@@ -180,15 +162,12 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             }
         }
     }
-
-
     ///////////////////////////// The update function changes //////////////////////////
     const handleCellEditTaskCommit = (taskId, rankingTitleId, wageType, value) => {
         setEditedWages((prev) => ({
             ...prev,
             [`${taskId}-${rankingTitleId}-${wageType}`]: value,
         }));
-
         setRows((prevRows) =>
             prevRows.map((row) => {
                 if (row.taskId === taskId) {
@@ -208,9 +187,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     //////////////////////////////////// Remove row ///////////////////////////////////////
     const handleDeleteRowData = (taskId) => {
         setRows((prevRows) => {
-            // Tìm taskName từ taskId
             const taskName = taskId;
-            // Lọc bỏ tất cả các hàng liên quan đến taskName
             const updatedRows = prevRows.filter((row) => row.taskId !== taskName);
             return updatedRows;
         });
@@ -220,11 +197,11 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     //////////////////////////////////// Select to Add a new Task //////////////////////
     const handleAddTask = () => {
         const addedTask = listtask.find(
-            (task) => task.taskId === selectedTask.value // Chắc chắn rằng bạn sử dụng đúng key (ở đây là selectedTask.value)
+            (task) => task.taskId === selectedTask.value
         );
         const newRow = {
             decisionId: id,
-            taskId: addedTask.taskId,  // Or get the real ID from the server
+            taskId: addedTask.taskId,
             taskName: addedTask.taskName,
             taskWages: title.map((titleItem) => ({
 
@@ -234,9 +211,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                 overtimeWage: '',
             })),
         };
-        // Thêm object vào mảng rows
         setRows((prevRows) => normalizeRows([...prevRows, newRow], allTitle));
-        // Đặt lại selectedTask về null
         setSelectedTask(null);
     };
 
@@ -251,11 +226,8 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     //////////////////////////////////// Save ///////////////////////////////////////
     const handleSaveChanges = () => {
         console.log('Save attempt:', rows);
-
-        // Hàm kiểm tra giá trị từng ô trong hàng
         const isRowValid = (row) => {
             return row.taskWages.every((wage) => {
-                // Kiểm tra giá trị hợp lệ cho từng tiêu chí trong `taskWages`
                 if (
                     wage.workingHourWage === null ||
                     wage.workingHourWage === undefined ||
@@ -270,37 +242,26 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                 return true;
             });
         };
-
-        // Kiểm tra tất cả các dòng dữ liệu
         const allFieldsFilled = rows.every(isRowValid);
-
         if (!allFieldsFilled) {
             showErrorMessage('Tất cả các ô phải được điền đầy đủ');
             console.error('Có dữ liệu thiếu, không thể lưu.');
-            return; // Dừng nếu dữ liệu chưa hợp lệ
+            return;
         }
-
-        // Nếu tất cả dữ liệu hợp lệ, xử lý tiếp
         console.log('Save successful:', rows);
         showSuccessMessage('Task & Price Configuration successfully updated.');
         synsDecisionTask(rows, originalTask);
         goToNextStep({ stayOnCurrentStep: true });
     };
-
-
-
     //////////////////////////////////// Column Task//////////////////////////////////
-    // Lấy danh sách các titleName từ rankingTitles
     const allTitle = title.map((title) => ({
         rankingTitleId: title.rankingTitleId,
         titleName: title.rankingTitleName,
     }));
-
     const normalizeRows = (rows, allTitles) => {
         return rows.map((row) => {
             const updatedRow = { ...row };
             const taskWagesMap = new Map((updatedRow.taskWages || []).map(wage => [wage.rankingTitleId, wage]));
-
             allTitles.forEach(({ rankingTitleId, titleName }) => {
                 if (!taskWagesMap.has(rankingTitleId)) {
                     taskWagesMap.set(rankingTitleId, {
@@ -311,22 +272,16 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                     });
                 }
             });
-
             updatedRow.taskWages = Array.from(taskWagesMap.values())
                 .sort((a, b) => a.titleName.localeCompare(b.titleName));
-
             return updatedRow;
         });
     };
-
-
-
     useEffect(() => {
         const normalized = normalizeRows(originalTask, allTitle);
         console.log(normalized);
         setRows(normalized);
     }, [originalTask]);
-
 
     //////////////////////////////////// Return //////////////////////////////////////
     return (
@@ -559,7 +514,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                             alignItems: 'center',
                                         }}
                                     >
-                                        <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
+                                        <AddCircleIcon sx={{ fontSize: 30 }} />
                                     </IconButton>
                                 </Box>
                             )}

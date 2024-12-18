@@ -15,15 +15,12 @@ import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage }) => {
     // Data
     const { id } = useParams(); // Get the ID from the URL
-    const [originalCriteria, setOriginalCriteria] = useState([]);  // Lưu dữ liệu gốc
+    const [originalCriteria, setOriginalCriteria] = useState([]);
     // Row table
     const [rows, setRows] = useState([]);
     //Select to Add a new Criteria
     const [selectedCriteria, setSelectedCriteria] = useState(null);
     const [listcriteria, setListCriteria] = useState([]);
-
-    console.log(decisionStatus);
-
     // Load data getCriteriaConfiguration
     const getCriteriaConfiguration = async () => {
         try {
@@ -38,7 +35,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
         getCriteriaConfiguration();
     }, [id]);
 
-    //////////////////////////////////// Xử Lý backend /////////////////////////////////
+    //////////////////////////////////// Backend /////////////////////////////////
     const updateDecisionCriteria = async (form) => {
         console.log(form)
         try {
@@ -57,16 +54,12 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
     }
     const syncDecisionCriteria = async (rows, originalCriteria) => {
         try {
-            // Create a map of original criteria for quick lookup
             const originalCriteriaMap = new Map(
                 originalCriteria.map((item) => [item.criteriaId, item])
             );
-
-            // Iterate through rows to handle updates and additions
             for (const row of rows) {
                 const original = originalCriteriaMap.get(row.id);
                 if (original) {
-                    // If the row exists in originalCriteria but has a different weight, update it
                     if (original.weight !== row.weight) {
                         updateDecisionCriteria({
                             decisionId: id,
@@ -74,11 +67,9 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                             weight: row.weight
                         });
                     }
-                    // Remove the item from the map to track items already processed
                     originalCriteriaMap.delete(row.id);
                 }
                 else {
-                    // If the row is new, add it
                     updateDecisionCriteria({
                         decisionId: id,
                         criteriaId: row.id,
@@ -86,8 +77,6 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                     });
                 }
             }
-
-            // Remaining items in originalCriteriaMap are to be deleted
             for (const [criteriaId] of originalCriteriaMap) {
                 deleteDecisionCriteria(criteriaId);
             }
@@ -303,7 +292,7 @@ const CriteriaConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage,
                                     disabled={!selectedCriteria}
                                     sx={{ marginLeft: 1, height: '30px', display: 'flex', alignItems: 'center', }}
                                 >
-                                    <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
+                                    <AddCircleIcon sx={{ fontSize: 30 }} />
                                 </IconButton>
                             </Box>
                             {/* Cancel and Save */}

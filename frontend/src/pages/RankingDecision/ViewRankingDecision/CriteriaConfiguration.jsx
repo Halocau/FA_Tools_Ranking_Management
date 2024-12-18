@@ -14,7 +14,6 @@ const CriteriaConfiguration = ({ decisionStatus, showErrorMessage, showSuccessMe
     // Row table
     const [rows, setRows] = useState([]);
 
-    // Load data getCriteriaConfiguration
     const getCriteriaConfiguration = async () => {
         try {
             const response = await DecisionCriteriaAPI.getDecisionCriteriaByDecisionId(id);
@@ -29,7 +28,7 @@ const CriteriaConfiguration = ({ decisionStatus, showErrorMessage, showSuccessMe
         }
     };
     useEffect(() => {
-        if (!id) return; // Bỏ qua nếu `id` không xác định
+        if (!id) return;
         getCriteriaConfiguration();
     }, [id]);
     /////////////////////////////////// Column Criteria //////////////////////////////////
