@@ -275,7 +275,7 @@ const RankingDecision = () => {
         { field: "index", headerName: "ID", width: 80 },
         { field: "dicisionname", headerName: "Ranking Decision Name", width: 350 },
         { field: "finalizedAt", headerName: "Finalized At", width: 200 },
-        { field: "finalizeByName", headerName: "Finalized By", width: 150 },
+        { field: "finalizedByName", headerName: "Finalized By", width: 150 },
         { field: "status", headerName: "Status", width: 130 },
         {
             field: "action",
@@ -332,7 +332,7 @@ const RankingDecision = () => {
                 finalizedAt: decision.status === 'Finalized'
                     ? (decision.finalizedAt ? decision.finalizedAt.slice(0, 10) : '-')
                     : '-',
-                finalizeByName: decision.status === 'Finalized' ? (decision.finalizeByName == null ? "-" : decision.finalizeByName) : '-',
+                finalizedByName: decision.status === 'Finalized' ? (decision.finalizedByName == null ? "-" : decision.finalizedByName) : '-',
                 status: decision.status
             }));
             setRows(mappedRows); // Update rows with data from decisions
