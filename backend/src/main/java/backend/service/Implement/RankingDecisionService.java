@@ -372,6 +372,10 @@ public class RankingDecisionService implements IRankingDecisionService {
 
         // Cập nhật trạng thái nếu hợp lệ
         decision.setStatus(status);
+        if(status.equals("Finalized")) {
+            decision.setFinalizedAt(LocalDateTime.now());
+            decision.setFinalizedBy(form.getFinalized_by());
+        }
         return iRankingDecisionRepository.save(decision);
     }
 
