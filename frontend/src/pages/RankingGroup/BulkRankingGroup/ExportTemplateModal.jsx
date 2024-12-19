@@ -226,7 +226,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
       setGlobalLoading(false); // Stop global loading on error
       showErrorMessage(
         error.response?.data?.detailMessage ||
-          "An error occurred while exporting."
+        "An error occurred while exporting."
       );
     }
   };
