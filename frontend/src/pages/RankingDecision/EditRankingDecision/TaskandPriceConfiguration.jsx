@@ -378,7 +378,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                         }
                                         return (
                                             <TextField
-                                                value={editedWages[`${taskId}-${rankingTitleId}-${wageType}`] || defaultValue || ''}
+                                                value={defaultValue ? defaultValue : 0}
                                                 onChange={(e) => {
                                                     const value = e.target.value;
                                                     if (/^\d*$/.test(value)) {
