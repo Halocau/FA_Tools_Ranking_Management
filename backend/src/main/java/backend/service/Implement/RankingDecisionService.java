@@ -406,7 +406,8 @@ public class RankingDecisionService implements IRankingDecisionService {
         RankingDecision decision = iRankingDecisionRepository.findById(decisionId)
                 .orElseThrow(() -> new EntityNotFoundException("Ranking decision not found with id: " + decisionId));
         if (!decision.getDecisionName().equals(form.getDecisionName())
-                && iRankingDecisionRepository.existsByDecisionNameNot(form.getDecisionName())) {
+                && iRankingDecisionRepository.existsByDecisionName(form.getDecisionName())) {
+            System.out.println(iRankingDecisionRepository.existsByDecisionNameNot(form.getDecisionName()));
             throw new RankingDecisionException("Ranking decision already exists with name: " + form.getDecisionName());
         }
 
@@ -421,14 +422,13 @@ public class RankingDecisionService implements IRankingDecisionService {
     @Transactional
     public RankingDecision updateStatus(UpdateStatusRankingDecisionRequest form) {
         // Tìm kiếm RankingDecision
-        RankingDecision decision = iRankingDecisionRepository.findById(form.getDecisionId()).orElseThrow(
-                () -> new EntityNotFoundException("Ranking decision not found with id: " + form.getDecisionId()));
+        RankingDecision decision = iRankingDecisionRepository.findById(form.getDecisionId()).orElseThrow(() ->
+                new EntityNotFoundException("Ranking decision not found with id: " + form.getDecisionId()));
 
         // Lấy thông tin tài khoản từ SecurityContext
-        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // Lấy tên người dùng từ
-                                                                                            // SecurityContext
-        Account account = (Account) iAccount.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("Account not found with username: " + username));
+        String username = SecurityContextHolder.getContext().getAuthentication().getName(); // Lấy tên người dùng từ SecurityContext
+        Account account = (Account) iAccount.findByUsername(username).orElseThrow(() ->
+                new EntityNotFoundException("Account not found with username: " + username));
 
         // Kiểm tra trạng thái bị cấm dựa trên vai trò
         String roleName = account.getRoleName() != null ? account.getRoleName().trim() : "";
@@ -448,9 +448,12 @@ public class RankingDecisionService implements IRankingDecisionService {
 
         // Cập nhật trạng thái nếu hợp lệ
         decision.setStatus(status);
+        if (status.equals("Finalized")) {
+            decision.setFinalizedAt(LocalDateTime.now());
+            decision.setFinalizedBy(form.getFinalized_by());
+        }
         return iRankingDecisionRepository.save(decision);
     }
-
     /// Valid
     @Override
     public boolean isRankingDecisionNameExist(String decisionName) {
