@@ -141,10 +141,16 @@ const EditCriteria = () => {
             const data = await CriteriaAPI.updateCriteria(id, { criteriaName: newCriteriaName, updatedBy: localStorage.getItem("userId") });
             setCriteria(data);
             showSuccessMessage("Criteria name updated successfully!");
+            setShowEditNameModal(false);
+
         } catch (error) {
-            showErrorMessage("Failed to update criteria name.");
+            if (error.detailMessage.includes("Criteria already exist")) {
+                console.log(error);
+                setValidationMessage("Criteria Name already exists.")
+            } else {
+                showErrorMessage("Failed to update criteria name.");
+            }
         }
-        setShowEditNameModal(false);
     };
 
     //Use for open add option modal
@@ -202,6 +208,9 @@ const EditCriteria = () => {
             errorResponse.errors.forEach((error) => {
                 if (error.code === "UniqueScoreCreate") {
                     setScoreMessage("Score already exists");
+                }
+                if (error.code === "AddOptionNameNotDuplicate") {
+                    setOptionMessage("Option Name already existed")
                 }
                 if (error.code === "NotBlank" && error.field === "description") {
                     setDescriptionMessage("Description is required");
@@ -400,7 +409,10 @@ const EditCriteria = () => {
                         variant="outlined"
                         fullWidth
                         value={newCriteriaName}
-                        onChange={(e) => setNewCriteriaName(e.target.value)}
+                        onChange={(e) => {
+                            setNewCriteriaName(e.target.value)
+                            setValidationMessage("");
+                        }}
                         sx={{ marginTop: 2 }}
                         error={!!validationMessage}
                         helperText={validationMessage}

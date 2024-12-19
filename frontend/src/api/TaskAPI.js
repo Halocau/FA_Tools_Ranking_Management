@@ -67,7 +67,7 @@ const taskApi = {
             return response.data;
         } catch (error) {
             console.error(`Error deleting task with ID ${id}:`, error);
-            throw error;
+            throw error.response.data;
         }
     },
 

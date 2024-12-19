@@ -1,6 +1,7 @@
 package backend.service.Implement;
 
 import backend.config.common.PaginationUtils;
+import backend.config.exception.exceptionEntity.CriteriaException;
 import backend.dao.IAccount;
 import backend.dao.IDecisionCriteriaRepository;
 import backend.dao.ITaskRepository;
@@ -34,7 +35,8 @@ public class TaskService implements ITaskService {
     private ITaskWagesRepository iTaskWagesRepository;
 
     @Autowired
-    public TaskService(ITaskRepository iTaskRepository, IAccount iAccount, ModelMapper modelMapper, ITaskWagesRepository iTaskWagesRepository) {
+    public TaskService(ITaskRepository iTaskRepository, IAccount iAccount, ModelMapper modelMapper,
+            ITaskWagesRepository iTaskWagesRepository) {
         this.iTaskRepository = iTaskRepository;
         this.iAccount = iAccount;
         this.modelMapper = modelMapper;
@@ -82,14 +84,12 @@ public class TaskService implements ITaskService {
         List<TaskWages> taskWagesList = iTaskWagesRepository.findByTaskId(id);
         if (taskWagesList != null && !taskWagesList.isEmpty()) {
             // Nếu danh sách không rỗng, có nghĩa là task đang được liên kết với Task_Wages
-            throw new EntityNotFoundException("Task cannot be deleted because it is associated with Task_Wages.");
+            throw new CriteriaException("Task cannot be deleted because it is associated with Task_Wages.");
         }
 
         // Nếu không có liên kết trong Task_Wages, tiếp tục xóa task
         iTaskRepository.deleteById(id);
     }
-
-
 
     @Override
     public Task findTaskByCreatedBy(int createdBy) {
@@ -134,8 +134,8 @@ public class TaskService implements ITaskService {
     @Override
     @Transactional
     public void updateTaskByForm(int id, UpdateTaskRequest form) {
-        Task task = iTaskRepository.findById(id).orElseThrow(() ->
-                new EntityNotFoundException("Task not found with id: " + id));
+        Task task = iTaskRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
         task.setTaskName(form.getTaskName());
         task.setCreatedBy(form.getCreatedBy());
         iTaskRepository.saveAndFlush(task);
