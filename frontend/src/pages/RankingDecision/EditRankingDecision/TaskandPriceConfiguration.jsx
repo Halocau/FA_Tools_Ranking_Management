@@ -378,7 +378,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                         }
                                         return (
                                             <TextField
-                                                value={defaultValue ? defaultValue : 0}
+                                                value={defaultValue ? defaultValue : ''}
                                                 onChange={(e) => {
                                                     const value = e.target.value;
                                                     if (/^\d*$/.test(value)) {

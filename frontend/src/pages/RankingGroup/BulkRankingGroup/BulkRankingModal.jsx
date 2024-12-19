@@ -14,6 +14,7 @@ import FileUploadAPI from "../../../api/FileUploadAPI";
 import EmployeeCriteriaAPI from "../../../api/EmployeeCriteriaAPI";
 import EmployeeAPI from "../../../api/EmployeeAPI";
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI";
+import { isValid } from "date-fns";
 
 const modalStyle = {
     position: "absolute",
@@ -92,14 +93,12 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         }
 
         // Normalize headers by trimming and removing special characters
-        const normalizedHeaders = headers.map((header) => header.trim().replace(/\r?\n|\r/g, ""));
-
+        const normalizedHeaders = headers.map((header) => header.trim());
         // Normalize required columns and criteria names
-        const normalizedRequiredColumns = requiredColumns.map((col) => col.trim().replace(/\r?\n|\r/g, ""));
+        const normalizedRequiredColumns = requiredColumns.map((col) => col.trim());
         const normalizedCriteriaNames = criteriaList.map((criteria) =>
-            criteria.criteriaName.trim().replace(/\r?\n|\r/g, "")
+            criteria.criteriaName.trim()
         );
-
         // Find missing columns and criteria
         const missingColumns = normalizedRequiredColumns.filter(
             (col) => !normalizedHeaders.includes(col)
@@ -107,7 +106,8 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         const missingCriteria = normalizedCriteriaNames.filter(
             (criteriaName) => !normalizedHeaders.includes(criteriaName)
         );
-
+        console.log(normalizedHeaders, normalizedCriteriaNames);
+        console.log(missingColumns, missingCriteria);
         // Combine results
         if (missingColumns.length > 0 || missingCriteria.length > 0) {
             const errorMessageParts = [];
@@ -191,6 +191,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
 
                     const validationHeaders = validateHeaders(headers, requiredColumns, criteriaList);
                     if (!validationHeaders.isValid) {
+                        console.log("Fail Header", isValid.errorMessage);
                         // Set error if validation fails
                         setStatus("Failed");
                         setNote("Wrong value template. Re-download latest template and try again.");
@@ -200,6 +201,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
 
                     // Convert sheet to JSON excluding the header row
                     const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                    console.log("JsonData", jsonData);
                     setData(jsonData); // Update data state with extracted data
                     // validateData(jsonData);
 
@@ -310,6 +312,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
             alert("Please select a file before uploading.");
             return;
         }
+        console.log(data);
         setLoading(true);
         try {
             console.log("Start uploading...\n", data);
