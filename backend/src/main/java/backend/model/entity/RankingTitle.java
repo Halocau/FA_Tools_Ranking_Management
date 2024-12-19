@@ -1,5 +1,6 @@
 package backend.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -69,9 +70,13 @@ public class RankingTitle {
     )
     private List<Task> tasks;
 
-    @OneToMany(mappedBy = "rankingTitleId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    // Cập nhật mối quan hệ @OneToMany trong RankingTitle
+    @JsonIgnore
+    @OneToMany(mappedBy = "rankingTitleId", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<RankingTitleOption> rankingTitleOptions;
 
-    @OneToMany(mappedBy = "rankingTitleId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JsonIgnore
+    @OneToMany(mappedBy = "rankingTitleId", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<TaskWages> taskWages;
+
 }

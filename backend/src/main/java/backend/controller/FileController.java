@@ -5,18 +5,21 @@ import backend.model.dto.FileResponse;
 import backend.service.IFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+//download
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 
 @RestController
 @RequestMapping("api/storage")
@@ -55,5 +58,30 @@ public class FileController {
         //response
         FileResponse res = new FileResponse(uploadFile, Instant.now());
         return ResponseEntity.ok().body(res);
+    }
+
+    @GetMapping("/files")
+    public ResponseEntity<Resource> download(
+            @RequestParam(name = "fileName", required = false) String fileName,
+            @RequestParam(name = "folder", required = false) String folder)
+            throws StorageException, URISyntaxException, FileNotFoundException {
+        if (fileName == null || folder == null) {
+            throw new StorageException("Missing required params : (fileName or folder) in query params.");
+        }
+
+        // check file exist (and not a directory)
+        long fileLength = this.iFileService.getFileLength(fileName, folder);
+        if (fileLength == 0) {
+            throw new StorageException("File with name = " + fileName + " not found.");
+        }
+
+        // download a file
+        InputStreamResource resource = this.iFileService.getResource(fileName, folder);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .contentLength(fileLength)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 }

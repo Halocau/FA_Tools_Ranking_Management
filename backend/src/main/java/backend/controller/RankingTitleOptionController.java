@@ -70,4 +70,11 @@ public class RankingTitleOptionController {
         iRankingTitleOptionService.deleteRankingTitleOption(rankingTitleId, optionId);
         return ResponseEntity.status(HttpStatus.OK).body("Ranking Title Option deleted");
     }
+
+    @DeleteMapping("/delete-ranking-title/{rankingTitleId}")
+    public ResponseEntity<String> deleteRankingTitle(
+            @PathVariable(name = "rankingTitleId") Integer rankingTitleId) {
+        iRankingTitleOptionService.deleteByRankingTitleId(rankingTitleId);
+        return ResponseEntity.status(HttpStatus.OK).body("Ranking Title Option deleted");
+    }
 }

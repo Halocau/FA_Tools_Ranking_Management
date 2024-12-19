@@ -1,5 +1,6 @@
 package backend.service.Implement;
 
+import backend.config.exception.exceptionEntity.CriteriaException;
 import backend.dao.IOptionRepository;
 import backend.dao.IRankingTitleOptionRepository;
 import backend.dao.IRankingTitleRepository;
@@ -76,6 +77,16 @@ public class RankingTitleOptionService implements IRankingTitleOptionService {
             throw new EntityNotFoundException(
                     "Ranking Title Option with rankingTitleId " + rankingTitleId + " and optionId " + optionId
                             + " not found.");
+        }
+    }
+    @Override
+    @Transactional
+    public void deleteByRankingTitleId(Integer rankingTitleId) {
+        List<RankingTitleOption> find = irankingTitleOptionRepository.findByRankingTitleId(rankingTitleId);
+        // Kiểm tra nếu có bản ghi nào tìm thấy
+        if (!find.isEmpty()) {
+            // Xóa tất cả các bản ghi này
+            irankingTitleOptionRepository.deleteAll(find);
         }
     }
 
