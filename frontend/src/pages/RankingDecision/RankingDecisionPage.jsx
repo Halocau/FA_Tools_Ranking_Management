@@ -70,7 +70,7 @@ const RankingDecision = () => {
     // Use hook notification
     const [showSuccessMessage, showErrorMessage] = useNotification();
     // Validation error message
-    const [validationMessage, setValidationMessage] = useState(""); setRows
+    const [validationMessage, setValidationMessage] = useState("");
     // Status menu
     const [anchorEl, setAnchorEl] = useState(null);
     // Function Onclick Menu
@@ -142,7 +142,7 @@ const RankingDecision = () => {
             decision => decision.decisionName.toLowerCase() === trimmedName.toLowerCase()
         );
         if (isDuplicate) {
-            setValidationMessage("Decision name already exists.");
+            setValidationMessage("Ranking Decision Name already exists.");
             return;
         }
         try {

@@ -3,13 +3,12 @@ import { MdDeleteForever } from 'react-icons/md';
 import { useNavigate, useParams } from "react-router-dom";
 import Select from "react-select";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
-
 // MUI
 import {
     Box, Button, Typography, TextField, IconButton,
 } from "@mui/material";
 import { DataGrid } from '@mui/x-data-grid';
-import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 // API
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 import DecisionTaskAPI from "../../../api/DecisionTaskAPI.js";
@@ -20,16 +19,15 @@ import taskApi from '../../../api/TaskAPI.js';
 const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, showSuccessMessage, activeStep }) => {
     const role = localStorage.getItem('userRole');
     // Data
-    const { id } = useParams(); // Get the ID from the URL
-    const [originalTask, setOriginalTask] = useState([]);  // Lưu dữ liệu gốc
-    const [title, setTitle] = useState([]);  // Lưu dữ liệu gốc
+    const { id } = useParams();
+    const [originalTask, setOriginalTask] = useState([]);
+    const [title, setTitle] = useState([]);
     // Row table
     const [rows, setRows] = useState([]);
-    // State để lưu trữ giá trị đang chỉnh sửa của từng ô
     const [editedWages, setEditedWages] = useState({});
     //Select to Add a new Task
     const [selectedTask, setSelectedTask] = useState(null);
-    // Sử dụng useState để lưu danh sách tên task
+    //
     const [listtask, setListTask] = useState([]);
 
     const getListTask = async () => {
@@ -41,13 +39,9 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         }
     }
 
-    console.log('originalTask', originalTask);
-    console.log("rows", rows);
-
     useEffect(() => {
         getListTask();
     }, [activeStep]);
-
     // Load data getTaskConfiguration
     const getTaskConfiguration = async () => {
         try {
@@ -61,6 +55,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     const getTitleConfiguration = async () => {
         try {
             const response = await DecisionTitleAPI.getDecisionTitleByDecisionId(id);
+
             setTitle(response);
         } catch (error) {
             console.error("Error fetching task:", error);
@@ -72,7 +67,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
         getTitleConfiguration();
     }, [activeStep]);
 
-    //////////////////////////////////// Xử Lý backend /////////////////////////////////
+    //////////////////////////////////// Backend /////////////////////////////////
     const upsertDecisionTask = async (data) => {
         try {
             const response = await DecisionTaskAPI.updateDecisionTask(data);
@@ -108,46 +103,33 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             console.error("Error fetching task:", error);
         }
     }
-
-
-
-
     const synsDecisionTask = async (rows, originalTask) => {
         const originalTaskMap = new Map(originalTask.map(task => [task.taskId, task]));
         const rowsMap = new Map(rows.map(task => [task.taskId, task]));
-
-        // Task-level operations
         for (const [taskId, original] of originalTaskMap) {
             if (!rowsMap.has(taskId)) {
                 // Task deleted
                 await deleteDecisionTask(original.decisionId, original.taskId);
             }
         }
-
         for (const [taskId, current] of rowsMap) {
             if (!originalTaskMap.has(taskId)) {
-                // Task added
                 await upsertDecisionTask({ decisionId: current.decisionId, taskId: current.taskId });
             } else {
-                // Task exists, check for updates
                 const original = originalTaskMap.get(taskId);
                 if (original.taskName !== current.taskName) {
                     await upsertDecisionTask({ decisionId: current.decisionId, taskId: current.taskId });
                 }
             }
         }
-
-        // Task Wage-level operations
         for (const [taskId, current] of rowsMap) {
             const currentWages = new Map(current.taskWages.map(wage => [wage.rankingTitleId, wage]));
             const originalWages = originalTaskMap.has(taskId)
                 ? new Map(originalTaskMap.get(taskId).taskWages.map(wage => [wage.rankingTitleId, wage]))
                 : new Map();
-
             const upsertWages = [];
             for (const [rankingTitleId, currentWage] of currentWages) {
                 if (!originalWages.has(rankingTitleId)) {
-                    // New wage added
                     upsertWages.push({
                         rankingTitleId: currentWage.rankingTitleId,
                         taskId: taskId,
@@ -160,7 +142,6 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                         originalWage.workingHourWage != currentWage.workingHourWage ||
                         originalWage.overtimeWage != currentWage.overtimeWage
                     ) {
-                        // Wage updated
                         upsertWages.push({
                             rankingTitleId: currentWage.rankingTitleId,
                             taskId: taskId,
@@ -170,15 +151,10 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                     }
                 }
             }
-
-            // Perform batch upsert for task wages
             if (upsertWages.length > 0) {
                 await upsertTaskWage(upsertWages);
             }
-
             console.log('upsertWages', upsertWages);
-
-            // Handle wage deletions
             for (const [rankingTitleId] of originalWages) {
                 if (!currentWages.has(rankingTitleId)) {
                     await deleteTaskWage(taskId, rankingTitleId);
@@ -186,39 +162,23 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
             }
         }
     }
-
-
     ///////////////////////////// The update function changes //////////////////////////
     const handleCellEditTaskCommit = (taskId, rankingTitleId, wageType, value) => {
-        console.log(taskId, rankingTitleId, wageType, value);
-        // Cập nhật giá trị trong editedWages
-        setEditedWages({
-            ...editedWages,
-            [`${taskId}-${rankingTitleId}-${wageType}`]: value
-        });
-
-        // Cập nhật lại dữ liệu trong rows
+        setEditedWages((prev) => ({
+            ...prev,
+            [`${taskId}-${rankingTitleId}-${wageType}`]: value,
+        }));
         setRows((prevRows) =>
             prevRows.map((row) => {
                 if (row.taskId === taskId) {
-                    // Cập nhật taskWages cho dòng có taskId tương ứng
-                    const updatedTaskWages = row.taskWages.map((wage) => {
-                        if (wage.rankingTitleId === rankingTitleId) {
-                            console.log(wageType, value);
-                            return {
-                                ...wage,
-                                [wageType]: value, // Cập nhật giá trị wageType
-                            };
-                        }
-                        return wage;
-                    });
-
-                    return {
-                        ...row,
-                        taskWages: updatedTaskWages, // Cập nhật lại taskWages
-                    };
+                    const updatedTaskWages = row.taskWages.map((wage) =>
+                        wage.rankingTitleId === rankingTitleId
+                            ? { ...wage, [wageType]: value }
+                            : wage
+                    );
+                    return { ...row, taskWages: updatedTaskWages };
                 }
-                return row; // Không thay đổi các dòng khác
+                return row;
             })
         );
     };
@@ -227,37 +187,33 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     //////////////////////////////////// Remove row ///////////////////////////////////////
     const handleDeleteRowData = (taskId) => {
         setRows((prevRows) => {
-            // Tìm taskName từ taskId
             const taskName = taskId;
-            // Lọc bỏ tất cả các hàng liên quan đến taskName
             const updatedRows = prevRows.filter((row) => row.taskId !== taskName);
             return updatedRows;
         });
     };
     // End 
+
     //////////////////////////////////// Select to Add a new Task //////////////////////
     const handleAddTask = () => {
         const addedTask = listtask.find(
-            (task) => task.taskId === selectedTask.value // Chắc chắn rằng bạn sử dụng đúng key (ở đây là selectedTask.value)
+            (task) => task.taskId === selectedTask.value
         );
         const newRow = {
             decisionId: id,
-            taskId: addedTask.taskId,  // Or get the real ID from the server
+            taskId: addedTask.taskId,
             taskName: addedTask.taskName,
             taskWages: title.map((titleItem) => ({
 
                 rankingTitleId: titleItem.rankingTitleId,
                 titleName: titleItem.rankingTitleName,
-                workingHourWage: 0,
-                overtimeWage: 0,
+                workingHourWage: '',
+                overtimeWage: '',
             })),
         };
-        // Thêm object vào mảng rows
         setRows((prevRows) => normalizeRows([...prevRows, newRow], allTitle));
-        // Đặt lại selectedTask về null
         setSelectedTask(null);
     };
-
 
     // End 
     //////////////////////////////////// Cancel ///////////////////////////////////////
@@ -268,87 +224,68 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
     };
     // End 
     //////////////////////////////////// Save ///////////////////////////////////////
-    const handleSaveChanges = async () => {
-        console.log("TESTTTTTTT!");
-        // Hàm kiểm tra giá trị của từng ô trong hàng
+    const handleSaveChanges = () => {
+        console.log('Save attempt:', rows);
         const isRowValid = (row) => {
-            return Object.keys(row).every((key) => {
-                if (['taskId', 'taskName', 'taskType'].includes(key)) {
-                    return true; // Bỏ qua các cột cố định
-                }
-                const value = row[key];
-                // Kiểm tra ô có giá trị hợp lệ (không phải rỗng, null, hoặc undefined)
-                if (value === '' || value === null || value === undefined) {
-                    console.log(`Ô thiếu dữ liệu: ${key}, Dòng: ${JSON.stringify(row)}`);
+            return row.taskWages.every((wage) => {
+                if (
+                    wage.workingHourWage === null ||
+                    wage.workingHourWage === undefined ||
+                    wage.workingHourWage === '' ||
+                    wage.overtimeWage === null ||
+                    wage.overtimeWage === undefined ||
+                    wage.overtimeWage === ''
+                ) {
+                    console.log(`Invalid wage detected: ${JSON.stringify(wage)}`);
                     return false;
                 }
                 return true;
             });
         };
-
-        // Kiểm tra tất cả các hàng
         const allFieldsFilled = rows.every(isRowValid);
-
         if (!allFieldsFilled) {
             showErrorMessage('Tất cả các ô phải được điền đầy đủ');
-            console.log('Có ô chưa điền dữ liệu');
-            return; // Dừng nếu có lỗi
+            console.error('Có dữ liệu thiếu, không thể lưu.');
+            return;
         }
-        await synsDecisionTask(rows, originalTask);
-        // Hiển thị thông báo thành công và tiếp tục bước tiếp theo
+        console.log('Save successful:', rows);
         showSuccessMessage('Task & Price Configuration successfully updated.');
-        getTaskConfiguration();
+        synsDecisionTask(rows, originalTask);
         goToNextStep({ stayOnCurrentStep: true });
     };
-
     //////////////////////////////////// Column Task//////////////////////////////////
-    // Lấy danh sách các titleName từ rankingTitles
     const allTitle = title.map((title) => ({
         rankingTitleId: title.rankingTitleId,
         titleName: title.rankingTitleName,
     }));
-
-    // Hàm chuẩn hóa rows
-    const normalizeRows = (rows) => {
+    const normalizeRows = (rows, allTitles) => {
         return rows.map((row) => {
             const updatedRow = { ...row };
-            const existingTitleIds = new Set((updatedRow.taskWages || []).map((wage) => wage.rankingTitleId));
-
-            // Thêm `rankingTitleId` và `titleName` còn thiếu
-            title.forEach((title, index) => {
-                console.log('Index: ', index, '+ Title: ', title);
-                if (!existingTitleIds.has(title.rankingTitleId)) {
-                    updatedRow.taskWages.push({
-                        rankingTitleId: title.rankingTitleId,
-                        titleName: title.rankingTitleName,
-                        workingHourWage: 0,
-                        overtimeWage: 0,
+            const taskWagesMap = new Map((updatedRow.taskWages || []).map(wage => [wage.rankingTitleId, wage]));
+            allTitles.forEach(({ rankingTitleId, titleName }) => {
+                if (!taskWagesMap.has(rankingTitleId)) {
+                    taskWagesMap.set(rankingTitleId, {
+                        rankingTitleId,
+                        titleName,
+                        workingHourWage: null,
+                        overtimeWage: null,
                     });
                 }
             });
-
-            // Sắp xếp lại `taskWages` theo `titleName`
-            updatedRow.taskWages = updatedRow.taskWages.sort((a, b) => a.titleName.localeCompare(b.titleName));
-
+            updatedRow.taskWages = Array.from(taskWagesMap.values())
+                .sort((a, b) => a.titleName.localeCompare(b.titleName));
             return updatedRow;
         });
     };
-
-
     useEffect(() => {
-        const normalized = normalizeRows(originalTask);
-        console.log("Normalized rows:", normalized);
+        const normalized = normalizeRows(originalTask, allTitle);
+        console.log(normalized);
         setRows(normalized);
     }, [originalTask]);
-
-    console.log('rows', rows);
-
-
 
     //////////////////////////////////// Return //////////////////////////////////////
     return (
         <div>
-            {/* Surrounding border */}
             <Box
                 sx={{
                     width: "100%",
@@ -360,41 +297,55 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 2,
-                }}>
-                <Box sx={{ width: '100%', height: 400, marginTop: '10px' }}>
-                    {/* Table  */}
-                    <TableContainer component={Paper} sx={{ minWidth: 400, maxHeight: 400, height: 400, overflowX: 'auto', overflowY: 'auto' }}>
-                        <Table sx={{}} aria-label="task table">
+                }}
+            >
+                <Box sx={{ width: '100%', height: 400 }}>
+                    <TableContainer
+                        component={Paper}
+                        sx={{
+                            minWidth: 400,
+                            maxHeight: 400,
+                            height: 400,
+                            overflowX: 'auto',
+                            overflowY: 'auto',
+                        }}
+                    >
+                        <Table aria-label="task table">
                             <TableHead>
                                 <TableRow>
-                                    {/* Cột Task: Cố định chiều rộng và sử dụng sticky */}
-                                    {/* Task Name */}
                                     <TableCell
-                                        style={{ position: 'sticky', left: 0, backgroundColor: '#e0e0e0', width: '180px', zIndex: 2, boxSizing: 'border-box' }} >
+                                        sx={{
+                                            position: 'sticky',
+                                            left: 0,
+                                            backgroundColor: '#e0e0e0',
+                                            width: '180px',
+                                            zIndex: 2,
+                                            boxSizing: 'border-box',
+                                        }}
+                                    >
                                         Task
                                     </TableCell>
-                                    {/* Cột Task Type: Cố định chiều rộng và sử dụng sticky */}
-                                    {/* Task Type */}
                                     <TableCell
-                                        style={{
-                                            position: 'sticky', backgroundColor: '#e0e0e0', left: 120, zIndex: 2, boxSizing: 'border-box',
+                                        sx={{
+                                            position: 'sticky',
+                                            backgroundColor: '#e0e0e0',
+                                            left: 120,
+                                            zIndex: 2,
                                             width: '120px',
                                             maxWidth: '120px',
                                             minWidth: '120px',
                                             overflow: 'hidden',
-                                        }} rowSpan={2}
-                                    >Task Type
+                                        }}
+                                        rowSpan={2}
+                                    >
+                                        Task Type
                                     </TableCell>
-
-                                    {/* Column title*/}
                                     {allTitle.map((title, index) => (
                                         <TableCell
                                             key={`wh-${index}`}
-                                            style={{
+                                            sx={{
                                                 backgroundColor: '#e0e0e0',
                                                 width: '120px',
-                                                maxWidth: '120px',
-                                                minWidth: '120px',
                                                 zIndex: 1,
                                                 boxSizing: 'border-box',
                                             }}
@@ -402,11 +353,9 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                             {title.titleName}
                                         </TableCell>
                                     ))}
-
-                                    {/* Column action*/}
                                     {(decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
                                         <TableCell
-                                            style={{
+                                            sx={{
                                                 position: 'sticky',
                                                 right: 0,
                                                 backgroundColor: '#e0e0e0',
@@ -420,22 +369,19 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                     )}
                                 </TableRow>
                             </TableHead>
-
                             <TableBody>
                                 {rows.map((task) => {
                                     const renderCell = (taskId, rankingTitleId, wageType, defaultValue) => {
-                                        const isEditable = (role === 'ADMIN' || role === 'MANAGER');
-
+                                        const isEditable = (role === 'ADMIN') || (role === 'MANAGER' && (decisionStatus !== 'Finalized')) || (role === 'USER' && ['Draft', 'Rejected'].includes(decisionStatus));
                                         if (role === 'USER' && ['Submitted', 'Confirmed', 'Finalized'].includes(decisionStatus)) {
-                                            // Chỉ hiển thị giá trị nếu vai trò là user có trạng thái 'Submitted', 'Confirmed', 'Finalized'
-                                            return <span>{defaultValue || 'N/A'}</span>;
+                                            return <span>{defaultValue || ''}</span>;
                                         }
                                         return (
                                             <TextField
-                                                value={defaultValue ? defaultValue : 0}
+                                                value={editedWages[`${taskId}-${rankingTitleId}-${wageType}`] || defaultValue || ''}
                                                 onChange={(e) => {
                                                     const value = e.target.value;
-                                                    if (/^\d*$/.test(value)) { // Chỉ cho phép số
+                                                    if (/^\d*$/.test(value)) {
                                                         handleCellEditTaskCommit(taskId, rankingTitleId, wageType, value);
                                                     }
                                                 }}
@@ -449,18 +395,21 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                                 fullWidth
                                                 type="number"
                                                 inputMode="numeric"
-                                                disabled={!isEditable} // Khóa chỉnh sửa nếu không phải Draft hoặc Admin
+                                                disabled={!isEditable}
                                             />
                                         );
                                     };
+
                                     const renderRow = (type, wageKey) => (
                                         <TableRow key={`task-${task.taskId}-${type}`}>
-                                            {/* Loại công việc */}
                                             {type === "In Working Hour" && (
                                                 <TableCell
-                                                    style={{
-                                                        position: 'sticky', left: 0, background: '#fff', zIndex: 2,
-                                                        width: '120px', maxWidth: '120px', minWidth: '120px',
+                                                    sx={{
+                                                        position: 'sticky',
+                                                        left: 0,
+                                                        background: '#fff',
+                                                        zIndex: 2,
+                                                        width: '120px',
                                                     }}
                                                     rowSpan={2}
                                                 >
@@ -468,29 +417,32 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                                 </TableCell>
                                             )}
                                             <TableCell
-                                                style={{
-                                                    position: 'sticky', left: 120, background: '#fff', zIndex: 2,
-                                                    width: '120px', maxWidth: '120px', minWidth: '120px',
+                                                sx={{
+                                                    position: 'sticky',
+                                                    left: 120,
+                                                    background: '#fff',
+                                                    zIndex: 2,
+                                                    width: '120px',
                                                 }}
                                             >
                                                 {type}
                                             </TableCell>
                                             {allTitle.map((title, index) => {
-                                                const titleData = task.taskWages.find(
-                                                    (wage) => wage.rankingTitleId === title.rankingTitleId
-                                                ) || {};
-                                                const defaultValue = titleData[wageKey] || "";
+                                                const titleData = task.taskWages.find((wage) => wage.rankingTitleId === title.rankingTitleId) || {};
+                                                const defaultValue = titleData[wageKey] || '';
                                                 return (
                                                     <TableCell key={`${type}-${index}`}>
                                                         {renderCell(task.taskId, title.rankingTitleId, wageKey, defaultValue)}
                                                     </TableCell>
                                                 );
                                             })}
-                                            {/* Nút xóa chỉ xuất hiện ở hàng đầu tiên nếu không phải MANAGER */}
                                             {type === "In Working Hour" && (decisionStatus === 'Draft' || decisionStatus === 'Rejected') && (
                                                 <TableCell
-                                                    style={{
-                                                        position: 'sticky', right: 0, background: '#fff', zIndex: 2,
+                                                    sx={{
+                                                        position: 'sticky',
+                                                        right: 0,
+                                                        background: '#fff',
+                                                        zIndex: 2,
                                                     }}
                                                     rowSpan={2}
                                                 >
@@ -514,7 +466,6 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                     );
                                 })}
                             </TableBody>
-
                         </Table>
                     </TableContainer>
 
@@ -544,7 +495,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                                 ...provided,
                                                 maxHeight: 300,
                                                 overflowY: 'auto',
-                                                zIndex: 9999,
+                                                zIndex: 4,
                                             }),
                                         }}
                                         menuPlacement="top"
@@ -563,7 +514,7 @@ const TaskandPriceConfiguration = ({ decisionStatus, goToNextStep, showErrorMess
                                             alignItems: 'center',
                                         }}
                                     >
-                                        <AddCircleIcon sx={{ fontSize: 30 }} /> {/* Điều chỉnh kích thước của icon */}
+                                        <AddCircleIcon sx={{ fontSize: 30 }} />
                                     </IconButton>
                                 </Box>
                             )}

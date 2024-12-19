@@ -36,7 +36,7 @@ const CriteriaAPI = {
             return response.data;
         } catch (error) {
             console.error("Error creating criteria:", error);
-            throw error;
+            throw error.response.data;
         }
     },
 
@@ -47,7 +47,7 @@ const CriteriaAPI = {
             return response.data;
         } catch (error) {
             console.error(`Error updating criteria with ID ${id}:`, error);
-            throw error;
+            throw error.response.data;
         }
     },
 

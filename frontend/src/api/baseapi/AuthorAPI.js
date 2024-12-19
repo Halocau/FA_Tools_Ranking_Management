@@ -32,6 +32,12 @@ authClient.interceptors.response.use(
     return response; // Pass the successful response back
   },
   async (error) => {
+
+    // if (error.code === "ERR_NETWORK" || error.message.includes("Network Error")) {
+    //   window.location.href = "/500";
+    //   return Promise.reject(error);
+    // }
+
     // Handle specific response errors globally
     const originalRequest = error.config;
     if (error.response) {

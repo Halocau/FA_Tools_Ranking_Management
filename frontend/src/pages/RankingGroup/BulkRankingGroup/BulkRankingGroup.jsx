@@ -138,7 +138,22 @@ const BulkRankingGroup = () => {
 
   // Columns configuration for the DataGrid
   const columns = [
-    { field: "fileName", headerName: "File Name", width: 200 },
+    {
+      field: "fileName",
+      headerName: "File Name",
+      width: 200,
+      renderCell: (params) => {
+        return (
+          <a
+            href={params.row.filePath}
+            download
+            style={{ color: "#007bff", textDecoration: "none", cursor: "pointer" }}
+          >
+            {params.value}
+          </a>
+        );
+      },
+    },
     { field: "rankingdecision", headerName: "Ranking Decision", width: 300 },
     { field: "uploadedAt", headerName: "Uploaded At", width: 130 },
     { field: "uploadedBy", headerName: "Uploaded By", width: 130 },
@@ -152,6 +167,7 @@ const BulkRankingGroup = () => {
       const mappedRows = bulkRankingGroup.map((bulkRankingGroup, index) => ({
         id: bulkRankingGroup.historyId,
         fileName: bulkRankingGroup.fileName,
+        filePath: bulkRankingGroup.filePath,
         rankingdecision: bulkRankingGroup.decisionName,
         uploadedAt: bulkRankingGroup.uploadedAt
           ? bulkRankingGroup.uploadedAt
