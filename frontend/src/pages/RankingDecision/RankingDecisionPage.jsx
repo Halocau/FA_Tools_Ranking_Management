@@ -329,7 +329,7 @@ const RankingDecision = () => {
                 index: index + 1 + (page - 1) * pageSize,
                 dicisionname: decision.decisionName,
                 finalizedAt: decision.status === 'Finalized' ? decision.finalizedAt : '-',
-                finalizedBy: decision.status === 'Finalized' ? (decision.finalizedBy == null ? "N/A" : decision.finalizedBy) : '-',
+                finalizedBy: decision.status === 'Finalized' ? (decision.finalizedByName == null ? "" : decision.finalizedByName) : '-',
                 status: decision.status
             }));
             setRows(mappedRows); // Update rows with data from decisions

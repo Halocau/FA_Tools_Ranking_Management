@@ -10,4 +10,6 @@ public class UpdateStatusRankingDecisionRequest {
     private Integer decisionId;
     @NotBlank
     private String status;
+    
+    private Integer finalized_by;
 }

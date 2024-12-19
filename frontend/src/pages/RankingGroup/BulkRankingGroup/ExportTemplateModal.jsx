@@ -1,26 +1,25 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-// ExportTemplateModal.jsx
 import {
-  Box, Button, Typography, Modal, TextField, Select, MenuItem, Alert, FormHelperText,
+  Box,
+  Button,
+  Typography,
+  Modal,
+  Select,
+  MenuItem,
+  CircularProgress,
 } from "@mui/material";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import ClearIcon from "@mui/icons-material/Clear";
-import { InputAdornment } from "@mui/material"; // Import InputAdornment
-// API
-import EmpoyeeAPI from "../../../api/EmployeeAPI.js";
-//Common
-import SearchComponent from "../../../components/Common/Search.jsx";
-// Hooks
-import useNotification from "../../../hooks/useNotification";
-// Import Excel export library
+import { InputAdornment } from "@mui/material";
 import * as XLSX from "xlsx";
+import EmployeeAPI from "../../../api/EmployeeAPI.js";
+import SearchComponent from "../../../components/Common/Search.jsx";
+import useNotification from "../../../hooks/useNotification";
 
 const ExportTemplateModal = ({ open, handleClose, onExport }) => {
-  const navigate = useNavigate(); // To navigate between pages
   const { id } = useParams(); // Get the ID from the URL
   // ApiRef
   const apiRef = useGridApiRef(); // Create apiRef to select multiple groups to delete
@@ -38,35 +37,47 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
   const [rows, setRows] = useState([]);
   // Use hook notification
   const [showSuccessMessage, showErrorMessage] = useNotification();
+  const [loading, setLoading] = useState(false);
+  const [globalLoading, setGlobalLoading] = useState(false); // Global loading state for mock-up loading
 
   ////////////////////////////////////////////////////////////// Load Data //////////////////////////////////////////////////////////////
   const getAllEmployees = async () => {
     try {
-      const data = await EmpoyeeAPI.getAllEmployee(id);
-      console.log(data)
+      // Gọi API từ bảng Employee
+      const data = await EmployeeAPI.getAllEmployee(id);
       setEmployees(data);
+
       const uniqueRankingDecisions = [
         ...new Set(data.map((item) => item.currentRankingDecision)),
       ];
       setRankingDecisions(uniqueRankingDecisions);
+
+      // Tạo danh sách dữ liệu để hiển thị
+      const mappedRows = data.map((employee) => ({
+        employeeId: employee.employeeId,
+        employeeName: employee.employeeName,
+        rankingGroup: employee.rankingGroupName,
+        currentDecision: employee.currentRankingDecision,
+        currentRank: employee.currentRank,
+      }));
+      setRows(mappedRows);
     } catch (error) {
-      // Extract the error message from the response
       const errorMessage =
-        error.response?.data?.detailMessage || "An unexpected error occurred."; // Default message if no specific message found
-      showErrorMessage(errorMessage); // Set the error message from API response
+        error.response?.data?.detailMessage || "An unexpected error occurred.";
+      showErrorMessage(errorMessage);
       setEmployees([]);
     }
   };
   useEffect(() => {
-    getAllEmployees();
-  }, [id]);
+    if (open) {
+      getAllEmployees();
+    }
+  }, [id, open]);
 
   ////////////////////////////////////////////////////////////// Sreach //////////////////////////////////////////////////////////////
-  // Khi thay đổi giá trị tìm kiếm
   const handleSearch = (event) => {
     const query = event;
     setSearchQuery(query);
-
     // Filter employees based on search query, selected ranking decision, and selected rank
     filterRows(query, selectedRankingDecision, selectedRank);
   };
@@ -84,13 +95,11 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
     const rank = event.target.value;
     setSelectedRank(rank);
     setRankError(false);
-
     // Filter rows based on the selected rank
     filterRows(searchQuery, selectedRankingDecision, rank);
   };
   const filterRows = (query, decision, rank) => {
     let filteredEmployees = employees;
-
     // Filter based on search query (ID and Name)
     if (query) {
       console.log(query);
@@ -102,14 +111,13 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
     }
 
     // Filter based on the selected ranking decision
-    if (decision) {
+    if (decision && decision.length > 0) {
       filteredEmployees = filteredEmployees.filter(
         (employee) => employee.currentRankingDecision === decision
       );
     }
-
     // Filter based on the selected rank
-    if (rank) {
+    if (rank && rank.length > 0) {
       filteredEmployees = filteredEmployees.filter(
         (employee) => employee.currentRank === rank
       );
@@ -131,47 +139,17 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
   const capitalizeFirstLetterEachWord = (string) => {
     return string
       .split(" ") // Split string to word
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Uppercase 
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Uppercase
       .join(" "); // Connect words
   };
 
   ////////////////////////////////////////////////////////////// Select //////////////////////////////////////////////////////////////
   // Function to export selected data to Excel
-  const handleSelectionModelChange = () => {
-    const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
-    const selectedRowsData = selectedIDs.map((employeeId) =>
-      rows.find((row) => row.employeeId === employeeId)
-    );
+  const handleSelectionModelChange = async () => {
+    try {
+      setGlobalLoading(true); // Start global loading
+      const selectedIDs = Array.from(apiRef.current.getSelectedRows().keys());
 
-<<<<<<< HEAD
-    if (selectedRowsData.length > 0) {
-      // Add criteria columns to the selected rows for Excel export
-      const worksheetData = selectedRowsData.map((row) => {
-        // Find the corresponding employee to get their criteria
-        const employee = employees.find((emp) => emp.employeeId === row.employeeId);
-
-        // Flatten the criteria data and add it to the row
-        const criteriaColumns = employee.criteriaList.reduce((acc, criteria) => {
-          acc[criteria.cirteriaName] = criteria.optionName; // Add score for each criteria
-          return acc;
-        }, {});
-
-        // Return the row with the flattened criteria added
-        return {
-          ...row,
-          ...criteriaColumns,
-        };
-      });
-
-      // Generate headers dynamically (including criteria columns)
-      const headers = Object.keys(worksheetData[0]).map((key) => {
-        return key
-          .replace(/([A-Z])/g, " $1")  // Add space before Uppercase Character
-          .replace(/^./, (str) => str.toUpperCase());
-      });
-
-      // Create worksheet from the data
-=======
       // Lấy danh sách nhân viên chi tiết từ API
       const detailedEmployees = await EmployeeAPI.getEmployeeCriteria(id);
 
@@ -231,30 +209,25 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
       );
 
       // Tạo worksheet
->>>>>>> DuyPQ
       const worksheet = XLSX.utils.json_to_sheet(worksheetData);
-
-      // Update header to sheet (making sure the columns are correct)
       headers.forEach((header, index) => {
         worksheet[`${String.fromCharCode(65 + index)}1`] = { v: header };
       });
 
-<<<<<<< HEAD
-      // Create workbook and append the worksheet
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
-
-      // Generate Excel file and trigger download
-=======
       // Tạo workbook và lưu file
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
->>>>>>> DuyPQ
       XLSX.writeFile(workbook, "Selected_Employees.xlsx");
+
+      setGlobalLoading(false); // Stop global loading
+      showSuccessMessage("Export successful!");
       handleClose();
-      showSuccessMessage("Export successfully")
-    } else {
-      showErrorMessage("No rows selected to export.");
+    } catch (error) {
+      setGlobalLoading(false); // Stop global loading on error
+      showErrorMessage(
+        error.response?.data?.detailMessage ||
+        "An error occurred while exporting."
+      );
     }
   };
 
@@ -285,221 +258,267 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
   }, [employees]);
 
   return (
-    <Modal sx={{ marginTop: 2 }} open={open} onClose={handleClose}>
-      <Box
-        sx={{
-          maxWidth: 1200,
-          width: "95%", // Đảm bảo modal chiếm gần hết chiều ngang màn hình
-          margin: "auto",
-          padding: 4,
-          backgroundColor: "white",
-          borderRadius: 2,
-          boxShadow: 24,
-        }}
-      >
-        {/* Tiêu đề với icon đóng trong phần tiêu đề */}
+    <div>
+      {/* Mock-up Global Loading */}
+      {globalLoading && (
         <Box
           sx={{
-            marginTop: -4,
-            width: 1200,
-            marginLeft: -4,
-            height: "40px",
-            backgroundColor: "#1976d2",
-            color: "white",
-            padding: "10px",
-            borderRadius: "4px",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <Typography
-            variant="a"
-            sx={{
-              fontWeight: "bold",
-              position: "absolute",
-              left: "50%",
-              transform: "translateX(-50%)",
-            }}
-          >
-            Export Template
-          </Typography>
-          <IconButton onClick={handleClose} sx={{ color: "white" }}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
-        {/* Thanh tìm kiếm */}
-        <Box sx={{ width: 1200, marginTop: 4, marginBottom: 3 }}>
-          <SearchComponent onSearch={handleSearch} placeholder="Search" />
-        </Box>
-
-        {/* Bộ lọc Ranking Decision và Current Rank */}
-        <Box
-          sx={{
-            marginTop: "20px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "20px",
-          }}
-        >
-          <Typography sx={{ display: "flex", width: 130 }} variant="a">
-            {" "}
-            Current Ranking Decision{" "}
-          </Typography>
-          {/* Bộ lọc Ranking Decision */}
-          <Box>
-            <Select
-              fullWidth
-              value={selectedRankingDecision}
-              onChange={handleRankingDecisionChange}
-              displayEmpty
-              sx={{
-                backgroundColor: "white",
-                borderRadius: "8px",
-                width: 400,
-                height: 40,
-                marginRight: 20,
-              }}
-              renderValue={(value) => value || "Select a decision"}
-              endAdornment={
-                // Thêm biểu tượng Clear vào trong Select
-                <InputAdornment position="end">
-                  {selectedRankingDecision && (
-                    <IconButton
-                      size="small"
-                      sx={{ position: "absolute", right: 30 }} // Đặt vị trí của biểu tượng Clear
-                      onClick={() => setSelectedRankingDecision("")}
-                    >
-                      <ClearIcon />
-                    </IconButton>
-                  )}
-                </InputAdornment>
-              }
-            >
-              {rankingDecisions.map((decision) => (
-                <MenuItem key={decision} value={decision}>
-                  {decision}
-                </MenuItem>
-              ))}
-            </Select>
-          </Box>
-          <Typography sx={{ display: "flex", width: 30 }} variant="a">
-            {" "}
-            Current Rank{" "}
-          </Typography>
-          {/* Bộ lọc Current Rank */}
-          <Box>
-            <Select
-              fullWidth
-              value={selectedRank || ""}
-              onChange={handleRankChange}
-              displayEmpty
-              sx={{
-                backgroundColor: "white",
-                borderRadius: "8px",
-                width: 300,
-                height: 40,
-              }}
-              renderValue={(value) => value || "Select a decision"}
-              endAdornment={
-                // Thêm biểu tượng Clear vào trong Select
-                <InputAdornment position="end">
-                  {selectedRankingDecision && (
-                    <IconButton
-                      size="small"
-                      sx={{ position: "absolute", right: 30 }} // Đặt vị trí của biểu tượng Clear
-                      onClick={() => setSelectedRank("")}
-                    >
-                      <ClearIcon />
-                    </IconButton>
-                  )}
-                </InputAdornment>
-              }
-            >
-              {selectedRankingDecision.length > 0 ? (
-                // Lọc nhân viên theo Current Ranking Decision
-                employees
-                  .filter(
-                    (employee) =>
-                      employee.currentRankingDecision ===
-                      selectedRankingDecision
-                  )
-                  .reduce((acc, employee) => {
-                    // Kiểm tra xem currentRank đã xuất hiện chưa
-                    if (
-                      !acc.some(
-                        (item) => item.currentRank === employee.currentRank
-                      )
-                    ) {
-                      acc.push(employee); // Thêm nhân viên vào mảng nếu currentRank chưa có
-                    }
-                    return acc;
-                  }, [])
-                  .map((employee) => (
-                    <MenuItem
-                      key={employee.employeeId}
-                      value={employee.currentRank}
-                    >
-                      {employee.currentRank}
-                    </MenuItem>
-                  ))
-              ) : (
-                <MenuItem disabled>
-                  You need to select Current Ranking Decision first
-                </MenuItem>
-              )}
-            </Select>
-          </Box>
-        </Box>
-        {/* Bảng dữ liệu */}
-        <Box
-          sx={{
-            width: "100%",
-            height: 400,
-            border: "2px solid black",
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            padding: 4,
             borderRadius: "8px",
-            padding: "16px",
-            overflow: "auto", // Thêm scroll nếu nội dung dài
+            boxShadow: 24,
+            zIndex: 1301,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <DataGrid
-            apiRef={apiRef} // Truyền apiRef vào DataGrid
-            rows={rows}
-            columns={columns}
-            getRowId={(row) => row.employeeId}
-            checkboxSelection
-            disableRowSelectionOnClick
-            hideFooter
-            autoHeight
-            onSelectionModelChange={(newSelection) =>
-              handleSelectionModelChange(newSelection)
-            } // Sự kiện này sẽ truyền đúng newSelection
-            sx={{
-              "& .MuiDataGrid-columnHeader": {
-                textAlign: "center", // Căn giữa header
-                backgroundColor: "#f5f5f5",
-              },
-              "& .MuiDataGrid-row": {
-                "&:nth-of-type(even)": {
-                  backgroundColor: "#f9f9f9", // Tô màu hàng chẵn
-                },
-              },
-            }}
-          />
+          <CircularProgress sx={{ color: "white", marginBottom: 2 }} />
+          <Typography variant="body1" sx={{ color: "white" }}>
+            Processing...
+          </Typography>
         </Box>
+      )}
+      <Modal sx={{ marginTop: 2 }} open={open} onClose={handleClose}>
+        <Box
+          sx={{
+            maxWidth: 1200,
+            width: "95%",
+            margin: "auto",
+            padding: 4,
+            backgroundColor: "white",
+            borderRadius: 2,
+            boxShadow: 24,
+            position: "relative", // Để cố định spinner ở giữa
+          }}
+        >
+          {/* Loading Spinner */}
+          {loading && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                zIndex: 1000,
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          )}
 
-        {/* Nút Export */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", marginTop: 2 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSelectionModelChange}
+          {/* Tiêu đề với icon đóng trong phần tiêu đề */}
+          <Box
+            sx={{
+              marginTop: -4,
+              width: 1200,
+              marginLeft: -4,
+              height: "40px",
+              backgroundColor: "#1976d2",
+              color: "white",
+              padding: "10px",
+              borderRadius: "4px",
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
           >
-            Export
-          </Button>
+            <Typography
+              variant="a"
+              sx={{
+                fontWeight: "bold",
+                position: "absolute",
+                left: "50%",
+                transform: "translateX(-50%)",
+              }}
+            >
+              Export Template
+            </Typography>
+            <IconButton onClick={handleClose} sx={{ color: "white" }}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          {/* Search */}
+          <Box sx={{ width: 1200, marginTop: 4, marginBottom: 3 }}>
+            <SearchComponent onSearch={handleSearch} placeholder="Search" />
+          </Box>
+
+          {/* Filter for Ranking Decision & Current Rank */}
+          <Box
+            sx={{
+              marginTop: "20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "20px",
+            }}
+          >
+            <Typography sx={{ display: "flex", width: 130 }} variant="a">
+              {" "}
+              Current Ranking Decision{" "}
+            </Typography>
+            {/* Filter Ranking Decision */}
+            <Box>
+              <Select
+                fullWidth
+                value={selectedRankingDecision}
+                onChange={handleRankingDecisionChange}
+                displayEmpty
+                sx={{
+                  backgroundColor: "white",
+                  borderRadius: "8px",
+                  width: 400,
+                  height: 40,
+                  marginRight: 20,
+                }}
+                renderValue={(value) => value || "Select a decision"}
+                endAdornment={
+                  // Thêm biểu tượng Clear vào trong Select
+                  <InputAdornment position="end">
+                    {selectedRankingDecision && (
+                      <IconButton
+                        size="small"
+                        sx={{ position: "absolute", right: 30 }} // Đặt vị trí của biểu tượng Clear
+                        onClick={() => setSelectedRankingDecision("")}
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    )}
+                  </InputAdornment>
+                }
+              >
+                {rankingDecisions.map((decision) => (
+                  <MenuItem key={decision} value={decision}>
+                    {decision}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+            <Typography sx={{ display: "flex", width: 30 }} variant="a">
+              {" "}
+              Current Rank{" "}
+            </Typography>
+            {/* Bộ lọc Current Rank */}
+            <Box>
+              <Select
+                fullWidth
+                value={selectedRank || ""}
+                onChange={handleRankChange}
+                displayEmpty
+                sx={{
+                  backgroundColor: "white",
+                  borderRadius: "8px",
+                  width: 300,
+                  height: 40,
+                }}
+                renderValue={(value) => value || "Select a decision"}
+                endAdornment={
+                  // Thêm biểu tượng Clear vào trong Select
+                  <InputAdornment position="end">
+                    {selectedRankingDecision && (
+                      <IconButton
+                        size="small"
+                        sx={{ position: "absolute", right: 30 }} // Đặt vị trí của biểu tượng Clear
+                        onClick={() => setSelectedRank("")}
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    )}
+                  </InputAdornment>
+                }
+              >
+                {selectedRankingDecision.length > 0 ? (
+                  // Lọc nhân viên theo Current Ranking Decision
+                  employees
+                    .filter(
+                      (employee) =>
+                        employee.currentRankingDecision ===
+                        selectedRankingDecision
+                    )
+                    .reduce((acc, employee) => {
+                      // Kiểm tra xem currentRank đã xuất hiện chưa
+                      if (
+                        !acc.some(
+                          (item) => item.currentRank === employee.currentRank
+                        )
+                      ) {
+                        acc.push(employee); // Thêm nhân viên vào mảng nếu currentRank chưa có
+                      }
+                      return acc;
+                    }, [])
+                    .map((employee) => (
+                      <MenuItem
+                        key={employee.employeeId}
+                        value={employee.currentRank}
+                      >
+                        {employee.currentRank}
+                      </MenuItem>
+                    ))
+                ) : (
+                  <MenuItem disabled>
+                    You need to select Current Ranking Decision first
+                  </MenuItem>
+                )}
+              </Select>
+            </Box>
+          </Box>
+          {/* Bảng dữ liệu */}
+          <Box
+            sx={{
+              width: "100%",
+              height: 400,
+              border: "2px solid black",
+              borderRadius: "8px",
+              padding: "16px",
+              overflow: "auto", // Thêm scroll nếu nội dung dài
+            }}
+          >
+            <DataGrid
+              apiRef={apiRef} // Truyền apiRef vào DataGrid
+              rows={rows}
+              columns={columns}
+              getRowId={(row) => row.employeeId}
+              checkboxSelection
+              disableRowSelectionOnClick
+              hideFooter
+              autoHeight
+              onSelectionModelChange={(newSelection) =>
+                handleSelectionModelChange(newSelection)
+              } // Sự kiện này sẽ truyền đúng newSelection
+              sx={{
+                "& .MuiDataGrid-columnHeader": {
+                  textAlign: "center", // Căn giữa header
+                  backgroundColor: "#f5f5f5",
+                },
+                "& .MuiDataGrid-row": {
+                  "&:nth-of-type(even)": {
+                    backgroundColor: "#f9f9f9", // Tô màu hàng chẵn
+                  },
+                },
+              }}
+            />
+          </Box>
+
+          {/* Nút Export */}
+          <Box
+            sx={{ display: "flex", justifyContent: "flex-end", marginTop: 2 }}
+          >
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSelectionModelChange}
+              disabled={loading}
+            >
+              Export
+            </Button>
+          </Box>
         </Box>
-      </Box>
-    </Modal>
+      </Modal>
+    </div>
   );
 };
 
