@@ -44,7 +44,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
   const getAllEmployees = async () => {
     try {
       // Gọi API từ bảng Employee
-      const data = await EmployeeAPI.getAllEmployee(id);
+      const data = await EmployeeAPI.getEmployeeCriteria(id);
       setEmployees(data);
 
       const uniqueRankingDecisions = [
@@ -226,7 +226,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
       setGlobalLoading(false); // Stop global loading on error
       showErrorMessage(
         error.response?.data?.detailMessage ||
-        "An error occurred while exporting."
+          "An error occurred while exporting."
       );
     }
   };
