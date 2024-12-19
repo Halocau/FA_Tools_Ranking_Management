@@ -50,9 +50,10 @@ public class RankingDecisionService implements IRankingDecisionService {
     private ITaskWagesService taskWagesService;
     private ITaskWagesRepository iTaskWagesRepository;
     private EntityManager entityManager;
+    private IFeedbackRepository iFeedbackRepository;
 
     @Autowired
-    public RankingDecisionService(IRankingDecisionRepository iRankingDecisionRepository, IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository, IDecisionCriteriaRepository iDecisionCriteriaRepository, IDecisionTasksRepository iDecisionTasksRepository, IRankingTitleRepository iRankingTitleRepository, IDecisionCriteriaService iDecisionCriteriaService, IDecisionCriteriaService iDecisionTasksService, IAccount iAccount, IRankingTitleOptionRepository iRankingTitleOptionRepository, IRankingTitleOptionService rankingTitleOptionService, ITaskWagesService taskWagesService, ITaskWagesRepository iTaskWagesRepository, EntityManager entityManager) {
+    public RankingDecisionService(IRankingDecisionRepository iRankingDecisionRepository, IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository, IDecisionCriteriaRepository iDecisionCriteriaRepository, IDecisionTasksRepository iDecisionTasksRepository, IRankingTitleRepository iRankingTitleRepository, IDecisionCriteriaService iDecisionCriteriaService, IDecisionCriteriaService iDecisionTasksService, IAccount iAccount, IRankingTitleOptionRepository iRankingTitleOptionRepository, IRankingTitleOptionService rankingTitleOptionService, ITaskWagesService taskWagesService, ITaskWagesRepository iTaskWagesRepository, EntityManager entityManager, IFeedbackRepository iFeedbackRepository) {
         this.iRankingDecisionRepository = iRankingDecisionRepository;
         this.iEmployeeRepository = iEmployeeRepository;
         this.modelMapper = modelMapper;
@@ -68,6 +69,7 @@ public class RankingDecisionService implements IRankingDecisionService {
         this.taskWagesService = taskWagesService;
         this.iTaskWagesRepository = iTaskWagesRepository;
         this.entityManager = entityManager;
+        this.iFeedbackRepository = iFeedbackRepository;
     }
 
     @Override
@@ -128,6 +130,8 @@ public class RankingDecisionService implements IRankingDecisionService {
             iTaskWagesRepository.deleteByRankingTitleId(rankingTitleId);
 // Gọi flush() để đồng bộ Session
             entityManager.flush();
+
+            iFeedbackRepository.deleteByDecisionId(id);
             // Xóa RankingTitle
             iRankingTitleRepository.deleteById(rankingTitleId);
         }
