@@ -151,7 +151,7 @@ const EditRankingGroup = () => {
         try {
             const updatedGroup = {
                 groupName: trimmedName,
-                currentRankingDecision: selectedCloneDecision ? rankingDecisions.find(decision => decision.decisionName === selectedCurrentDecision).decisionId : '',
+                currentRankingDecision: selectedCurrentDecision ? rankingDecisions.find(decision => decision.decisionName === selectedCurrentDecision).decisionId : '',
                 createBy: localStorage.getItem('userId')
             };
             console.log("Selected Current decision:", selectedCurrentDecision);
