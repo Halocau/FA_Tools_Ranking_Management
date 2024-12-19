@@ -12,6 +12,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -52,5 +53,8 @@ public class RankingGroup {
 
     @Transient
     private String decisionName;
+
+    @OneToMany(mappedBy = "rankingGroupId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<BulkRankingHistory> bulkRankingHistories;
 
 }

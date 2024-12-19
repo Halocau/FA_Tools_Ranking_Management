@@ -9,6 +9,8 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -43,4 +45,8 @@ public class BulkRankingHistory {
 
     @Column(name = "note")
     private String note;
+
+    @OneToMany(mappedBy = "bulkImportId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Employee> employees;
+
 }

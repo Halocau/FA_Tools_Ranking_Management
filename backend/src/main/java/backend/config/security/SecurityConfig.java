@@ -59,125 +59,39 @@ public class SecurityConfig {
                 .cors() // Enable CORS
                 .and()
                 .csrf().disable() // Disable CSRF if needed
-                .authorizeHttpRequests(
-                        request -> request
-                                /// Public endpoints
-                                // .requestMatchers(
-                                // "/api/account/login",
-                                // "/api/auth/refresh-token",
+                .authorizeHttpRequests(request -> request
+                        // Public endpoints (permitAll)
+                        .requestMatchers(
+                                "/api/account/login",
+                                "/api/auth/refresh-token"
+                        ).permitAll()
 
-                                // /* Ranking Group */
-                                // "api/ranking-group",
-                                // "api/ranking-group/get/**",
+                        // Authenticated endpoints
+                        .requestMatchers(
+                                // Uncommented APIs (authenticated)
+                                "api/ranking-group",
+                                "api/ranking-group/get/**",
+                                "api/ranking-decision",
+                                "api/ranking-decision/all",
+                                "api/ranking-decision/get/**",
+                                "api/task",
+                                "api/task/all",
+                                "api/task/get/**",
+                                "api/task/full",
+                                "api/criteria",
+                                "api/criteria/get/**",
+                                "api/option/get/**",
+                                "api/option/all"
+                        ).authenticated()
 
-                                // /* Ranking Decision */
-                                // "api/ranking-decision",
-                                // "api/ranking-decision/all",
-                                // "api/ranking-decision/get/**",
-
-                                // /* task */
-                                // "api/task",
-                                // "api/task/all",
-                                // "api/task/get/**",
-                                // "api/task/full",
-
-                                // /* Criteria */
-                                // "api/criteria",
-                                // "api/criteria/get/**",
-
-                                // /* option */
-                                // "api/option/get/**",
-                                // "api/option/all"
-
-                                // )
-                                // .authenticated()
-
-                                // /* GET, POST and PUT APIs => MANAGER and ADMIN */
-                                // .requestMatchers(
-                                // /// GET
-                                // /* Ranking Title */
-                                // "api/ranking-title",
-                                // "api/ranking-title/get/**",
-
-                                // /* ranking-title-option */
-                                // "api/ranking-title-option",
-                                // "/api/ranking-title-option/get-decisionId/**",
-
-                                // /* tasks-wage */
-                                // "api/tasks-wage",
-
-                                // /* employee */
-                                // "api/employee",
-                                // "api/employee/group/**",
-
-                                // /* employee-criteria */
-                                // "api/employee-criteria",
-                                // "api/employee-criteria/get-groupId/**",
-
-                                // /* decision-task */
-                                // "api/decision-task",
-                                // "api/decision-task/**",
-
-                                // /* decision-criteria */
-                                // "api/decision-criteria",
-                                // "api/decision-criteria/get/**",
-                                // "api/decision-criteria/get-all/**",
-                                // "api/decision-criteria/options/**",
-
-                                // /// POST AND PUT
-                                // /* bulk-ranking-history */
-                                // "api/bulk-ranking-history",
-                                // "api/ranking-group/add",
-                                // "api/ranking-group/update/**",
-                                // "api/ranking-decision/add",
-                                // "api/ranking-title/add",
-                                // "api/ranking-title/upsert",
-                                // "api/ranking-title-option/update",
-                                // "api/criteria/add",
-                                // "api/decision-task/add",
-                                // "api/decision-task/add-list",
-                                // "api/tasks-wage/upsert",
-                                // "api/criteria/update/**",
-                                // "api/option/add",
-                                // "api/option/update/**",
-                                // "api/task/add",
-                                // "api/task/update/**",
-                                // "api/bulk-ranking-history/add",
-                                // "api/decision-criteria/add",
-                                // "api/decision-criteria/upsert/**",
-                                // "api/employee/upsert-list",
-                                // "api/employee-criteria/upsert",
-                                // "api/employee-criteria/upsert-list")
-                                // .hasAnyAuthority("MANAGER", "ADMIN")// Only MANAGER and ADMIN can access
-
-                                // /* DELETE APIs */
-                                // .requestMatchers(
-                                // "/api/account/all",
-                                // "api/ranking-group/delete/**",
-                                // "api/ranking-decision/delete/**",
-                                // "api/ranking-title/delete/**",
-                                // "api/ranking-title-option/delete/**",
-                                // "api/criteria/delete/**",
-                                // "api/option/delete/**",
-                                // "api/task/delete/**",
-                                // "api/decision-criteria/delete/**",
-                                // "api/employee/delete/**",
-                                // "api/employee-criteria/delete/**",
-                                // "api/tasks-wage/delete/**",
-                                // "api/decision-task/delete/**")
-                                // .hasAuthority("ADMIN") // Only ADMIN can access
-
-                                // /// import file excel (.xlsx)
-                                // .requestMatchers(HttpMethod.POST,
-                                // "api/storage/files").hasAnyAuthority("ADMIN")
-                                .anyRequest()
-                                .permitAll())
-                // .formLogin().disable() // Disable form login
-                // .httpBasic().disable() // Disable HTTP Basic authentication
+                        // Any other request
+                        .anyRequest().permitAll()
+                )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
+
 
     @Bean
     public AuthenticationProvider authenticationProvider() {

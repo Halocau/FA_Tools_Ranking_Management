@@ -116,9 +116,9 @@ public class EmployeeCriteriaService implements IEmployeeCriteriaService {
 
     @Override
     public List<EmployeeCriteriaResponse> getEmployeeCriteriaResponse(List<EmployeeCriteria> listEmployeeCriteria) {
-        if (listEmployeeCriteria == null || listEmployeeCriteria.isEmpty()) {
-            throw new IllegalArgumentException("Employee criteria list cannot be null or empty.");
-        }
+//        if (listEmployeeCriteria == null || listEmployeeCriteria.isEmpty()) {
+//            throw new IllegalArgumentException("Employee criteria list cannot be null or empty.");
+//        }
 
         List<EmployeeCriteriaResponse> employeeCriteriaResponses = new ArrayList<>();
         Map<Integer, EmployeeCriteriaResponse> responseMap = new HashMap<>();
