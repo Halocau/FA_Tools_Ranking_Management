@@ -6,21 +6,17 @@ import {
     Box, Button, Typography, TextField, IconButton, Select, MenuItem
 } from "@mui/material";
 import { DataGrid } from '@mui/x-data-grid';
-import AddCircleIcon from '@mui/icons-material/AddCircle'; // Dấu + icon
-
 // API
 import DecisionCriteriaAPI from "../../../api/DecisionCriteriaAPI.js";
 import DecisionTitleAPI from "../../../api/DecisionTitleAPI.js";
 
 const TitleConfiguration = ({ decisionStatus }) => {
     // Data 
-    const { id } = useParams(); // Get the ID from the URL
-    const [originalTitle, setOriginalTitle] = useState([]);  // Lưu dữ liệu gốc
+    const { id } = useParams();
+    const [originalTitle, setOriginalTitle] = useState([]);
     const [criteria, setCriteria] = useState([]);
     const [columnsTitle, setColumnsTitle] = useState([]);
-    // Row table
     const [rows, setRows] = useState([]);
-    // Load data of table header
     const getCriteriaConfiguration = async () => {
         try {
             const response = await DecisionCriteriaAPI.optionCriteria(id);
@@ -68,9 +64,7 @@ const TitleConfiguration = ({ decisionStatus }) => {
     //////////////////////////////////// Row Title ////////////////////////////////////
     const setRowData = (title, criteria) => {
         const mappedRows = title.map((titleItem, index) => {
-            // Create fields for criteria columns, ensuring every criteria is included
             const criteriaFields = criteria.reduce((acc, criteriaItem) => {
-                // Find the option corresponding to this criteria
                 const matchingOption = titleItem.options?.find(
                     (option) => option.criteriaId === criteriaItem.criteriaId
                 );
@@ -100,7 +94,6 @@ const TitleConfiguration = ({ decisionStatus }) => {
                 options: normalizedOptions,
             };
         });
-        // Update the state with the new rows
         setRows(mappedRows);
     };
     // End 

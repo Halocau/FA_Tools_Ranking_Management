@@ -68,12 +68,10 @@ const RankingGroups = () => {
         setTotalPages(data.pageInfo.total);
         setTotalElements(data.pageInfo.element);
       } else {
-        showErrorMessage("No Ranking Groups found.");
       }
     } catch (error) {
       // Extract the error message from the response
       const errorMessage = error.response?.data?.detailMessage || "An unexpected error occurred."; // Default message if no specific message found
-      showErrorMessage(errorMessage); // Set the error message from API response
       setRankingGroups([])
     }
   };

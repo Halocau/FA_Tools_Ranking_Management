@@ -161,70 +161,50 @@ const ViewDecision = () => {
         }
     };
 
-    //////////////////////////////////////////////////////////////////////////// Confirm ////////////////////////////////////////////////////////////////////////////
-    const handleConfirm = async () => {
-        try {
-            const updatedDecision = {
-                decisionId: id,
-                status: 'Confirmed'
-            };
-            await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
-        } catch (error) {
-            console.error("Error updating decision:", error);
-            showErrorMessage("Error occurred updating decision info. Please try again.");
-        }
-        setViewDecision({ status: 'Confirm' })
-        setDecisionStatus('Confirm')
-        showSuccessMessage('Confirm successfully ');
-    };
-    const handleReject = async () => {
-        try {
-            const updatedDecision = {
-                decisionId: id,
-                status: 'Rejected'
-            };
-            await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
-        } catch (error) {
-            console.error("Error updating decision:", error);
-            showErrorMessage("Error occurred updating decision info. Please try again.");
-        }
-        setViewDecision({ status: 'Rejected' })
-        setDecisionStatus('Rejected')
-        showSuccessMessage('Rejected successfully ');
-    };
-    //////////////////////////////////////////////////////////////////////////// Finalized ////////////////////////////////////////////////////////////////////////////
-    const handleFinalized = async () => {
-        try {
-            const updatedDecision = {
-                decisionId: id,
-                status: 'Finalized',
-            };
-            await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
-            setViewDecision({ status: 'Finalized' })
-            setDecisionStatus('Finalized')
-            showSuccessMessage('Finalized successfully ');
-        } catch (error) {
-            console.error("Error updating decision:", error);
-            showErrorMessage("Error occurred updating decision info. Please try again.");
-        }
-    };
-
-    ///////////////////////////////// Note ///////////////////////////////////
-    const handleNote = async () => {
+    //////////////////////////////////////////////////////////////////////////// Submit ////////////////////////////////////////////////////////////////////////////
+    const handleStatusUpdate = async (status, successMessage, additionalData = {}) => {
         try {
             const updatedFeedback = {
                 decisionId: id,
                 note: note,
             };
-            console.log(updatedFeedback)
+            console.log(updatedFeedback);
             await FeedbacknAPI.updateFeedback(updatedFeedback);
-            showSuccessMessage('Feedback successfully')
         } catch (error) {
-            console.error("Error updating :", error);
-            showErrorMessage("Error occurred updating . Please try again.");
+            console.error("Error updating feedback:", error);
         }
 
+        try {
+            const updatedDecision = {
+                decisionId: id,
+                status: status,
+                ...additionalData,
+            };
+            console.log(updatedDecision);
+            await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
+            setViewDecision({ status: status });
+            setDecisionStatus(status);
+            showSuccessMessage(successMessage);
+        } catch (error) {
+            console.error("Error updating decision:", error);
+            showErrorMessage("Error occurred updating decision info. Please try again.");
+        }
     };
+
+    // Hàm xử lý từng trạng thái
+    const handleConfirm = () => {
+        handleStatusUpdate('Confirmed', 'Confirm successfully');
+    };
+
+    const handleReject = () => {
+        handleStatusUpdate('Rejected', 'Rejected successfully');
+    };
+
+    const handleFinalized = () => {
+        handleStatusUpdate('Finalized', 'Finalized successfully', { finalized_by: localStorage.getItem('userId') });
+    };
+
+
     return (
         <div style={{ marginTop: "60px" }}>
             <Box sx={{ marginTop: 4, padding: 2 }}>
@@ -352,17 +332,6 @@ const ViewDecision = () => {
                             />
                         </Box>
                     )}
-                    {(role === 'MANAGER' || role === 'ADMIN') && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
-                            <Button sx={{ height: '30px', marginLeft: 1 }}
-                                variant="contained"
-                                color="primary"
-                                onClick={handleNote}
-                            >
-                                Save
-                            </Button>
-                        </Box>
-                    )}
                 </Box>
                 {/* Submit */}
                 <Box
@@ -428,7 +397,7 @@ const ViewDecision = () => {
                             {/* Reject Button */}
                             <Button
                                 variant="contained"
-                                color="primary"
+                                color="error"
                                 onClick={handleReject}
                                 sx={{
                                     display: 'flex',
