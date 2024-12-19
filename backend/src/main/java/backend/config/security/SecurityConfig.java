@@ -63,8 +63,8 @@ public class SecurityConfig {
                         request -> request
                                 /// Public endpoints
                                 // .requestMatchers(
-                                // "/api/account/register",
-                                // "/api/account/generate-and-validate",
+                                // "/api/account/login",
+                                // "/api/auth/refresh-token",
 
                                 // /* Ranking Group */
                                 // "api/ranking-group",
