@@ -125,17 +125,20 @@ public class EmployeeService implements IEmployeeService {
             employee.setBulkImportId(form.getBulkImportId());
             employee.setRankingDecisionId(form.getRankingDecisionId());
             iEmployeeRepository.saveAndFlush(employee);
-        } else {
+            updateNumEmployees(employee.getGroupId());
+        }
+        else {
             //Insert
             Employee newEmployee = Employee.builder()
                     .employeeId(form.getEmployeeId())
                     .employeeName(form.getEmployeeName())
                     .groupId(form.getGroupId())
-//                    .rankingTitleId(form.getRankingTitleId())
+
                     .bulkImportId(form.getBulkImportId())
                     .rankingDecisionId(form.getRankingDecisionId())
                     .build();
             iEmployeeRepository.save(newEmployee);
+            updateNumEmployees(newEmployee.getGroupId());
         }
     }
 
@@ -146,6 +149,21 @@ public class EmployeeService implements IEmployeeService {
         }
         for (UpsertEmployeeRequest form : forms) {
             upsertEmployee(form, form.getEmployeeId());
+        }
+    }
+
+    @Transactional
+    public void updateNumEmployees(Integer groupId) {
+        if (groupId == null) return;
+
+        // Đếm số lượng Employee thuộc groupId
+        Integer count = iEmployeeRepository.countByGroupId(groupId);
+
+        // Cập nhật numEmployees trong RankingGroup
+        RankingGroup rankingGroup = irankingGroupRepository.findById(groupId).orElse(null);
+        if (rankingGroup != null) {
+            rankingGroup.setNumEmployees(count.intValue());
+            irankingGroupRepository.save(rankingGroup);
         }
     }
 }

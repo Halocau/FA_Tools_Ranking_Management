@@ -14,12 +14,11 @@ import taskApi from '../../../api/TaskAPI.js';
 
 const TaskandPriceConfiguration = ({ }) => {
     // Data
-    const { id } = useParams(); // Get the ID from the URL
-    const [originalTask, setOriginalTask] = useState([]);  // Lưu dữ liệu gốc
-    const [title, setTitle] = useState([]);  // Lưu dữ liệu gốc
+    const { id } = useParams();
+    const [originalTask, setOriginalTask] = useState([]);
+    const [title, setTitle] = useState([]);
     // Row table
     const [rows, setRows] = useState([]);
-
     // Load data getTaskConfiguration
     const getTaskConfiguration = async () => {
         try {
@@ -45,7 +44,6 @@ const TaskandPriceConfiguration = ({ }) => {
         getTitleConfiguration();
     }, [id]);
     //////////////////////////////////// Column Task//////////////////////////////////
-    // Get the list of titleNames from rankingTitles
     const allTitle = title.map((title) => ({
         rankingTitleId: title.rankingTitleId,
         titleName: title.rankingTitleName,

@@ -12,6 +12,5 @@ public interface IAccount extends JpaRepository<Account, Integer> {
     public Account findAccountByEmail(String email);
     public Account findAccountByUsername(String username);
     public String findUsernameById(int id);
-
     Optional<Object> findByUsername(String username);
 }

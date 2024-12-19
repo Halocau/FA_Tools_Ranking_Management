@@ -216,7 +216,7 @@ const EditRankingGroup = () => {
         try {
             let newDecision = {
                 decisionName: trimmedName,
-                createdBy: localStorage.getItem('userId'), // ID của người tạo
+                createdBy: localStorage.getItem('userId'),
             };
             // Check condision Clone
             if (clone && selectedCloneDecision) {
@@ -243,18 +243,14 @@ const EditRankingGroup = () => {
             showSuccessMessage("Ranking Decision successfully added.");
         } catch (error) {
             console.error("Failed to add group:", error);
-
-            // Kiểm tra nếu lỗi từ backend có chứa thông báo lỗi liên quan đến tên nhóm
             if (error.response && error.response.data) {
-                // Lọc chỉ thông báo lỗi "RankingGroup name exists already!" từ phần detailMessage
                 const detailMessage = error.response.data.detailMessage;
                 if (detailMessage && detailMessage.includes("RankingGroup name exists already!")) {
-                    setValidationMessage("RankingGroup name exists already!");  // Chỉ hiển thị thông báo lỗi mong muốn
+                    setValidationMessage("RankingGroup name exists already!");
                 } else {
                     showErrorMessage("Error occurred adding Ranking Decision. Please try again");
                 }
             } else {
-                // Nếu không có thông báo cụ thể từ backend, hiển thị thông báo lỗi mặc định
                 showErrorMessage("Error occurred adding Ranking Decision. Please try again");
             }
         }
@@ -321,30 +317,30 @@ const EditRankingGroup = () => {
             width: 240,
             renderCell: (params) => (
                 <>
-                    <Button
-                        variant="outlined"
-                        color="gray"
-                        sx={{ marginLeft: 1 }}
-                        onClick={() => {
-                            console.log(`Viewing decision with ID: ${params.row.id}`);
-                            navigate(`/ranking-decision/view/${params.row.id}`);
-                        }}
-                    >
-                        <FaEye />
-                    </Button>
-                    {(params.row.status !== 'Confirm') && (
+                    {(params.row.status !== 'Draft') && (
                         <Button
                             variant="outlined"
+                            color="gray"
                             sx={{ marginLeft: 1 }}
                             onClick={() => {
-                                console.log(`Navigating to edit decision with ID: ${params.row.id}`);
-                                navigate(`/ranking-decision/edit/${params.row.id}`);
+                                console.log(`Viewing decision with ID: ${params.row.id}`);
+                                navigate(`/ranking-decision/view/${params.row.id}`);
                             }}
                         >
-                            <FaEdit />
+                            <FaEye />
                         </Button>
                     )}
-                    {(params.row.status === 'Draft') && (
+                    <Button
+                        variant="outlined"
+                        sx={{ marginLeft: 1 }}
+                        onClick={() => {
+                            console.log(`Navigating to edit decision with ID: ${params.row.id}`);
+                            navigate(`/ranking-decision/edit/${params.row.id}`);
+                        }}
+                    >
+                        <FaEdit />
+                    </Button>
+                    {(params.row.status === 'Draft' || params.row.status === 'Rejected') && (
                         <Button
                             variant="outlined"
                             color="error"

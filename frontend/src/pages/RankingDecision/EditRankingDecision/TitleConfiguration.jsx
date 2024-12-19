@@ -107,10 +107,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 titleName: row.titleName,
                 totalScore: parseFloat(row.rankScore) || 0,
             };
-
-            let newTitle; // Store new ranking title response if applicable
-
-            // Handle ranking title
+            let newTitle;
             if (
                 !original ||
                 original.rankingTitleName !== row.titleName ||
@@ -118,8 +115,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             ) {
                 newTitle = await upsertRankingTitle(rankingTitleForm);
             }
-
-            // Compare and update options
             const originalOptionsMap = new Map(
                 (original?.options || []).map((opt) => [opt.criteriaId, opt])
             );
@@ -128,13 +123,11 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                 const originalOption = originalOptionsMap.get(option.criteriaId);
 
                 if (!originalOption) {
-                    // Add new option
                     decisionTitleForms.push({
                         newRankingTitleId: newTitle ? newTitle.rankingTitleId : row.id,
                         newOptionId: option.optionId,
                     });
                 } else if (originalOption.optionId !== option.optionId) {
-                    // Update existing option
                     decisionTitleForms.push({
                         rankingTitleId: row.id,
                         optionId: originalOption.optionId,
@@ -142,35 +135,26 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                         newOptionId: option.optionId,
                     });
                 }
-
-                // Remove processed options
                 originalOptionsMap.delete(option.criteriaId);
             }
-
-            // Handle deleted options
             for (const [criteriaId, opt] of originalOptionsMap) {
-                await deleteDecisionTitle(row.id, opt.optionId); // Delete unused options
+                await deleteDecisionTitle(row.id, opt.optionId);
             }
-
-            // Mark title as processed
             processedIds.add(row.id);
         }
-
-        // Handle deleted titles
         for (const original of originalTitle) {
             if (!processedIds.has(original.rankingTitleId)) {
                 await deleteRankingTitle(original.rankingTitleId);
             }
         }
 
-        // Batch update decision titles
         if (decisionTitleForms.length > 0) {
-            await updateDecisionTitle(decisionTitleForms); // Send all add/update forms
+            await updateDecisionTitle(decisionTitleForms);
         }
     };
 
     const handleAddTitle = async () => {
-        const decisionId = id;  // Ensure this id is valid
+        const decisionId = id;
         if (!decisionId) {
             console.error("decisionId không hợp lệ");
             return;
@@ -190,8 +174,8 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         }
 
         const newTitle = {
-            id: null,  // Or get the real ID from the server
-            index: rows.length + 1,  // Or get the real ID from the server
+            id: null,
+            index: rows.length + 1,
             titleName: newTitleName,
             rankScore: 0,
             options: criteria.map((criteriaItem) => ({
@@ -217,11 +201,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
             if (rowIndex !== -1) {
                 const currentRow = updatedRows[rowIndex];
-
-                // Update the value for the criteria field
                 currentRow[field] = value;
-
-                // Find the corresponding criteria and update its option in the options array
                 const criteriaIndex = criteria.findIndex(
                     (criteriaItem) => criteriaItem.criteriaName === field
                 );
@@ -240,8 +220,6 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                         };
                     }
                 }
-
-                // Recalculate the rankScore if all criteria are filled
                 const allCriteriaFilled = criteria.every(
                     (criteriaItem) => currentRow[criteriaItem.criteriaName]
                 );
@@ -264,7 +242,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         setRows((prevRows) => {
             const rowIndex = prevRows.findIndex((row) => row.index === index);
             if (rowIndex !== -1) {
-                const updatedRows = prevRows.filter((row) => row.index !== index);  // Lọc ra hàng cần xóa
+                const updatedRows = prevRows.filter((row) => row.index !== index);
                 return updatedRows;
             }
             return prevRows;
@@ -288,8 +266,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             return 0;
         }
         return criteria.reduce((totalScore, criteriaItem) => {
-            const currentValue = row[criteriaItem.criteriaName]; // Lấy giá trị từ row theo tên tiêu chí
-            // Tìm option trong criteria tương ứng với giá trị hiện tại
+            const currentValue = row[criteriaItem.criteriaName];
             const selectedOption = criteriaItem.options?.find(
                 (option) => option.optionName === currentValue
             );
@@ -297,25 +274,23 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             if (selectedOption) {
                 const { score } = selectedOption;
                 const { weight, maxScore } = criteriaItem;
-                // Công thức tính RankScore
-                const calculatedScore = (score * weight) / (maxScore || 1); // Tránh chia 0
+                const calculatedScore = (score * weight) / (maxScore || 1);
                 return totalScore + calculatedScore;
             }
-            return totalScore; // Không có option phù hợp, giữ nguyên điểm
+            return totalScore;
         }, 0);
     };
 
     // End 
     const handleSaveChanges = async () => {
         console.log(rows);
-        // Kiểm tra xem tất cả rankScore đã được tính toán
         if (rows.length === 0) {
             return showErrorMessage('You need to have at least one title in the table.');
         }
         const allRankScoresCalculated = rows.every((row) => row.rankScore != null && row.rankScore !== '' && row.rankScore !== 0);
         if (!allRankScoresCalculated) {
             showErrorMessage('All field is required.');
-            return; // Dừng lại nếu có lỗi
+            return;
         }
         const rankScoreSet = new Set(rows.map((row) => row.rankScore));
         if (rankScoreSet.size !== rows.length) {
@@ -325,7 +300,7 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
         await syncDecisionTitle(rows, originalTitle);
         showSuccessMessage('Title Configuration successfully updated.');
         getTitleConfiguration();
-        goToNextStep(); // Chuyển bước tiếp theo
+        goToNextStep();
     };
 
     // End 
@@ -335,24 +310,20 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
             console.error("Invalid criteria data:", criteria);
             return [];
         }
-        // Xác định trạng thái có cho phép chỉnh sửa hay không
         const isEditable = decisionStatus === 'Draft' || decisionStatus === 'Rejected';
-        // Column Criteria
         const criteriaColumns = criteria.map((criteriaItem) => ({
             field: criteriaItem.criteriaName,
             headerName: criteriaItem.criteriaName,
             width: 200,
-            editable: isEditable, // Chỉ cho phép chỉnh sửa nếu trạng thái là Draft hoặc Rejected
+            editable: isEditable,
             renderCell: (params) => {
                 const currentCriteria = criteria.find(
                     (c) => c.criteriaName === params.field
                 );
-
                 if (!currentCriteria || !Array.isArray(currentCriteria.options)) {
                     console.warn(`No options found for criteria: ${params.field}`);
                     return null;
                 }
-                // Nếu cho phép chỉnh sửa, hiển thị Select
                 return isEditable ? (
                     <Select
                         value={params.value || ''}
@@ -371,12 +342,12 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
                     >
                         {currentCriteria.options.map((option) => (
                             <MenuItem key={option.optionId} value={option.optionName}>
-                                {`${option.score} - ${option.optionName}`} {/* Tên kèm score */}
+                                {`${option.score} - ${option.optionName}`}
                             </MenuItem>
                         ))}
                     </Select>
                 ) : (
-                    <span>{params.value || ''}</span> // Hiển thị giá trị nếu không chỉnh sửa được
+                    <span>{params.value || ''}</span>
                 );
             },
         }));
@@ -413,21 +384,15 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
     //////////////////////////////////// Row Title ////////////////////////////////////
     const setRowData = (title, criteria) => {
         const mappedRows = title.map((titleItem, index) => {
-            // Create fields for criteria columns, ensuring every criteria is included
             const criteriaFields = criteria.reduce((acc, criteriaItem) => {
-                // Find the option corresponding to this criteria
                 const matchingOption = titleItem.options?.find(
                     (option) => option.criteriaId === criteriaItem.criteriaId
                 );
-
-                // Set the field value to the matched optionName or an empty string if not found
                 acc[criteriaItem.criteriaName] = matchingOption ? matchingOption.optionName : "";
                 acc[`${criteriaItem.criteriaName}_id`] = criteriaItem.criteriaId;
 
                 return acc;
             }, {});
-
-            // Ensure all criteria are represented in the options array
             const normalizedOptions = criteria.map((criteriaItem) => {
                 const matchingOption = titleItem.options?.find(
                     (option) => option.criteriaId === criteriaItem.criteriaId
@@ -443,32 +408,28 @@ const TitleConfiguration = ({ decisionStatus, goToNextStep, showErrorMessage, sh
 
             const tempData = {
                 id: titleItem.rankingTitleId,
-                index: index + 1, // Row index
-                titleName: titleItem.rankingTitleName, // Title name
-                rankScore: titleItem.totalScore || 0, // Total score
-                ...criteriaFields, // Dynamic criteria fields with criteriaId
-                options: normalizedOptions, // All options, with defaults for missing ones
+                index: index + 1,
+                titleName: titleItem.rankingTitleName,
+                rankScore: titleItem.totalScore || 0,
+                ...criteriaFields,
+                options: normalizedOptions,
             };
 
             return {
                 id: titleItem.rankingTitleId,
-                index: index + 1, // Row index
-                titleName: titleItem.rankingTitleName, // Title name
-                rankScore: calculateRankScore(tempData).toFixed(2) ? calculateRankScore(tempData).toFixed(2) : titleItem.totalScore, // Total score
-                ...criteriaFields, // Dynamic criteria fields with criteriaId
-                options: normalizedOptions, // All options, with defaults for missing ones
+                index: index + 1,
+                titleName: titleItem.rankingTitleName,
+                rankScore: calculateRankScore(tempData).toFixed(2) ? calculateRankScore(tempData).toFixed(2) : titleItem.totalScore,
+                ...criteriaFields,
+                options: normalizedOptions,
             };
         });
 
-        // Update the state with the new rows
         setRows(mappedRows);
     };
-
-
     // End 
     useEffect(() => {
         if (originalTitle) {
-            // Tạo cột
             const columns = ColumnsTitle(criteria, decisionStatus);
             setColumnsTitle(columns);
             setRowData(originalTitle, criteria);

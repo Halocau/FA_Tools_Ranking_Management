@@ -107,8 +107,8 @@ const TaskManagement = () => {
       return;
     }
 
-    if (trimmedName.length < 3 || trimmedName.length > 20) {
-      setValidationMessage("Task name must be between 3 and 20 characters.");
+    if (trimmedName.length < 3 || trimmedName.length > 100) {
+      setValidationMessage("Task name must be between 3 and 100 characters.");
       return;
     }
     const nameRegex = /^[a-zA-Z0-9 ]+$/;
