@@ -140,6 +140,7 @@ public class RankingGroupService implements IRankingGroupService {
         if (!iRankingGroupRepository.existsById(id)) {
             throw new RankingGroupException("Ranking Group not found with id: " + id);
         }
+
         // Xóa nhóm (Delete the group)
         iRankingGroupRepository.deleteById(id);
     }
