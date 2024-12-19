@@ -301,7 +301,7 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
     // Handle file upload
     const handleFileUpload = async () => {
         if (!file) {
-            alert("Please select a file before uploading.");
+            showErrorMessage("Please select a file before uploading.");
             return;
         }
         console.log(data);
