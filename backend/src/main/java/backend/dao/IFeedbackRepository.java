@@ -10,4 +10,6 @@ import java.util.Optional;
 @Repository
 public interface IFeedbackRepository extends JpaRepository<Feedback,Integer> {
     Optional<Feedback> findByDecisionId(@NotNull Integer decisionId);
+
+    void deleteByDecisionId(int id);
 }
