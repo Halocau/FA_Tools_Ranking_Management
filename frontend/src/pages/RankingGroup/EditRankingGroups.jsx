@@ -86,7 +86,6 @@ const EditRankingGroup = () => {
         }
     };
 
-    console.log("Rows:", rows);
     //// Fetch Ranking Group on id change
     useEffect(() => {
         RankingGroupEdit();
@@ -148,20 +147,33 @@ const EditRankingGroup = () => {
         // Capitalize the first letter of each word in the group name
         trimmedName = trimmedName.replace(/\b\w/g, (char) => char.toUpperCase());
         // Check for duplicate group name
+
         try {
             const updatedGroup = {
                 groupName: trimmedName,
-                currentRankingDecision: selectedCloneDecision ? rankingDecisions.find(decision => decision.decisionName === selectedCurrentDecision).decisionId : '',
-                createBy: localStorage.getItem('userId')
+                currentRankingDecision: selectedCurrentDecision?.decisionId || null, // Đảm bảo không có lỗi nếu decisionId không tồn tại
+                createBy: localStorage.getItem('userId'),
             };
-            console.log("Selected Current decision:", selectedCurrentDecision);
+
+            console.log("Updated Group:", updatedGroup);
+            console.log("Selected Current Decision:", selectedCurrentDecision);
+
+            // Gửi API để cập nhật nhóm
             await RankingGroupAPI.updateRankingGroup(id, updatedGroup);
+
+            // Cập nhật lại giá trị gốc sau khi sửa đổi
             setOriginalGroupName(trimmedName);
-            setOriginalDecisionName(selectedCurrentDecision ? selectedCurrentDecision : editGroup.currentRankingDecision);
+            setOriginalDecisionName(
+                selectedCurrentDecision ? selectedCurrentDecision.decisionName : null
+            );
+
+            // Hiển thị thông báo thành công
             showSuccessMessage("Group Info successfully updated");
 
+            // Đóng modal chỉnh sửa thông tin nhóm
             setShowEditGroupInfoModal(false);
-        } catch (error) {
+        }
+        catch (error) {
             if (error.response.data.detailMessage.includes("already exists")) {
                 setValidationMessage("Ranking Group Name already exists.");
             } else {
@@ -188,7 +200,6 @@ const EditRankingGroup = () => {
         try {
             const data = await RankingDecisionAPI.getAllRankingDecisions();
             setlistDecisionSearchClone(data.result)
-            console.log('setlistDecisionSearchClone', data)
         } catch (error) {
             console.error("Failed to fetch criteria:", error);
         }
@@ -502,10 +513,18 @@ const EditRankingGroup = () => {
                             disablePortal
                             options={listDecisionSearchClone ? listDecisionSearchClone.filter(decision => decision.status === 'Finalized') : []}
                             getOptionLabel={(option) => option.decisionName || ''}
-                            value={listDecisionSearchClone.find(decision => decision.decisionName === (selectedCurrentDecision || originalDecisionName)) || null}
+                            value={
+                                listDecisionSearchClone.find(
+                                    decision => decision.decisionName === (selectedCurrentDecision?.decisionName || originalDecisionName)
+                                ) || null
+                            }
                             onChange={(event, value) => {
-                                setselectedCurrentDecision(value ? value.decisionName : originalDecisionName);
-                                console.log(selectedCurrentDecision);
+                                if (value) {
+                                    setselectedCurrentDecision(value); // Gán toàn bộ đối tượng quyết định
+                                    console.log('Selected Decision:', value);
+                                } else {
+                                    setselectedCurrentDecision({ decisionName: originalDecisionName, id: null });
+                                }
                             }}
                             renderInput={(params) => (
                                 <TextField
@@ -567,8 +586,6 @@ const EditRankingGroup = () => {
                                 value={selectedCloneDecision}  // Tìm đối tượng quyết định
                                 onChange={(event, value) => {
                                     setSelectedCloneDecision(value || null);
-                                    console.log(selectedCloneDecision)
-
                                 }}
                                 renderInput={(params) => (
                                     <TextField
