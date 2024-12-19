@@ -143,6 +143,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
       rows.find((row) => row.employeeId === employeeId)
     );
 
+<<<<<<< HEAD
     if (selectedRowsData.length > 0) {
       // Add criteria columns to the selected rows for Excel export
       const worksheetData = selectedRowsData.map((row) => {
@@ -170,6 +171,67 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
       });
 
       // Create worksheet from the data
+=======
+      // Lấy danh sách nhân viên chi tiết từ API
+      const detailedEmployees = await EmployeeAPI.getEmployeeCriteria(id);
+
+      let worksheetData = [];
+      if (selectedIDs.length === 0) {
+        // Nếu không có nhân viên nào được chọn, lấy nhân viên đầu tiên và thêm giá trị null vào các cột
+        const firstEmployee = detailedEmployees[0];
+        const criteriaColumns = firstEmployee.criteriaList.reduce(
+          (acc, criteria) => {
+            acc[criteria.criteriaName] = "Null"; // Giá trị null cho các cột criteria
+            return acc;
+          },
+          {}
+        );
+
+        worksheetData.push({
+          employeeId: firstEmployee.employeeId,
+          employeeName: firstEmployee.employeeName,
+          currentRankingDecision: "Null",
+          currentRank: "Null",
+          assessmentRank: "Null",
+          ...criteriaColumns,
+          totalScore: "Null",
+        });
+      } else {
+        // Nếu có nhân viên được chọn, lấy dữ liệu chi tiết của họ
+        const selectedData = detailedEmployees.filter((employee) =>
+          selectedIDs.includes(employee.employeeId)
+        );
+
+        worksheetData = selectedData.map((employee) => {
+          const criteriaColumns = employee.criteriaList.reduce(
+            (acc, criteria) => {
+              acc[
+                criteria.criteriaName
+              ] = `${criteria.score} - ${criteria.optionName}`;
+              return acc;
+            },
+            {}
+          );
+
+          return {
+            employeeId: employee.employeeId,
+            employeeName: employee.employeeName,
+            currentRankingDecision: employee.currentRankingDecision,
+            currentRank: employee.currentRank,
+            assessmentRank: employee.assessmentRank,
+            ...criteriaColumns,
+            totalScore: employee.totalScore,
+          };
+        });
+      }
+
+      // Tạo header
+      const headers = Object.keys(worksheetData[0]).map((key) =>
+        key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())
+      );
+
+      // Tạo worksheet
+>>>>>>> DuyPQ
       const worksheet = XLSX.utils.json_to_sheet(worksheetData);
 
       // Update header to sheet (making sure the columns are correct)
@@ -177,11 +239,17 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
         worksheet[`${String.fromCharCode(65 + index)}1`] = { v: header };
       });
 
+<<<<<<< HEAD
       // Create workbook and append the worksheet
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
 
       // Generate Excel file and trigger download
+=======
+      // Tạo workbook và lưu file
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+>>>>>>> DuyPQ
       XLSX.writeFile(workbook, "Selected_Employees.xlsx");
       handleClose();
       showSuccessMessage("Export successfully")
