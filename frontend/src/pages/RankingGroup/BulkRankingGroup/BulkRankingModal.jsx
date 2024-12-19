@@ -126,34 +126,6 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         return { isValid: true, errorMessage: "" };
     };
 
-
-    // Function to validate data if it is not empty
-    const validateData = (data) => {
-        // Check if data is not provided or empty
-        if (!data || data.length === 0) {
-            console.error("No data provided for validation.");
-            setStatus("Failed");
-            setNote("No data available to validate. Please upload a valid file.");
-            return false;
-        }
-
-        // Validate each item in the data array
-        for (let index = 0; index < data.length; index++) {
-            const item = data[index];
-            for (const [key, value] of Object.entries(item)) {
-                console.log(`${key}: ${value}`);
-                // Check if the value is null, undefined, or empty
-                if (value === null || value === undefined || value === "") {
-                    console.error(`Validation failed at row ${index + 1}, column: ${key}`);
-                    setStatus("Failed");
-                    setNote(`Invalid value in row ${index + 1}, column: ${key}. Please correct the template and try again.`);
-                    return false;
-                }
-            }
-        }
-        return true;
-    };
-
     // File change handler
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -305,6 +277,26 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         return result;
     }
 
+    const checkEmployeeIds = (output, employerData) => {
+        const employeeIds = output.map(obj => obj.employeeId);
+        const employerIds = employerData.map(obj => obj["Employer ID"]);
+        console.log(employeeIds, employerIds);
+        var check = true;
+        employerIds.forEach(id => {
+            if (!employeeIds.includes(id)) {
+                check = false;
+            }
+        }
+        );
+        return check;
+    };
+
+    const validateCriteriaNames = (data, criteriaList) => {
+        const criteriaNames = criteriaList.map(criteria => criteria.criteriaName);
+        return data.every(obj => {
+            return criteriaNames.every(criteriaName => criteriaName in obj);
+        });
+    };
 
     // Handle file upload
     const handleFileUpload = async () => {
@@ -315,14 +307,16 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         console.log(data);
         setLoading(true);
         try {
-            console.log("Start uploading...\n", data);
-            const isValid = validateData(data);
+            var tempStatus = status;
+            var tempNote = note;
+
             const output = extractEmployeeCriteriaOptions(criteriaList, data);
 
-            if (!isValid) {
-                setStatus("Failed");
-                setNote("Wrong value input for criteria options. Update and try again.");
+            if (!checkEmployeeIds(output, data) || !validateCriteriaNames(data, criteriaList)) {
+                tempStatus = "Failed";
+                tempNote = "Wrong value input for criteria options. Update and try again.";
             }
+
             const form = {
                 file: file,
                 folder: 'upload'
@@ -335,13 +329,13 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 filePath: filePath,
                 rankingGroupId: currentGroup.groupId, // Assume currentGroup is provided with a groupId field
                 uploadBy: 1, // Default uploadBy value
-                status: status, // Default status
-                note: note, // Default note
+                status: tempStatus, // Default status
+                note: tempNote, // Default note
             };
             // Call the function to add a new bulk ranking
             const newBulkRanking = await addNewBulkRanking(bulkRankingform);
 
-            if (status === 'Success') {
+            if (tempStatus === 'Success') {
                 // Call the function to upload employees
                 await handleEmployeeUpload(newBulkRanking);
 
@@ -349,7 +343,8 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 await uploadEmployeeCriteria(output);
                 showSuccessMessage("Successfully upload!!!");
             }
-            if (status === 'Failed') {
+
+            if (tempStatus === 'Failed') {
                 throw new Error("Failed to upload data from excel file!!!");
             }
             handleCloseModal();

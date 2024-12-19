@@ -21,6 +21,11 @@ const FileUploadAPI = {
         return response.data;
     },
 
+    downloadFile: async (form) => {
+        const response = await authClient
+            .get(`${storageFiles}?fileName=${form.filename}&folder=${form.upload}`, { responseType: 'arraybuffer' });
+        return response;
+    }
 };
 
 export default FileUploadAPI;
