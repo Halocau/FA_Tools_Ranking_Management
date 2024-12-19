@@ -44,7 +44,7 @@ const ExportTemplateModal = ({ open, handleClose, onExport }) => {
   const getAllEmployees = async () => {
     try {
       // Gọi API từ bảng Employee
-      const data = await EmployeeAPI.getAllEmployee(id);
+      const data = await EmployeeAPI.getEmployeeCriteria(id);
       setEmployees(data);
 
       const uniqueRankingDecisions = [
