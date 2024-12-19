@@ -190,11 +190,13 @@ const TaskManagement = () => {
       handleCloseDeleteModal();
     } catch (error) {
       console.error("Failed to delete group:", error);
-      showErrorMessage(
-        "Error occurred removing Ranking Group. Please try again."
-      );
-      handleCloseDeleteModal();
+      if (error.detailMessage.includes("Task cannot be deleted")) {
+        showErrorMessage("Task cannot be deleted");
+      } else {
+        showErrorMessage("Error occurred removing Ranking Group. Please try again.");
+      }
     }
+    handleCloseDeleteModal();
   };
 
   // Delete many task
