@@ -45,9 +45,10 @@ public class RankingDecisionService implements IRankingDecisionService {
     private IAccount iAccount;
     private IRankingTitleOptionRepository iRankingTitleOptionRepository;
     private ITaskWagesRepository iTaskWagesRepository;
+    private EntityManager entityManager;
 
     @Autowired
-    public RankingDecisionService(IRankingDecisionRepository iRankingDecisionRepository, IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository, IDecisionCriteriaRepository iDecisionCriteriaRepository, IDecisionTasksRepository iDecisionTasksRepository, IRankingTitleRepository iRankingTitleRepository, IDecisionCriteriaService iDecisionCriteriaService, IDecisionCriteriaService iDecisionTasksService, IAccount iAccount, IRankingTitleOptionRepository iRankingTitleOptionRepository, ITaskWagesRepository iTaskWagesRepository) {
+    public RankingDecisionService(IRankingDecisionRepository iRankingDecisionRepository, IEmployeeRepository iEmployeeRepository, ModelMapper modelMapper, IRankingGroupRepository iRankingGroupRepository, IDecisionCriteriaRepository iDecisionCriteriaRepository, IDecisionTasksRepository iDecisionTasksRepository, IRankingTitleRepository iRankingTitleRepository, IDecisionCriteriaService iDecisionCriteriaService, IDecisionCriteriaService iDecisionTasksService, IAccount iAccount, IRankingTitleOptionRepository iRankingTitleOptionRepository, ITaskWagesRepository iTaskWagesRepository, EntityManager entityManager) {
         this.iRankingDecisionRepository = iRankingDecisionRepository;
         this.iEmployeeRepository = iEmployeeRepository;
         this.modelMapper = modelMapper;
@@ -60,6 +61,7 @@ public class RankingDecisionService implements IRankingDecisionService {
         this.iAccount = iAccount;
         this.iRankingTitleOptionRepository = iRankingTitleOptionRepository;
         this.iTaskWagesRepository = iTaskWagesRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -111,27 +113,23 @@ public class RankingDecisionService implements IRankingDecisionService {
         // Xóa các RankingTitles liên quan đến RankingDecision
         List<RankingTitle> rankingTitles = iRankingTitleRepository.findByDecisionId(id);
         for (RankingTitle rankingTitle : rankingTitles) {
-            // Lấy danh sách RankingTitleOption liên quan đến RankingTitle
-            List<RankingTitleOption> rankingTitleOptions = iRankingTitleOptionRepository.findByRankingTitleId(rankingTitle.getRankingTitleId());
+            int rankingTitleId = rankingTitle.getRankingTitleId();
 
-            // Cập nhật optionId thành null
-            for (RankingTitleOption option : rankingTitleOptions) {
-                option.setOptionId(null);
-            }
-            // Lưu các thay đổi
-            iRankingTitleOptionRepository.saveAll(rankingTitleOptions);
+            // Xóa các RankingTitleOption liên quan đến RankingTitle
+            iRankingTitleOptionRepository.deleteByRankingTitleId(rankingTitleId);
 
-            iRankingTitleOptionRepository.deleteByRankingTitleId(rankingTitle.getRankingTitleId());
             // Xóa các TaskWages liên quan đến RankingTitle
-            iTaskWagesRepository.deleteByRankingTitleId(rankingTitle.getRankingTitleId());
-
+            iTaskWagesRepository.deleteByRankingTitleId(rankingTitleId);
+// Gọi flush() để đồng bộ Session
+            entityManager.flush();
             // Xóa RankingTitle
-            iRankingTitleRepository.deleteById(rankingTitle.getRankingTitleId());
+            iRankingTitleRepository.deleteById(rankingTitleId);
         }
 
         // Cuối cùng, xóa RankingDecision
         iRankingDecisionRepository.deleteById(id);
     }
+
 
     ///  Response
     @Override
@@ -144,11 +142,11 @@ public class RankingDecisionService implements IRankingDecisionService {
 
             // Check if the status is "Finalized"  
             if ("Finalized".equalsIgnoreCase(rankingDecision.getStatus()) && rankingDecision.getFinalizedBy() != null) {
-                
+
                 // Retrieve the finalizedByName from the Account repository
                 Account accountOptional = iAccount.findById(rankingDecision.getFinalizedBy()).orElse(null);
                 response.setFinalizedByName(accountOptional.getUsername());
-                
+
             } else {
                 // Do not set finalizedByName if status is not "Finalized"
                 response.setFinalizedByName(null);
@@ -400,7 +398,7 @@ public class RankingDecisionService implements IRankingDecisionService {
         // Find existing ranking decision by ID, throw an exception if not found
         RankingDecision decision = iRankingDecisionRepository.findById(decisionId).orElseThrow(() ->
                 new EntityNotFoundException("Ranking decision not found with id: " + decisionId));
-        if (!decision.getDecisionName().equals(form.getDecisionName())
+        if (decision.getDecisionName().equals(form.getDecisionName())
                 && iRankingDecisionRepository.existsByDecisionNameNot(form.getDecisionName())) {
             throw new RankingDecisionException("Ranking decision already exists with name: " + form.getDecisionName());
         }
@@ -442,10 +440,6 @@ public class RankingDecisionService implements IRankingDecisionService {
 
         // Cập nhật trạng thái nếu hợp lệ
         decision.setStatus(status);
-        if (status.equals("Finalized")) {
-            decision.setFinalizedAt(LocalDateTime.now());
-            decision.setFinalizedBy(form.getFinalized_by());
-        }
         return iRankingDecisionRepository.save(decision);
     }
 
