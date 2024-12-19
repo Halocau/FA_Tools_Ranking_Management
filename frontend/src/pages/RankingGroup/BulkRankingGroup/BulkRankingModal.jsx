@@ -317,6 +317,8 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
         try {
             console.log("Start uploading...\n", data);
             const isValid = validateData(data);
+            const output = extractEmployeeCriteriaOptions(criteriaList, data);
+
             if (!isValid) {
                 setStatus("Failed");
                 setNote("Wrong value input for criteria options. Update and try again.");
@@ -344,7 +346,6 @@ const BulkRankingModal = ({ open, handleClose, showSuccessMessage, showErrorMess
                 await handleEmployeeUpload(newBulkRanking);
 
                 // Call the function to upload employee criteria
-                const output = extractEmployeeCriteriaOptions(criteriaList, data);
                 await uploadEmployeeCriteria(output);
                 showSuccessMessage("Successfully upload!!!");
             }
