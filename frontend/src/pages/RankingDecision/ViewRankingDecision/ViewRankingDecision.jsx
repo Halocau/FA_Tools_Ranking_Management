@@ -202,7 +202,7 @@ const ViewDecision = () => {
 
     const handleReject = () => {
         handleStatusUpdate('Rejected', 'Rejected successfully');
-
+        navigate('/ranking-decision')
     };
 
     const handleFinalized = () => {

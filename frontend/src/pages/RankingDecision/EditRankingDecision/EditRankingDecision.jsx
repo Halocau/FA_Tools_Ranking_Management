@@ -27,6 +27,7 @@ import TaskandPriceConfiguration from "./TaskandPriceConfiguration.jsx";
 import { set } from "date-fns";
 
 const EditDecision = () => {
+    const navigate = useNavigate(); // Khởi tạo hook useNavigate
     const role = localStorage.getItem("userRole");
     // const navigate = useNavigate(); // To navigate between pages
     const { id } = useParams(); // Get the ID from the URL
@@ -249,6 +250,7 @@ const EditDecision = () => {
                 status: "Submitted",
             };
             await RankingDecisionAPI.updateRankingDecisionStatus(updatedDecision);
+
         } catch (error) {
             console.error("Error updating decision:", error);
             showErrorMessage(
@@ -258,6 +260,8 @@ const EditDecision = () => {
         setEditDecision({ status: "Submitted" });
         setDecisionStatus("Submitted");
         showSuccessMessage("Submit successfully ");
+        navigate('/ranking-decision')
+
     };
     return (
         <div style={{ marginTop: "60px" }}>
