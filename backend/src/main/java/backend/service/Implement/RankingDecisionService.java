@@ -437,9 +437,13 @@ public class RankingDecisionService implements IRankingDecisionService {
         } else if (!"ADMIN".equals(roleName)) {
             throw new IllegalArgumentException("Unknown role: " + roleName);
         }
-
+        
         // Cập nhật trạng thái nếu hợp lệ
         decision.setStatus(status);
+        if (status.equals("Finalized")) {
+            decision.setFinalizedAt(LocalDateTime.now());
+            decision.setFinalizedBy(form.getFinalized_by());
+        }
         return iRankingDecisionRepository.save(decision);
     }
 
