@@ -101,7 +101,7 @@ const RankingDecision = () => {
     // Fetch all ranking decisions when component mounts
     useEffect(() => {
         fetchAllRankingDecisions();
-    }, [page, pageSize, filter]);
+    }, [page, pageSize, filter, rankingDecisions]);
     ;
 
     /////////////////////////////////////////////////////// Add Ranking Decision //////////////////////////////////////////////////////////////////////

@@ -169,8 +169,8 @@ const BulkRankingGroup = () => {
         fileName: bulkRankingGroup.fileName,
         filePath: bulkRankingGroup.filePath,
         rankingdecision: bulkRankingGroup.decisionName,
-        uploadedAt: bulkRankingGroup.uploadedAt
-          ? bulkRankingGroup.uploadedAt
+        uploadedAt: bulkRankingGroup.uploadAt
+          ? bulkRankingGroup.uploadAt
           : "N/A",
         uploadedBy: bulkRankingGroup.uploadByName
           ? bulkRankingGroup.uploadByName
