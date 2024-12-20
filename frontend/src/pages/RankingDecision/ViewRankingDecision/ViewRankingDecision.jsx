@@ -195,14 +195,14 @@ const ViewDecision = () => {
     // Hàm xử lý từng trạng thái
     const handleConfirm = () => {
         handleStatusUpdate('Confirmed', 'Confirm successfully');
-        navigate('/ranking-decision')
+        if (role !== 'admin') {
+            navigate('/ranking-decision');
+        }
     };
 
     const handleReject = () => {
         handleStatusUpdate('Rejected', 'Rejected successfully');
-        if (role !== 'admin') {
-            navigate('/ranking-decision');
-        }
+
     };
 
     const handleFinalized = () => {
