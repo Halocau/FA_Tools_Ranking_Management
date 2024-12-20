@@ -19,6 +19,7 @@ import TitleConfiguration from "../ViewRankingDecision/TitleConfiguration.jsx";
 import TaskandPriceConfiguration from "../ViewRankingDecision/TaskandPriceConfiguration.jsx";
 
 const ViewDecision = () => {
+    const navigate = useNavigate(); // Khởi tạo hook useNavigate
     const role = localStorage.getItem('userRole');
 
     // const navigate = useNavigate(); // To navigate between pages
@@ -194,14 +195,19 @@ const ViewDecision = () => {
     // Hàm xử lý từng trạng thái
     const handleConfirm = () => {
         handleStatusUpdate('Confirmed', 'Confirm successfully');
+        navigate('/ranking-decision')
     };
 
     const handleReject = () => {
         handleStatusUpdate('Rejected', 'Rejected successfully');
+        if (role !== 'admin') {
+            navigate('/ranking-decision');
+        }
     };
 
     const handleFinalized = () => {
         handleStatusUpdate('Finalized', 'Finalized successfully', { finalized_by: localStorage.getItem('userId') });
+        navigate('/ranking-decision')
     };
 
 
