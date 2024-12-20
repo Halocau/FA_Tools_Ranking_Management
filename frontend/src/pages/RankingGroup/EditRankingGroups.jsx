@@ -119,6 +119,7 @@ const EditRankingGroup = () => {
     const handleOpenEditGroupInfoModal = () => {
         setNewGroupName(editGroup.groupName);
         setShowEditGroupInfoModal(true);
+        setselectedCurrentDecision(selectedCurrentDecision);
         setValidationMessage("");
     };
     // Close the modal
@@ -167,11 +168,14 @@ const EditRankingGroup = () => {
                 selectedCurrentDecision ? selectedCurrentDecision.decisionName : null
             );
 
+
+
             // Hiển thị thông báo thành công
             showSuccessMessage("Group Info successfully updated");
 
             // Đóng modal chỉnh sửa thông tin nhóm
             setShowEditGroupInfoModal(false);
+            RankingGroupEdit();
         }
         catch (error) {
             if (error.response.data.detailMessage.includes("already exists")) {
