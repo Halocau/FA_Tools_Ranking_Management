@@ -134,8 +134,8 @@ const EditCriteria = () => {
                 setValidationMessage("Criteria Name is required.");
                 return;
             }
-            if (newCriteriaName.length < 3 || newCriteriaName.length > 20) {
-                setValidationMessage("Criteria name must be between 3 and 20 characters.");
+            if (newCriteriaName.length < 3 || newCriteriaName.length > 100) {
+                setValidationMessage("Criteria name must be between 3 and 100 characters.");
                 return;
             }
             const data = await CriteriaAPI.updateCriteria(id, { criteriaName: newCriteriaName, updatedBy: localStorage.getItem("userId") });
